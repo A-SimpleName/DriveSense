@@ -36,7 +36,8 @@ Fahrzeug mit Kennzeichen und Namen hinzufügen
 Bei Privat
 Verwaltung des Haushalts:
 
-Hinzufügen oder Löschen von Mitglieder
+Hinzufügen oder Löschen von Mitglieder mit Einladung per Email
+Rollen im Haushalt (Owner/Member)
 Sehen des gemeinsamen Protokolls
 eigenes Protokolls
 Karte mit allen Fahrten des Haushalts ansehen
@@ -47,7 +48,7 @@ Bei Berufsfahrer
 Profil
 anderes Fahrtenprotokoll ansehen
 Karte mit allen Fahrten ansehen
-Fahrzeug mit Kennzeichen und Namen hinzufügen+
+Fahrzeug mit Kennzeichen und Namen hinzufügen
 Fahrten kategorisieren (welche Arbeit ausgeführt wurde)
 
 Admin
