@@ -18,8 +18,44 @@ Datenschutz-Zustimmung (DSGVO)
 Logout
 
 Startseite
-Kurzübersicht (letzte Fahrt, insgesamte km)
-Verlinkungen zu andere Seiten
+Start / Stop Fahrt 
+
+Status:
+GPS aktiv / kein GPS
+Fahrt läuft / keine Fahrt
+
+Übersicht:
+aktuelle Strecke
+aktuelle Dauer
+
+Schnellzugriff auf andere Seiten	
+letzte Fahrt
+Fahrzeug wählen
+
+Fahrtaufzeichnung
+Während der Fahrt
+Live-Karte
+Strecke als Linie
+Zeit
+Distanz
+Aktives Fahrzeug
+Fahrbahnzustand
+Pause / Fortsetzen
+Fahrt abbrechen
+
+Fahrt beenden
+
+Zusammenfassung:
+Name (automatisch)
+Kilometerstand
+Start / Ziel
+Dauer
+Datum
+km
+
+Daten verändern 
+Speichern in Protokoll
+Verwerfen
 
 Einstellungen
 Profil bearbeiten
@@ -51,13 +87,6 @@ Karte mit allen Fahrten ansehen
 Fahrzeug mit Kennzeichen und Namen hinzufügen für sich selbst
 Fahrten kategorisieren (welche Arbeit ausgeführt wurde)
 
-Admin
-eigener Punkt Systemverwaltung
-Benutzerliste
-Rolle ändern
-Benutzer deaktivieren
-Haushalt löschen
-
 
 Fahrtenprotokoll
 Filtern (Datum, Nutzer, Fahrzeug)
@@ -71,6 +100,12 @@ einzelne Fahrten auswählen
 Zusammenfassung (km, Dauer)
 
 Fehler Seiten
+Kein GPS
+GPS verloren während Fahrt
+Akku-Optimierung blockiert Tracking
+App minimiert / Hintergrund
+App-Absturz → Wiederaufnahme der Fahrt
+
 Ladeseiten
 404 Seite
 Mobile Layout
