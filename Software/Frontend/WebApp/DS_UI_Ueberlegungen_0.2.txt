@@ -49,7 +49,7 @@ Profil
 anderes Fahrtenprotokoll ansehen
 Karte mit allen Fahrten ansehen
 Fahrzeug mit Kennzeichen und Namen hinzufügen für sich selbst
-Fahrten kategorisieren (welche Arbeit ausgeführt wurde)
+Fahrten kategorisieren (welche Arbeit ausgeführt wurde) (Fahrtenzweck)
 
 Admin
 eigener Punkt Systemverwaltung
