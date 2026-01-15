@@ -1,0 +1,81 @@
+Drivesense UI Website
+
+Login Bildschirm:
+Email
+Passwort
+eingeben
+Passwort vergessen?
+
+
+Button registrieren
+Name
+Verwendungszweck (Rollen Auswahl)
+Email
+Passwort
+Email Verifizierung
+Datenschutz-Zustimmung (DSGVO)
+
+Logout
+
+Startseite
+Kurzübersicht (letzte Fahrt, insgesamte km)
+Verlinkungen zu andere Seiten
+
+Einstellungen
+Profil bearbeiten
+Passwort ändern
+Account löschen
+
+Seiten
+Bei Fahrschüler
+Profil
+Fahrtenprotokoll ansehen
+Karte mit allen Fahrten ansehen
+Fahrzeug mit Kennzeichen und Namen hinzufügen für sich selbst
+
+Bei Privat
+Verwaltung des Haushalts:
+
+Hinzufügen oder Löschen von Mitglieder mit Einladung per Email
+Rollen im Haushalt (Owner/Member)
+Sehen des gemeinsamen Protokolls
+eigenes Protokolls
+Karte mit allen Fahrten des Haushalts ansehen
+oder mit seinen eigenen
+Fahrzeug mit Kennzeichen und Namen hinzufügen für ganzen Haushalt
+
+Bei Berufsfahrer
+Profil
+anderes Fahrtenprotokoll ansehen
+Karte mit allen Fahrten ansehen
+Fahrzeug mit Kennzeichen und Namen hinzufügen für sich selbst
+Fahrten kategorisieren (welche Arbeit ausgeführt wurde) (Fahrtenzweck)
+
+Admin
+eigener Punkt Systemverwaltung
+Benutzerliste
+Rolle ändern
+Benutzer deaktivieren
+Haushalt löschen
+
+
+Fahrtenprotokoll
+Filtern (Datum, Nutzer, Fahrzeug)
+Sortieren
+Detailansicht pro Fahrt
+Export (PDF) Button
+
+Karte
+Alle Fahrten mit Start-/Zielmarker und Linie gekennzeichnet
+einzelne Fahrten auswählen
+Zusammenfassung (km, Dauer)
+
+Fehler Seiten
+Ladeseiten
+404 Seite
+Mobile Layout
+Datenschutzerklärung-Seite
+Impressum
+
+
+
