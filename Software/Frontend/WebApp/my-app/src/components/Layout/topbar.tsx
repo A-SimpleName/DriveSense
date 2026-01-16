@@ -9,7 +9,6 @@ function Topbar() {
         <nav className='topbar'>
             <Link to="/"><img src={Logo} alt="Logo" className="logo" width={200}/></Link>
             <Link to="/trips" className='rides'>Fahrten</Link>
-            <Link to="/map">Karten</Link>
             <Link to="/vehicles">Fahrzeuge</Link>
             <Link to="/settings"><img src={Einstellungen} alt="Einstellungen" width={30} height={30}/></Link>
             <Link to="/login">
