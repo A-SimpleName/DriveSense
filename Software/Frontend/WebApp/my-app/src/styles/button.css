@@ -1,0 +1,14 @@
+.topbar button {
+    color: white;
+    border-radius: 12px;
+    height: 2em;
+    width: 6em;
+    background-color: dodgerblue;
+    border: none;
+    font-weight: bold;
+}
+
+.topbar button:hover {
+    background-color: deepskyblue;
+    cursor: pointer;
+}

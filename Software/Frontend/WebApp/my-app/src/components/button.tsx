@@ -1,3 +1,5 @@
+import '../styles/button.css';
+
 type ButtonProps = {
   label: string;
   onClick?: () => void;

@@ -1,3 +1,6 @@
+import { Button } from "../components/button";
+import VehiclesTable from "../components/vehicles/table";
+
 export let vehicles = [
     { id: 1, name: "Auto A",licensePlate: "AM08092" , kilometers: 97740 },
     { id: 2, name: "Auto B",licensePlate: "PM12345" , kilometers: 45230 },
@@ -8,8 +11,9 @@ function Vehicles() {
     
     return (
         <div>
-            <h1>Vehicles</h1>
-            {/* Other components and content can be added here */}
+            <h1>Fahrzeuge</h1>
+            <Button label={"+ Fahrzeuge hinzufügen"}/>
+            <VehiclesTable />
         </div>
     );
 }
