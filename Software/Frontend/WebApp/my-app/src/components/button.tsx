@@ -1,5 +1,14 @@
-export function Button({ label }: { label: string}) {
-    return (
-        <button>{label}</button>
-    );
+import '../styles/button.css';
+
+type ButtonProps = {
+  label: string;
+  onClick?: () => void;
+};
+
+export function Button({ label, onClick }: ButtonProps) {
+  return (
+    <button onClick={onClick}>
+      {label}
+    </button>
+  );
 }
