@@ -9,7 +9,7 @@ type MapViewProps = {
     route: LatLng[];
 }
 
-const conainerStyle: React.CSSProperties = {
+const containerStyle: React.CSSProperties = {
     width: '100%',
     height: '400px'
 };
@@ -17,7 +17,7 @@ const conainerStyle: React.CSSProperties = {
 export default function MapView({ route }: MapViewProps) {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
     })
     
     if (!isLoaded) {
@@ -25,7 +25,7 @@ export default function MapView({ route }: MapViewProps) {
     }
     return (
         <GoogleMap
-        mapContainerStyle={conainerStyle}
+        mapContainerStyle={containerStyle}
         center={route[0]}
         zoom={12}
         >
