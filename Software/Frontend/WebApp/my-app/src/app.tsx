@@ -8,6 +8,7 @@ import Vehicles from "./pages/vehicles";
 import Settings from "./pages/settings";
 import MapPage from "./pages/map";
 import Footer from "./components/Layout/footer";
+import RideDetailPage from "./components/rides/rideDetailPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/map" element={<MapPage />} />
+        <Route path="/rides/:id" element={<RideDetailPage />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
       <Footer />
