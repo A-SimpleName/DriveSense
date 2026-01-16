@@ -24,7 +24,7 @@ function RidesTable() {
             <tbody>
                 {rides.map(ride => (
                     <tr key={ride.id}
-                    onClick={() => navigate(`/rides/${ride.id}`)}
+                    onClick={() => navigate(`/fahrten/${ride.id}`)}
                     >
                         <td>{ride.date}</td>
                         <td>{ride.name}</td>

@@ -1,4 +1,3 @@
-// App.tsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
@@ -18,11 +17,11 @@ function App() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/trips" element={<TripsPage />} />       
-        <Route path="/vehicles" element={<Vehicles />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/rides/:id" element={<RideDetailPage />} />
+        <Route path="/fahrten" element={<TripsPage />} />       
+        <Route path="/fahrzeuge" element={<Vehicles />} />
+        <Route path="/einstellungen" element={<Settings />} />
+        <Route path="/karte" element={<MapPage />} />
+        <Route path="/fahrten/:id" element={<RideDetailPage />} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
       <Footer />
