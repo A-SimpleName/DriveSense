@@ -1,0 +1,15 @@
+.ridesTable {
+    width: 100%;
+    margin-bottom: 5%;
+    border-collapse: collapse;
+}
+
+.ridesTable * {
+    border: 1px solid grey;
+}
+
+.ridesTable tbody tr:hover {
+    color: white;
+    background-color: rgb(102, 141, 199);
+    cursor: pointer;
+}

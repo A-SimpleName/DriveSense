@@ -1,8 +1,9 @@
+import RidesTable from "../components/rides/table";
 function Trips() {
     return (
         <div>
-            <h1>Trips</h1>
-            {/* Other components and content can be added here */}
+            <h1>Fahrten</h1>
+            <RidesTable />
         </div>
     );
 }
