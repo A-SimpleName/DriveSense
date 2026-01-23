@@ -49,7 +49,6 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: () {
                   // TODO: validate + login
-                  // if (_formKey.currentState!.validate()) ...
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
