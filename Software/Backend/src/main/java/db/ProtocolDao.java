@@ -1,12 +1,13 @@
+package db;
+
+import app.App;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 
-public class ProtocolDAO {
-    public static void insertUser() {
-        try (Connection conn = getConnection)
-    }
+public class ProtocolDao {
 
     public static void saveProtocol() {
         try (Connection conn = App.getConnection();
