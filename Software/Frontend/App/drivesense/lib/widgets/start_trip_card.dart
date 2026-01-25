@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/values/app_colors.dart';
 
 class StartTripCard extends StatefulWidget {
-  const StartTripCard({super.key});
+  const StartTripCard({super.key, required this.onStart});
+
+  final VoidCallback onStart;
 
   @override
   State<StartTripCard> createState() => _StartTripCardState();
@@ -40,7 +42,10 @@ class _StartTripCardState extends State<StartTripCard> {
                 DropdownMenu<String>(
                   dropdownMenuEntries: [
                     DropdownMenuEntry(value: 'BMW i3', label: 'BMW i3'),
-                    DropdownMenuEntry(value: 'Skoda Octavia', label: 'Skoda Octavia'),
+                    DropdownMenuEntry(
+                      value: 'Skoda Octavia',
+                      label: 'Skoda Octavia',
+                    ),
                   ],
                   initialSelection: 'BMW i3',
                 ),
@@ -51,7 +56,8 @@ class _StartTripCardState extends State<StartTripCard> {
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () => {
-                  // Todo: navigate to trip details page for last Trip
+                  // TODO: implement start trip functionality
+                  widget.onStart(),
                 },
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),

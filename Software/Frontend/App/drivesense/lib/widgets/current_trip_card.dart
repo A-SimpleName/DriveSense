@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/values/app_colors.dart';
 
 class CurrentTripCard extends StatefulWidget {
-  const CurrentTripCard({super.key});
+  const CurrentTripCard({super.key, required this.onStop});
+
+  final VoidCallback onStop;
 
   @override
   State<CurrentTripCard> createState() => _CurrentTripCardState();
@@ -57,7 +59,7 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () => {
-                  // TODO: implement end trip functionality
+                  widget.onStop()
                 },
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
@@ -70,7 +72,7 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () => {
-                  // TODO: implement pause trip functionality
+                  _onPauseResumeTrip()
                 },
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
@@ -83,7 +85,7 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () => {
-                  // TODO: implement abort trip functionality
+                  widget.onStop()
                 },
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
@@ -98,5 +100,11 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
         ),
       ),
     );
+  }
+
+  void _onPauseResumeTrip() {
+    setState(() {
+      isPaused = !isPaused;
+    });
   }
 }

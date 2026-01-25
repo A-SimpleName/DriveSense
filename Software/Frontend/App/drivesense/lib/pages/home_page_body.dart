@@ -19,15 +19,27 @@ class _HomePageBodyState extends State<HomePageBody> {
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: hasActiveTrip
-            ? CurrentTripCard()
+            ? CurrentTripCard(onStop: _onStopTrip,)
             : Column(
                 children: [
-                  StartTripCard(),
+                  StartTripCard(onStart: _onStartTrip,),
                   const SizedBox(height: 24),
                   LastTripCard(),
                 ],
               ),
       ),
     );
+  }
+
+  void _onStartTrip() {
+    setState(() {
+      hasActiveTrip = true;
+    });
+  }
+
+  void _onStopTrip() {
+    setState(() {
+      hasActiveTrip = false;
+    });
   }
 }
