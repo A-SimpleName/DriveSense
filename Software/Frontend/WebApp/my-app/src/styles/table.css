@@ -1,0 +1,53 @@
+table {
+    width: 100%;
+    margin-bottom: 5%;
+    border-collapse: collapse;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+table thead {
+    color: white;
+    vertical-align: top;
+    background-color: rgb(126, 132, 218);
+}
+
+table th {
+    font-size: 1.5vh;
+    height: 2vh;
+    padding-top: 1%;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: rgb(231, 231, 231);
+}
+
+table thead tr:nth-child(2) {
+    border-bottom: 2px solid black;
+}
+
+/* .ridesTable thead tr:nth-child(2) :first-child {
+    border-right: 2px solid black;
+} */
+
+table tbody {
+    text-align: center;
+}
+
+table td {
+    height: 3vh;
+}
+
+/* table tbody tr td {
+    border-top: 2px solid rgb(82, 79, 79);
+    margin-left: 20px;
+} */
+
+/* .ridesTable tbody tr td:nth-child(4) {
+    border-right: 1px solid grey;
+} */
+
+.ridesTable tbody tr:hover {
+    color: white;
+    background-color: rgb(102, 141, 199);
+    cursor: pointer;
+}
