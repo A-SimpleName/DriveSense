@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:drivesense/values/colors.dart';
+import 'package:drivesense/values/app_colors.dart';
 
 class DsBottomNavigation extends StatefulWidget {
   final int currentIndex;

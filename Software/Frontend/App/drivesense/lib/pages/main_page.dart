@@ -14,7 +14,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
-  StatelessWidget _currentBody = const HomePageBody();
+  Widget _currentBody = HomePageBody();
   String _currentAppBarTitle = 'DriveSense';
 
   @override

@@ -3,7 +3,7 @@ import 'package:drivesense/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
-import 'package:drivesense/values/colors.dart';
+import 'package:drivesense/values/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
