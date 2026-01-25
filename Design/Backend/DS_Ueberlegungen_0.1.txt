@@ -1,23 +1,173 @@
-ER-Diagramm
+Tabellen:
+=========
 
 Tabelle: USER
-|ID|FNAME|LNAME|PWD|USERNAME|ACCOUNTTYPE|TRACKINGDATA|CAR.ID|
+|ID|FNAME|LNAME|USERNAME|PWD|ACCOUNT_ID|GROUP_ID|
 
 Tabelle: ACCOUNT
-|ID|NAME|PROTOCOL.ID|
+|ID|NAME|
 
-Tabelle: PROTOCOL (Berufsfahrer, Fahrschüler, Privat)
-|ID|USER.FNAME|USER.LASTNAME|CAR.LICENSEPLATE|CAR.MILEAGE|DISTANCE|FROM|TO|
-|ID|USER.FNAME|USER.LASTNAME|CAR.LICENSEPLATE|CAR.MILEAGE|DISTANCE|FROM|TO|ROADSURFACECONDITIONS|SIGNATUREDRIVER|SIGNATUREATTENDANT|
-|ID|USER.FNAME|USER.LASTNAME|CAR.LICENSEPLATE|CAR.MILEAGE|DISTANCE|FROM|TO|
-
-Tabelle: TRACKINGDATA
-|ID|XCORD|YCORD|
+Tabelle: GROUP
+|ID|NAME|USER_ID (Owner)|
 
 Tabelle: CAR
-|ID|MODEL|CONSUMPTION|LICENSEPLATE|MILEAGE|
+|ID|USER_ID|MODEL|CONSUMPTION|LICENSEPLATE|MILEAGE|
 
-USER - ACCOUNT: 1:1
-ACCOUNT - PROTOCOL: 1:1
-USER - TRACKINGDATA: 1:1
-USER - CAR: 1:N
+Tabelle: TRACKING
+|ID|USER_ID|CAR_ID|STARTTIME|ENDTIME|DISTANCE|WEATHER_MAIN|WEATHER_DESCRIPTION|TYPE|
+
+Tabelle: TRACKINGPOINT
+|ID|TRACKING_ID|LAT|LNG|ACCURACY|SPEED|BEARING|TIMESTAMP|
+
+Tabelle: PROTOCOL
+|ID|TRACKING_ID|ROAD_SURFACE_CONDITIONS|WEATHER_RAW|
+
+Tabelle: PROTOCOL_USER
+|PROTOCOL_ID|USER_ID|ROLE|
+
+
+
+Beziehungen:
+============
+
+* USER - ACCOUNT: 1:1
+* GROUP - USER (Owner): 1:1
+* GROUP - USER (Members): 1:N
+* USER - CAR: 1:N
+* USER - TRACKING: 1:N
+* CAR - TRACKING: 1:N
+* TRACKING - TRACKINGPOINT: 1:N
+* TRACKING - PROTOCOL: 1:0..1
+* PROTOCOL - USER: M:N
+
+
+
+Beschreibung detailliert:
+=========================
+
+Tabelle: ACCOUNT
+----------------
+
+Die Tabelle ACCOUNT repräsentiert die organisatorische bzw. lizenzrechtliche Einheit innerhalb der DriveSense-Plattform.
+Ein Account steht beispielsweise für eine Privatperson, eine Fahrschule oder ein Unternehmen. Er dient dazu, Benutzer logisch zusammenzufassen und bildet die Grundlage für spätere Erweiterungen wie Abonnements, Feature-Freischaltungen oder Benutzerlimits.
+
+Ein Account kann mehrere Benutzer besitzen, während jeder Benutzer genau einem Account zugeordnet ist.
+
+Beziehung:
+
+ACCOUNT → USER = 1:N
+
+Tabelle: USER
+-------------
+
+Die Tabelle USER speichert alle persönlichen und loginrelevanten Daten eines Benutzers.
+Ein User stellt eine reale Person dar, die sich in der App oder WebApp anmeldet und Funktionen wie Fahrtenaufzeichnung, Fahrzeugverwaltung oder Protokollerstellung nutzt.
+
+Jeder User gehört genau zu einem Account und kann optional Mitglied einer Gruppe sein.
+Zusätzlich kann ein User:
+
+mehrere Fahrzeuge besitzen,
+
+mehrere Fahrten (Trackings) durchführen,
+
+an mehreren Protokollen beteiligt sein (in unterschiedlichen Rollen).
+
+Beziehungen:
+
+USER → ACCOUNT = N:1
+
+USER → GROUP = N:1
+
+USER → CAR = 1:N
+
+USER → TRACKING = 1:N
+
+USER ↔ PROTOCOL = M:N (über PROTOCOL_USER)
+
+Tabelle: GROUP
+--------------
+
+Die Tabelle GROUP dient zur logischen Gruppierung von Benutzern.
+Eine Gruppe kann beispielsweise eine Fahrschulklasse, ein Team oder ein Fuhrpark darstellen.
+
+Jede Gruppe besitzt genau einen Owner (Besitzer), welcher ein User ist.
+Zusätzlich können mehrere weitere Benutzer Mitglied dieser Gruppe sein.
+
+Beziehungen:
+
+GROUP → USER (Owner) = 1:1
+
+GROUP → USER (Members) = 1:N
+
+Tabelle: CAR
+------------
+
+Die Tabelle CAR speichert alle fahrzeugspezifischen Informationen.
+Ein Fahrzeug gehört immer genau einem Benutzer und kann für mehrere Fahrten verwendet werden.
+
+Gespeichert werden unter anderem Modell, Verbrauch, Kennzeichen und aktueller Kilometerstand.
+
+Beziehungen:
+
+CAR → USER = N:1
+
+CAR → TRACKING = 1:N
+
+Tabelle: TRACKING
+-----------------
+
+Die Tabelle TRACKING repräsentiert eine aufgezeichnete Fahrt.
+Sie enthält zusammengefasste Informationen zur Fahrt wie Start- und Endzeit, Distanz, Wetterbedingungen sowie den verwendeten Fahrzeugtyp.
+
+Ein Tracking gehört genau zu einem Benutzer und einem Fahrzeug.
+Zusätzlich kann eine Fahrt optional ein Protokoll besitzen.
+
+Beziehungen:
+
+TRACKING → USER = N:1
+
+TRACKING → CAR = N:1
+
+TRACKING → TRACKINGPOINT = 1:N
+
+TRACKING → PROTOCOL = 1:0..1
+
+Tabelle: TRACKINGPOINT
+----------------------
+
+Die Tabelle TRACKINGPOINT speichert die GPS-Rohdaten einer Fahrt.
+Jeder Datensatz repräsentiert einen einzelnen Messpunkt während der Fahrt und enthält Informationen wie Position, Geschwindigkeit, Richtung und Genauigkeit.
+
+Ein Trackingpoint gehört immer genau zu einem Tracking.
+
+Beziehungen:
+
+TRACKINGPOINT → TRACKING = N:1
+
+Tabelle: PROTOCOL
+-----------------
+
+Die Tabelle PROTOCOL stellt die dokumentierte und bestätigte Auswertung einer Fahrt dar.
+Ein Protokoll basiert immer auf genau einem Tracking und enthält zusätzliche fachliche Informationen, die nicht automatisch aus den Trackingdaten abgeleitet werden können, wie z. B. Straßenbedingungen oder Rohwetterdaten.
+
+Nicht jede Fahrt muss zwingend ein Protokoll besitzen.
+
+Beziehungen:
+
+PROTOCOL → TRACKING = 1:1
+
+PROTOCOL ↔ USER = M:N
+
+Tabelle: PROTOCOL_USER
+----------------------
+
+Die Tabelle PROTOCOL_USER ist eine Zwischentabelle zur Abbildung der M:N-Beziehung zwischen Protokollen und Benutzern.
+Sie speichert, welche Benutzer an einem Protokoll beteiligt sind und welche Rolle sie dabei einnehmen.
+
+Typische Rollen sind beispielsweise Fahrer, Fahrlehrer oder Begleitperson.
+
+Beziehungen:
+
+PROTOCOL_USER → PROTOCOL = N:1
+
+PROTOCOL_USER → USER = N:1

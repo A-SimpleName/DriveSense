@@ -1,0 +1,24 @@
+button {
+    color: white;
+    border-radius: 12px;
+    height: 2em;
+    width: 6em;
+    background-color: dodgerblue;
+    border: none;
+    font-weight: bold;
+    margin: 10px;
+}
+
+.app-container button {
+    width: auto;
+    height: 2.5em;
+}
+
+button:hover {
+    background-color: deepskyblue;
+    cursor: pointer;
+}
+
+body {
+    height: 100%;
+}
