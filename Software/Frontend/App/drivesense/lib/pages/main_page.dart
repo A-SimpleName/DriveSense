@@ -15,7 +15,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
   Widget _currentBody = HomePageBody();
-  String _currentAppBarTitle = 'DriveSense';
+  String _currentAppBarTitle = 'Übersicht';
 
   @override
   Widget build(BuildContext context) {
@@ -40,19 +40,19 @@ class _MainPageState extends State<MainPage> {
     switch (index) {
       case 0:
         _currentBody = const HomePageBody();
-        _currentAppBarTitle = 'DriveSense';
+        _currentAppBarTitle = 'Übersicht';
         break;
       case 1:
         _currentBody = const ProtocolPageBody();
-        _currentAppBarTitle = 'Protocols';
+        _currentAppBarTitle = 'Protokoll';
         break;
       case 2:
         _currentBody = const ProfilePageBody();
-        _currentAppBarTitle = 'Profile';
+        _currentAppBarTitle = 'Profil';
         break;
       default:
         _currentBody = const HomePageBody();
-        _currentAppBarTitle = 'DriveSense';
+        _currentAppBarTitle = 'Übersicht';
     }
   }
 }
