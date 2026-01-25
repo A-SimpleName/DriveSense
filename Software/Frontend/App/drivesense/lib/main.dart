@@ -6,11 +6,15 @@ import 'package:drivesense/services/login_and_register.dart';
 import 'package:drivesense/values/app_colors.dart';
 
 void main() {
-  runApp(const MyApp());
+  String token = "abc"; // TODO: get token from secure storage
+
+  runApp(MyApp(token: token,));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String? token;
+
+  const MyApp({super.key, this.token});
 
   // This widget is the root of your application.
   @override
@@ -36,7 +40,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
       home: const MainPage(),
-      initialRoute: LoginAndRegister.redirectToHome(token: "abc"),
+      initialRoute: LoginAndRegister.redirectToHome(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
         'LoginPage': (context) => const LoginPage(),
