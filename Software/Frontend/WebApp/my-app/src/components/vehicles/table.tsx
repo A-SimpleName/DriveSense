@@ -9,6 +9,7 @@ function VehiclesTable() {
                     <th>Model</th>
                     <th>Kennzeichen</th>
                     <th>Kilometerstand</th>
+                    <th colSpan={2}>Aktionen</th>
                 </tr>
             </thead>
             <tbody>
