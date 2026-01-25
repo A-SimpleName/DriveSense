@@ -61,6 +61,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 16),
+            TextButton(onPressed: () => {
+              // TODO: implement forgot password
+            }, child: const Text('Passwort vergessen?')),
+            const SizedBox(height: 16),
             Text('Sie haben noch keinen Account?', textAlign: TextAlign.center),
             TextButton(
                 onPressed: () => {
