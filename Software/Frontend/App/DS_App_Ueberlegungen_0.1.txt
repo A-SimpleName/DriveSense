@@ -1,4 +1,11 @@
-Drivesense UI Website
+Drivesense UI App
+
+Navigation Bottom Navigation
+Dashboard
+Fahrten
+Karte
+Fahrzeuge
+Profil
 
 Login Bildschirm:
 Email
@@ -52,6 +59,10 @@ Start / Ziel
 Dauer
 Datum
 km
+Kennzeichen
+Tageszeit
+Straßenzustand (Fahrschüler)
+Fahrtenzweck (Berufsfahrer)
 
 Daten verändern 
 Speichern in Protokoll

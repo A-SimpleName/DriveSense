@@ -1,0 +1,47 @@
+
+footer {
+    background-color: #f2f2f2;
+    padding: 20px 40px;
+    font-size: 14px;
+}
+
+/* Oberer Bereich: links / rechts */
+.infos {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Copyright links */
+.copyright {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+/* Kontakt rechts */
+.infos h3 {
+    margin: 0 0 5px 0;
+}
+
+.infos p {
+    margin: 2px 0;
+}
+
+/* Links unten */
+.links {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.links a {
+    text-decoration: none;
+    color: #000;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
