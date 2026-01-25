@@ -1,5 +1,5 @@
 import 'package:drivesense/values/app_assets.dart';
-import 'package:drivesense/values/colors.dart';
+import 'package:drivesense/values/app_colors.dart';
 import 'package:flutter/material.dart';
 
 
