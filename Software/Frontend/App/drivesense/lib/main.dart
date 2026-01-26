@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
 import 'package:drivesense/values/colors.dart';
+import 'package:provider/provider.dart';
+import 'providers/tracking_provider.dart';
 
 void main() {
   runApp(const MyApp());
+  ChangeNotifierProvider(create: (_) => TrackingProvider(), child:MyApp());
 }
 
 class MyApp extends StatelessWidget {
