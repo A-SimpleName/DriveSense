@@ -14,20 +14,26 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
-  Widget _currentBody = HomePageBody();
   String _currentAppBarTitle = 'Übersicht';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: DsAppBar(title: _currentAppBarTitle),
-      body: _currentBody,
+      body: IndexedStack(
+        index: _selectedIndexBottomNav,
+        children: [
+          HomePageBody(),
+          ProtocolPageBody(),
+          ProfilePageBody(),
+        ],
+      ),
       bottomNavigationBar: DsBottomNavigation(
         currentIndex: _selectedIndexBottomNav,
         onTap: (int index) {
           setState(() {
             _selectedIndexBottomNav = index;
-            _changePageBody(index);
+            //_changePageBody(index);
           });
         },
       ),
@@ -36,23 +42,19 @@ class _MainPageState extends State<MainPage> {
 
 
   /* executed when switching to another tab in the bottom navigation */
-  void _changePageBody(int index) {
+  /* void _changePageBody(int index) {
     switch (index) {
       case 0:
-        _currentBody = const HomePageBody();
         _currentAppBarTitle = 'Übersicht';
         break;
       case 1:
-        _currentBody = const ProtocolPageBody();
         _currentAppBarTitle = 'Protokoll';
         break;
       case 2:
-        _currentBody = const ProfilePageBody();
         _currentAppBarTitle = 'Profil';
         break;
       default:
-        _currentBody = const HomePageBody();
         _currentAppBarTitle = 'Übersicht';
     }
-  }
+  } */
 }

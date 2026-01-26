@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: validate + login
+                  Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
