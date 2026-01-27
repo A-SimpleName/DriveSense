@@ -1,4 +1,5 @@
 import { GoogleMap,Polyline,Marker,useJsApiLoader } from "@react-google-maps/api";
+import "./../styles/map.css";
 
 type LatLng = {
     lat: number;
@@ -9,10 +10,6 @@ type MapViewProps = {
     route: LatLng[];
 }
 
-const containerStyle: React.CSSProperties = {
-    width: '100%',
-    height: '400px'
-};
 
 export default function MapView({ route }: MapViewProps) {
     const { isLoaded } = useJsApiLoader({
@@ -24,14 +21,16 @@ export default function MapView({ route }: MapViewProps) {
         return <p>Karte lädt...</p>
     }
     return (
-        <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={route[0]}
-        zoom={12}
-        >
-            <Polyline path={route} />
-            <Marker position={route[0]} label="Start" />
-            <Marker position={route[route.length - 1]} label="Ziel" />
-        </GoogleMap>
+        <div className="map">
+            <GoogleMap
+            mapContainerClassName="googleMap"
+            center={route[0]}
+            zoom={12}
+            >
+                <Polyline path={route} />
+                <Marker position={route[0]} label="Start" />
+                <Marker position={route[route.length - 1]} label="Ziel" />
+            </GoogleMap>
+        </div>
     )
 }
