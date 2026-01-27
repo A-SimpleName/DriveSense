@@ -12,7 +12,7 @@ function RidesTable() {
                 <tr>
                     <th rowSpan={2}>Datum</th>
                     <th rowSpan={2}>Name</th>
-                    <th rowSpan={2}>gefahrene Km</th>
+                    <th rowSpan={2}>Gefahrene Km</th>
                     <th rowSpan={1} colSpan={2}>Kilometerstand</th>
                     <th rowSpan={2}>Kennzeichen</th>
                     <th rowSpan={2}>Tageszeit</th>

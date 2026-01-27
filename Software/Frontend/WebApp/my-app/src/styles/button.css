@@ -1,4 +1,4 @@
-.topbar button {
+button {
     color: white;
     border-radius: 12px;
     height: 2em;
@@ -6,9 +6,19 @@
     background-color: dodgerblue;
     border: none;
     font-weight: bold;
+    margin: 10px;
 }
 
-.topbar button:hover {
+.app-container button {
+    width: auto;
+    height: 2.5em;
+}
+
+button:hover {
     background-color: deepskyblue;
     cursor: pointer;
+}
+
+body {
+    height: 100%;
 }
