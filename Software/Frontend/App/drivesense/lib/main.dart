@@ -3,10 +3,17 @@ import 'package:drivesense/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
-import 'package:drivesense/values/app_colors.dart';
+import 'package:drivesense/constants/app_colors.dart';
+import 'package:flutter/services.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   String token = "abc"; // TODO: get token from secure storage
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   runApp(MyApp(token: token,));
 }
@@ -39,7 +46,6 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      home: const MainPage(),
       initialRoute: LoginAndRegister.redirectToHome(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
