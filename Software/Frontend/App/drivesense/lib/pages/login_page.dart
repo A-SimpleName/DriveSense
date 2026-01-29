@@ -1,4 +1,4 @@
-import 'package:drivesense/values/colors.dart';
+import 'package:drivesense/values/app_colors.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
 
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 48,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: validate + login
+                  Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBlue,
@@ -60,6 +60,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: const Text('Login'),
               ),
             ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: () => {
+              // TODO: implement forgot password
+            }, child: const Text('Passwort vergessen?')),
             const SizedBox(height: 16),
             Text('Sie haben noch keinen Account?', textAlign: TextAlign.center),
             TextButton(
