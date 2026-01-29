@@ -5,7 +5,6 @@ import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
 import 'package:drivesense/constants/app_colors.dart';
 import 'package:flutter/services.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   String token = "abc"; // TODO: get token from secure storage
