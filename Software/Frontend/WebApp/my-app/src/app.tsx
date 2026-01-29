@@ -1,32 +1,48 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route,Navigate } from "react-router-dom";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
 import LoginPage from "./pages/login";
-import Topbar from "./components/Layout/topbar";
 import Vehicles from "./pages/vehicles";
 import Settings from "./pages/settings";
-import Footer from "./components/Layout/footer";
 import RideDetailPage from "./pages/rideDetailPage";
+import ImpressumPage from "./pages/impressum";
+import DatenschutzPage from "./pages/datenschutz";
 import "./styles/app.css";
+import AuthLayout from "./components/Layout/AuthLayout";
+import SignUpPage from "./pages/signUp";
+import { isAuthenticated as checkAuth } from "./services/auth";
+import { useEffect, useState } from "react";
+import { logout } from "./services/auth";
+
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(checkAuth());
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setIsAuthenticated(false);
+  }
+
+
   return (
-    <BrowserRouter>
-      <div className="app-container">
-        <Topbar />
-        <main className="main-content">
+    <BrowserRouter>  
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/fahrten" element={<TripsPage />} />
-            <Route path="/fahrzeuge" element={<Vehicles />} />
-            <Route path="/einstellungen" element={<Settings />} />
-            <Route path="/fahrten/:id" element={<RideDetailPage />} />
+            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />} />
+            <Route path="/signUp" element={<SignUpPage />} />
+            <Route path="/" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/fahrten" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/fahrzeuge" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/einstellungen" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><Settings /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/fahrten/:id" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><RideDetailPage /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/impressum" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><ImpressumPage /></AuthLayout> : <Navigate to="/login" />} />
+            <Route path="/datenschutz" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DatenschutzPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="*" element={<div>404 Not Found</div>} />
           </Routes>
-        </main>
-        <Footer />
-      </div>
+        
     </BrowserRouter>
   );
 }
