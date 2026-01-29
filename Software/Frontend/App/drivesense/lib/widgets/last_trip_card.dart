@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:drivesense/values/app_colors.dart';
+import 'package:drivesense/constants/app_colors.dart';
 
 class LastTripCard extends StatefulWidget {
   const LastTripCard({super.key});
