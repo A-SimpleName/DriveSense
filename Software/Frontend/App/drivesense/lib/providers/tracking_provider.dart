@@ -1,18 +1,20 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../services/tracking_service.dart';
+import '../services/location_service.dart';
 
-class TrackingProvider with ChangeNotifier {
-  final TrackingService _service = TrackingService();
-  bool get tracking => _service.isTracking;
+class TrackingProvider extends ChangeNotifier {
+  bool _isTracking = false;
 
-  void startTracking() {
-    _service.start();
-    notifyListeners();
+  bool get isTracking => _isTracking;
+
+  Future<void> startTracking() async {
+    await LocationService.startTracking();
+    _isTracking = true;
+    notifyListeners(); // UI informiert
   }
 
-  void stopTracking() {
-    _service.stop();
-    notifyListeners();
+  Future<void> stopTracking() async {
+    await LocationService.stopTracking();
+    _isTracking = false;
+    notifyListeners(); // UI informiert
   }
 }

@@ -3,17 +3,27 @@ import 'package:drivesense/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
-import 'package:drivesense/values/colors.dart';
+import 'package:drivesense/values/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'providers/tracking_provider.dart';
 
-void main() {
-  runApp(const MyApp());
-  ChangeNotifierProvider(create: (_) => TrackingProvider(), child:MyApp());
+void main() async {
+  String token = "abc"; // TODO: get token from secure storage
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TrackingProvider()),
+      ],
+      child: MyApp(token: token),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String? token;
+
+  const MyApp({super.key, this.token});
 
   // This widget is the root of your application.
   @override
@@ -38,8 +48,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      home: const MainPage(),
-      initialRoute: LoginAndRegister.redirectToHome(token: "abc"),
+      initialRoute: LoginAndRegister.redirectToHome(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
         'LoginPage': (context) => const LoginPage(),
