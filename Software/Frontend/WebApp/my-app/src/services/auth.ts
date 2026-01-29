@@ -1,7 +1,15 @@
 export function logout() {
-    // Implement logout functionality here
+     localStorage.removeItem("token");
 }
 
 export function login() {
-    // Implement login functionality here
+    localStorage.setItem("token","prototype")
+}
+
+export function isAuthenticated(): boolean {
+    return !!localStorage.getItem("token");
+}
+
+export function SignUp() {
+    // Placeholder function for sign-up logic
 }
