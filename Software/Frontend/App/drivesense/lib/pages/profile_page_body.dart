@@ -25,7 +25,6 @@ class ProfilePageBody extends StatelessWidget {
             Text('Registrierte Fahrzeuge:', ),
             VehicleListWidget(vehicles: registeredVehicles),
           ],
-          
         ),
       ),
     );
