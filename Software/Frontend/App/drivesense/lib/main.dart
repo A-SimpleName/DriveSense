@@ -6,7 +6,7 @@ import 'package:drivesense/services/login_and_register.dart';
 import 'package:drivesense/values/app_colors.dart';
 
 void main() {
-  String token = "abc"; // TODO: get token from secure storage
+  String token = "abc"; // TDO: get tokeOn from secure storage
 
   runApp(MyApp(token: token,));
 }

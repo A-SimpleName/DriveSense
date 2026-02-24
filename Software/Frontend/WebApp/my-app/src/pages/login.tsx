@@ -1,14 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "../components/button";
 import Label from "../components/label";
 import { login } from "../services/auth";
+import { useState } from "react";
+import { Button } from "../components/button";
 
 
 function Login({onLoginSuccess}: {onLoginSuccess: () => void}) {
     const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const handleLogin = () => {
-        login();
+        login(email, password);
         onLoginSuccess();
         navigate("/");
     };
@@ -16,10 +19,15 @@ function Login({onLoginSuccess}: {onLoginSuccess: () => void}) {
     return (
         <div>
             <h1>Login</h1>
-            <Label type="email" name="email" text="Email" />
-            <Label type="password" name="password" text="Password" />
-            <Button label="Einloggen" onClick={handleLogin} />
-            <Link to="/signUp">Noch keinen Account? Registrieren</Link>
+            <form onSubmit={(e)=>{
+                e.preventDefault();
+                 handleLogin();
+                }}>
+                <Label type="email" name="email" text="Email" value={email} onchange={(e) => setEmail(e.target.value)} />
+                <Label type="password" name="password" text="Password" value={password} onchange={(e) => setPassword(e.target.value)} />
+                <Button label="Einloggen" type="submit" />
+            </form>
+            <Link to="/registrieren">Noch keinen Account? Registrieren</Link>
         </div>
     );
 }
