@@ -32,7 +32,7 @@ function App() {
     <BrowserRouter>  
           <Routes>
             <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />} />
-            <Route path="/signUp" element={<SignUpPage />} />
+            <Route path="/registrieren" element={isAuthenticated ? <Navigate to="/" /> : <SignUpPage />} />
             <Route path="/" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="/fahrten" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="/fahrzeuge" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout> : <Navigate to="/login" />} />
