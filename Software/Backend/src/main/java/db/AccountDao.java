@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AccountDao {
     public static void insertAccount(Account acc) {
-        String sql = "INSERT INTO Account (fname, lname, pwd, email, username) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO account (fname, lname, pwd, email, username) VALUES (?,?,?,?,?)";
         try (Connection conn = App.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -21,11 +21,12 @@ public class AccountDao {
             ps.setString(4,acc.getEmail());
             ps.setString(5,acc.getUserName());
 
+            ps.executeUpdate();
+
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 acc.setId(rs.getInt(1));
             }
-            ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException();
         }
@@ -115,7 +116,7 @@ public class AccountDao {
 
             ps.setString(1,password);
             ps.setInt(2,id);
-            
+
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -123,13 +124,13 @@ public class AccountDao {
     }
 
     public static void deleteById(int id) {
-        String sql = "DELETE FROM ACCOUNT WHERE id = ?";
+        String sql = "DELETE FROM account WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 
