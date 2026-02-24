@@ -1,4 +1,4 @@
-import 'package:drivesense/values/app_colors.dart';
+import 'package:drivesense/constants/app_colors.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
 
