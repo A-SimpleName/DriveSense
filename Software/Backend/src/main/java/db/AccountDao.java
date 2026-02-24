@@ -107,6 +107,21 @@ public class AccountDao {
         }
     }
 
+    public static void updatePassword (int id, String password) {
+        String sql = "UPDATE account SET pwd = ? WHERE id = ?";
+
+        try (Connection conn = App.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1,password);
+            ps.setInt(2,id);
+            
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void deleteById(int id) {
         String sql = "DELETE FROM ACCOUNT WHERE id = ?";
         try (Connection conn = App.getConnection();
