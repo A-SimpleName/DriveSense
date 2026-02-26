@@ -4,6 +4,8 @@ import 'package:drivesense/widgets/last_trip_card.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/gps_tracking.dart';
 import 'dart:async';
+import 'package:geolocator/geolocator.dart';
+import 'package:drivesense/widgets/position_widgets.dart';
 
 class HomePageBody extends StatefulWidget {
   const HomePageBody({super.key});
@@ -16,6 +18,8 @@ class _HomePageBodyState extends State<HomePageBody> {
   bool hasActiveTrip = false;
   double currentLatitude = 0.0;
   double currentLongitude = 0.0;
+  Timer? _gpsTimer;
+  List<Position> trackingPositions = [];
 
   @override
   Widget build(BuildContext context) {
@@ -23,21 +27,30 @@ class _HomePageBodyState extends State<HomePageBody> {
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: hasActiveTrip
-            ? Column(
-                children: [
-                  CurrentTripCard(onStop: _onStopTrip),
-                  Text('$currentLatitude'),
-                  Text('$currentLongitude'),
-                ],
-              )
-            : Column(
-                children: [
-                  StartTripCard(onStart: _onStartTrip),
-                  const SizedBox(height: 24),
-                  LastTripCard(),
-                ],
+        ? Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CurrentTripCard(onStop: _onStopTrip),
+            const SizedBox(height: 12),
+            Text('Lat: $currentLatitude'),
+            Text('Lng: $currentLongitude'),
+            const SizedBox(height: 16),
+
+            Expanded(
+              child: PositionListWidget(
+                positions: trackingPositions,
               ),
-      ),
+            ),
+          ],
+        )
+        : Column(
+          children: [
+            StartTripCard(onStart: _onStartTrip),
+            const SizedBox(height: 24),
+            LastTripCard(),
+          ],
+        ),
+      )
     );
   }
 
@@ -56,13 +69,11 @@ class _HomePageBodyState extends State<HomePageBody> {
     _gpsTimer = null;
   }
 
-  Timer? _gpsTimer;
-
   void _startGpsLogging() {
     _gpsTimer ??= Timer.periodic(const Duration(seconds: 10), (timer) async {
-      final position = await determinePosition();
-
+      final position = await determinePosition();        
       setState(() {
+        trackingPositions.add(position);
         currentLatitude = position.latitude;
         currentLongitude = position.longitude;
       });
