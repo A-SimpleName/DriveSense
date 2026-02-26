@@ -134,10 +134,9 @@ USER_ROLE<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelPa
           <y:Fill color="#E8EEF7" color2="#B7C9E3" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="t" textColor="#000000" verticalTextPosition="bottom" visible="true" width="55.3515625" x="140.32421875" xml:space="preserve" y="4.0">VEHICLE</y:NodeLabel>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="92.20703125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="94.0" x="2.0" xml:space="preserve" y="30.701171875">ID
+          <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="77.505859375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="top" visible="true" width="93.3671875" x="2.0" xml:space="preserve" y="30.701171875">ID
 USER_ID
 MODEL
-CONSUMPTION
 LICENSEPLATE
 MILEAGE<y:LabelModel><y:ErdAttributesNodeLabelModel/></y:LabelModel><y:ModelParameter><y:ErdAttributesNodeLabelModelParameter/></y:ModelParameter></y:NodeLabel>
           <y:StyleProperties>
@@ -236,7 +235,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e7" source="n1" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -247,7 +245,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e8" source="n0" target="n6">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -258,7 +255,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e9" source="n2" target="n3">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -269,7 +265,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e10" source="n2" target="n6">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -280,7 +275,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e11" source="n6" target="n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -291,7 +285,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e12" source="n5" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -302,7 +295,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e13" source="n0" target="n5">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="120.0" ty="0.0"/>
@@ -313,7 +305,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e14" source="n7" target="n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -324,7 +315,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e15" source="n7" target="n5">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -335,7 +325,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e16" source="n0" target="n4">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -346,7 +335,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e17" source="n2" target="n0">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
@@ -357,7 +345,6 @@ ROAD_SURFACE_CONTITIONS
       </data>
     </edge>
     <edge id="e18" source="n0" target="n2">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
