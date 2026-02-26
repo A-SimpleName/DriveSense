@@ -24,8 +24,8 @@ function Dashboard() {
                 </div>
             </article>
             <article>
-                <Link to="/trips"><Button label={"Fahrten ansehen"}/></Link>
-                <Link to="/vehicles"><Button label={"Fahrzeuge ansehen"}/></Link>
+                <Link to="/fahrten"><Button label={"Fahrten ansehen"}/></Link>
+                <Link to="/fahrzeuge"><Button label={"Fahrzeuge ansehen"}/></Link>
             </article>
             <StatCard title="letzte Fahrt" value={lastRide}/>
             <MapView
