@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:drivesense/constants/app_interfaces.dart';
+import 'package:drivesense/model/vehicle.dart';
 
 class VehicleWidget extends StatelessWidget {
   final Vehicle vehicle;
@@ -9,7 +9,7 @@ class VehicleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text('${vehicle.make} ${vehicle.model}'),
+      title: Text(vehicle.model),
       subtitle: Text('Kennzeichen: ${vehicle.licensePlate}'),
     );
   }
