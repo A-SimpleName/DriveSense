@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AccountDao {
     public static void insertAccount(Account acc) {
-        String sql = "INSERT INTO account (fname, lname, pwd, email, username) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -19,7 +19,6 @@ public class AccountDao {
             ps.setString(2,acc.getlName());
             ps.setString(3,acc.getPassword());
             ps.setString(4,acc.getEmail());
-            ps.setString(5,acc.getUserName());
 
             ps.executeUpdate();
 
@@ -28,7 +27,7 @@ public class AccountDao {
                 acc.setId(rs.getInt(1));
             }
         } catch (SQLException e) {
-            throw new RuntimeException();
+            System.err.println(e.getMessage());
         }
     }
 
@@ -48,7 +47,8 @@ public class AccountDao {
             return null;
 
         } catch (SQLException e) {
-            throw new RuntimeException();
+            System.err.println(e.getMessage());
+            return null;
         }
     }
 
@@ -68,7 +68,8 @@ public class AccountDao {
             return null;
 
         } catch (SQLException e) {
-            throw new RuntimeException();
+            System.err.println(e.getMessage());
+            return null;
         }
     }
 
@@ -86,12 +87,13 @@ public class AccountDao {
             return accounts;
 
         } catch (SQLException e) {
-            throw new RuntimeException();
+            System.err.println(e.getMessage());
+            return null;
         }
     }
 
     public static void update(Account acc) {
-        String sql = "UPDATE account SET fname = ?, lname = ?, pwd = ?, email = ?, username = ? WHERE id = ?";
+        String sql = "UPDATE account SET fname = ?, lname = ?, pwd = ?, email = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -99,12 +101,11 @@ public class AccountDao {
             ps.setString(2, acc.getlName());
             ps.setString(3, acc.getPassword());
             ps.setString(4, acc.getEmail());
-            ps.setString(5, acc.getUserName());
-            ps.setInt(6, acc.getId());
+            ps.setInt(5, acc.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
     }
 
@@ -119,7 +120,7 @@ public class AccountDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
     }
 
@@ -130,7 +131,7 @@ public class AccountDao {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
     }
 
@@ -140,7 +141,6 @@ public class AccountDao {
         acc.setfName(rs.getString("fname"));
         acc.setlName(rs.getString("lname"));
         acc.setEmail(rs.getString("email"));
-        acc.setUserName(rs.getString("username"));
         acc.setPassword(rs.getString("pwd"));
         return acc;
     }
