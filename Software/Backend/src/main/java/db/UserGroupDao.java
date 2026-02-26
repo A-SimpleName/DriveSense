@@ -1,37 +1,34 @@
 package db;
 
 import app.App;
-import model.Protocol;
+import model.UserGroup;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class ProtocolDao {
-
-    public static void insertProtocol(Protocol protocol) {
-        String sql = "INSERT INTO protocol (tracking_id, road_surface_conditions) VALUES (?,?)";
+public class UserGroupDao {
+    public static void insertGroup(UserGroup userGroup) {
+        String sql = "INSERT INTO user_group (name, owner_id) VALUES (?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,protocol.getTracking_id());
-            ps.setString(2,protocol.getRoad_surface_conditions());
-
+            ps.setString(1,userGroup.getName());
+            ps.setInt(2,userGroup.getOwner_id());
 
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                protocol.setId(rs.getInt(1));
+                userGroup.setId(rs.getInt(1));
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    public static Protocol findById(int id) {
-        String sql = "SELECT * FROM protocol WHERE id = ?";
+    public static UserGroup findById(int id) {
+        String sql = "SELECT * FROM user_group WHERE id = ?";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -51,18 +48,18 @@ public class ProtocolDao {
         }
     }
 
-    public static List<Protocol> findAll () {
-        String sql = "SELECT * FROM protocol";
+    public static List<UserGroup> findAll () {
+        String sql = "SELECT * FROM user_group";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            List<Protocol> protocols = new ArrayList<>();
+            List<UserGroup> userGroups = new ArrayList<>();
             while (rs.next()) {
-                protocols.add(map(rs));
+                userGroups.add(map(rs));
             }
-            return protocols;
+            return userGroups;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -70,13 +67,14 @@ public class ProtocolDao {
         }
     }
 
-    public static void update(Protocol protocol) {
-        String sql = "UPDATE protocol SET road_surface_conditions = ? WHERE id = ?";
+    public static void update(UserGroup userGroup) {
+        String sql = "UPDATE user_group SET name = ?,owner_id = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, protocol.getRoad_surface_conditions());
-            ps.setInt(2,protocol.getId());
+            ps.setString(1, userGroup.getName());
+            ps.setInt(2,userGroup.getOwner_id());
+            ps.setInt(3,userGroup.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -85,7 +83,7 @@ public class ProtocolDao {
     }
 
     public static void deleteById(int id) {
-        String sql = "DELETE FROM protocol WHERE id = ?";
+        String sql = "DELETE FROM user_group WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
@@ -95,11 +93,11 @@ public class ProtocolDao {
         }
     }
 
-    public static Protocol map(ResultSet rs) throws SQLException {
-        Protocol protocol = new Protocol();
-        protocol.setId(rs.getInt("id"));
-        protocol.setTracking_id(rs.getInt("tracking_id"));
-        protocol.setRoad_surface_conditions(rs.getString("road_surface_conditions"));
-        return protocol;
+    public static UserGroup map(ResultSet rs) throws SQLException {
+        UserGroup userGroup = new UserGroup();
+        userGroup.setId(rs.getInt("id"));
+        userGroup.setName(rs.getString("name"));
+        userGroup.setOwner_id(rs.getInt("owner_id"));
+        return userGroup;
     }
 }
