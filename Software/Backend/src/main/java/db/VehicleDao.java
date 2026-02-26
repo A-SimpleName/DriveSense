@@ -3,18 +3,15 @@ package db;
 import app.App;
 import model.Vehicle;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VehicleDao {
     public static void insertVehicle(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicle (user_id, model, licenseplate, milaege) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO vehicle (user_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,vehicle.getUserId());
             ps.setString(2,vehicle.getModel());
@@ -73,13 +70,14 @@ public class VehicleDao {
     }
 
     public static void update(Vehicle vehicle) {
-        String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ?, WHERE id = ?";
+        String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, vehicle.getModel());
             ps.setString(2, vehicle.getLicenseplate());
             ps.setInt(3, vehicle.getMileage());
+            ps.setInt(4,vehicle.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
