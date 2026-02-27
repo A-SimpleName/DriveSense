@@ -2,10 +2,8 @@ package db;
 
 import app.App;
 import model.Account;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +11,7 @@ public class AccountDao {
     public static void insertAccount(Account acc) {
         String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1,acc.getfName());
             ps.setString(2,acc.getlName());
