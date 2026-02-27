@@ -1,4 +1,4 @@
-package model;
+package com.drivesense.model;
 
 public class UserGroup {
     private int id;

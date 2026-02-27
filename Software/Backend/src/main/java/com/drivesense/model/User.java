@@ -1,4 +1,4 @@
-package model;
+package com.drivesense.model;
 
 public class User {
     private int id;
