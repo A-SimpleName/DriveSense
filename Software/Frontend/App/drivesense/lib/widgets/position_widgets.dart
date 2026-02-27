@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:drivesense/model/trackingpoint.dart';
 
 class PositionWidget extends StatelessWidget {
-  final Position position;
+  final Trackingpoint position;
 
   const PositionWidget({super.key, required this.position});
 
@@ -16,7 +17,7 @@ class PositionWidget extends StatelessWidget {
 }
 
 class PositionListWidget extends StatelessWidget {
-  final List<Position> positions;
+  final List<Trackingpoint> positions;
 
   const PositionListWidget({super.key, required this.positions});
 
