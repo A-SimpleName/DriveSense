@@ -1,4 +1,4 @@
-export interface user_group {
+export interface User_group {
     id: number;
     name: string;
     owner_id: number;
