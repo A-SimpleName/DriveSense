@@ -1,4 +1,4 @@
-interface trackingpoint {
+export interface Trackingpoint {
     id: number;
     tracking_id:number;
     lat: number;

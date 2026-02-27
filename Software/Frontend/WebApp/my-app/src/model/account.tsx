@@ -1,4 +1,4 @@
-interface account {
+export interface account {
     id: number;
     fname: string;
     lname: string;

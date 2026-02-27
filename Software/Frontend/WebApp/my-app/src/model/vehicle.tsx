@@ -1,4 +1,4 @@
-interface vehicle {
+export interface vehicle {
     id: number
     user_id: number;
     model: string;
