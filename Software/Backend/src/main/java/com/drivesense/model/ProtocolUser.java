@@ -1,4 +1,4 @@
-package model;
+package com.drivesense.model;
 
 public class ProtocolUser {
     private int protocolId;

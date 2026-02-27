@@ -1,7 +1,7 @@
-package db;
+package com.drivesense.db;
 
-import app.App;
-import model.ProtocolUser;
+import com.drivesense.app.App;
+import com.drivesense.model.ProtocolUser;
 
 import java.sql.*;
 
