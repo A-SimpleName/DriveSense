@@ -1,20 +1,17 @@
-package app;
+package com.drivesense.app;
 
-import db.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class App {
     public static void main(String[] args) {
-        System.out.println(AccountDao.findAll());
-        System.out.println(UserDao.findAll());
-        System.out.println(VehicleDao.findAll());
-        System.out.println(TrackingDao.findAll());
-        System.out.println(TrackingpointDao.findAll());
-        System.out.println(ProtocolDao.findAll());
-
+        SpringApplication.run(App.class, args);
     }
 
     public static Connection getConnection() throws SQLException {

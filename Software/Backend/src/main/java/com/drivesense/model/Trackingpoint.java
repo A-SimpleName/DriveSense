@@ -1,4 +1,4 @@
-package model;
+package com.drivesense.model;
 
 import java.time.LocalDateTime;
 
