@@ -87,4 +87,17 @@ public class Trackingpoint {
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toString() {
+        return "Trackingpoint: " +
+                "id: " + id +
+                ", tracking_id: " + tracking_id +
+                ", lat: " + lat +
+                ", lng: " + lng +
+                ", accuracy: " + accuracy +
+                ", speed: " + speed +
+                ", bearing: " + bearing +
+                ", timestamp: " + timestamp;
+    }
 }

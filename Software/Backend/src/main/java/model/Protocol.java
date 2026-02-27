@@ -35,4 +35,12 @@ public class Protocol {
     public void setRoad_surface_conditions(String road_surface_conditions) {
         this.road_surface_conditions = road_surface_conditions;
     }
+
+    @Override
+    public String toString() {
+        return "Protocol: " +
+                "id: " + id +
+                ", tracking_id: " + tracking_id +
+                ", road_surface_conditions: '" + road_surface_conditions + '\'';
+    }
 }

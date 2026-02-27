@@ -35,4 +35,12 @@ public class UserGroup {
     public void setOwner_id(int owner_id) {
         this.owner_id = owner_id;
     }
+
+    @Override
+    public String toString() {
+        return "UserGroup: " +
+                "id: " + id +
+                ", name: '" + name + '\'' +
+                ", owner_id: " + owner_id;
+    }
 }
