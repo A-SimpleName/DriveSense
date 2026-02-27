@@ -56,5 +56,13 @@ public class User {
         this.group_id = group_id;
     }
 
-
+    @Override
+    public String toString() {
+        return "User: " +
+                "id: " + id +
+                ", name: '" + name + '\'' +
+                ", role: '" + role + '\'' +
+                ", account_id: " + account_id +
+                ", group_id: " + group_id;
+    }
 }
