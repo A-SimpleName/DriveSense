@@ -1,36 +1,37 @@
-package db;
+package com.drivesense.db;
 
-import app.App;
-import model.Vehicle;
+import com.drivesense.app.App;
+import com.drivesense.model.Protocol;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VehicleDao {
-    public static void insertVehicle(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicle (user_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
+
+public class ProtocolDao {
+
+    public static void insertProtocol(Protocol protocol) {
+        String sql = "INSERT INTO protocol (tracking_id, road_surface_conditions) VALUES (?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,vehicle.getUserId());
-            ps.setString(2,vehicle.getModel());
-            ps.setString(3,vehicle.getLicenseplate());
-            ps.setInt(4,vehicle.getMileage());
+            ps.setInt(1,protocol.getTracking_id());
+            ps.setString(2,protocol.getRoad_surface_conditions());
+
 
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                vehicle.setId(rs.getInt(1));
+                protocol.setId(rs.getInt(1));
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    public static Vehicle findById(int id) {
-        String sql = "SELECT * FROM vehicle WHERE id = ?";
+    public static Protocol findById(int id) {
+        String sql = "SELECT * FROM protocol WHERE id = ?";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -50,18 +51,18 @@ public class VehicleDao {
         }
     }
 
-    public static List<Vehicle> findAll () {
-        String sql = "SELECT * FROM vehicle";
+    public static List<Protocol> findAll () {
+        String sql = "SELECT * FROM protocol";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            List<Vehicle> vehicles = new ArrayList<>();
+            List<Protocol> protocols = new ArrayList<>();
             while (rs.next()) {
-                vehicles.add(map(rs));
+                protocols.add(map(rs));
             }
-            return vehicles;
+            return protocols;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -69,15 +70,13 @@ public class VehicleDao {
         }
     }
 
-    public static void update(Vehicle vehicle) {
-        String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ? WHERE id = ?";
+    public static void update(Protocol protocol) {
+        String sql = "UPDATE protocol SET road_surface_conditions = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, vehicle.getModel());
-            ps.setString(2, vehicle.getLicenseplate());
-            ps.setInt(3, vehicle.getMileage());
-            ps.setInt(4,vehicle.getId());
+            ps.setString(1, protocol.getRoad_surface_conditions());
+            ps.setInt(2,protocol.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -86,7 +85,7 @@ public class VehicleDao {
     }
 
     public static void deleteById(int id) {
-        String sql = "DELETE FROM vehicle WHERE id = ?";
+        String sql = "DELETE FROM protocol WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
@@ -96,13 +95,11 @@ public class VehicleDao {
         }
     }
 
-    public static Vehicle map(ResultSet rs) throws SQLException {
-        Vehicle vehicle = new Vehicle();
-        vehicle.setId(rs.getInt("id"));
-        vehicle.setUserId(rs.getInt("user_id"));
-        vehicle.setModel(rs.getString("model"));
-        vehicle.setLicenseplate(rs.getString("licenseplate"));
-        vehicle.setMileage(rs.getInt("mileage"));
-        return vehicle;
+    public static Protocol map(ResultSet rs) throws SQLException {
+        Protocol protocol = new Protocol();
+        protocol.setId(rs.getInt("id"));
+        protocol.setTracking_id(rs.getInt("tracking_id"));
+        protocol.setRoad_surface_conditions(rs.getString("road_surface_conditions"));
+        return protocol;
     }
 }

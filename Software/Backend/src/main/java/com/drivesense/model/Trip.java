@@ -1,8 +1,8 @@
-package model;
+package com.drivesense.model;
 
 import java.time.LocalDateTime;
 
-public class Tracking {
+public class Trip {
     private int id;
     private int user_id;
     private int car_id;
@@ -12,11 +12,9 @@ public class Tracking {
     private String weather_main;
     private String type;
 
-    public Tracking(){
+    public Trip(){}
 
-    }
-
-    public Tracking( int user_id, int car_id, LocalDateTime starttime, LocalDateTime endtime, double distance, String weather_main, String type) {
+    public Trip(int user_id, int car_id, LocalDateTime starttime, LocalDateTime endtime, double distance, String weather_main, String type) {
         this.user_id = user_id;
         this.car_id = car_id;
         this.starttime = starttime;

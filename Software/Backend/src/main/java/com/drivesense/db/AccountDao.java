@@ -1,7 +1,8 @@
-package db;
+package com.drivesense.db;
 
-import app.App;
-import model.Account;
+import com.drivesense.app.App;
+import com.drivesense.model.Account;
+
 
 import java.sql.*;
 import java.util.ArrayList;
