@@ -1,0 +1,200 @@
+DriveSense – ER-Diagramm Beschreibung
+=====================================
+1. Systemübersicht
+------------------
+
+Das System DriveSense verwaltet:
+
+* Accounts
+
+* Benutzerprofile (User)
+
+* Fahrzeuge
+
+* Fahrten (Tracking)
+
+* GPS-Trackingpunkte
+
+* Protokolle
+
+* Gruppen
+
+* Protokollfreigaben
+
+Ein Account kann mehrere User enthalten.
+Ein User kann Fahrzeuge besitzen und Fahrten durchführen.
+Eine Fahrt kann ein Protokoll besitzen.
+Ein Protokoll kann mehreren Usern zugeordnet werden.
+
+2. Entitäten und Attribute
+--------------------------
+2.1 ACCOUNT
+
+Speichert die Hauptzugangsdaten.
+
+Attribute:
+
+ID (Primary Key)
+FNAME
+LNAME
+PWD
+EMAIL
+
+Beziehung:
+ACCOUNT (1) —— (n) USER
+
+Ein Account kann mehrere User besitzen.
+
+2.2 USER
+
+Repräsentiert ein Benutzerprofil innerhalb eines Accounts.
+
+Attribute:
+
+ID (Primary Key)
+NAME
+ROLE
+ACCOUNT_ID (Foreign Key → ACCOUNT.ID)
+GROUP_ID (Foreign Key → GROUP.ID)
+
+Beziehungen:
+
+USER gehört zu genau einem ACCOUNT
+USER kann mehrere VEHICLE besitzen
+USER kann mehrere TRACKING durchführen
+USER kann mehreren PROTOCOL zugeordnet sein (über PROTOCOL_USER)
+
+2.3 VEHICLE
+
+Speichert Fahrzeugdaten eines Users.
+
+Attribute:
+
+ID (Primary Key)
+USER_ID (Foreign Key → USER.ID)
+MODEL
+LICENSEPLATE
+MILEAGE
+
+Beziehung:
+USER (1) —— (n) VEHICLE
+
+Ein Fahrzeug gehört genau einem User.
+
+2.4 TRACKING
+
+Speichert eine einzelne Fahrt.
+
+Attribute:
+
+ID (Primary Key)
+USER_ID (Foreign Key → USER.ID)
+CAR_ID (Foreign Key → VEHICLE.ID)
+STARTTIME
+ENDTIME
+DISTANCE
+WEATHER_MAIN
+TYPE
+
+Beziehungen:
+
+TRACKING gehört genau einem USER
+TRACKING verwendet genau ein VEHICLE
+TRACKING besitzt optional ein PROTOCOL
+TRACKING besitzt mehrere TRACKINGPOINT
+
+2.5 TRACKINGPOINT
+
+Speichert GPS-Datenpunkte einer Fahrt.
+
+Attribute:
+
+ID (Primary Key)
+TRACKING_ID (Foreign Key → TRACKING.ID)
+LAT
+LNG
+ACCURACY
+SPEED
+BEARING
+TIMESTAMP
+
+Beziehung:
+TRACKING (1) —— (n) TRACKINGPOINT
+
+Ein Tracking besteht aus mehreren Trackingpunkten.
+
+2.6 PROTOCOL
+
+Speichert zusätzliche Fahrinformationen.
+
+Attribute:
+
+ID (Primary Key)
+TRACKING_ID (Foreign Key → TRACKING.ID)
+ROAD_SURFACE_CONDITIONS
+
+Beziehung:
+TRACKING (1) —— (1) PROTOCOL
+
+Ein Protokoll gehört genau zu einem Tracking.
+
+2.7 PROTOCOL_USER
+
+Verknüpfungstabelle für Protokollfreigaben.
+
+Attribute:
+
+PROTOCOL_ID (Foreign Key → PROTOCOL.ID)
+USER_ID (Foreign Key → USER.ID)
+USER_ROLE
+
+Beziehung:
+USER (n) —— (m) PROTOCOL
+
+Ein Protokoll kann mehreren Usern zugeordnet sein.
+Ein User kann mehrere Protokolle einsehen.
+
+2.8 GROUP
+
+Repräsentiert eine Benutzergruppe.
+
+Attribute:
+
+ID (Primary Key)
+NAME
+USER_ID (Owner der Gruppe)
+
+Beziehungen:
+
+Ein USER kann mehrere Gruppen erstellen
+Ein USER kann einer Gruppe zugeordnet sein (über GROUP_ID)
+
+3. Kardinalitäten (Zusammenfassung)
+-----------------------------------
+
+ACCOUNT (1) —— (n) USER
+
+USER (1) —— (n) VEHICLE
+
+USER (1) —— (n) TRACKING
+
+VEHICLE (1) —— (n) TRACKING
+
+TRACKING (1) —— (n) TRACKINGPOINT
+
+TRACKING (1) —— (1) PROTOCOL
+
+USER (n) —— (m) PROTOCOL
+
+USER (1) —— (n) GROUP
+
+4. Logische Integritätsregeln
+-----------------------------
+
+Ein TRACKING darf nur ein VEHICLE verwenden, das dem USER gehört.
+
+Ein PROTOCOL darf nur existieren, wenn das zugehörige TRACKING existiert.
+
+Wird ein TRACKING gelöscht, muss auch das PROTOCOL und die TRACKINGPOINTS gelöscht werden (Cascade).
+
+PROTOCOL_USER darf nur existieren, wenn sowohl USER als auch PROTOCOL existieren.
