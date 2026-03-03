@@ -1,6 +1,6 @@
 package com.drivesense.db;
 
-import com.drivesense.app.App;
+import com.drivesense.App;
 import com.drivesense.model.Trip;
 
 
@@ -41,6 +41,27 @@ public class TripDao {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return map(rs);
+            }
+
+            return null;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public static Trip findByUserId(int userId) {
+        String sql = "SELECT * FROM tracking WHERE user_id = ?";
+
+        try (Connection conn = App.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {

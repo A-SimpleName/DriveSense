@@ -1,4 +1,4 @@
-import http from "./httpService"
+import http from "../api/httpService"
 import type { Protocol } from "../model/protocol"
 
 export const getAllProtocols = () => http.get<Protocol[]>("/protocols") 

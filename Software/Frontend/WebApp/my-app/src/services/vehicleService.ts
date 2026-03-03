@@ -1,4 +1,4 @@
-import http from "./httpService"
+import http from "../api/httpService"
 import type { Vehicle } from "../model/vehicle";
 
 export const getAllVehicles = () => http.get<Vehicle[]>("/vehicles");

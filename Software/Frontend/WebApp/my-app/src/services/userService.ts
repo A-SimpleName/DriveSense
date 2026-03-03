@@ -1,4 +1,4 @@
-import http from "./httpService";
+import http from "../api/httpService";
 import type { User } from "../model/user";
 
 export const getAllUsers = () => http.get<User[]>("/users");

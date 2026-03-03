@@ -1,4 +1,4 @@
-import http from "./httpService";
+import http from "../api/httpService";
 import type { Protocol_user } from "../model/protocol_user";
 
 export const getAllProtocolUsers = () => http.get<Protocol_user[]>("/protocol_users");
