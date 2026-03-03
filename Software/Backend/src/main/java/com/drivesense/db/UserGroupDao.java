@@ -1,6 +1,6 @@
 package com.drivesense.db;
 
-import com.drivesense.app.App;
+import com.drivesense.App;
 import com.drivesense.model.UserGroup;
 
 import java.sql.*;

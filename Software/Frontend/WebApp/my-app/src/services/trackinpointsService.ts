@@ -1,4 +1,4 @@
-import http from "./httpService"
+import http from "../api/httpService"
 import type { Trackingpoint } from "../model/trackingpoint"
 
 export const getAllTrackingpoints = () => http.get<Trackingpoint[]>("/trackingpoints")
