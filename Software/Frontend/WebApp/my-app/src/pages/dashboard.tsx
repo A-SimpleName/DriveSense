@@ -2,6 +2,7 @@ import StatCard from "../components/statCard";
 import { Button } from "../components/button";
 import { Link } from "react-router-dom";
 import MapView from "../components/MapView";
+import { TripsList } from "../components/trip";
 
 export let rides = [
         { id: 1,  name: "Niklas",date: "2024-01-15",km:120, startLat:88.2082, startLng:95.3738, endLat:48.2105, endLng:16.3801, carId:1,time:"Vormittag"},
@@ -34,6 +35,8 @@ function Dashboard() {
                 { lat: rides[rides.length - 1].endLat, lng: rides[rides.length - 1].endLng },
                 ]}
            />
+           <h1>Fahrtenübersicht</h1>
+           <TripsList />
         </div>
     );
 }
