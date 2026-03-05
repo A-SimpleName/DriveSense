@@ -1,5 +1,5 @@
 import 'package:drivesense/pages/login_page.dart';
-import 'package:drivesense/pages/register_page.dart';
+import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
       routes: {
         'MainPage': (context) => const MainPage(),
         'LoginPage': (context) => const LoginPage(),
-        'RegisterPage': (context) => const RegisterPage(),
+        'RegisterPage': (context) => const SignUpPage(),
       },
     );
   }
