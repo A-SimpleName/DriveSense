@@ -1,5 +1,6 @@
 import { Button } from "../components/button";
-import VehiclesTable from "../components/vehicles/table";
+// import VehiclesTable from "../components/vehicles/table";
+import {VehicleList} from "../components/vehicles/vehicle";
 
 export let vehicles = [
     { id: 1, name: "Auto A",licensePlate: "AM08092" , kilometers: 97740 },
@@ -13,7 +14,7 @@ function Vehicles() {
         <div>
             <h1>Fahrzeuge</h1>
             <Button label={"+ Fahrzeuge hinzufügen"}/>
-            <VehiclesTable />
+            <VehicleList />
         </div>
     );
 }
