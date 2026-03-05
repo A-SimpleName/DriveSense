@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/constants/app_colors.dart';
 
 class CurrentTripCard extends StatefulWidget {
-  const CurrentTripCard({super.key, required this.onStop});
+  const CurrentTripCard({super.key, required this.onStop, required this.currentTripDistance, required this.currentTripDuration, required this.currentVehicle});
 
   final VoidCallback onStop;
+  final double currentTripDistance;
+  final Duration currentTripDuration;
+  final String currentVehicle;
 
   @override
   State<CurrentTripCard> createState() => _CurrentTripCardState();
 }
 
 class _CurrentTripCardState extends State<CurrentTripCard> {
-  double currentTripDistance = 0;
-  Duration currentTripDuration = Duration.zero;
-  String currentVehicle = 'BMW i3';
   bool isPaused = false;
 
   @override
@@ -41,11 +41,11 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
                 Text('Aktuelle Fahrt: '),
                 Text(''),
                 Text('Distanz: '),
-                Text('${(currentTripDistance / 1000).toStringAsFixed(2)} km'),
+                Text('${(widget.currentTripDistance / 1000).toStringAsFixed(2)} km'),
                 Text('Zeit: '),
-                Text(currentTripDuration.toString().split('.').first),
+                Text(widget.currentTripDuration.toString().split('.').first),
                 Text('Aktives Fahrzeug: '),
-                Text(currentVehicle),
+                Text(widget.currentVehicle),
               ],
             ),
             const SizedBox(height: 12),

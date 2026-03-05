@@ -2,16 +2,16 @@ import 'package:drivesense/constants/app_colors.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
 
-class RegisterPage extends StatefulWidget {
+class SignUpPage extends StatefulWidget {
   final bool? token;
 
-  const RegisterPage({super.key, this.token});
+  const SignUpPage({super.key, this.token});
 
   @override
-  State<StatefulWidget> createState() => _RegisterPageState();
+  State<StatefulWidget> createState() => _SignUpPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
 
   final ValueNotifier<bool> passwordNotifier = ValueNotifier(true);

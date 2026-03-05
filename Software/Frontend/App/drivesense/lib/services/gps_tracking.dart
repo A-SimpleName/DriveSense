@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:drivesense/model/trackingpoint.dart';
 import 'package:geolocator/geolocator.dart';
 
 Future<Position> determinePosition() async {
@@ -28,5 +29,7 @@ Future<Position> determinePosition() async {
     )
   );
 }
+
+
 
 
