@@ -11,7 +11,7 @@ import java.util.List;
 
 public class TripDao {
     public static void insertTracking(Trip trip) {
-        String sql = "INSERT INTO tracking (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO trip (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -35,7 +35,7 @@ public class TripDao {
     }
 
     public static Trip findById(int id) {
-        String sql = "SELECT * FROM tracking WHERE id = ?";
+        String sql = "SELECT * FROM trip WHERE id = ?";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -56,7 +56,7 @@ public class TripDao {
     }
 
     public static Trip findByUserId(int userId) {
-        String sql = "SELECT * FROM tracking WHERE user_id = ?";
+        String sql = "SELECT * FROM trip WHERE user_id = ?";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -77,7 +77,7 @@ public class TripDao {
     }
 
     public static List<Trip> findAll () {
-        String sql = "SELECT * FROM tracking";
+        String sql = "SELECT * FROM trip";
 
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -96,7 +96,7 @@ public class TripDao {
     }
 
     public static void update(Trip trip) {
-        String sql = "UPDATE tracking SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
+        String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -114,7 +114,7 @@ public class TripDao {
     }
 
     public static void deleteById(int id) {
-        String sql = "DELETE FROM tracking WHERE id = ?";
+        String sql = "DELETE FROM trip WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
@@ -136,5 +136,4 @@ public class TripDao {
         trip.setType(rs.getString("type"));
         return trip;
     }
-
 }
