@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.*;
 import com.drivesense.dto.ProtocolDto;
 import com.drivesense.model.Trackingpoint;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +16,10 @@ public class ProtocolService {
     private TrackingpointDao trackingpointDao;
     private GeocodingService geocodingService;
 
+    public ProtocolService() {
+
+    }
+    @Autowired
     public ProtocolService(ProtocolDetailDao protocolDetailDao, ProtocolDao protocolDao, ProtocolUserDao protocolUserDao, TripDao tripDao, TrackingpointDao trackingpointDao, GeocodingService geocodingService) {
         this.protocolDetailDao = protocolDetailDao;
         this.protocolDao = protocolDao;
