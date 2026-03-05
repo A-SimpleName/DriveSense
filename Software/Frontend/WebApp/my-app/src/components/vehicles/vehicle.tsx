@@ -16,7 +16,7 @@ export function VehicleList() {
         <ul>
             {vehicles.map(v => (
                 <li key={v.id}>
-                    {v.user_id} - {v.model} - {v.licenseplate} - {v.mileage}
+                    {v.id} - {v.model} - {v.username} - {v.licenseplate} - {v.mileage}
                 </li>
             ))}
         </ul>
