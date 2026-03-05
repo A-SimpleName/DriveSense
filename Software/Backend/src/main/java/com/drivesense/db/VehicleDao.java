@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VehicleDao {
-    public static void insertVehicle(Vehicle vehicle) {
+    public void insertVehicle(Vehicle vehicle) {
         String sql = "INSERT INTO vehicle (user_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,7 +30,7 @@ public class VehicleDao {
         }
     }
 
-    public static Vehicle findById(int id) {
+    public Vehicle findById(int id) {
         String sql = "SELECT * FROM vehicle WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -51,7 +51,7 @@ public class VehicleDao {
         }
     }
 
-    public static List<Vehicle> findAll () {
+    public List<Vehicle> findAll () {
         String sql = "SELECT * FROM vehicle";
 
         try (Connection conn = App.getConnection();
@@ -70,7 +70,7 @@ public class VehicleDao {
         }
     }
 
-    public static void update(Vehicle vehicle) {
+    public void update(Vehicle vehicle) {
         String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -86,7 +86,7 @@ public class VehicleDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM vehicle WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -97,7 +97,7 @@ public class VehicleDao {
         }
     }
 
-    public static Vehicle map(ResultSet rs) throws SQLException {
+    private static Vehicle map(ResultSet rs) throws SQLException {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(rs.getInt("id"));
         vehicle.setUserId(rs.getInt("user_id"));

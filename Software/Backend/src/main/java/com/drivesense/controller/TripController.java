@@ -17,12 +17,9 @@ public class TripController {
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
         tripService.saveTrip(trip,trackingpoints);
     }
-    @GetMapping("/test")
-    public String test() {
-        return "Backend läuft!";
-    }
+
     @GetMapping("/get")
     public List<Trip> getAllTrips() {
-        return TripDao.findAll();
+        return
     }
 }
