@@ -7,24 +7,33 @@ import com.drivesense.model.Vehicle;
 import java.util.List;
 
 public class VehicleService {
+    private VehicleDao vehicleDao;
+
+    public VehicleService(VehicleDao vehicleDao) {
+        this.vehicleDao = vehicleDao;
+    }
+
+    public VehicleService() {
+        this.vehicleDao = new VehicleDao();
+    }
 
     public List<VehicleDto> getAllVehicles() {
-        return VehicleDao.findAllVehiclesByAccount();
+        return vehicleDao.findAllVehiclesByAccount();
     }
 
     public Vehicle getVehicleById(int id) {
-        return VehicleDao.findById(id);
+        return vehicleDao.findById(id);
     }
 
     public void saveVehicle(Vehicle vehicle) {
-        VehicleDao.insertVehicle(vehicle);
+        vehicleDao.insertVehicle(vehicle);
     }
 
     public void updateVehicle(Vehicle vehicle) {
-        VehicleDao.update(vehicle);
+        vehicleDao.update(vehicle);
     }
 
     public void deleteVehicle(int id) {
-        VehicleDao.deleteById(id);
+        vehicleDao.deleteById(id);
     }
 }

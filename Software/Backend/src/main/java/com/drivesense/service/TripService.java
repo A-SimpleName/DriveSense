@@ -11,8 +11,16 @@ import java.util.List;
 public class TripService {
 
     public void saveTrip (Trip trip, List<Trackingpoint> trackingpoints) {
-        TripDao.insertTracking(trip);
+        TripDao tripDao = new TripDao();
+        tripDao.insertTrip(trip);
+
+        TrackingpointDao trackingpointDao = new TrackingpointDao();
+
         for (Trackingpoint trackingpoint : trackingpoints)
-            TrackingpointDao.insertTrackingpoint(trackingpoint);
+            trackingpointDao.insertTrackingpoint(trackingpoint);
+    }
+
+    public void getAllTrips() {
+        getAllTrips();
     }
 }
