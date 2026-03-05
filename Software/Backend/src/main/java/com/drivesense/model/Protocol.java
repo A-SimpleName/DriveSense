@@ -2,13 +2,13 @@ package com.drivesense.model;
 
 public class Protocol {
     private int id;
-    private int tracking_id;
+    private int trip_id;
     private String road_surface_conditions;
 
     public Protocol(){}
 
-    public Protocol(int tracking_id, String road_surface_conditions) {
-        this.tracking_id = tracking_id;
+    public Protocol(int trip_id, String road_surface_conditions) {
+        this.trip_id = trip_id;
         this.road_surface_conditions = road_surface_conditions;
     }
 
@@ -20,12 +20,12 @@ public class Protocol {
         this.id = id;
     }
 
-    public int getTracking_id() {
-        return tracking_id;
+    public int getTrip_id() {
+        return trip_id;
     }
 
-    public void setTracking_id(int tracking_id) {
-        this.tracking_id = tracking_id;
+    public void setTrip_id(int tracking_id) {
+        this.trip_id = tracking_id;
     }
 
     public String getRoad_surface_conditions() {
@@ -40,7 +40,7 @@ public class Protocol {
     public String toString() {
         return "Protocol: " +
                 "id: " + id +
-                ", tracking_id: " + tracking_id +
+                ", tracking_id: " + trip_id +
                 ", road_surface_conditions: '" + road_surface_conditions + '\'';
     }
 }

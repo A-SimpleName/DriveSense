@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TripDao {
-    public static void insertTracking(Trip trip) {
+    public void insertTrip(Trip trip) {
         String sql = "INSERT INTO trip (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -34,7 +34,7 @@ public class TripDao {
         }
     }
 
-    public static Trip findById(int id) {
+    public Trip findById(int id) {
         String sql = "SELECT * FROM trip WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -55,7 +55,7 @@ public class TripDao {
         }
     }
 
-    public static Trip findByUserId(int userId) {
+    public Trip findByUserId(int userId) {
         String sql = "SELECT * FROM trip WHERE user_id = ?";
 
         try (Connection conn = App.getConnection();
@@ -76,7 +76,7 @@ public class TripDao {
         }
     }
 
-    public static List<Trip> findAll () {
+    public List<Trip> findAll () {
         String sql = "SELECT * FROM trip";
 
         try (Connection conn = App.getConnection();
@@ -95,7 +95,7 @@ public class TripDao {
         }
     }
 
-    public static void update(Trip trip) {
+    public void update(Trip trip) {
         String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -113,7 +113,7 @@ public class TripDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM trip WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -124,7 +124,7 @@ public class TripDao {
         }
     }
 
-    public static Trip map(ResultSet rs) throws SQLException {
+    private static Trip map(ResultSet rs) throws SQLException {
         Trip trip = new Trip();
         trip.setId(rs.getInt("id"));
         trip.setUser_id(rs.getInt("user_id"));
@@ -136,4 +136,5 @@ public class TripDao {
         trip.setType(rs.getString("type"));
         return trip;
     }
+
 }

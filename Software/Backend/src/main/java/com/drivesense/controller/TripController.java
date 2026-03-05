@@ -11,18 +11,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/fahrten")
 public class TripController {
-    private TripService tripService;
+/*    private TripService tripService;
 
     @PostMapping("/save")
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
         tripService.saveTrip(trip,trackingpoints);
     }
-    @GetMapping("/test")
-    public String test() {
-        return "Backend läuft!";
-    }
+
     @GetMapping("/get")
     public List<Trip> getAllTrips() {
-        return TripDao.findAll();
-    }
+        return tripService.getAllTrips();
+    }*/
 }

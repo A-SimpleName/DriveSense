@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDao {
-    public static void insertAccount(Account acc) {
+    public void insertAccount(Account acc) {
         String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,7 +30,7 @@ public class AccountDao {
         }
     }
 
-    public static Account findById(int id) {
+    public Account findById(int id) {
         String sql = "SELECT * FROM account WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -51,7 +51,7 @@ public class AccountDao {
         }
     }
 
-    public static Account findByEmail (String email) {
+    public Account findByEmail (String email) {
         String sql = "SELECT * FROM account WHERE email = ?";
 
         try (Connection conn = App.getConnection();
@@ -72,7 +72,7 @@ public class AccountDao {
         }
     }
 
-    public static List<Account> findAll () {
+    public List<Account> findAll () {
         String sql = "SELECT * FROM account";
 
         try (Connection conn = App.getConnection();
@@ -91,7 +91,7 @@ public class AccountDao {
         }
     }
 
-    public static void update(Account acc) {
+    public void update(Account acc) {
         String sql = "UPDATE account SET fname = ?, lname = ?, pwd = ?, email = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -108,7 +108,7 @@ public class AccountDao {
         }
     }
 
-    public static void updatePassword (int id, String password) {
+    public void updatePassword (int id, String password) {
         String sql = "UPDATE account SET pwd = ? WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -123,7 +123,7 @@ public class AccountDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM account WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -134,7 +134,7 @@ public class AccountDao {
         }
     }
 
-    public static Account map(ResultSet rs) throws SQLException {
+    private static Account map(ResultSet rs) throws SQLException {
         Account acc = new Account();
         acc.setId(rs.getInt("id"));
         acc.setfName(rs.getString("fname"));

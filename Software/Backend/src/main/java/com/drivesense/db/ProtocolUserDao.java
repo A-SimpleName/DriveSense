@@ -6,7 +6,7 @@ import com.drivesense.model.ProtocolUser;
 import java.sql.*;
 
 public class ProtocolUserDao {
-    public static void insert(ProtocolUser pu) {
+    public void insert(ProtocolUser pu) {
         String sql = "INSERT INTO protocol_user (protocol_id, user_id, user_role) VALUES (?,?,?)";
 
         try (Connection conn = App.getConnection();
@@ -23,7 +23,7 @@ public class ProtocolUserDao {
         }
     }
 
-    public static void updateRole(int protocolId, int userId, String role) {
+    public void updateRole(int protocolId, int userId, String role) {
         String sql = """
         UPDATE protocol_user 
         SET user_role = ? 
@@ -44,7 +44,7 @@ public class ProtocolUserDao {
         }
     }
 
-    public static void delete(int protocolId, int userId) {
+    public void delete(int protocolId, int userId) {
         String sql = "DELETE FROM protocol_user WHERE protocol_id = ? AND user_id = ?";
 
         try (Connection conn = App.getConnection();
