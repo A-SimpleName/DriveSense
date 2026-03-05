@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao {
-    public static void insertUser(User user) {
+    public void insertUser(User user) {
         String sql = "INSERT INTO user (name, role, account_id, group_id) VALUES (?,?,?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -29,7 +29,7 @@ public class UserDao {
         }
     }
 
-    public static User findById(int id) {
+    public User findById(int id) {
         String sql = "SELECT * FROM user WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -50,7 +50,7 @@ public class UserDao {
         }
     }
 
-    public static List<User> findByGroup_id(int group_id) {
+    public List<User> findByGroup_id(int group_id) {
         String sql = "SELECT * FROM user WHERE group_id = ?";
 
         try (Connection conn = App.getConnection();
@@ -71,7 +71,7 @@ public class UserDao {
         }
     }
 
-    public static List<User> findAll () {
+    public List<User> findAll () {
         String sql = "SELECT * FROM user";
 
         try (Connection conn = App.getConnection();
@@ -90,7 +90,7 @@ public class UserDao {
         }
     }
 
-    public static void update(User user) {
+    public void update(User user) {
         String sql = "UPDATE user SET name = ?, role = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -105,7 +105,7 @@ public class UserDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM user WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -116,7 +116,7 @@ public class UserDao {
         }
     }
 
-    public static User map(ResultSet rs) throws SQLException {
+    private static User map(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));
         user.setName(rs.getString("name"));
