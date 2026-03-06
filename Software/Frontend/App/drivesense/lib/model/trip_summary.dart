@@ -1,6 +1,6 @@
 import 'package:drivesense/model/trackingpoint.dart';
 
-class Trip {
+class TripSummary {
   final int id;
   final int userId;
   final int vehicleId;
@@ -9,9 +9,9 @@ class Trip {
   final double distanceKm;
   final String weatherMain;
   final String? type;
-  final List<Trackingpoint>? trackingPoints;
+  
 
-  Trip({
+  TripSummary({
     required this.id,
     required this.userId,
     required this.vehicleId,
@@ -20,7 +20,6 @@ class Trip {
     required this.distanceKm,
     required this.weatherMain,
     required this.type,
-    this.trackingPoints,
   });
 
   Map<String, dynamic> toJson() {
@@ -36,8 +35,8 @@ class Trip {
     };
   }
 
-  factory Trip.fromJson(Map<String, dynamic> json) {
-    return Trip(
+  factory TripSummary.fromJson(Map<String, dynamic> json) {
+    return TripSummary(
       id: json["id"],
       userId: json["userId"],
       vehicleId: json["vehicleId"],
@@ -51,8 +50,8 @@ class Trip {
     );
   }
 
-  Trip copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
-    return Trip(
+  TripSummary copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
+    return TripSummary(
       id: id,
       userId: userId,
       vehicleId: vehicleId,
@@ -61,7 +60,6 @@ class Trip {
       distanceKm: distanceKm,
       weatherMain: weatherMain,
       type: type,
-      trackingPoints: trackingPoints,
     );
   }
 }
