@@ -63,7 +63,7 @@ public class TripDao {
         }
     }
 
-    public Trip getByUserId(int userId) {
+    public List<Trip> getByUserId(int userId) {
         String sql = "SELECT * FROM trip WHERE user_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -72,11 +72,11 @@ public class TripDao {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return map(rs);
+            List<Trip> trips = new ArrayList<>();
+            while (rs.next()) {
+                trips.add(map(rs));
             }
-
-            return null;
+            return trips;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
