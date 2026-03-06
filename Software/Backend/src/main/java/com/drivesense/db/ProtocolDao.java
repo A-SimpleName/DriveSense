@@ -1,7 +1,9 @@
 package com.drivesense.db;
 
 import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.Protocol;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,10 +11,12 @@ import java.util.List;
 
 
 public class ProtocolDao {
+    @Autowired
+    private DbConnection dbConnection;
 
     public void insertProtocol(Protocol protocol) {
         String sql = "INSERT INTO protocol (tracking_id, road_surface_conditions) VALUES (?,?)";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,protocol.getTrip_id());

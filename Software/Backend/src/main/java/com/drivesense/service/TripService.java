@@ -9,6 +9,11 @@ import com.drivesense.model.Trip;
 import java.util.List;
 
 public class TripService {
+    private TripDao tripDao;
+
+    public TripService () {
+        tripDao = new TripDao();
+    }
 
     public void saveTrip (Trip trip, List<Trackingpoint> trackingpoints) {
         TripDao tripDao = new TripDao();
@@ -20,7 +25,7 @@ public class TripService {
             trackingpointDao.insertTrackingpoint(trackingpoint);
     }
 
-    public void getAllTrips() {
-        getAllTrips();
+    public List<Trip> getAllTrips() {
+        return tripDao.findAll();
     }
 }
