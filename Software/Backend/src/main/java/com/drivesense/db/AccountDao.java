@@ -1,17 +1,24 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.Account;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AccountDao {
-    public static void insertAccount(Account acc) {
+
+    @Autowired
+    private DbConnection dbConnection;
+
+    public Account insert(Account acc) {
         String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1,acc.getfName());
@@ -25,15 +32,17 @@ public class AccountDao {
             if (rs.next()) {
                 acc.setId(rs.getInt(1));
             }
+            return acc;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    public static Account findById(int id) {
+    public Account getById(int id) {
         String sql = "SELECT * FROM account WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -42,7 +51,6 @@ public class AccountDao {
             if (rs.next()) {
                 return map(rs);
             }
-
             return null;
 
         } catch (SQLException e) {
@@ -51,10 +59,10 @@ public class AccountDao {
         }
     }
 
-    public static Account findByEmail (String email) {
+    public Account getByEmail (String email) {
         String sql = "SELECT * FROM account WHERE email = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, email);
@@ -72,10 +80,10 @@ public class AccountDao {
         }
     }
 
-    public static List<Account> findAll () {
+    public List<Account> getAll () {
         String sql = "SELECT * FROM account";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
@@ -91,9 +99,9 @@ public class AccountDao {
         }
     }
 
-    public static void update(Account acc) {
+    public void update(Account acc) {
         String sql = "UPDATE account SET fname = ?, lname = ?, pwd = ?, email = ? WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, acc.getfName());
@@ -108,10 +116,10 @@ public class AccountDao {
         }
     }
 
-    public static void updatePassword (int id, String password) {
+    public void updatePassword (int id, String password) {
         String sql = "UPDATE account SET pwd = ? WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1,password);
@@ -123,9 +131,9 @@ public class AccountDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM account WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
@@ -134,7 +142,7 @@ public class AccountDao {
         }
     }
 
-    public static Account map(ResultSet rs) throws SQLException {
+    private Account map(ResultSet rs) throws SQLException {
         Account acc = new Account();
         acc.setId(rs.getInt("id"));
         acc.setfName(rs.getString("fname"));

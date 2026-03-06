@@ -1,18 +1,24 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.Trip;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class TripDao {
-    public static void insertTracking(Trip trip) {
-        String sql = "INSERT INTO tracking (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
-        try (Connection conn = App.getConnection();
+
+    @Autowired
+    private DbConnection dbConnection;
+
+    public Trip insert(Trip trip) {
+        String sql = "INSERT INTO trip (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, trip.getUser_id());
@@ -29,15 +35,17 @@ public class TripDao {
             if (rs.next()) {
                 trip.setId(rs.getInt(1));
             }
+            return trip;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    public static Trip findById(int id) {
-        String sql = "SELECT * FROM tracking WHERE id = ?";
+    public Trip getById(int id) {
+        String sql = "SELECT * FROM trip WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -55,10 +63,10 @@ public class TripDao {
         }
     }
 
-    public static Trip findByUserId(int userId) {
-        String sql = "SELECT * FROM tracking WHERE user_id = ?";
+    public Trip getByUserId(int userId) {
+        String sql = "SELECT * FROM trip WHERE user_id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
@@ -76,10 +84,10 @@ public class TripDao {
         }
     }
 
-    public static List<Trip> findAll () {
-        String sql = "SELECT * FROM tracking";
+    public List<Trip> getAll () {
+        String sql = "SELECT * FROM trip";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
@@ -95,9 +103,9 @@ public class TripDao {
         }
     }
 
-    public static void update(Trip trip) {
-        String sql = "UPDATE tracking SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
-        try (Connection conn = App.getConnection();
+    public void update(Trip trip) {
+        String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setObject(1, trip.getStarttime());
@@ -113,9 +121,9 @@ public class TripDao {
         }
     }
 
-    public static void deleteById(int id) {
-        String sql = "DELETE FROM tracking WHERE id = ?";
-        try (Connection conn = App.getConnection();
+    public void deleteById(int id) {
+        String sql = "DELETE FROM trip WHERE id = ?";
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
@@ -124,7 +132,7 @@ public class TripDao {
         }
     }
 
-    public static Trip map(ResultSet rs) throws SQLException {
+    private Trip map(ResultSet rs) throws SQLException {
         Trip trip = new Trip();
         trip.setId(rs.getInt("id"));
         trip.setUser_id(rs.getInt("user_id"));
