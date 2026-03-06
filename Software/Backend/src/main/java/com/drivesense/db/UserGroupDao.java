@@ -1,16 +1,24 @@
 package com.drivesense.db;
 
 import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.UserGroup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UserGroupDao {
-    public void insertGroup(UserGroup userGroup) {
+
+    @Autowired
+    private DbConnection dbConnection;
+
+    public UserGroup insert(UserGroup userGroup) {
         String sql = "INSERT INTO user_group (name, owner_id) VALUES (?,?)";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1,userGroup.getName());
@@ -22,15 +30,17 @@ public class UserGroupDao {
             if (rs.next()) {
                 userGroup.setId(rs.getInt(1));
             }
+            return userGroup;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    public UserGroup findById(int id) {
+    public UserGroup getById(int id) {
         String sql = "SELECT * FROM user_group WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -48,10 +58,10 @@ public class UserGroupDao {
         }
     }
 
-    public List<UserGroup> findAll () {
+    public List<UserGroup> getAll () {
         String sql = "SELECT * FROM user_group";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
@@ -69,7 +79,7 @@ public class UserGroupDao {
 
     public void update(UserGroup userGroup) {
         String sql = "UPDATE user_group SET name = ?,owner_id = ? WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, userGroup.getName());
@@ -84,7 +94,7 @@ public class UserGroupDao {
 
     public void deleteById(int id) {
         String sql = "DELETE FROM user_group WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
@@ -93,7 +103,7 @@ public class UserGroupDao {
         }
     }
 
-    private static UserGroup map(ResultSet rs) throws SQLException {
+    private UserGroup map(ResultSet rs) throws SQLException {
         UserGroup userGroup = new UserGroup();
         userGroup.setId(rs.getInt("id"));
         userGroup.setName(rs.getString("name"));

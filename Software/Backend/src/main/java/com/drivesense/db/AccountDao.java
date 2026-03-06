@@ -1,21 +1,22 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
 import com.drivesense.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AccountDao {
 
     @Autowired
     private DbConnection dbConnection;
 
-    public void insertAccount(Account acc) {
+    public Account insert(Account acc) {
         String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -31,12 +32,14 @@ public class AccountDao {
             if (rs.next()) {
                 acc.setId(rs.getInt(1));
             }
+            return acc;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    public Account findById(int id) {
+    public Account getById(int id) {
         String sql = "SELECT * FROM account WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -48,7 +51,6 @@ public class AccountDao {
             if (rs.next()) {
                 return map(rs);
             }
-
             return null;
 
         } catch (SQLException e) {
@@ -57,7 +59,7 @@ public class AccountDao {
         }
     }
 
-    public Account findByEmail (String email) {
+    public Account getByEmail (String email) {
         String sql = "SELECT * FROM account WHERE email = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -78,7 +80,7 @@ public class AccountDao {
         }
     }
 
-    public List<Account> findAll () {
+    public List<Account> getAll () {
         String sql = "SELECT * FROM account";
 
         try (Connection conn = dbConnection.getConnection();

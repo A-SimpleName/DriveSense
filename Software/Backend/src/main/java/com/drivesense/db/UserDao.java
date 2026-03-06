@@ -4,17 +4,19 @@ import com.drivesense.App;
 import com.drivesense.DbConnection;
 import com.drivesense.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UserDao {
 
     @Autowired
     private DbConnection dbConnection;
 
-    public User insertUser(User user) {
+    public User insert(User user) {
         String sql = "INSERT INTO user (name, role, account_id, group_id) VALUES (?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -37,7 +39,7 @@ public class UserDao {
         }
     }
 
-    public User findById(int id) {
+    public User getById(int id) {
         String sql = "SELECT * FROM user WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -58,7 +60,7 @@ public class UserDao {
         }
     }
 
-    public List<User> findByGroup_id(int group_id) {
+    public List<User> getByGroup_id(int group_id) {
         String sql = "SELECT * FROM user WHERE group_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -79,7 +81,7 @@ public class UserDao {
         }
     }
 
-    public List<User> findAll () {
+    public List<User> getAll () {
         String sql = "SELECT * FROM user";
 
         try (Connection conn = dbConnection.getConnection();
@@ -124,7 +126,7 @@ public class UserDao {
         }
     }
 
-    public List<User> findAllUsersByAccount_id(int id) {
+    public List<User> getAllUsersByAccount_id(int id) {
         String sql = "SELECT * FROM user WHERE account_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
