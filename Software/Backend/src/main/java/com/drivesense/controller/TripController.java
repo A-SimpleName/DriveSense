@@ -15,7 +15,7 @@ public class TripController {
 
     @PostMapping("/")
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
-        tripService.saveTrip(trip,trackingpoints);
+        tripService.insert(trip,trackingpoints);
     }
 
     @GetMapping("/")
