@@ -17,15 +17,15 @@ public class TripService {
 
     public void insertTrip (Trip trip, List<Trackingpoint> trackingpoints) {
         TripDao tripDao = new TripDao();
-        tripDao.insertTrip(trip);
+        tripDao.insert(trip);
 
         TrackingpointDao trackingpointDao = new TrackingpointDao();
 
         for (Trackingpoint trackingpoint : trackingpoints)
-            trackingpointDao.insertTrackingpoint(trackingpoint);
+            trackingpointDao.insert(trackingpoint);
     }
 
     public List<Trip> getAllTrips() {
-        return tripDao.findAll();
+        return tripDao.getAll();
     }
 }

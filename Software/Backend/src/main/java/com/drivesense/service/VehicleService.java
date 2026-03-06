@@ -15,15 +15,15 @@ public class VehicleService {
    private VehicleDao vehicleDao;
 
     public List<VehicleDto> getAllVehicles() {
-        return vehicleDao.findAllVehiclesByAccount();
+        return vehicleDao.getAllVehiclesByAccount();
     }
 
     public Vehicle getVehicleById(int id) {
-        return vehicleDao.findById(id);
+        return vehicleDao.getById(id);
     }
 
     public void saveVehicle(Vehicle vehicle) {
-        vehicleDao.insertVehicle(vehicle);
+        vehicleDao.insert(vehicle);
     }
 
     public void updateVehicle(Vehicle vehicle) {

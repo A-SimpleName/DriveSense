@@ -24,7 +24,7 @@ public class ProtocolService {
     }
 
     public List<ProtocolDto> getAllByUser(int userId) {
-        List<ProtocolDto> trips = protocolDetailDao.findAllWithDetailsbyUserId(userId);
+        List<ProtocolDto> trips = protocolDetailDao.getAllWithDetailsbyUserId(userId);
 
         // für jede Fahrt die Punkte berechnen
         if(!trips.isEmpty()) {
@@ -35,7 +35,7 @@ public class ProtocolService {
 
     // Eine einzelne Fahrt
     public ProtocolDto getById(int id, int userId) {
-        ProtocolDto trip = protocolDetailDao.findByIdAndUserId(id, userId);
+        ProtocolDto trip = protocolDetailDao.getByIdAndUserId(id, userId);
         if (trip == null) {
             throw new RuntimeException("Fahrt nicht gefunden oder kein Zugriff");
         }
@@ -45,7 +45,7 @@ public class ProtocolService {
 
     // Trackingpunkte berechnen und ins DTO schreiben
     private void enrichWithTrackingPoints(ProtocolDto trip) {
-        List<Trackingpoint> points = trackingpointDao.findByTripId(trip.getTripId());
+        List<Trackingpoint> points = trackingpointDao.getByTripId(trip.getTripId());
 
         if (points == null || points.isEmpty()) return;
 
