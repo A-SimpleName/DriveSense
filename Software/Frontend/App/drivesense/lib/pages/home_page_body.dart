@@ -1,6 +1,7 @@
 import 'dart:convert';
+import 'package:drivesense/model/trip_detailed.dart';
 import 'package:drivesense/services/trip_service.dart';
-import 'package:drivesense/model/trip.dart';
+import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/widgets/current_trip_card.dart';
 import 'package:drivesense/widgets/start_trip_card.dart';
 import 'package:drivesense/widgets/last_trip_card.dart';
@@ -11,7 +12,6 @@ import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/widgets/position_widgets.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:drivesense/runtime_store.dart';
-
 
 class HomePageBody extends StatefulWidget {
   const HomePageBody({super.key});
@@ -38,7 +38,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   StreamSubscription<Position>? _positionSubscription;
   List<Trackingpoint> trackingPositions = [];
   Timer? _uiTimer;
-  Trip? _activeTrip;
+  TripSummary? _activeTrip;
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +86,10 @@ class _HomePageBodyState extends State<HomePageBody> {
       trackingPositions = [];
     });
 
-    _activeTrip = Trip(
-      id: 0, // TODO
-      userId: 0, // TODO
-      vehicleId: 0, // TODO
+    _activeTrip = TripSummary(
+      id: 5, // TODO
+      userId: 1, // TODO
+      vehicleId: 1, // TODO
       startTime: tripStartTime!,
       endTime: tripEndTime, // = null
       distanceKm: 0, // TODO
@@ -102,28 +102,34 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _onStopTrip() async {
-  await _stopGpsLogging();
-  _stopUiTicker();
+    await _stopGpsLogging();
+    _stopUiTicker();
 
-  final end = DateTime.now();
+    final end = DateTime.now();
 
-  // Trip finalisieren
-  final finishedTrip = _activeTrip!.copyWith(
-    endTime: end,
-    distanceKm: _totalDistanceMeters / 1000,
-    trackingPoints: List<Trackingpoint>.from(trackingPositions),
-  );
+    // Trip finalisieren
+    final finishedTrip = _activeTrip!.copyWith(
+      endTime: end,
+      distanceKm: _totalDistanceMeters / 1000,
+      trackingPoints: List<Trackingpoint>.from(trackingPositions),
+    );
 
-  RuntimeStore.trips.add(finishedTrip); // oben einfügen
+    final finishedTripDetail = TripDetailed(summary: finishedTrip, trackingPoints: trackingPositions);
 
-  setState(() {
-    hasActiveTrip = false;
-    tripEndTime = end;
-    _activeTrip = null;
-  });
+    RuntimeStore.addTrip(finishedTrip); // oben einfügen
+    RuntimeStore.addTripDetail(finishedTrip.id, finishedTripDetail);
 
-  // TODO: hier speichern (Backend/DB)
-}
+    setState(() {
+      hasActiveTrip = false;
+      tripEndTime = end;
+      _eventCount = 0;
+      _totalDistanceMeters = 0;
+      _activeTrip = null;
+    });
+
+    saveTripToDb(finishedTrip, trackingPositions);
+    // TODO: hier speichern (Backend/DB)
+  }
 
   void _startGpsLogging() {
     if (_positionSubscription != null) return;
