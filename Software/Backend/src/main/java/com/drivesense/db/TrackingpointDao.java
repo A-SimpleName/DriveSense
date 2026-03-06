@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TrackingpointDao {
-    public static void insertTrackingpoint(Trackingpoint trackingpoint) {
-        String sql = "INSERT INTO trackingpoint (tracking_id, lat, lng, accuracy, speed, bearing, timestamp) VALUES (?,?,?,?,?,?,?)";
+    public void insertTrackingpoint(Trackingpoint trackingpoint) {
+        String sql = "INSERT INTO trackingpoint (trip_id, lat, lng, accuracy, speed, bearing, timestamp) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,trackingpoint.getTracking_id());
+            ps.setInt(1,trackingpoint.getTrip_id());
             ps.setDouble(2,trackingpoint.getLat());
             ps.setDouble(3,trackingpoint.getLng());
             ps.setDouble(4,trackingpoint.getAccuracy());
@@ -34,7 +34,7 @@ public class TrackingpointDao {
         }
     }
 
-    public static Trackingpoint findById(int id) {
+    public Trackingpoint findById(int id) {
         String sql = "SELECT * FROM trackingpoint WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -55,7 +55,28 @@ public class TrackingpointDao {
         }
     }
 
-    public static List<Trackingpoint> findAll () {
+    public List<Trackingpoint> findByTripId(int tripId) {
+        String sql = "SELECT * FROM trackingpoint WHERE trip_id = ?";
+
+        try (Connection conn = App.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, tripId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Trackingpoint> trackingpoints = new ArrayList<>();
+            while (rs.next()) {
+                trackingpoints.add(map(rs));
+            }
+            return trackingpoints;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public List<Trackingpoint> findAll () {
         String sql = "SELECT * FROM trackingpoint";
 
         try (Connection conn = App.getConnection();
@@ -74,7 +95,7 @@ public class TrackingpointDao {
         }
     }
 
-    public static void update(Trackingpoint trackingpoint) {
+    public void update(Trackingpoint trackingpoint) {
         String sql = "UPDATE trackingpoint SET lat = ?, lng = ?, accuracy = ?, speed = ?, bearing = ?, timestamp = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -93,7 +114,7 @@ public class TrackingpointDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM trackingpoint WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -104,10 +125,10 @@ public class TrackingpointDao {
         }
     }
 
-    public static Trackingpoint map(ResultSet rs) throws SQLException {
+    private static Trackingpoint map(ResultSet rs) throws SQLException {
         Trackingpoint trackingpoint = new Trackingpoint();
         trackingpoint.setId(rs.getInt("id"));
-        trackingpoint.setTracking_id(rs.getInt("tracking_id"));
+        trackingpoint.setTrip_id(rs.getInt("tracking_id"));
         trackingpoint.setLat(rs.getDouble("lat"));
         trackingpoint.setLng(rs.getDouble("lng"));
         trackingpoint.setAccuracy(rs.getDouble("accuracy"));
