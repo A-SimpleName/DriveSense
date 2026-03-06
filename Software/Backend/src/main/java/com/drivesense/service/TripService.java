@@ -5,10 +5,15 @@ import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.Trip;
+import jakarta.persistence.Access;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class TripService {
+    @Autowired
     private TripDao tripDao;
 
     public TripService () {

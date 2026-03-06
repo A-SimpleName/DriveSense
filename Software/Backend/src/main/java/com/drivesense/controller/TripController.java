@@ -12,13 +12,13 @@ import java.util.List;
 @RequestMapping("/api/trips")
 public class TripController {
     private TripService tripService = new TripService();
-/*
-    @PostMapping("/save")
+
+    @PostMapping("/")
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
         tripService.saveTrip(trip,trackingpoints);
     }
-*/
-    @GetMapping("/get")
+
+    @GetMapping("/")
     public List<Trip> getAllTrips() {
         return tripService.getAllTrips();
     }
