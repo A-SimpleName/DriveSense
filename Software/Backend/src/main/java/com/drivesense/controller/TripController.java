@@ -9,17 +9,17 @@ import java.util.List;
 
 @CrossOrigin(origins = "*")//origins = "http://localhost:5173")
 @RestController
-@RequestMapping("/api/fahrten")
+@RequestMapping("/api/trips")
 public class TripController {
-/*    private TripService tripService;
-
+    private TripService tripService = new TripService();
+/*
     @PostMapping("/save")
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
         tripService.saveTrip(trip,trackingpoints);
     }
-
+*/
     @GetMapping("/get")
     public List<Trip> getAllTrips() {
         return tripService.getAllTrips();
-    }*/
+    }
 }

@@ -3,8 +3,6 @@ package com.drivesense.service;
 import com.drivesense.db.*;
 import com.drivesense.dto.ProtocolDto;
 import com.drivesense.model.Trackingpoint;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -17,24 +15,21 @@ public class ProtocolService {
     private GeocodingService geocodingService;
 
     public ProtocolService() {
-
-    }
-    @Autowired
-    public ProtocolService(ProtocolDetailDao protocolDetailDao, ProtocolDao protocolDao, ProtocolUserDao protocolUserDao, TripDao tripDao, TrackingpointDao trackingpointDao, GeocodingService geocodingService) {
-        this.protocolDetailDao = protocolDetailDao;
-        this.protocolDao = protocolDao;
-        this.protocolUserDao = protocolUserDao;
-        this.tripDao = tripDao;
-        this.trackingpointDao = trackingpointDao;
-        this.geocodingService = geocodingService;
+        this.protocolDetailDao = new ProtocolDetailDao();
+        this.protocolDao = new ProtocolDao();
+        this.protocolUserDao = new ProtocolUserDao();
+        this.tripDao = new TripDao();
+        this.trackingpointDao = new TrackingpointDao();
+        this.geocodingService = new GeocodingService();
     }
 
     public List<ProtocolDto> getAllByUser(int userId) {
         List<ProtocolDto> trips = protocolDetailDao.findAllWithDetailsbyUserId(userId);
 
         // für jede Fahrt die Punkte berechnen
-        trips.forEach(trip -> enrichWithTrackingPoints(trip));
-
+        if(!trips.isEmpty()) {
+            trips.forEach(trip -> enrichWithTrackingPoints(trip));
+        }
         return trips;
     }
 

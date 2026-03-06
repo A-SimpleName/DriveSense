@@ -3,7 +3,7 @@ package com.drivesense.controller;
 import com.drivesense.dto.VehicleDto;
 import com.drivesense.model.Vehicle;
 import com.drivesense.service.VehicleService;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,17 +13,23 @@ import java.util.List;
 @RequestMapping("/api/vehicles")
 public class VehicleController {
 
-    private VehicleService vehicleService = new VehicleService();
+    @Autowired
+    private VehicleService vehicleService;
 
     @GetMapping("/test")
     public String test() {
-        return "Backend läuft!";
+        return "Endpunkt vehicles läuft!";
     }
-
     // Alle Fahrzeuge anzeigen (DTO mit Username)
-    @GetMapping("/get")
+    @GetMapping("/")
     public List<VehicleDto> getAllVehicles() {
         return vehicleService.getAllVehicles();
+    }
+
+    // Fahrzeug speichern
+    @PostMapping("/")
+    public void saveVehicle(@RequestBody Vehicle vehicle) {
+        vehicleService.saveVehicle(vehicle);
     }
 
     // Einzelnes Fahrzeug
@@ -32,20 +38,15 @@ public class VehicleController {
         return vehicleService.getVehicleById(id);
     }
 
-    // Fahrzeug speichern
-    @PostMapping("/save")
-    public void saveVehicle(@RequestBody Vehicle vehicle) {
-        vehicleService.saveVehicle(vehicle);
-    }
-
     // Fahrzeug bearbeiten
-    @PutMapping("/update")
-    public void updateVehicle(@RequestBody Vehicle vehicle) {
+    @PutMapping("/{id}")
+    public void updateVehicle(@PathVariable int id, @RequestBody Vehicle vehicle) {
+        vehicle.setId(id);
         vehicleService.updateVehicle(vehicle);
     }
 
     // Fahrzeug löschen
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public void deleteVehicle(@PathVariable int id) {
         vehicleService.deleteVehicle(id);
     }

@@ -7,8 +7,7 @@ public class VehicleDto {
     private String licencePlate;
     private int mileage;
 
-    public VehicleDto() {
-    }
+    public VehicleDto() {}
 
     public VehicleDto(int id, String model, String userName, String licencePlate, int mileage) {
         this.id = id;
