@@ -1,15 +1,23 @@
 package com.drivesense.db;
 
 import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.ProtocolUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 
+@Repository
 public class ProtocolUserDao {
+
+    @Autowired
+    private DbConnection dbConnection;
+
     public void insert(ProtocolUser pu) {
         String sql = "INSERT INTO protocol_user (protocol_id, user_id, user_role) VALUES (?,?,?)";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, pu.getProtocolId());
@@ -30,7 +38,7 @@ public class ProtocolUserDao {
         WHERE protocol_id = ? AND user_id = ?
     """;
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, role);
@@ -47,7 +55,7 @@ public class ProtocolUserDao {
     public void delete(int protocolId, int userId) {
         String sql = "DELETE FROM protocol_user WHERE protocol_id = ? AND user_id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, protocolId);
