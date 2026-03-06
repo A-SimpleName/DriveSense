@@ -1,18 +1,25 @@
 package com.drivesense.db;
 
 import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.model.Trackingpoint;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class TrackingpointDao {
-    public void insertTrackingpoint(Trackingpoint trackingpoint) {
+
+    @Autowired
+    private DbConnection dbConnection;
+
+    public Trackingpoint insert(Trackingpoint trackingpoint) {
         String sql = "INSERT INTO trackingpoint (trip_id, lat, lng, accuracy, speed, bearing, timestamp) VALUES (?,?,?,?,?,?,?)";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,trackingpoint.getTrip_id());
@@ -29,15 +36,17 @@ public class TrackingpointDao {
             if (rs.next()) {
                 trackingpoint.setId(rs.getInt(1));
             }
+            return trackingpoint;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            return null;
         }
     }
 
-    public Trackingpoint findById(int id) {
+    public Trackingpoint getById(int id) {
         String sql = "SELECT * FROM trackingpoint WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -55,10 +64,10 @@ public class TrackingpointDao {
         }
     }
 
-    public List<Trackingpoint> findByTripId(int tripId) {
+    public List<Trackingpoint> getByTripId(int tripId) {
         String sql = "SELECT * FROM trackingpoint WHERE trip_id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, tripId);
@@ -76,10 +85,10 @@ public class TrackingpointDao {
         }
     }
 
-    public List<Trackingpoint> findAll () {
+    public List<Trackingpoint> getAll () {
         String sql = "SELECT * FROM trackingpoint";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
@@ -97,7 +106,7 @@ public class TrackingpointDao {
 
     public void update(Trackingpoint trackingpoint) {
         String sql = "UPDATE trackingpoint SET lat = ?, lng = ?, accuracy = ?, speed = ?, bearing = ?, timestamp = ? WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setDouble(1,trackingpoint.getLat());
@@ -116,7 +125,7 @@ public class TrackingpointDao {
 
     public void deleteById(int id) {
         String sql = "DELETE FROM trackingpoint WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
@@ -125,7 +134,7 @@ public class TrackingpointDao {
         }
     }
 
-    private static Trackingpoint map(ResultSet rs) throws SQLException {
+    private Trackingpoint map(ResultSet rs) throws SQLException {
         Trackingpoint trackingpoint = new Trackingpoint();
         trackingpoint.setId(rs.getInt("id"));
         trackingpoint.setTrip_id(rs.getInt("tracking_id"));

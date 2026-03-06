@@ -1,7 +1,10 @@
 package com.drivesense.db;
 
 import com.drivesense.App;
+import com.drivesense.DbConnection;
 import com.drivesense.dto.ProtocolDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,8 +13,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class ProtocolDetailDao {
-    public List<ProtocolDto> findAllWithDetailsbyUserId(int userId) {
+
+    @Autowired
+    private DbConnection dbConnection;
+
+    public List<ProtocolDto> getAllWithDetailsbyUserId(int userId) {
         String sql = """
                     SELECT 
                         p.id AS protocol_id,
@@ -35,7 +43,7 @@ public class ProtocolDetailDao {
                     WHERE t.user_id = ?
                 """;
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
 
@@ -52,7 +60,7 @@ public class ProtocolDetailDao {
         }
     }
 
-    public ProtocolDto findByIdAndUserId(int id, int userId) {
+    public ProtocolDto getByIdAndUserId(int id, int userId) {
         String sql = """
                     SELECT 
                         p.id AS protocol_id,
@@ -72,7 +80,7 @@ public class ProtocolDetailDao {
                     WHERE p.id = ? AND t.user_id = ?
                 """;
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
