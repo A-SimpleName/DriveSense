@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getAllTrips } from "../services/tripService";
-import type { Trip } from "../model/trip";
+import { getAllTrips } from "../../services/tripService";
+import type { Trip } from "../../model/trip";
 
 export function TripsList() {
     const [trips, setTrips] = useState<Trip[]>([]);

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserGroupDao {
-    public static void insertGroup(UserGroup userGroup) {
+    public void insertGroup(UserGroup userGroup) {
         String sql = "INSERT INTO user_group (name, owner_id) VALUES (?,?)";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -27,7 +27,7 @@ public class UserGroupDao {
         }
     }
 
-    public static UserGroup findById(int id) {
+    public UserGroup findById(int id) {
         String sql = "SELECT * FROM user_group WHERE id = ?";
 
         try (Connection conn = App.getConnection();
@@ -48,7 +48,7 @@ public class UserGroupDao {
         }
     }
 
-    public static List<UserGroup> findAll () {
+    public List<UserGroup> findAll () {
         String sql = "SELECT * FROM user_group";
 
         try (Connection conn = App.getConnection();
@@ -67,7 +67,7 @@ public class UserGroupDao {
         }
     }
 
-    public static void update(UserGroup userGroup) {
+    public void update(UserGroup userGroup) {
         String sql = "UPDATE user_group SET name = ?,owner_id = ? WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -82,7 +82,7 @@ public class UserGroupDao {
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM user_group WHERE id = ?";
         try (Connection conn = App.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -93,7 +93,7 @@ public class UserGroupDao {
         }
     }
 
-    public static UserGroup map(ResultSet rs) throws SQLException {
+    private static UserGroup map(ResultSet rs) throws SQLException {
         UserGroup userGroup = new UserGroup();
         userGroup.setId(rs.getInt("id"));
         userGroup.setName(rs.getString("name"));
