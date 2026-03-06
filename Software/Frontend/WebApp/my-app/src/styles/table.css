@@ -1,3 +1,9 @@
+.ridesTable tbody tr:hover {
+    color: white;
+    background-color: rgb(102, 141, 199);
+    cursor: pointer;
+}
+
 table {
     width: 100%;
     margin-bottom: 5%;
@@ -25,29 +31,10 @@ table thead tr:nth-child(2) {
     border-bottom: 2px solid black;
 }
 
-/* .ridesTable thead tr:nth-child(2) :first-child {
-    border-right: 2px solid black;
-} */
-
 table tbody {
     text-align: center;
 }
 
 table td {
     height: 3vh;
-}
-
-/* table tbody tr td {
-    border-top: 2px solid rgb(82, 79, 79);
-    margin-left: 20px;
-} */
-
-/* .ridesTable tbody tr td:nth-child(4) {
-    border-right: 1px solid grey;
-} */
-
-.ridesTable tbody tr:hover {
-    color: white;
-    background-color: rgb(102, 141, 199);
-    cursor: pointer;
 }
