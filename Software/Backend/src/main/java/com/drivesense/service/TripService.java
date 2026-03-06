@@ -15,7 +15,7 @@ public class TripService {
         tripDao = new TripDao();
     }
 
-    public void saveTrip (Trip trip, List<Trackingpoint> trackingpoints) {
+    public void insertTrip (Trip trip, List<Trackingpoint> trackingpoints) {
         TripDao tripDao = new TripDao();
         tripDao.insertTrip(trip);
 
