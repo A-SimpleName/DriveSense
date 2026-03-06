@@ -3,25 +3,30 @@ package com.drivesense.service;
 import com.drivesense.db.*;
 import com.drivesense.dto.ProtocolDto;
 import com.drivesense.model.Trackingpoint;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.Comparator;
 import java.util.List;
 
+@Service
 public class ProtocolService {
+    @Autowired
     private ProtocolDetailDao protocolDetailDao;
-    private ProtocolDao protocolDao;
-    private ProtocolUserDao protocolUserDao;
-    private TripDao tripDao;
-    private TrackingpointDao trackingpointDao;
-    private GeocodingService geocodingService;
 
-    public ProtocolService() {
-        this.protocolDetailDao = new ProtocolDetailDao();
-        this.protocolDao = new ProtocolDao();
-        this.protocolUserDao = new ProtocolUserDao();
-        this.tripDao = new TripDao();
-        this.trackingpointDao = new TrackingpointDao();
-        this.geocodingService = new GeocodingService();
-    }
+    @Autowired
+    private ProtocolDao protocolDao;
+
+    @Autowired
+    private ProtocolUserDao protocolUserDao;
+
+    @Autowired
+    private TripDao tripDao;
+
+    @Autowired
+    private TrackingpointDao trackingpointDao;
+
+    private GeocodingService geocodingService = new GeocodingService();
 
     public List<ProtocolDto> getAllByUser(int userId) {
         List<ProtocolDto> trips = protocolDetailDao.getAllWithDetailsbyUserId(userId);

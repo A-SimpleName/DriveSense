@@ -23,7 +23,7 @@ public class ProtocolDetailDao {
         String sql = """
                     SELECT 
                         p.id AS protocol_id,
-                        t.id AS trip_id
+                        t.id AS trip_id,
                         p.road_surface_conditions,
                         t.starttime,
                         t.endtime,
@@ -56,7 +56,7 @@ public class ProtocolDetailDao {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            return null;
+            return new ArrayList<>();
         }
     }
 
