@@ -2,6 +2,7 @@ package com.drivesense.controller;
 
 import com.drivesense.dto.ProtocolDto;
 import com.drivesense.service.ProtocolService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,11 +11,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/protocols")
 public class ProtocolController {
-    private ProtocolService protocolService = new ProtocolService();
 
+    private final ProtocolService protocolService;
 
-    @GetMapping("/get")
-    public List<ProtocolDto> getAllProtocolsByUser(/*@RequestParam int userId*/) {
+    public ProtocolController(ProtocolService protocolService) {
+        this.protocolService = protocolService;
+    }
+
+    @GetMapping("/")
+    public List<ProtocolDto> getAllProtocolsByUser() {
         return protocolService.getAllByUser(1);
     }
 }
