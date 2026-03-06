@@ -22,21 +22,21 @@ public class UserController {
 
     @GetMapping("/")
     public List<User> getAll() {
-        return userService.findAll();
+        return userService.getAll();
     }
 
     @GetMapping("/{id}")
     public User getUserById(int id) {
-        return userService.findById(id);
+        return userService.getById(id);
     }
     @PutMapping("/")
     public void updateUser(User user) {
-        userService.updateUser(user);
+        userService.update(user);
     }
 
     @PostMapping("/")
     public User insertUser(User user) {
-        return userService.insertUser(user);
+        return userService.insert(user);
     }
 
     @DeleteMapping("/")
