@@ -16,7 +16,7 @@ public class VehicleDao {
     @Autowired
     private DbConnection dbConnection;
 
-    public List<VehicleDto> findAllVehiclesByAccount() {
+    public List<VehicleDto> getAllVehiclesByAccount() {
         String sql = "SELECT v.id, v.model, u.name, v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
                 "JOIN user u ON v.user_id = u.id";
@@ -30,12 +30,12 @@ public class VehicleDao {
             }
             return vehicleDtos;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    public Vehicle findById(int id) {
+    public Vehicle getById(int id) {
         String sql = "SELECT * FROM vehicle WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -45,24 +45,30 @@ public class VehicleDao {
             if (rs.next()) return map(rs);
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return null;
         }
     }
 
-    public void insertVehicle(Vehicle vehicle) {
+    public Vehicle insert(Vehicle vehicle) {
         String sql = "INSERT INTO vehicle (user_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setInt(1, vehicle.getUserId());
             ps.setString(2, vehicle.getModel());
             ps.setString(3, vehicle.getLicenseplate());
             ps.setInt(4, vehicle.getMileage());
             ps.executeUpdate();
+
             ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) vehicle.setId(rs.getInt(1));
+            if (rs.next()) {
+                vehicle.setId(rs.getInt(1));
+            }
+            return vehicle;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
+            return null;
         }
     }
 
@@ -70,13 +76,15 @@ public class VehicleDao {
         String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, vehicle.getModel());
             ps.setString(2, vehicle.getLicenseplate());
             ps.setInt(3, vehicle.getMileage());
             ps.setInt(4, vehicle.getId());
+
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
@@ -87,7 +95,7 @@ public class VehicleDao {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 

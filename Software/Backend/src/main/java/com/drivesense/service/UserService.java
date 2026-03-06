@@ -13,19 +13,19 @@ public class UserService {
     @Autowired
     private UserDao userDao;
 
-    public User insertUser (User user) {
-        return userDao.insertUser(user);
+    public User insert (User user) {
+        return userDao.insert(user);
     }
 
-    public User findById(int id) {
-        return userDao.findById(id);
+    public User getById(int id) {
+        return userDao.getById(id);
     }
 
-    public List<User> findAll() {
-        return userDao.findAll();
+    public List<User> getAll() {
+        return userDao.getAll();
     }
 
-    public void updateUser (User user) {
+    public void update (User user) {
         userDao.update(user);
     }
 
@@ -33,12 +33,12 @@ public class UserService {
         userDao.deleteById(id);
     }
 
-    public List<User> findByGroup_id(int id) {
-        return userDao.findByGroup_id(id);
+    public List<User> getByGroup_id(int id) {
+        return userDao.getByGroup_id(id);
     }
 
     /* Admin aufruf */
-    public List<User> findAllUsersByAccount_id(int id) {
-        return userDao.findAllUsersByAccount_id(id);
+    public List<User> getAllUsersByAccount_id(int id) {
+        return userDao.getAllUsersByAccount_id(id);
     }
 }
