@@ -24,7 +24,6 @@ class TripSummary {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
       "userId": userId,
       "vehicleId": vehicleId,
       "startTime": startTime.toIso8601String(),

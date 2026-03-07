@@ -1,5 +1,4 @@
 package com.drivesense.controller;
-import com.drivesense.db.TripDao;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.Trip;
 import com.drivesense.service.TripService;
@@ -15,7 +14,7 @@ public class TripController {
 
     @PostMapping("/")
     public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
-        tripService.saveTrip(trip,trackingpoints);
+        tripService.insertTrip(trip,trackingpoints);
     }
 
     @GetMapping("/")
