@@ -5,7 +5,6 @@ import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.Trip;
-import jakarta.persistence.Access;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ public class TripService {
         tripDao = new TripDao();
     }
 
-    public void saveTrip (Trip trip, List<Trackingpoint> trackingpoints) {
+    public void insertTrip(Trip trip, List<Trackingpoint> trackingpoints) {
         TripDao tripDao = new TripDao();
         tripDao.insert(trip);
 

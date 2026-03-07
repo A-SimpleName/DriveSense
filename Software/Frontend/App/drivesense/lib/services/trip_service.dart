@@ -17,7 +17,7 @@ Future<void> saveTripToDb(TripSummary trip, List<Trackingpoint> trackingPoints) 
 
 Future<http.Response> _postTripDetailed(TripDetailed tripDetailed) async {
   return http.post(
-    Uri.parse('http://172.16.100.124:8080/api/trips/save'),
+    Uri.parse('http://192.168.1.126:8080/api/trips/save'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
