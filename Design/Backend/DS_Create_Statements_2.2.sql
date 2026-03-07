@@ -26,7 +26,9 @@ CREATE TABLE `profile_usergroup` (
   `usergroup_id` bigint NOT NULL,
   `group_role` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`usergroup_id`,`profile_id`),
-  KEY `user_usergroup_user_fk` (`profile_id`)
+  KEY `user_usergroup_user_fk` (`profile_id`),
+  CONSTRAINT `profile_usergroup_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
+  CONSTRAINT `profile_usergroup_usergroup_FK` FOREIGN KEY (`usergroup_id`) REFERENCES `usergroup` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `protocol` (
