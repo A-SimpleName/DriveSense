@@ -1,5 +1,4 @@
 package com.drivesense.controller;
-import com.drivesense.db.TripDao;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.Trip;
 import com.drivesense.service.TripService;
