@@ -4,7 +4,7 @@ package com.drivesense.service;
 import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.Trip;
+import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,24 +12,26 @@ import java.util.List;
 
 @Service
 public class TripService {
+    private final TripDao tripDao;
+    private final TrackingpointDao trackingpointDao;
+
     @Autowired
-    private TripDao tripDao;
-
-    public TripService () {
-        tripDao = new TripDao();
+    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao) {
+        this.tripDao = tripDao;
+        this.trackingpointDao = trackingpointDao;
     }
 
-    public void insertTrip(Trip trip, List<Trackingpoint> trackingpoints) {
-        TripDao tripDao = new TripDao();
-        tripDao.insert(trip);
+    public void insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
+        int id = tripDao.insert(tripSummary);
 
-        TrackingpointDao trackingpointDao = new TrackingpointDao();
-
-        for (Trackingpoint trackingpoint : trackingpoints)
+        for (Trackingpoint trackingpoint : trackingpoints) {
+            trackingpoint.setTripId(id);
+            System.out.println("Point tripId before insert: " + trackingpoint.getTripId());
             trackingpointDao.insert(trackingpoint);
+        }
     }
 
-    public List<Trip> getAllTrips() {
+    public List<TripSummary> getAllTrips() {
         return tripDao.getAll();
     }
 }

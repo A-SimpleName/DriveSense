@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/constants/app_colors.dart';
 
 class CurrentTripCard extends StatefulWidget {
-  const CurrentTripCard({super.key, required this.onStop, required this.currentTripDistance, required this.currentTripDuration, required this.currentVehicle});
+  const CurrentTripCard({super.key, required this.onStop, required this.onAbort, required this.currentTripDistance, required this.currentTripDuration, required this.currentVehicle});
 
   final VoidCallback onStop;
+  final VoidCallback onAbort;
   final double currentTripDistance;
   final Duration currentTripDuration;
   final String currentVehicle;
@@ -85,7 +86,7 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
               alignment: Alignment.center,
               child: ElevatedButton(
                 onPressed: () => {
-                  widget.onStop()
+                  widget.onAbort()
                 },
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),

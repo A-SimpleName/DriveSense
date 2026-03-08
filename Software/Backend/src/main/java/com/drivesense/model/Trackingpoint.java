@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Trackingpoint {
     private int id;
-    private int trip_id;
+    private int tripId;
     private double lat;
     private double lng;
     private double accuracy;
@@ -14,8 +14,8 @@ public class Trackingpoint {
 
     public Trackingpoint(){}
 
-    public Trackingpoint(int trip_id, double lat, double accuracy, double lng, double speed, double bearing, LocalDateTime timestamp) {
-        this.trip_id = trip_id;
+    public Trackingpoint(int tripId, double lat, double accuracy, double lng, double speed, double bearing, LocalDateTime timestamp) {
+        this.tripId = tripId;
         this.lat = lat;
         this.accuracy = accuracy;
         this.lng = lng;
@@ -32,12 +32,12 @@ public class Trackingpoint {
         this.id = id;
     }
 
-    public int getTrip_id() {
-        return trip_id;
+    public int getTripId() {
+        return this.tripId;
     }
 
-    public void setTrip_id(int trip_id) {
-        this.trip_id = this.trip_id;
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
     }
 
     public double getLat() {
@@ -92,7 +92,7 @@ public class Trackingpoint {
     public String toString() {
         return "Trackingpoint: " +
                 "id: " + id +
-                ", tracking_id: " + trip_id +
+                ", trip_id: " + tripId +
                 ", lat: " + lat +
                 ", lng: " + lng +
                 ", accuracy: " + accuracy +

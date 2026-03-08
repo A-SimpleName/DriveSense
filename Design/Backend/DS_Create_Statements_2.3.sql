@@ -69,7 +69,7 @@ CREATE TABLE `trip` (
   KEY `idx_tracking_user` (`profile_id`),
   KEY `idx_tracking_car` (`vehicle_id`),
   KEY `idx_tracking_starttime` (`starttime`),
-  CONSTRAINT `trip_vehicle_FK` FOREIGN KEY (`id`) REFERENCES `vehicle` (`id`)
+  CONSTRAINT `trip_vehicle_FK` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `usergroup` (
