@@ -108,7 +108,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
                     _cell(trip.vehicleId.toString()),
                     _cell(_formatTimeOfDay(trip.startTime)),
                     _cell(trip.type ?? '-'),
-                    _cell(trip.weatherMain),
+                    _cell(trip.roadSurfaceConditions),
                   ],
                 ),
               ),

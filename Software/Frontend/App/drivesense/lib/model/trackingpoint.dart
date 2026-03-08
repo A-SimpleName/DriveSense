@@ -1,6 +1,6 @@
 class Trackingpoint {
   final int id;
-  final int trackingId;
+  final int tripId;
   final double latitude;
   final double longitude;
   final double accuracy;
@@ -10,7 +10,7 @@ class Trackingpoint {
 
   Trackingpoint({
     required this.id,
-    required this.trackingId,
+    required this.tripId,
     required this.latitude,
     required this.longitude,
     required this.accuracy,
@@ -21,9 +21,8 @@ class Trackingpoint {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
-      "latitude": latitude,
-      "longitude": longitude,
+      "lat": latitude,
+      "lng": longitude,
       "accuracy": accuracy,
       "speed": speed,
       "bearing": bearing,
@@ -34,9 +33,9 @@ class Trackingpoint {
   factory Trackingpoint.fromJson(Map<String, dynamic> json) {
     return Trackingpoint(
       id: json["id"],
-      trackingId: json["trackingId"],
-      latitude: json["latitude"].toDouble(),
-      longitude: json["longitude"].toDouble(),
+      tripId: json["tripId"],
+      latitude: json["lat"].toDouble(),
+      longitude: json["lng"].toDouble(),
       accuracy: json["accuracy"].toDouble(),
       speed: json["speed"].toDouble(),
       bearing: json["bearing"].toDouble(),

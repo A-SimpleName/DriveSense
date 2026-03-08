@@ -1,11 +1,13 @@
-package com.drivesense.dto;
+package com.drivesense.dto.response;
 
 import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.Trip;
+import com.drivesense.model.TripSummary;
 
 import java.util.List;
 
 public class TripDetailedDto {
-    private Trip trip;
+    private TripSummary tripSummary;
     private List<Trackingpoint> trackingpoints;
+
+
 }

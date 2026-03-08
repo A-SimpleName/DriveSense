@@ -3,33 +3,33 @@ import 'package:drivesense/model/trip_summary.dart';
 
 class TripDetailed {
   final TripSummary summary;
-  final List<Trackingpoint> trackingPoints;
+  final List<Trackingpoint> trackingpoints;
 
   TripDetailed({
     required this.summary,
-    required this.trackingPoints,
+    required this.trackingpoints,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      "summary": summary.toJson(),
-      "trackingPoints": trackingPoints.map((p) => p.toJson()).toList(),
+      "tripSummary": summary.toJson(),
+      "trackingpoints": trackingpoints.map((p) => p.toJson()).toList(),
     };
   }
 
   factory TripDetailed.fromJson(Map<String, dynamic> json) {
     return TripDetailed(
-      summary: TripSummary.fromJson(json["summary"]),
-      trackingPoints: json["trackingPoints"] != null
-          ? (json["trackingPoints"] as List).map((p) => Trackingpoint.fromJson(p)).toList()
+      summary: TripSummary.fromJson(json["trip"]),
+      trackingpoints: json["trackingpoints"] != null
+          ? (json["trackingpoints"] as List).map((p) => Trackingpoint.fromJson(p)).toList()
           : [],
     );
   }
 
-  TripDetailed copyWith({required TripSummary summary, required List<Trackingpoint> trackingPoints}) {
+  TripDetailed copyWith({required TripSummary summary, required List<Trackingpoint> trackingpoints}) {
     return TripDetailed(
       summary: summary,
-      trackingPoints: trackingPoints,
+      trackingpoints: trackingpoints,
     );
   }
 }
