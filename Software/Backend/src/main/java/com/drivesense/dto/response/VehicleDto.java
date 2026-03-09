@@ -1,4 +1,4 @@
-package com.drivesense.dto;
+package com.drivesense.dto.response;
 
 public class VehicleDto {
     private int id;

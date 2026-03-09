@@ -1,7 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
-import com.drivesense.model.Trip;
+import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,36 +13,41 @@ import java.util.List;
 @Repository
 public class TripDao {
 
-    @Autowired
-    private DbConnection dbConnection;
+    private final DbConnection dbConnection;
 
-    public Trip insert(Trip trip) {
-        String sql = "INSERT INTO trip (user_id, car_id, starttime, endtime, distance, weather_main, type) VALUES (?,?,?,?,?,?,?)";
+    @Autowired
+    public TripDao(DbConnection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
+
+    public int insert(TripSummary tripSummary) {
+        String sql = "INSERT INTO trip (profile_id, vehicle_id, starttime, endtime, distance, road_surface_conditions, type) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, trip.getUser_id());
-            ps.setInt(2, trip.getCar_id());
-            ps.setObject(3, trip.getStarttime());
-            ps.setObject(4, trip.getEndtime());
-            ps.setDouble(5, trip.getDistance());
-            ps.setString(6, trip.getWeather_main());
-            ps.setString(7, trip.getType());
+            ps.setInt(1, tripSummary.getProfileId());
+            ps.setInt(2, tripSummary.getVehicleId());
+            ps.setObject(3, tripSummary.getStartTime());
+            ps.setObject(4, tripSummary.getEndTime());
+            ps.setDouble(5, tripSummary.getDistance());
+            ps.setString(6, tripSummary.getRoadSurfaceConditions());
+            ps.setString(7, tripSummary.getType());
 
             ps.executeUpdate();
 
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                trip.setId(rs.getInt(1));
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("No trip ID returned.");
+                }
             }
-            return trip;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
-    public Trip getById(int id) {
+    public TripSummary getById(int id) {
         String sql = "SELECT * FROM trip WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -63,8 +68,8 @@ public class TripDao {
         }
     }
 
-    public List<Trip> getByUserId(int userId) {
-        String sql = "SELECT * FROM trip WHERE user_id = ?";
+    public TripSummary getByUserId(int userId) {
+        String sql = "SELECT * FROM trip WHERE profile_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -72,11 +77,11 @@ public class TripDao {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
-            List<Trip> trips = new ArrayList<>();
-            while (rs.next()) {
-                trips.add(map(rs));
+            if (rs.next()) {
+                return map(rs);
             }
-            return trips;
+
+            return null;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -84,18 +89,18 @@ public class TripDao {
         }
     }
 
-    public List<Trip> getAll () {
+    public List<TripSummary> getAll () {
         String sql = "SELECT * FROM trip";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            List<Trip> trips = new ArrayList<>();
+            List<TripSummary> tripSummaries = new ArrayList<>();
             while (rs.next()) {
-                trips.add(map(rs));
+                tripSummaries.add(map(rs));
             }
-            return trips;
+            return tripSummaries;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -103,17 +108,17 @@ public class TripDao {
         }
     }
 
-    public void update(Trip trip) {
-        String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, weather_main = ?, type = ? WHERE id = ?";
+    public void update(TripSummary tripSummary) {
+        String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, road_surface_conditions = ?, type = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setObject(1, trip.getStarttime());
-            ps.setObject(2, trip.getEndtime());
-            ps.setDouble(3, trip.getDistance());
-            ps.setString(4, trip.getWeather_main());
-            ps.setString(5, trip.getType());
-            ps.setInt(6, trip.getId());
+            ps.setObject(1, tripSummary.getStartTime());
+            ps.setObject(2, tripSummary.getEndTime());
+            ps.setDouble(3, tripSummary.getDistance());
+            ps.setString(4, tripSummary.getRoadSurfaceConditions());
+            ps.setString(5, tripSummary.getType());
+            ps.setInt(6, tripSummary.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -132,17 +137,17 @@ public class TripDao {
         }
     }
 
-    private Trip map(ResultSet rs) throws SQLException {
-        Trip trip = new Trip();
-        trip.setId(rs.getInt("id"));
-        trip.setUser_id(rs.getInt("user_id"));
-        trip.setCar_id(rs.getInt("car_id"));
-        trip.setStarttime((LocalDateTime) rs.getObject("starttime"));
-        trip.setEndtime((LocalDateTime) rs.getObject("endtime"));
-        trip.setDistance(rs.getDouble("distance"));
-        trip.setWeather_main(rs.getString("weather_main"));
-        trip.setType(rs.getString("type"));
-        return trip;
+    private TripSummary map(ResultSet rs) throws SQLException {
+        TripSummary tripSummary = new TripSummary();
+        tripSummary.setId(rs.getInt("id"));
+        tripSummary.setProfileId(rs.getInt("profile_id"));
+        tripSummary.setVehicleId(rs.getInt("vehicle_id"));
+        tripSummary.setStartTime((LocalDateTime) rs.getObject("starttime"));
+        tripSummary.setEndTime((LocalDateTime) rs.getObject("endtime"));
+        tripSummary.setDistance(rs.getDouble("distance"));
+        tripSummary.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
+        tripSummary.setType(rs.getString("type"));
+        return tripSummary;
     }
 
 }
