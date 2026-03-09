@@ -2,17 +2,14 @@ package com.drivesense.controller;
 
 import com.drivesense.dto.account.*;
 import com.drivesense.service.AccountService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
-
+    @Autowired
     private AccountService accountService;
-
-    public AccountController(AccountService accountService) {
-        this.accountService = accountService;
-    }
 
     @PostMapping("/register")
     public AccountResponse register(@RequestBody RegisterRequest request) {
