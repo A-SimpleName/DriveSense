@@ -1,6 +1,5 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
 import com.drivesense.model.Protocol;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +16,12 @@ public class ProtocolDao {
     private DbConnection dbConnection;
 
     public void insert(Protocol protocol) {
-        String sql = "INSERT INTO protocol (tracking_id, road_surface_conditions) VALUES (?,?)";
+        String sql = "INSERT INTO protocol (profile_id, usergroup_id) VALUES (?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,protocol.getTrip_id());
-            ps.setString(2,protocol.getRoad_surface_conditions());
+            ps.setInt(1,protocol.getProfileId());
+            ps.setInt(2,protocol.getUsergroupId());
 
 
             ps.executeUpdate();
@@ -76,20 +75,6 @@ public class ProtocolDao {
         }
     }
 
-    public void update(Protocol protocol) {
-        String sql = "UPDATE protocol SET road_surface_conditions = ? WHERE id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, protocol.getRoad_surface_conditions());
-            ps.setInt(2,protocol.getId());
-
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
     public void deleteById(int id) {
         String sql = "DELETE FROM protocol WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
@@ -104,8 +89,8 @@ public class ProtocolDao {
     private Protocol map(ResultSet rs) throws SQLException {
         Protocol protocol = new Protocol();
         protocol.setId(rs.getInt("id"));
-        protocol.setTrip_id(rs.getInt("tracking_id"));
-        protocol.setRoad_surface_conditions(rs.getString("road_surface_conditions"));
+        protocol.setProfileId(rs.getInt("profile_id"));
+        protocol.setUsergroupId(rs.getInt("usergroup_id"));
         return protocol;
     }
 }

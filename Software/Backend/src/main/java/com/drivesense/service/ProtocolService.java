@@ -18,7 +18,7 @@ public class ProtocolService {
     private ProtocolDao protocolDao;
 
     @Autowired
-    private ProtocolUserDao protocolUserDao;
+    private ProfileUsergroupDao profileUsergroupDao;
 
     @Autowired
     private TripDao tripDao;

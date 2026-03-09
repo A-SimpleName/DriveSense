@@ -1,26 +1,19 @@
-package com.drivesense.dto.account;
+package com.drivesense.dto.request;
 
-public class AccountResponse {
-    private int id;
+public class RegisterRequest {
     private String fname;
     private String lname;
     private String email;
+    private String password;
 
-    public AccountResponse(int id, String lname, String fname, String email) {
-        this.id = id;
-        this.lname = lname;
+    public RegisterRequest(String fname, String lname, String email, String password) {
         this.fname = fname;
+        this.lname = lname;
         this.email = email;
-    }
-    public AccountResponse(){}
-
-    public int getId() {
-        return id;
+        this.password = password;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public RegisterRequest(){}
 
     public String getFname() {
         return fname;
@@ -44,5 +37,13 @@ public class AccountResponse {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
