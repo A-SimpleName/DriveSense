@@ -1,8 +1,7 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.ProtocolDto;
+import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.service.ProtocolService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

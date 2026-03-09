@@ -1,6 +1,6 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.VehicleDto;
+import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import com.drivesense.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;

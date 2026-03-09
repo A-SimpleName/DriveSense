@@ -1,7 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
-import com.drivesense.dto.VehicleDto;
+import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

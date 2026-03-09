@@ -1,8 +1,9 @@
 package com.drivesense.controller;
-import com.drivesense.db.TripDao;
-import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.Trip;
+import com.drivesense.dto.request.SaveTripRequest;
+import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,15 +12,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trips")
 public class TripController {
-    private TripService tripService = new TripService();
+    private final TripService tripService;
+
+    @Autowired
+    public TripController(TripService tripService) {
+        this.tripService = tripService;
+    }
 
     @PostMapping("/")
-    public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
-        tripService.insert(trip,trackingpoints);
+    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest) {
+        System.out.println(saveTripRequest.getTripSummary());
+        System.out.println(saveTripRequest.getTrackingpoints());
+        tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/")
-    public List<Trip> getAllTrips() {
+    public List<TripSummary> getAllTrips() {
         return tripService.getAllTrips();
     }
 }

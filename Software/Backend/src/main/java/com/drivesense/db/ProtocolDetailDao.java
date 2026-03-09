@@ -1,8 +1,7 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
-import com.drivesense.dto.ProtocolDto;
+import com.drivesense.dto.response.ProtocolDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -35,7 +34,7 @@ public class ProtocolDetailDao {
                         a.lname,
                         pu.user_role
                     FROM protocol p
-                    JOIN trip t ON t.id = p.trip_id
+                    JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
                     JOIN user u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id
@@ -72,7 +71,7 @@ public class ProtocolDetailDao {
                         a.fname, a.lname,
                         pu.user_role
                     FROM protocol p
-                    JOIN trip t ON t.id = p.trip_id
+                    JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
                     JOIN user u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id

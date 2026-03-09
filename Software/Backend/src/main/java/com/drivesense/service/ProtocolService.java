@@ -1,7 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.*;
-import com.drivesense.dto.ProtocolDto;
+import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
