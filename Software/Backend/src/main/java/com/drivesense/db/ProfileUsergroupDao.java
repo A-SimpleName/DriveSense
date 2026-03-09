@@ -1,28 +1,27 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
-import com.drivesense.model.ProtocolUser;
+import com.drivesense.model.ProfileUsergroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 
 @Repository
-public class ProtocolUserDao {
+public class ProfileUsergroupDao {
 
     @Autowired
     private DbConnection dbConnection;
 
-    public void insert(ProtocolUser pu) {
-        String sql = "INSERT INTO protocol_user (protocol_id, user_id, user_role) VALUES (?,?,?)";
+    public void insert(ProfileUsergroup pu) {
+        String sql = "INSERT INTO profile_usergroup (profile_id, usergroup_id, group_role) VALUES (?,?,?)";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, pu.getProtocolId());
-            ps.setInt(2, pu.getUserId());
-            ps.setString(3, pu.getUserRole());
+            ps.setInt(1, pu.getProfileId());
+            ps.setInt(2, pu.getUsergroupId());
+            ps.setString(3, pu.getGroupRole());
 
             ps.executeUpdate();
 
@@ -31,19 +30,19 @@ public class ProtocolUserDao {
         }
     }
 
-    public void updateRole(int protocolId, int userId, String role) {
+    public void updateRole(int profileId, int usergroupId, String groupRole) {
         String sql = """
-        UPDATE protocol_user 
-        SET user_role = ? 
-        WHERE protocol_id = ? AND user_id = ?
-    """;
+        UPDATE profile_usergroup
+        SET groupRole = ? 
+        WHERE profile_id = ? AND usergroup_id = ?
+        """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, role);
-            ps.setInt(2, protocolId);
-            ps.setInt(3, userId);
+            ps.setString(1, groupRole);
+            ps.setInt(2, profileId);
+            ps.setInt(3, usergroupId);
 
             ps.executeUpdate();
 
@@ -52,14 +51,14 @@ public class ProtocolUserDao {
         }
     }
 
-    public void delete(int protocolId, int userId) {
-        String sql = "DELETE FROM protocol_user WHERE protocol_id = ? AND user_id = ?";
+    public void delete(int profileId, int usergroupId) {
+        String sql = "DELETE FROM profile_usergroup WHERE profile_id = ? AND usergroupId = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, protocolId);
-            ps.setInt(2, userId);
+            ps.setInt(1, profileId);
+            ps.setInt(2, usergroupId);
 
             ps.executeUpdate();
 

@@ -1,19 +1,17 @@
 package com.drivesense.model;
 
-public class User {
+public class Profile {
     private int id;
     private String name;
     private String role;
     private int account_id;
-    private int group_id;
 
-    public User () {}
+    public Profile() {}
 
-    public User(String name, String role, int account_id, int group_id) {
+    public Profile(String name, String role, int account_id) {
         this.name = name;
         this.role = role;
         this.account_id = account_id;
-        this.group_id = group_id;
     }
 
     public int getId() {
@@ -48,21 +46,12 @@ public class User {
         this.account_id = account_id;
     }
 
-    public int getGroup_id() {
-        return group_id;
-    }
-
-    public void setGroup_id(int group_id) {
-        this.group_id = group_id;
-    }
-
     @Override
     public String toString() {
         return "User: " +
                 "id: " + id +
                 ", name: '" + name + '\'' +
                 ", role: '" + role + '\'' +
-                ", account_id: " + account_id +
-                ", group_id: " + group_id;
+                ", account_id: " + account_id;
     }
 }

@@ -2,15 +2,15 @@ package com.drivesense.model;
 
 public class Vehicle {
     private int id;
-    private int userId;
+    private int profileId;
     private String model;
     private String licenseplate;
     private int mileage;
 
     public Vehicle() {}
 
-    public Vehicle(int userId, String model, String licenseplate, int mileage) {
-        this.userId = userId;
+    public Vehicle(int profileId, String model, String licenseplate, int mileage) {
+        this.profileId = profileId;
         this.model = model;
         this.licenseplate = licenseplate;
         this.mileage = mileage;
@@ -24,12 +24,12 @@ public class Vehicle {
         this.id = id;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getProfileId() {
+        return profileId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setProfileId(int profileId) {
+        this.profileId = profileId;
     }
 
     public String getModel() {
@@ -60,7 +60,7 @@ public class Vehicle {
     public String toString() {
         return "Vehicle: " +
                 "id: " + id +
-                ", userId: " + userId +
+                ", profileId: " + profileId +
                 ", model: '" + model + '\'' +
                 ", licenseplate: '" + licenseplate + '\'' +
                 ", mileage: " + mileage;

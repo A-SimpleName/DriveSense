@@ -1,7 +1,11 @@
 package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
-import com.drivesense.dto.account.*;
+import com.drivesense.dto.request.LoginRequest;
+import com.drivesense.dto.request.RegisterRequest;
+import com.drivesense.dto.request.UpdateAccountRequest;
+import com.drivesense.dto.request.UpdatePasswordRequest;
+import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;

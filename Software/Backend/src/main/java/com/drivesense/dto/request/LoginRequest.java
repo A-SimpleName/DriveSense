@@ -1,4 +1,4 @@
-package com.drivesense.dto.account;
+package com.drivesense.dto.request;
 
 public class LoginRequest {
     private String email;

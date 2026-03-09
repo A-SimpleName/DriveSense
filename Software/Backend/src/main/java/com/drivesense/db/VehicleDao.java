@@ -19,7 +19,7 @@ public class VehicleDao {
     public List<VehicleDto> getAllVehiclesByAccount() {
         String sql = "SELECT v.id, v.model, u.name, v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
-                "JOIN user u ON v.user_id = u.id";
+                "JOIN profile p ON v.profile_id = p.id";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -51,11 +51,11 @@ public class VehicleDao {
     }
 
     public Vehicle insert(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicle (user_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO vehicle (profile_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1, vehicle.getUserId());
+            ps.setInt(1, vehicle.getProfileId());
             ps.setString(2, vehicle.getModel());
             ps.setString(3, vehicle.getLicenseplate());
             ps.setInt(4, vehicle.getMileage());
@@ -103,7 +103,7 @@ public class VehicleDao {
     private Vehicle map(ResultSet rs) throws SQLException {
         Vehicle v = new Vehicle();
         v.setId(rs.getInt("id"));
-        v.setUserId(rs.getInt("user_id"));
+        v.setProfileId(rs.getInt("profile_id"));
         v.setModel(rs.getString("model"));
         v.setLicenseplate(rs.getString("licenseplate"));
         v.setMileage(rs.getInt("mileage"));
@@ -113,7 +113,7 @@ public class VehicleDao {
     private VehicleDto mapDto(ResultSet rs) throws SQLException {
         VehicleDto dto = new VehicleDto();
         dto.setId(rs.getInt("id"));
-        dto.setUserName(rs.getString("name"));
+        dto.setProfileName(rs.getString("name"));
         dto.setModel(rs.getString("model"));
         dto.setLicencePlate(rs.getString("licenseplate"));
         dto.setMileage(rs.getInt("mileage"));
