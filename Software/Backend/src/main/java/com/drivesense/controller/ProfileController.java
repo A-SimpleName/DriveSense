@@ -21,7 +21,7 @@ public class ProfileController {
         return ResponseEntity.ok("Endpunkt profiles läuft");
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Profile>> getAll() {
         return ResponseEntity.ok(profileService.getAll());
     }
@@ -38,7 +38,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<Profile> insert(@RequestBody Profile profile) {
         return ResponseEntity.status(201).body(profileService.insert(profile));
     }
