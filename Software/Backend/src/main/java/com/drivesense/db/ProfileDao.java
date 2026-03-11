@@ -1,8 +1,7 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
-import com.drivesense.model.User;
+import com.drivesense.model.Profile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,36 +10,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class UserDao {
+public class ProfileDao {
 
     @Autowired
     private DbConnection dbConnection;
 
-    public User insert(User user) {
-        String sql = "INSERT INTO user (name, role, account_id, group_id) VALUES (?,?,?,?)";
+    public Profile insert(Profile profile) {
+        String sql = "INSERT INTO profile (name, role, account_id) VALUES (?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1,user.getName());
-            ps.setString(2,user.getRole());
-            ps.setInt(3,user.getAccount_id());
-            ps.setInt(4,user.getGroup_id());
+            ps.setString(1, profile.getName());
+            ps.setString(2, profile.getRole());
+            ps.setInt(3, profile.getAccount_id());
 
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                user.setId(rs.getInt(1));
+                profile.setId(rs.getInt(1));
             }
-            return user;
+            return profile;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return null;
         }
     }
 
-    public User getById(int id) {
-        String sql = "SELECT * FROM user WHERE id = ?";
+    public Profile getById(int id) {
+        String sql = "SELECT * FROM profile WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -59,40 +57,41 @@ public class UserDao {
             return null;
         }
     }
-
-    public List<User> getByGroup_id(int group_id) {
-        String sql = "SELECT * FROM user WHERE group_id = ?";
+    /*
+    public List<Profile> getByGroup_id(int group_id) {
+        String sql = "SELECT * FROM profile WHERE group_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, group_id);
             ResultSet rs = ps.executeQuery();
-            List<User> users = new ArrayList<>();
+            List<Profile> profiles = new ArrayList<>();
 
             while (rs.next()) {
-                users.add(map(rs));
+                profiles.add(map(rs));
             }
-            return users;
+            return profiles;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return null;
         }
     }
+    */
 
-    public List<User> getAll () {
-        String sql = "SELECT * FROM user";
+    public List<Profile> getAll () {
+        String sql = "SELECT * FROM profile";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            List<User> users = new ArrayList<>();
+            List<Profile> profiles = new ArrayList<>();
             while (rs.next()) {
-                users.add(map(rs));
+                profiles.add(map(rs));
             }
-            return users;
+            return profiles;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -100,14 +99,14 @@ public class UserDao {
         }
     }
 
-    public void update(User user) {
-        String sql = "UPDATE user SET name = ?, role = ? WHERE id = ?";
+    public void update(Profile profile) {
+        String sql = "UPDATE profile SET name = ?, role = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, user.getName());
-            ps.setString(2, user.getRole());
-            ps.setInt(3,user.getId());
+            ps.setString(1, profile.getName());
+            ps.setString(2, profile.getRole());
+            ps.setInt(3, profile.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -116,7 +115,7 @@ public class UserDao {
     }
 
     public void deleteById(int id) {
-        String sql = "DELETE FROM user WHERE id = ?";
+        String sql = "DELETE FROM profile WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
@@ -126,32 +125,31 @@ public class UserDao {
         }
     }
 
-    public List<User> getAllUsersByAccount_id(int id) {
-        String sql = "SELECT * FROM user WHERE account_id = ?";
+    public List<Profile> getAllUsersByAccount_id(int id) {
+        String sql = "SELECT * FROM profile WHERE account_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1,id);
             ResultSet rs = ps.executeQuery();
-            List<User> users = new ArrayList<>();
+            List<Profile> profiles = new ArrayList<>();
             while (rs.next()) {
-                users.add(map(rs));
+                profiles.add(map(rs));
             }
-            return users;
+            return profiles;
         } catch(SQLException e) {
             System.err.println(e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    private User map(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getInt("id"));
-        user.setName(rs.getString("name"));
-        user.setRole(rs.getString("role"));
-        user.setAccount_id(rs.getInt("account_id"));
-        user.setGroup_id(rs.getInt("group_id"));
-        return user;
+    private Profile map(ResultSet rs) throws SQLException {
+        Profile profile = new Profile();
+        profile.setId(rs.getInt("id"));
+        profile.setName(rs.getString("name"));
+        profile.setRole(rs.getString("role"));
+        profile.setAccount_id(rs.getInt("account_id"));
+        return profile;
     }
 
 }

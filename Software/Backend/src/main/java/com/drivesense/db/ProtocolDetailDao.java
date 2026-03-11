@@ -36,7 +36,7 @@ public class ProtocolDetailDao {
                     FROM protocol p
                     JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
-                    JOIN user u ON u.id = t.user_id
+                    JOIN profile u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id
                     LEFT JOIN protocol_user pu ON pu.protocol_id = p.id
                     WHERE t.user_id = ?
@@ -73,7 +73,7 @@ public class ProtocolDetailDao {
                     FROM protocol p
                     JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
-                    JOIN user u ON u.id = t.user_id
+                    JOIN profile u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id
                     LEFT JOIN protocol_user pu ON pu.protocol_id = p.id
                     WHERE p.id = ? AND t.user_id = ?

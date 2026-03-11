@@ -22,8 +22,8 @@ public class VehicleService {
         return vehicleDao.getById(id);
     }
 
-    public void saveVehicle(Vehicle vehicle) {
-        vehicleDao.insert(vehicle);
+    public Vehicle saveVehicle(Vehicle vehicle) {
+        return vehicleDao.insert(vehicle);
     }
 
     public void updateVehicle(Vehicle vehicle) {
