@@ -94,6 +94,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       id: 5, // TODO
       profileId: 1, // TODO
       vehicleId: 1, // TODO
+      protocolId: 1,
       startTime: tripStartTime!,
       endTime: tripEndTime, // = null
       distanceKm: 0, // TODO

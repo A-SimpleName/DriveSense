@@ -2,6 +2,7 @@ package com.drivesense.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -10,11 +11,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Service
 public class GeocodingService {
 
     // API Key
     @Value("${google.api.key}")
     private String apiKey;
+
+    @Autowired
+    public GeocodingService() {}
 
     public String getCity(double lat, double lng) {
         // URL für Google Geocoding API
