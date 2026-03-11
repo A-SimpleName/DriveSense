@@ -21,17 +21,18 @@ public class TripDao {
     }
 
     public int insert(TripSummary tripSummary) {
-        String sql = "INSERT INTO trip (profile_id, vehicle_id, starttime, endtime, distance, road_surface_conditions, type) VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, starttime, endtime, distance, road_surface_conditions, type) VALUES (?,?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, tripSummary.getProfileId());
             ps.setInt(2, tripSummary.getVehicleId());
-            ps.setObject(3, tripSummary.getStartTime());
-            ps.setObject(4, tripSummary.getEndTime());
-            ps.setDouble(5, tripSummary.getDistance());
-            ps.setString(6, tripSummary.getRoadSurfaceConditions());
-            ps.setString(7, tripSummary.getType());
+            ps.setInt(3, tripSummary.getProtocolId());
+            ps.setObject(4, tripSummary.getStartTime());
+            ps.setObject(5, tripSummary.getEndTime());
+            ps.setDouble(6, tripSummary.getDistance());
+            ps.setString(7, tripSummary.getRoadSurfaceConditions());
+            ps.setString(8, tripSummary.getType());
 
             ps.executeUpdate();
 
@@ -68,13 +69,13 @@ public class TripDao {
         }
     }
 
-    public TripSummary getByUserId(int userId) {
+    public TripSummary getByProfileId(int profileId) {
         String sql = "SELECT * FROM trip WHERE profile_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, userId);
+            ps.setInt(1, profileId);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -82,6 +83,56 @@ public class TripDao {
             }
 
             return null;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public TripSummary getByIdAndProfileId(int id, int profileId) {
+        String sql = "SELECT * FROM trip WHERE id = ? AND profile_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.setInt(2, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return map(rs);
+            }
+
+            return null;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+        String sql = """
+                SELECT t.* 
+                FROM trip t
+                JOIN protocol pr ON t.protocol_id = pr.id
+                WHERE pr.id = ? 
+                  AND pr.profile_id = ? 
+                  """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ps.setInt(2, protocolId);
+            ResultSet rs = ps.executeQuery();
+
+            List<TripSummary> tripSummaries = new ArrayList<>();
+            while (rs.next()) {
+                tripSummaries.add(map(rs));
+            }
+            return tripSummaries;
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -142,6 +193,7 @@ public class TripDao {
         tripSummary.setId(rs.getInt("id"));
         tripSummary.setProfileId(rs.getInt("profile_id"));
         tripSummary.setVehicleId(rs.getInt("vehicle_id"));
+        tripSummary.setProtocolId(rs.getInt("protocol_id"));
         tripSummary.setStartTime((LocalDateTime) rs.getObject("starttime"));
         tripSummary.setEndTime((LocalDateTime) rs.getObject("endtime"));
         tripSummary.setDistance(rs.getDouble("distance"));
