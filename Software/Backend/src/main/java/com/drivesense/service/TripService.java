@@ -17,16 +17,21 @@ public class TripService {
     private final TripDao tripDao;
     private final TrackingpointDao trackingpointDao;
     private final GeocodingService geocodingService;
+    private final WeatherService weatherService;
 
     @Autowired
-    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao, GeocodingService geocodingService) {
+    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao, GeocodingService geocodingService,WeatherService weatherService) {
         this.tripDao = tripDao;
         this.trackingpointDao = trackingpointDao;
         this.geocodingService = geocodingService;
+        this.weatherService = weatherService;
     }
 
     public void insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
         int id = tripDao.insert(tripSummary);
+
+        Trackingpoint firstPoint = trackingpoints.get(0);
+        tripSummary.setRoadSurfaceConditions(weatherService.getRoadSurfaceCondition(firstPoint.getLat(),firstPoint.getLng()));
 
         for (Trackingpoint trackingpoint : trackingpoints) {
             trackingpoint.setTripId(id);
@@ -40,6 +45,17 @@ public class TripService {
 
     public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         return this.tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+    }
+
+    public double getTotalKm (int profileId) {
+        List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
+        if (tripSummaries == null) {
+            return 0;
+        } else {
+            return tripSummaries.stream()
+                    .mapToDouble(TripSummary::getDistance)
+                    .sum();
+        }
     }
 
     // Eine einzelne Fahrt
