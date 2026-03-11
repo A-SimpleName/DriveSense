@@ -1,5 +1,6 @@
 package com.drivesense;
 
+import com.drivesense.service.GeocodingService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
