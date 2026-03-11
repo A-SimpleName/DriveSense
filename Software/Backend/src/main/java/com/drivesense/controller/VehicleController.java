@@ -4,6 +4,7 @@ import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import com.drivesense.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,37 +18,35 @@ public class VehicleController {
     private VehicleService vehicleService;
 
     @GetMapping("/test")
-    public String test() {
-        return "Endpunkt vehicles läuft!";
-    }
-    // Alle Fahrzeuge anzeigen (DTO mit Username)
-    @GetMapping("/")
-    public List<VehicleDto> getAllVehicles() {
-        return vehicleService.getAllVehicles();
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Endpunkt vehicles läuft!");
     }
 
-    // Fahrzeug speichern
-    @PostMapping("/")
-    public void saveVehicle(@RequestBody Vehicle vehicle) {
-        vehicleService.saveVehicle(vehicle);
+    @GetMapping
+    public ResponseEntity<List<VehicleDto>> getAllVehicles() {
+        return ResponseEntity.ok(vehicleService.getAllVehicles());
     }
 
-    // Einzelnes Fahrzeug
+    @PostMapping
+    public ResponseEntity<Vehicle> saveVehicle(@RequestBody Vehicle vehicle) {
+        return ResponseEntity.status(201).body(vehicleService.saveVehicle(vehicle));
+    }
+
     @GetMapping("/{id}")
-    public Vehicle getVehicle(@PathVariable int id) {
-        return vehicleService.getVehicleById(id);
+    public ResponseEntity<Vehicle> getVehicle(@PathVariable int id) {
+        return ResponseEntity.ok(vehicleService.getVehicleById(id));
     }
 
-    // Fahrzeug bearbeiten
     @PutMapping("/{id}")
-    public void updateVehicle(@PathVariable int id, @RequestBody Vehicle vehicle) {
+    public ResponseEntity<Void> updateVehicle(@PathVariable int id, @RequestBody Vehicle vehicle) {
         vehicle.setId(id);
         vehicleService.updateVehicle(vehicle);
+        return ResponseEntity.ok().build();
     }
 
-    // Fahrzeug löschen
     @DeleteMapping("/{id}")
-    public void deleteVehicle(@PathVariable int id) {
+    public ResponseEntity<Void> deleteVehicle(@PathVariable int id) {
         vehicleService.deleteVehicle(id);
+        return ResponseEntity.noContent().build();
     }
 }

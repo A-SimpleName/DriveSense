@@ -3,16 +3,16 @@ package com.drivesense.dto.response;
 public class VehicleDto {
     private int id;
     private String model;
-    private String userName;
+    private String profileName;
     private String licencePlate;
     private int mileage;
 
     public VehicleDto() {}
 
-    public VehicleDto(int id, String model, String userName, String licencePlate, int mileage) {
+    public VehicleDto(int id, String model, String profileName, String licencePlate, int mileage) {
         this.id = id;
         this.model = model;
-        this.userName = userName;
+        this.profileName = profileName;
         this.licencePlate = licencePlate;
         this.mileage = mileage;
     }
@@ -33,12 +33,12 @@ public class VehicleDto {
         this.model = model;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getProfileName() {
+        return profileName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
     }
 
     public String getLicencePlate() {

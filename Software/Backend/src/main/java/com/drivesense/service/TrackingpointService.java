@@ -1,0 +1,18 @@
+package com.drivesense.service;
+
+import com.drivesense.db.TrackingpointDao;
+import com.drivesense.model.Trackingpoint;
+import com.drivesense.model.TripSummary;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class TrackingpointService {
+    @Autowired
+    private TrackingpointDao trackingpointDao;
+
+    public void insert (Trackingpoint trackingpoint, TripSummary trip) {
+        trackingpoint.setTripId(trip.getId());
+        trackingpointDao.insert(trackingpoint);
+    }
+}
