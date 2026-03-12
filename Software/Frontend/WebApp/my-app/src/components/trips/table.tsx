@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { getAllTrips } from "../../services/tripService"
-import type { Trip } from "../../model/trip"
+import type { TripSummary } from "../../model/trip"
 import "../../styles/table.css"
 import { Button } from "../button"
 
 function TripsTable() {
 
     const navigate = useNavigate()
-    const [trips, setTrips] = useState<Trip[]>([])
+    const [trips, setTrips] = useState<TripSummary[]>([])
 
     useEffect(() => {
         getAllTrips()

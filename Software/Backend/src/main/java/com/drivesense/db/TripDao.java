@@ -114,12 +114,12 @@ public class TripDao {
 
     public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         String sql = """
-                SELECT t.* 
-                FROM trip t
-                JOIN protocol pr ON t.protocol_id = pr.id
-                WHERE pr.id = ? 
-                  AND pr.profile_id = ? 
-                  """;
+        SELECT t.*, v.model, v.licenseplate
+        FROM trip t
+        JOIN vehicle v ON t.vehicle_id = v.id
+        WHERE t.profile_id = ? 
+          AND t.protocol_id = ?
+        """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
