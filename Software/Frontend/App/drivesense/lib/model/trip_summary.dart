@@ -4,6 +4,7 @@ class TripSummary {
   final int id;
   final int profileId;
   final int vehicleId;
+  final int protocolId;
   final DateTime startTime;
   final DateTime? endTime;
   final double distanceKm;
@@ -15,6 +16,7 @@ class TripSummary {
     required this.id,
     required this.profileId,
     required this.vehicleId,
+    required this.protocolId,
     required this.startTime,
     this.endTime,
     required this.distanceKm,
@@ -26,6 +28,7 @@ class TripSummary {
     return {
       "profileId": profileId,
       "vehicleId": vehicleId,
+      "protocolId": protocolId,
       "startTime": startTime.toIso8601String(),
       "endTime": endTime?.toIso8601String(),
       "distance": distanceKm,
@@ -39,6 +42,7 @@ class TripSummary {
       id: json["id"],
       profileId: json["profileId"],
       vehicleId: json["vehicleId"],
+      protocolId: json["protocolId"],
       startTime: DateTime.parse(json["startTime"]),
       endTime: json["endTime"] != null
           ? DateTime.parse(json["endTime"])
@@ -54,6 +58,7 @@ class TripSummary {
       id: id,
       profileId: profileId,
       vehicleId: vehicleId,
+      protocolId: protocolId,
       startTime: startTime,
       endTime: endTime,
       distanceKm: distanceKm,
