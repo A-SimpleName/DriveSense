@@ -1,15 +1,16 @@
 package com.drivesense.model;
 
-public class Protocol {
-    private int id;
+public class ProfileUsergroup {
     private int profileId;
     private int usergroupId;
+    private String groupRole;
 
-    public Protocol(){}
+    public ProfileUsergroup(){}
 
-    public Protocol(int profileId, int usergroupId) {
+    public ProfileUsergroup(int profileId, int usergroupId, String groupRole) {
         this.profileId = profileId;
         this.usergroupId = usergroupId;
+        this.groupRole = groupRole;
     }
 
     public int getProfileId() {
@@ -20,15 +21,6 @@ public class Protocol {
         this.profileId = profileId;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-
     public int getUsergroupId() {
         return usergroupId;
     }
@@ -37,12 +29,19 @@ public class Protocol {
         this.usergroupId = usergroupId;
     }
 
+    public String getGroupRole() {
+        return groupRole;
+    }
+
+    public void setGroupRole(String groupRole) {
+        this.groupRole = groupRole;
+    }
+
     @Override
     public String toString() {
-        return "Protocol{" +
-                "id=" + id +
-                ", profileId=" + profileId +
-                ", usergroupId=" + usergroupId +
-                '}';
+        return "ProtocolUser: " +
+                "profileId: " + profileId +
+                ", usergroupId: " + usergroupId +
+                ", groupRole: '" + groupRole + '\'';
     }
 }

@@ -1,8 +1,7 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
-import com.drivesense.dto.ProtocolDto;
+import com.drivesense.dto.response.ProtocolDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -23,7 +22,7 @@ public class ProtocolDetailDao {
         String sql = """
                     SELECT 
                         p.id AS protocol_id,
-                        t.id AS trip_id
+                        t.id AS trip_id,
                         p.road_surface_conditions,
                         t.starttime,
                         t.endtime,
@@ -35,9 +34,9 @@ public class ProtocolDetailDao {
                         a.lname,
                         pu.user_role
                     FROM protocol p
-                    JOIN trip t ON t.id = p.trip_id
+                    JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
-                    JOIN user u ON u.id = t.user_id
+                    JOIN profile u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id
                     LEFT JOIN protocol_user pu ON pu.protocol_id = p.id
                     WHERE t.user_id = ?
@@ -56,7 +55,7 @@ public class ProtocolDetailDao {
 
         } catch (SQLException e) {
             System.err.println(e.getMessage());
-            return null;
+            return new ArrayList<>();
         }
     }
 
@@ -72,9 +71,9 @@ public class ProtocolDetailDao {
                         a.fname, a.lname,
                         pu.user_role
                     FROM protocol p
-                    JOIN trip t ON t.id = p.trip_id
+                    JOIN tripSummary t ON t.id = p.trip_id
                     JOIN vehicle v ON v.id = t.car_id
-                    JOIN user u ON u.id = t.user_id
+                    JOIN profile u ON u.id = t.user_id
                     JOIN account a ON a.id = u.account_id
                     LEFT JOIN protocol_user pu ON pu.protocol_id = p.id
                     WHERE p.id = ? AND t.user_id = ?

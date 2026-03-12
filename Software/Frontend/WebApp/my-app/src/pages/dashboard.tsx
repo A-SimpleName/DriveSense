@@ -6,7 +6,7 @@ import { TripsList } from "../components/trips/trip";
 
 export let rides = [
         { id: 1,  name: "Niklas",date: "2024-01-15",km:120, startLat:88.2082, startLng:95.3738, endLat:48.2105, endLng:16.3801, carId:1,time:"Vormittag"},
-        { id: 2,  name: "Niklas",date: "2024-02-20", km:85,  startLat:66.2105, startLng:45.3801, endLat:48.2105, endLng:16.3801,carId:2,time:"Abend"},
+        { id: 2,  name: "Niklas",date: "2024-02-20", km:85,  startLat:66.2105, startLng:45.3801, endLat:48.2105, endLng:16.3801,carId:2,time:"Abend" },
         { id: 3,  name: "Niklas",date: "2024-03-10",km:95, startLat: 48.2082, startLng: 16.3738, endLat:48.2105, endLng:16.3801,carId:3,time:"Mittag" },
 ];
 

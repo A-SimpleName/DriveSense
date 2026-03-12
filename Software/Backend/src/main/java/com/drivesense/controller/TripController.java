@@ -1,25 +1,40 @@
 package com.drivesense.controller;
-import com.drivesense.db.TripDao;
-import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.Trip;
+
+import com.drivesense.dto.request.SaveTripRequest;
+import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @CrossOrigin(origins = "*")//origins = "http://localhost:5173")
 @RestController
-@RequestMapping("/api/trips")
+@RequestMapping("/api")
 public class TripController {
-    private TripService tripService = new TripService();
-/*
-    @PostMapping("/save")
-    public void saveTrip(@RequestBody Trip trip, List<Trackingpoint> trackingpoints) {
-        tripService.saveTrip(trip,trackingpoints);
+    private final TripService tripService;
+
+    @Autowired
+    public TripController(TripService tripService) {
+        this.tripService = tripService;
     }
-*/
-    @GetMapping("/get")
-    public List<Trip> getAllTrips() {
-        return tripService.getAllTrips();
+
+    @PostMapping("/trips")
+    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest) {
+        System.out.println(saveTripRequest.getTripSummary());
+        System.out.println(saveTripRequest.getTrackingpoints());
+        tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
+        return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
+    }
+
+    @GetMapping("/totalKm")
+    public ResponseEntity<Double> getTotalKm (@RequestParam int profileId) {
+        return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
 }
