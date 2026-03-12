@@ -1,9 +1,17 @@
-import RidesTable from "../components/trips/table";
+import TripsTable from "../components/trips/table";
+import { Button } from "../components/button";
+
 function Trips() {
+
     return (
         <div>
-            <h1>Fahrten</h1>
-            <RidesTable />
+
+            <h1>Fahrtenprotokoll</h1>
+
+            <Button label="+ Fahrt hinzufügen"/>
+
+            <TripsTable />
+
         </div>
     );
 }

@@ -36,7 +36,7 @@ function Dashboard() {
                 ]}
            />
            <h1>Fahrtenübersicht</h1>
-           <TripsList />
+           <TripsList/>
         </div>
     );
 }

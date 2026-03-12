@@ -3,19 +3,20 @@ import { getAllTrips } from "../../services/tripService";
 import type { Trip } from "../../model/trip";
 
 export function TripsList() {
+
     const [trips, setTrips] = useState<Trip[]>([]);
 
     useEffect(() => {
         getAllTrips()
             .then(data => setTrips(data))
-            .catch(err => console.error("Fehler beim Laden der Trips:", err));
+            .catch(err => console.error("Fehler:", err));
     }, []);
 
     return (
         <ul>
-            {trips.map(t => (
-                <li key={t.id}>
-                    {t.user_id} - {t.car_id} - {t.distance} km
+            {trips.map(trip => (
+                <li key={trip.protocolId}>
+                    {trip.fname} {trip.lname} - {trip.distance} km
                 </li>
             ))}
         </ul>

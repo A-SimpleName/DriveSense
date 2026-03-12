@@ -2,22 +2,24 @@ import { useEffect, useState } from "react";
 import { getAllVehicles } from "../../services/vehicleService";
 import type { Vehicle } from "../../model/vehicle";
 import { Button } from "../button";
+import "../../styles/table.css";
 
 function VehiclesTable() {
 
-    const [vehicles, setVehicles] = useState<Vehicle[]>([])
+    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
     useEffect(() => {
         getAllVehicles()
             .then(data => setVehicles(data))
-            .catch(err => console.error("Fehler beim Laden:", err))
-    }, [])
+            .catch(err => console.error("Fehler beim Laden:", err));
+    }, []);
 
     return (
-        <table>
+        <table className="ridesTable">
+
             <thead>
                 <tr>
-                    <th>Model</th>
+                    <th>Modell</th>
                     <th>Kennzeichen</th>
                     <th>Kilometerstand</th>
                     <th colSpan={2}>Aktionen</th>
@@ -31,7 +33,9 @@ function VehiclesTable() {
                     <tr key={vehicle.id}>
 
                         <td>{vehicle.model}</td>
+
                         <td>{vehicle.licenseplate}</td>
+
                         <td>{vehicle.mileage} km</td>
 
                         <td>
