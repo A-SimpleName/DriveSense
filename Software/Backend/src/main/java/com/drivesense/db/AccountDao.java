@@ -100,15 +100,14 @@ public class AccountDao {
     }
 
     public void update(Account acc) {
-        String sql = "UPDATE account SET fname = ?, lname = ?, pwd = ?, email = ? WHERE id = ?";
+        String sql = "UPDATE account SET fname = ?, lname = ?, email = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, acc.getfName());
             ps.setString(2, acc.getlName());
-            ps.setString(3, acc.getPassword());
-            ps.setString(4, acc.getEmail());
-            ps.setInt(5, acc.getId());
+            ps.setString(3, acc.getEmail());
+            ps.setInt(4, acc.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {

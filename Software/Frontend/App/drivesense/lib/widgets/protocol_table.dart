@@ -1,6 +1,6 @@
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/model/trip.dart';
+import 'package:drivesense/model/trip_summary.dart';
 
 class ProtocolTable extends StatefulWidget {
   const ProtocolTable({super.key});
@@ -12,7 +12,7 @@ class ProtocolTable extends StatefulWidget {
 class _ProtocolTableState extends State<ProtocolTable> {
   @override
   Widget build(BuildContext context) {
-    final List<Trip> trips = RuntimeStore.trips; // Beispiel: alle Trip-Objekte
+    final List<TripSummary> trips = RuntimeStore.trips; // Beispiel: alle Trip-Objekte
 
     return SizedBox(
       width: double.infinity,
@@ -108,7 +108,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
                     _cell(trip.vehicleId.toString()),
                     _cell(_formatTimeOfDay(trip.startTime)),
                     _cell(trip.type ?? '-'),
-                    _cell(trip.weatherMain),
+                    _cell(trip.roadSurfaceConditions),
                   ],
                 ),
               ),

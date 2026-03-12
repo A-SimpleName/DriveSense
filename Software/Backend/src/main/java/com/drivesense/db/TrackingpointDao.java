@@ -1,6 +1,5 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +13,19 @@ import java.util.List;
 @Repository
 public class TrackingpointDao {
 
+    private final DbConnection dbConnection;
+
     @Autowired
-    private DbConnection dbConnection;
+    public TrackingpointDao(DbConnection dbConnection) {
+        this.dbConnection = dbConnection;
+    }
 
     public Trackingpoint insert(Trackingpoint trackingpoint) {
         String sql = "INSERT INTO trackingpoint (trip_id, lat, lng, accuracy, speed, bearing, timestamp) VALUES (?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,trackingpoint.getTrip_id());
+            ps.setInt(1,trackingpoint.getTripId());
             ps.setDouble(2,trackingpoint.getLat());
             ps.setDouble(3,trackingpoint.getLng());
             ps.setDouble(4,trackingpoint.getAccuracy());
@@ -137,7 +140,7 @@ public class TrackingpointDao {
     private Trackingpoint map(ResultSet rs) throws SQLException {
         Trackingpoint trackingpoint = new Trackingpoint();
         trackingpoint.setId(rs.getInt("id"));
-        trackingpoint.setTrip_id(rs.getInt("tracking_id"));
+        trackingpoint.setTripId(rs.getInt("trip_id"));
         trackingpoint.setLat(rs.getDouble("lat"));
         trackingpoint.setLng(rs.getDouble("lng"));
         trackingpoint.setAccuracy(rs.getDouble("accuracy"));

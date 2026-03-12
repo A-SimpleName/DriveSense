@@ -1,7 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.VehicleDao;
-import com.drivesense.dto.VehicleDto;
+import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,8 +22,8 @@ public class VehicleService {
         return vehicleDao.getById(id);
     }
 
-    public void saveVehicle(Vehicle vehicle) {
-        vehicleDao.insert(vehicle);
+    public Vehicle saveVehicle(Vehicle vehicle) {
+        return vehicleDao.insert(vehicle);
     }
 
     public void updateVehicle(Vehicle vehicle) {

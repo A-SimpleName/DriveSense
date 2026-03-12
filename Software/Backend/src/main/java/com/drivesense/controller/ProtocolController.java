@@ -1,6 +1,6 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.ProtocolDto;
+import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.service.ProtocolService;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,11 +10,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/protocols")
 public class ProtocolController {
-    private ProtocolService protocolService = new ProtocolService();
 
+    private final ProtocolService protocolService;
 
-    @GetMapping("/")
-    public List<ProtocolDto> getAllProtocolsByUser(/*@RequestParam int userId*/) {
-        return protocolService.getAllByUser(1);
+    public ProtocolController(ProtocolService protocolService) {
+        this.protocolService = protocolService;
     }
+
 }

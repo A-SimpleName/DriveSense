@@ -1,67 +1,69 @@
 import 'package:drivesense/model/trackingpoint.dart';
 
-class Trip {
+class TripSummary {
   final int id;
-  final int userId;
+  final int profileId;
   final int vehicleId;
+  final int protocolId;
   final DateTime startTime;
   final DateTime? endTime;
   final double distanceKm;
-  final String weatherMain;
+  final String roadSurfaceConditions;
   final String? type;
-  final List<Trackingpoint>? trackingPoints;
+  
 
-  Trip({
+  TripSummary({
     required this.id,
-    required this.userId,
+    required this.profileId,
     required this.vehicleId,
+    required this.protocolId,
     required this.startTime,
     this.endTime,
     required this.distanceKm,
-    required this.weatherMain,
+    required this.roadSurfaceConditions,
     required this.type,
-    this.trackingPoints,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
-      "userId": userId,
+      "profileId": profileId,
       "vehicleId": vehicleId,
+      "protocolId": protocolId,
       "startTime": startTime.toIso8601String(),
       "endTime": endTime?.toIso8601String(),
-      "distanceKm": distanceKm,
-      "weatherMain": weatherMain,
+      "distance": distanceKm,
+      "roadSurfaceConditions": roadSurfaceConditions,
       "type": type,
     };
   }
 
-  factory Trip.fromJson(Map<String, dynamic> json) {
-    return Trip(
+  factory TripSummary.fromJson(Map<String, dynamic> json) {
+    return TripSummary(
       id: json["id"],
-      userId: json["userId"],
+      profileId: json["profileId"],
       vehicleId: json["vehicleId"],
+      protocolId: json["protocolId"],
       startTime: DateTime.parse(json["startTime"]),
       endTime: json["endTime"] != null
           ? DateTime.parse(json["endTime"])
           : null,
-      distanceKm: json["distanceKm"].toDouble(),
-      weatherMain: json["weatherMain"],
+      distanceKm: json["distance"].toDouble(),
+      roadSurfaceConditions: json["roadSurfaceConditions"],
       type: json["type"],
     );
   }
 
-  Trip copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
-    return Trip(
+  TripSummary copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
+    return TripSummary(
       id: id,
-      userId: userId,
+      profileId: profileId,
       vehicleId: vehicleId,
+      protocolId: protocolId,
       startTime: startTime,
       endTime: endTime,
       distanceKm: distanceKm,
-      weatherMain: weatherMain,
+      roadSurfaceConditions: roadSurfaceConditions,
       type: type,
-      trackingPoints: trackingPoints,
     );
   }
 }
