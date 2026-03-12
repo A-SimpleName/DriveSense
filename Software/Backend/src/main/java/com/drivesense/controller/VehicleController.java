@@ -22,12 +22,12 @@ public class VehicleController {
         return ResponseEntity.ok("Endpunkt vehicles läuft!");
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<VehicleDto>> getAllVehicles() {
         return ResponseEntity.ok(vehicleService.getAllVehicles());
     }
 
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<Vehicle> saveVehicle(@RequestBody Vehicle vehicle) {
         return ResponseEntity.status(201).body(vehicleService.saveVehicle(vehicle));
     }
