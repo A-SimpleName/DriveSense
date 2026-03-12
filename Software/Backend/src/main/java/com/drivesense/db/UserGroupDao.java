@@ -17,7 +17,7 @@ public class UserGroupDao {
     private DbConnection dbConnection;
 
     public UserGroup insert(UserGroup userGroup) {
-        String sql = "INSERT INTO user_group (name, owner_id) VALUES (?,?)";
+        String sql = "INSERT INTO usergroup (name, owner_id) VALUES (?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -38,7 +38,7 @@ public class UserGroupDao {
     }
 
     public UserGroup getById(int id) {
-        String sql = "SELECT * FROM user_group WHERE id = ?";
+        String sql = "SELECT * FROM usergroup WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -59,7 +59,7 @@ public class UserGroupDao {
     }
 
     public List<UserGroup> getAll () {
-        String sql = "SELECT * FROM user_group";
+        String sql = "SELECT * FROM usergroup";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -77,8 +77,34 @@ public class UserGroupDao {
         }
     }
 
+    public List<UserGroup> getGroupsByProfileId (int profileId) {
+        String sql = """
+            SELECT ug.*
+            FROM usergroup ug
+            JOIN profile_usergroup pu ON pu.usergroup_id = ug.id
+            WHERE pu.profile_id = ?
+            """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<UserGroup> groups = new ArrayList<>();
+            while (rs.next()) {
+                groups.add(map(rs));
+            }
+            return groups;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     public void update(UserGroup userGroup) {
-        String sql = "UPDATE user_group SET name = ?,owner_id = ? WHERE id = ?";
+        String sql = "UPDATE usergroup SET name = ?,owner_id = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
