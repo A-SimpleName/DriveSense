@@ -17,10 +17,12 @@ Future<void> saveTripToDb(TripSummary trip, List<Trackingpoint> trackingPoints) 
 
 Future<http.Response> _postTripDetailed(TripDetailed tripDetailed) async {
   return http.post(
-    Uri.parse('http://192.168.8.209:8080/api/trips/'),
+    Uri.parse('http://172.16.100.124:8080/api/trips/'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ${RuntimeStore.getAuthToken}',
     },
+    
     body: jsonEncode(tripDetailed.toJson()),
   );
 }

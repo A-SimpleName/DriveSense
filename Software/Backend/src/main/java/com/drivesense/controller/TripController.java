@@ -1,4 +1,5 @@
 package com.drivesense.controller;
+
 import com.drivesense.dto.request.SaveTripRequest;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "*")//origins = "http://localhost:5173")
 @RestController
-@RequestMapping("/api/trips")
+@RequestMapping("/api")
 public class TripController {
     private final TripService tripService;
 
@@ -19,7 +20,7 @@ public class TripController {
         this.tripService = tripService;
     }
 
-    @PostMapping("/")
+    @PostMapping("/trips")
     public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest) {
         System.out.println(saveTripRequest.getTripSummary());
         System.out.println(saveTripRequest.getTrackingpoints());
@@ -27,8 +28,13 @@ public class TripController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/")
-    public List<TripSummary> getAllTrips() {
-        return tripService.getAllTrips();
+    @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
+        return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
+    }
+
+    @GetMapping("/totalKm")
+    public ResponseEntity<Double> getTotalKm (@RequestParam int profileId) {
+        return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
 }

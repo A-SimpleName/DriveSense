@@ -6,17 +6,24 @@ public class TripSummary {
     private int id;
     private int profileId;
     private int vehicleId;
+    private int protocolId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private double distance;
     private String roadSurfaceConditions;
     private String type;
 
+    private String startPoint;
+    private String endPoint;
+    private String furthestPoint;
+
+
     public TripSummary(){}
 
-    public TripSummary(int profileId, int vehicleId, LocalDateTime startTime, LocalDateTime endTime, double distance, String roadSurfaceConditions, String type) {
+    public TripSummary(int profileId, int vehicleId, int protocolId, LocalDateTime startTime, LocalDateTime endTime, double distance, String roadSurfaceConditions, String type) {
         this.profileId = profileId;
         this.vehicleId = vehicleId;
+        this.protocolId = protocolId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.distance = distance;
@@ -46,6 +53,14 @@ public class TripSummary {
 
     public void setVehicleId(int vehicleId) {
         this.vehicleId = vehicleId;
+    }
+
+    public int getProtocolId() {
+        return protocolId;
+    }
+
+    public void setProtocolId(int protocolId) {
+        this.protocolId = protocolId;
     }
 
     public LocalDateTime getStartTime() {
@@ -88,12 +103,37 @@ public class TripSummary {
         this.type = type;
     }
 
+    public String getStartPoint() {
+        return startPoint;
+    }
+
+    public void setStartPoint(String startPoint) {
+        this.startPoint = startPoint;
+    }
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    public void setEndPoint(String endPoint) {
+        this.endPoint = endPoint;
+    }
+
+    public String getFurthestPoint() {
+        return furthestPoint;
+    }
+
+    public void setFurthestPoint(String furthestPoint) {
+        this.furthestPoint = furthestPoint;
+    }
+
     @Override
     public String toString() {
         return "Trip: " +
                 "id: " + id +
                 ", profile_id: " + profileId +
                 ", vehicle_id: " + vehicleId +
+                ", protocol_id: " + protocolId +
                 ", startTime: " + startTime +
                 ", endTime: " + endTime +
                 ", distance: " + distance +

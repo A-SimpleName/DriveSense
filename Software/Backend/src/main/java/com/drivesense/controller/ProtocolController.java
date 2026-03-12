@@ -17,8 +17,4 @@ public class ProtocolController {
         this.protocolService = protocolService;
     }
 
-    @GetMapping("/")
-    public List<ProtocolDto> getAllProtocolsByUser() {
-        return protocolService.getAllByUser(1);
-    }
 }
