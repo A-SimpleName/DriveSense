@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
-import { getAllTrips } from "../../services/tripService";
-import type { Trip } from "../../model/trip";
-import "../../styles/table.css";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { getAllTrips } from "../../services/tripService"
+import type { TripSummary } from "../../model/trip"
+import "../../styles/table.css"
+
 
 function TripsTable() {
 
-    const [trips, setTrips] = useState<Trip[]>([]);
+    const navigate = useNavigate()
+    const [trips, setTrips] = useState<TripSummary[]>([])
 
     useEffect(() => {
         getAllTrips()
@@ -18,16 +21,14 @@ function TripsTable() {
 
             <thead>
                 <tr>
-                    <th>Datum</th>
-                    <th>Fahrer</th>
-                    <th>km</th>
-                    <th>Kennzeichen</th>
-                    <th>Start</th>
-                    <th>Wendepunkt</th>
-                    <th>Ende</th>
-                    <th>Wetter</th>
-                    <th>Straßenzustand</th>
-                    <th>Rolle</th>
+                    <th>id</th>
+                    <th>user_id</th>
+                    <th>car_id</th>
+                    <th>starttime</th>
+                    <th>endtime</th>
+                    <th>distance</th>
+                    <th>weather_main</th>
+      
                 </tr>
             </thead>
 
@@ -35,47 +36,21 @@ function TripsTable() {
 
                 {trips.map(trip => (
 
-                    <tr key={trip.protocolId}>
+                    <tr key={trip.id}>
 
-                        <td>
-                            {new Date(trip.starttime).toLocaleDateString()}
-                        </td>
+                        <td>{trip.id}</td>
 
-                        <td>
-                            {trip.fname} {trip.lname}
-                        </td>
+                        <td>{trip.user_id}</td>
 
-                        <td>
-                            {trip.distance}
-                        </td>
+                        <td>{trip.car_id}</td>
 
-                        <td>
-                            {trip.licenseplate}
-                        </td>
+                        <td>{new Date(trip.starttime).toLocaleString()}</td>
 
-                        <td>
-                            {trip.startPoint}
-                        </td>
+                        <td>{new Date(trip.endtime).toLocaleString()}</td>
 
-                        <td>
-                            {trip.furthestPoint}
-                        </td>
+                        <td>{trip.distance} km</td>
 
-                        <td>
-                            {trip.endPoint}
-                        </td>
-
-                        <td>
-                            {trip.weatherMain}
-                        </td>
-
-                        <td>
-                            {trip.roadSurfaceConditions}
-                        </td>
-
-                        <td>
-                            {trip.userRole}
-                        </td>
+                        <td>{trip.weather_main}</td>
 
                     </tr>
 

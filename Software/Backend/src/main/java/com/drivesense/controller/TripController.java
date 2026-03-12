@@ -37,4 +37,9 @@ public class TripController {
     public ResponseEntity<Double> getTotalKm (@RequestParam int profileId) {
         return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
+
+    @GetMapping("/trips")
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId() {
+        return ResponseEntity.ok(tripService.getAllTrips());
+    }
 }

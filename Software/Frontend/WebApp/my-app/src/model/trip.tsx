@@ -1,28 +1,13 @@
-export interface Trip {
-
-    protocolId: number;
-
-    roadSurfaceConditions: string;
-
-    // tracking
-    starttime: string;
-    endtime: string;
+export interface TripSummary {
+    id: number
+    user_id: number;
+    car_id: number;
+    starttime: Date;
+    endtime: Date;
     distance: number;
-    weatherMain: string;
-    type: string;
+    weather_main: string;
+}
 
-    // vehicle
-    licenseplate: string;
+export interface TripDetailed {
 
-    // driver
-    fname: string;
-    lname: string;
-
-    // role
-    userRole: string;
-
-    // route
-    startPoint: string;
-    furthestPoint: string;
-    endPoint: string;
 }
