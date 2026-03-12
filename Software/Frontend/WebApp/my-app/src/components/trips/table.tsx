@@ -1,33 +1,33 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { getAllTrips } from "../../services/tripService"
-import type { Trip } from "../../model/trip"
-import "../../styles/table.css"
-import { Button } from "../button"
+import { useEffect, useState } from "react";
+import { getAllTrips } from "../../services/tripService";
+import type { Trip } from "../../model/trip";
+import "../../styles/table.css";
 
 function TripsTable() {
 
-    const navigate = useNavigate()
-    const [trips, setTrips] = useState<Trip[]>([])
+    const [trips, setTrips] = useState<Trip[]>([]);
 
     useEffect(() => {
         getAllTrips()
-            .then(data => setTrips(data)) 
-            .catch(err => console.error("Fehler beim Laden:", err))
-    }, [])
+            .then(data => setTrips(data))
+            .catch(err => console.error("Fehler:", err));
+    }, []);
 
     return (
         <table className="ridesTable">
 
             <thead>
                 <tr>
-                    <th>Startzeit</th>
-                    <th>Endzeit</th>
-                    <th>User</th>
-                    <th>Car</th>
-                    <th>Distanz</th>
+                    <th>Datum</th>
+                    <th>Fahrer</th>
+                    <th>km</th>
+                    <th>Kennzeichen</th>
+                    <th>Start</th>
+                    <th>Wendepunkt</th>
+                    <th>Ende</th>
                     <th>Wetter</th>
-                    <th>Aktionen</th>
+                    <th>Straßenzustand</th>
+                    <th>Rolle</th>
                 </tr>
             </thead>
 
@@ -35,21 +35,46 @@ function TripsTable() {
 
                 {trips.map(trip => (
 
-                    <tr
-                        key={trip.id}
-                        onClick={() => navigate(`/fahrten/${trip.id}`)}
-                    >
-
-                        <td>{new Date(trip.starttime).toLocaleString()}</td>
-                        <td>{new Date(trip.endtime).toLocaleString()}</td>
-                        <td>{trip.user_id}</td>
-                        <td>{trip.car_id}</td>
-                        <td>{trip.distance} km</td>
-                        <td>{trip.weather_main}</td>
+                    <tr key={trip.protocolId}>
 
                         <td>
-                            <Button label="Bearbeiten" stopPropagation={true}/>
-                            <Button label="Löschen" stopPropagation={true}/>
+                            {new Date(trip.starttime).toLocaleDateString()}
+                        </td>
+
+                        <td>
+                            {trip.fname} {trip.lname}
+                        </td>
+
+                        <td>
+                            {trip.distance}
+                        </td>
+
+                        <td>
+                            {trip.licenseplate}
+                        </td>
+
+                        <td>
+                            {trip.startPoint}
+                        </td>
+
+                        <td>
+                            {trip.furthestPoint}
+                        </td>
+
+                        <td>
+                            {trip.endPoint}
+                        </td>
+
+                        <td>
+                            {trip.weatherMain}
+                        </td>
+
+                        <td>
+                            {trip.roadSurfaceConditions}
+                        </td>
+
+                        <td>
+                            {trip.userRole}
                         </td>
 
                     </tr>
@@ -59,7 +84,7 @@ function TripsTable() {
             </tbody>
 
         </table>
-    )
+    );
 }
 
-export default TripsTable
+export default TripsTable;
