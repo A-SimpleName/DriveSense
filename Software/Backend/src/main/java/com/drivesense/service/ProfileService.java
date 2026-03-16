@@ -36,8 +36,7 @@ public class ProfileService {
         profileDao.deleteById(id);
     }
 
-    /* Admin aufruf */
-    public List<Profile> getAllUsersByAccount_id(int id) {
-        return profileDao.getAllUsersByAccount_id(id);
+    public List<Profile> getAllProfilesByAccountId(int id) {
+        return profileDao.getAllProfilesByAccountId(id);
     }
 }
