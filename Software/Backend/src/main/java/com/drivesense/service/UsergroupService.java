@@ -27,7 +27,7 @@ public class UsergroupService {
     }
 
     public UserGroup insertGroup(String name, int profileId) {
-        checkGroupPermission(profileId);
+        //checkGroupPermission(profileId);
         UserGroup group = new UserGroup();
         group.setName(name);
         group.setOwner_id(profileId);
@@ -43,7 +43,7 @@ public class UsergroupService {
     }
 
     public void deleteGroup(int groupId, int profileId) {
-        checkGroupPermission(profileId);
+        //checkGroupPermission(profileId);
         UserGroup group = userGroupDao.getById(groupId);
         if (group == null) {
             throw new RuntimeException("Gruppe nicht gefunden");
@@ -57,8 +57,8 @@ public class UsergroupService {
     }
 
     public void addMember(int groupId, int profileId, int requesterId) {
-        checkGroupPermission(profileId);
-        checkGroupPermission(requesterId);
+        //checkGroupPermission(profileId);
+        //checkGroupPermission(requesterId);
         // prüfen ob Requester Owner ist
         if (!isOwnerOrAdmin(groupId, requesterId)) {
             throw new RuntimeException("Keine Berechtigung");
@@ -77,8 +77,8 @@ public class UsergroupService {
     }
 
     public void deleteMember(int groupId, int profileId, int requesterId) {
-        checkGroupPermission(profileId);
-        checkGroupPermission(requesterId);
+        //checkGroupPermission(profileId);
+        //checkGroupPermission(requesterId);
         ProfileUsergroup requester = profileUserGroupDao.getByProfileIdAndGroupId(requesterId, groupId);
         if (requester == null) {
             throw new RuntimeException("Kein Zugriff");
@@ -99,8 +99,8 @@ public class UsergroupService {
     }
 
     public void updateRole(int groupId, int profileId, String newRole, int requesterId) {
-        checkGroupPermission(profileId);
-        checkGroupPermission(requesterId);
+        //checkGroupPermission(profileId);
+        //checkGroupPermission(requesterId);
         if (!isOwnerOrAdmin(groupId, requesterId)) {
             throw new RuntimeException("Keine Berechtigung");
         }
@@ -120,12 +120,12 @@ public class UsergroupService {
     }
 
     public List<UserGroup> getGroupsByProfile(int profileId) {
-        checkGroupPermission(profileId);
+        //checkGroupPermission(profileId);
         return userGroupDao.getGroupsByProfileId(profileId);
     }
 
     public List<GroupMemberResponse> getMembersByGroup(int groupId, int requesterId) {
-        checkGroupPermission(requesterId);
+        //checkGroupPermission(requesterId);
         ProfileUsergroup requester = profileUserGroupDao.getByProfileIdAndGroupId(requesterId, groupId);
         if (requester == null) {
             throw new RuntimeException("Kein Zugriff auf diese Gruppe");
@@ -134,7 +134,7 @@ public class UsergroupService {
     }
 
     public void updateGroup(int groupId, int profileId, String name) {
-        checkGroupPermission(profileId);
+        //checkGroupPermission(profileId);
         UserGroup group = userGroupDao.getById(groupId);
         if (group == null) {
             throw new RuntimeException("Gruppe nicht gefunden");
@@ -153,7 +153,7 @@ public class UsergroupService {
         if (pug == null) return false;
         return pug.getGroupRole().equals("OWNER") || pug.getGroupRole().equals("ADMIN");
     }
-
+    /* Vielleicht gebraucht wenn nur Privat Gruppe haben darf
     private void checkGroupPermission(int profileId) {
         Profile profile = profileDao.getById(profileId);
         if (profile == null) {
@@ -163,4 +163,5 @@ public class UsergroupService {
             throw new RuntimeException("Nur Private Profile dürfen Gruppen verwenden");
         }
     }
+     */
 }
