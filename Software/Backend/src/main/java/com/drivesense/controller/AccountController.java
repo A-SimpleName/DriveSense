@@ -1,13 +1,14 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.request.LoginRequest;
-import com.drivesense.dto.request.RegisterRequest;
-import com.drivesense.dto.request.UpdateAccountRequest;
-import com.drivesense.dto.request.UpdatePasswordRequest;
+import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
+import com.drivesense.dto.response.LoginResponse;
+import com.drivesense.dto.response.RefreshResponse;
+import com.drivesense.dto.response.SelectProfileResponse;
 import com.drivesense.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,8 +23,19 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public AccountResponse login(@Valid @RequestBody LoginRequest request) {
-        return accountService.login(request);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(accountService.login(request));
+    }
+
+    @PostMapping("/select-profile")
+    public ResponseEntity<SelectProfileResponse> selectProfile(@RequestParam int profileId, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        return ResponseEntity.ok(accountService.selectProfile(profileId, token));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshResponse> refresh(@RequestBody RefreshRequest request) {
+        return ResponseEntity.ok(accountService.refresh(request.getRefreshToken()));
     }
 
     @GetMapping("/{id}")

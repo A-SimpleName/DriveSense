@@ -1,20 +1,31 @@
 package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
+import com.drivesense.db.ProfileDao;
 import com.drivesense.dto.request.LoginRequest;
 import com.drivesense.dto.request.RegisterRequest;
 import com.drivesense.dto.request.UpdateAccountRequest;
 import com.drivesense.dto.request.UpdatePasswordRequest;
 import com.drivesense.dto.response.AccountResponse;
+import com.drivesense.dto.response.LoginResponse;
+import com.drivesense.dto.response.RefreshResponse;
+import com.drivesense.dto.response.SelectProfileResponse;
 import com.drivesense.model.Account;
+import com.drivesense.model.Profile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AccountService {
     @Autowired
     private AccountDao accountDao;
+    @Autowired
+    private ProfileDao profileDao;
+    @Autowired
+    private JwtService jwtService;
 
     // Registrieren
     public AccountResponse register(RegisterRequest request) {
@@ -36,19 +47,53 @@ public class AccountService {
     }
 
     // Login
-    public AccountResponse login(LoginRequest request) {
-        // 1. Account per Email suchen
+    public LoginResponse login(LoginRequest request) {
         Account account = accountDao.getByEmail(request.getEmail());
         if (account == null) {
             throw new RuntimeException("Email oder Passwort falsch");
         }
 
-        // 2. Passwort prüfen
         if (!BCrypt.checkpw(request.getPassword(), account.getPassword())) {
             throw new RuntimeException("Email oder Passwort falsch");
         }
 
-        return toResponse(account);
+        List<Profile> profiles = profileDao.getAllProfilesByAccountId(account.getId());
+
+        LoginResponse res = new LoginResponse();
+        res.setAccountToken(jwtService.generateAccountToken(account.getId()));
+        res.setRefreshToken(jwtService.generateRefreshToken(account.getId()));
+        res.setProfiles(profiles);
+        return res;
+    }
+
+    public SelectProfileResponse selectProfile(int profileId, String accountToken) {
+        if (!jwtService.isValid(accountToken) || !jwtService.extractType(accountToken).equals("ACCOUNT")) {
+            throw new RuntimeException("Ungültiger Account Token");
+        }
+
+        int accountId = jwtService.extractAccountId(accountToken);
+        Profile profile = profileDao.getById(profileId);
+
+        if (profile == null || profile.getAccount_id() != accountId) {
+            throw new RuntimeException("Profil nicht gefunden");
+        }
+
+        SelectProfileResponse res = new SelectProfileResponse();
+        res.setProfileToken(jwtService.generateProfileToken(accountId, profileId, profile.getRole()));
+        res.setProfile(profile);
+        return res;
+    }
+
+    public RefreshResponse refresh(String refreshToken) {
+        if (!jwtService.isValid(refreshToken) ||
+                !jwtService.extractType(refreshToken).equals("REFRESH")) {
+            throw new RuntimeException("Ungültiger Refresh Token");
+        }
+
+        int accountId = jwtService.extractAccountId(refreshToken);
+        RefreshResponse res = new RefreshResponse();
+        res.setAccountToken(jwtService.generateAccountToken(accountId));
+        return res;
     }
 
     // Account anzeigen

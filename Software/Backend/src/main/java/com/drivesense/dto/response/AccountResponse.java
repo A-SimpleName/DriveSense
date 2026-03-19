@@ -6,14 +6,6 @@ public class AccountResponse {
     private String lname;
     private String email;
 
-    public AccountResponse(int id, String lname, String fname, String email) {
-        this.id = id;
-        this.lname = lname;
-        this.fname = fname;
-        this.email = email;
-    }
-    public AccountResponse(){}
-
     public int getId() {
         return id;
     }
@@ -30,19 +22,19 @@ public class AccountResponse {
         this.fname = fname;
     }
 
-    public String getLname() {
-        return lname;
-    }
-
-    public void setLname(String lname) {
-        this.lname = lname;
-    }
-
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getLname() {
+        return lname;
+    }
+
+    public void setLname(String lname) {
+        this.lname = lname;
     }
 }

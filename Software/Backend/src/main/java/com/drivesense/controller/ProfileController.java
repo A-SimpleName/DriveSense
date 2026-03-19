@@ -16,11 +16,6 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Endpunkt profiles läuft");
-    }
-
     @GetMapping("/")
     public ResponseEntity<List<Profile>> getAll() {
         return ResponseEntity.ok(profileService.getAll());

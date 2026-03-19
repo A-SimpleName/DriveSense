@@ -3,6 +3,7 @@ package com.drivesense.controller;
 import com.drivesense.dto.request.SaveTripRequest;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,14 @@ public class TripController {
     }
 
     @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
-    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
+        int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
     }
 
     @GetMapping("/totalKm")
-    public ResponseEntity<Double> getTotalKm (@RequestParam int profileId) {
+    public ResponseEntity<Double> getTotalKm (HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
 }
