@@ -1,7 +1,7 @@
 export interface Vehicle {
     id: number
-    username: string;
     model: string;
-    licenseplate: string;
+    profileName: string;
+    licencePlate: string;
     mileage: number
 }

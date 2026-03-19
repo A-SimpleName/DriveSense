@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { getAllVehicles } from "../../services/vehicleService"
+import { getAllVehicles, deleteVehicle, updateVehicle} from "../../services/vehicleService"
 import type { Vehicle } from "../../model/vehicle"
 import "../../styles/table.css"
 import { Button } from "../button"
@@ -18,7 +18,7 @@ function VehiclesTable() {
             <thead>
                 <tr>
                     <th>Model</th>
-                    <th>User</th>
+                    <th>Profil</th>
                     <th>Kennzeichen</th>
                     <th>Kilometerstand</th>
                     <th>Aktionen</th>
@@ -28,12 +28,12 @@ function VehiclesTable() {
                 {vehicles.map(vehicle => (
                     <tr key={vehicle.id}>
                         <td>{vehicle.model}</td>
-                        <td>{vehicle.username}</td>
-                        <td>{vehicle.licenseplate}</td>
+                        <td>{vehicle.profileName}</td>
+                        <td>{vehicle.licencePlate}</td>
                         <td>{vehicle.mileage} km</td>
                         <td>
-                            <Button label="Bearbeiten" stopPropagation={true}/>
-                            <Button label="Löschen" stopPropagation={true}/>
+                            <Button label="Bearbeiten" stopPropagation={true} onClick={() => updateVehicle(vehicle.id, vehicle)}/>
+                            <Button label="Löschen" stopPropagation={true} onClick={() => deleteVehicle(vehicle.id)}/>
                         </td>
                     </tr>
                 ))}
