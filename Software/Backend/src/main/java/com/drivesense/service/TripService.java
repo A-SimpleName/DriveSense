@@ -4,6 +4,7 @@ package com.drivesense.service;
 import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.dto.response.TripDetailedDto;
+import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class TripService {
         return tripDao.getAll();
     }
 
-    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+    public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         return this.tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
     }
 
