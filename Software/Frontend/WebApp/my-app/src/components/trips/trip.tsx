@@ -15,7 +15,7 @@ export function TripsList() {
         <ul>
             {trips.map(trip => (
                 <li key={trip.id}>
-                    {trip.id} - {trip.user_id} - {trip.car_id} - {new Date(trip.starttime).toLocaleString()} - {new Date(trip.endtime).toLocaleString()} - {trip.distance} km - {trip.weather_main}
+                    {trip.id} - {trip.user_id} - {trip.car_id} - {new Date(trip.startTime).toLocaleString()} - {new Date(trip.endTime).toLocaleString()} - {trip.distance} km - {trip.weather_main}
                 </li>
             ))}
         </ul>
