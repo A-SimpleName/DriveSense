@@ -31,6 +31,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getById(id));
     }
 
+    @GetMapping("/account/{id}")
+    public ResponseEntity<List<Profile>> getProfilesByAccount(@PathVariable int id) {
+        return ResponseEntity.ok(profileService.getAllProfilesByAccountId(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Profile> update(@PathVariable int id, @RequestBody Profile profile) {
         profile.setId(id);
