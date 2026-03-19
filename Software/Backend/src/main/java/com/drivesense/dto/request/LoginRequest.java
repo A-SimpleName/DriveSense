@@ -1,7 +1,12 @@
 package com.drivesense.dto.request;
 
+import jakarta.validation.constraints.*;
+
 public class LoginRequest {
+    @NotBlank(message = "Email darf nicht leer sein")
+    @Email(message = "Email Format ungültig")
     private String email;
+    @NotBlank(message = "Passwort darf nicht leer sein")
     private String password;
 
     public LoginRequest(String email, String password) {
