@@ -1,5 +1,6 @@
 package com.drivesense.service;
 
+import com.drivesense.db.ProfileDao;
 import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
@@ -13,6 +14,8 @@ public class VehicleService {
 
    @Autowired
    private VehicleDao vehicleDao;
+   @Autowired
+   private ProfileDao profileDao;
 
     public List<VehicleDto> getAllVehicles() {
         return vehicleDao.getAllVehiclesByAccount();
