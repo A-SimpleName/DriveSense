@@ -44,14 +44,16 @@ function TripsTable() {
 
                         <td>{trip.car_id}</td>
 
-                        <td>{new Date(trip.starttime).toLocaleString()}</td>
-
-                        <td>{new Date(trip.endtime).toLocaleString()}</td>
-
+                        <td>{new Date(trip.startTime).toLocaleString()}</td>
+                        <td>{new Date(trip.endTime).toLocaleString()}</td>
+                        <td>{trip.user_id}</td>
+                        <td>{trip.car_id}</td>
                         <td>{trip.distance} km</td>
+                        <td>{trip.roadSurfaceConditions}</td>
 
-                        <td>{trip.weather_main}</td>
-
+                        
+                        
+                        
                     </tr>
 
                 ))}

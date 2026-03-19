@@ -11,7 +11,6 @@ function Vehicles() {
             <Button label="+ Fahrzeug hinzufügen"/>
 
             <VehiclesTable />
-
         </div>
     );
 }

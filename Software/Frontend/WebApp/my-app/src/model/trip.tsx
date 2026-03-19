@@ -1,13 +1,13 @@
 export interface TripSummary {
-    id: number
+    id: number;
     user_id: number;
     car_id: number;
-    starttime: Date;
-    endtime: Date;
+    startTime: string; 
+    endTime: string;
     distance: number;
-    weather_main: string;
-}
-
-export interface TripDetailed {
-
+    roadSurfaceConditions: string;
+    type: string;
+    startPoint?: string | null;
+    endPoint?: string | null;
+    furthestPoint?: string | null;
 }
