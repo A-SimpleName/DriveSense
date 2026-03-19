@@ -125,7 +125,7 @@ public class ProfileDao {
         }
     }
 
-    public List<Profile> getAllUsersByAccount_id(int id) {
+    public List<Profile> getAllProfilesByAccountId(int id) {
         String sql = "SELECT * FROM profile WHERE account_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

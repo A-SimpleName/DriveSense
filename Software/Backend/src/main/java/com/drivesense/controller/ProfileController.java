@@ -21,7 +21,7 @@ public class ProfileController {
         return ResponseEntity.ok("Endpunkt profiles läuft");
     }
 
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<List<Profile>> getAll() {
         return ResponseEntity.ok(profileService.getAll());
     }
@@ -31,6 +31,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getById(id));
     }
 
+    @GetMapping("/account/{id}")
+    public ResponseEntity<List<Profile>> getProfilesByAccount(@PathVariable int id) {
+        return ResponseEntity.ok(profileService.getAllProfilesByAccountId(id));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Profile> update(@PathVariable int id, @RequestBody Profile profile) {
         profile.setId(id);
@@ -38,7 +43,7 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<Profile> insert(@RequestBody Profile profile) {
         return ResponseEntity.status(201).body(profileService.insert(profile));
     }
