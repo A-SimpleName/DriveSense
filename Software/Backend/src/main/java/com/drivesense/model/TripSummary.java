@@ -28,9 +28,9 @@ public class TripSummary {
     public TripSummary(int profileId, int vehicleId, int protocolId,
                        LocalDateTime startTime, LocalDateTime endTime,
                        double distance, String roadSurfaceConditions, String type) {
+        this.protocolId = protocolId;
         this.profileId = profileId;
         this.vehicleId = vehicleId;
-        this.protocolId = protocolId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.distance = distance;
@@ -38,7 +38,6 @@ public class TripSummary {
         this.type = type;
     }
 
-    // Getter / Setter wie gehabt
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public int getProfileId() { return profileId; }

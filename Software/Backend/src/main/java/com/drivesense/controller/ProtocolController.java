@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.model.Protocol;
 import com.drivesense.service.ProtocolService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,11 @@ public class ProtocolController {
     @GetMapping("/{id}")
     public ResponseEntity<Protocol> getById(@PathVariable int id) {
         return ResponseEntity.ok(protocolService.getById(id));
+    }
+
+    @GetMapping("/{id}/with-trips")
+    public ResponseEntity<ProtocolDto> getProtocolWithTrips(@PathVariable int id) {
+        return ResponseEntity.ok(protocolService.getProtocolWithTrips(id));
     }
 
     // GET /api/protocols/profile/1

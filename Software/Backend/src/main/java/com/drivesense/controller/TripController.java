@@ -1,6 +1,7 @@
 package com.drivesense.controller;
 
 import com.drivesense.dto.request.SaveTripRequest;
+import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class TripController {
     }
 
     @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
-    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
+    public ResponseEntity<List<TripSummaryDto>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
     }
 
