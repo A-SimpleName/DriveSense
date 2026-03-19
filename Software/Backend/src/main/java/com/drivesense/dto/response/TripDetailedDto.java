@@ -11,8 +11,19 @@ public class TripDetailedDto {
     private TripSummary tripSummary;
     private List<Trackingpoint> trackingpoints;
 
-    public TripDetailedDto(TripSummary tripSummary) {
+    public TripDetailedDto(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
         this.tripSummary = tripSummary;
+        this.trackingpoints = trackingpoints;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(tripSummary).append('\n');
+        for (Trackingpoint t : trackingpoints) {
+            sb.append(t).append('\n');
+        }
+        return sb.toString();
     }
 
     public TripSummary getTripSummary() {

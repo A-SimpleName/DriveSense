@@ -112,13 +112,22 @@ public class TripDao {
         }
     }
 
-    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+    public List<TripSummary> getAllByProfileAndProtocolId(int protocolId, int profileId) {
         String sql = """
-                SELECT t.* 
-                FROM trip t
-                JOIN protocol pr ON t.protocol_id = pr.id
-                WHERE pr.id = ? 
-                  AND pr.profile_id = ? 
+                SELECT t.*
+                     FROM trip t
+                     JOIN protocol pr ON t.protocol_id = pr.id
+                     WHERE pr.id = ?
+                       AND (
+                           (pr.usergroup_id IS NULL AND pr.created_by_profile_id = ?)
+                           OR
+                           (pr.usergroup_id IS NOT NULL AND EXISTS (
+                               SELECT 1
+                               FROM profile_usergroup pug
+                               WHERE pug.usergroup_id = pr.usergroup_id
+                                 AND pug.profile_id = ?
+                           ))
+                       )
                   """;
 
         try (Connection conn = dbConnection.getConnection();
@@ -126,6 +135,7 @@ public class TripDao {
 
             ps.setInt(1, profileId);
             ps.setInt(2, protocolId);
+            ps.setInt(3, profileId);
             ResultSet rs = ps.executeQuery();
 
             List<TripSummary> tripSummaries = new ArrayList<>();

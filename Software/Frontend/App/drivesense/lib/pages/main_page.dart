@@ -1,3 +1,5 @@
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/trip_service.dart' as TripService;
 import 'package:drivesense/widgets/ds_app_bar.dart';
 import 'package:drivesense/widgets/ds_bottom_navigation.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +43,7 @@ class _MainPageState extends State<MainPage> {
                 break;
               case 1:
                 _currentAppBarTitle = 'Protokoll';
+                RuntimeStore.refreshTrips(); // TODO: ProfileId dynamisch setzen
                 break;
               case 2:
                 _currentAppBarTitle = 'Profil';
