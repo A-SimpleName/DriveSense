@@ -27,11 +27,15 @@ public class TripService {
 
     public void insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
         int id = tripDao.insert(tripSummary);
+        TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary, trackingpoints);
 
+        enrichWithTrackingPoints(tripDetailedDto);
+        System.out.println(tripDetailedDto);
         for (Trackingpoint trackingpoint : trackingpoints) {
             trackingpoint.setTripId(id);
             trackingpointDao.insert(trackingpoint);
         }
+
     }
 
     public List<TripSummary> getAllTrips() {
@@ -48,7 +52,8 @@ public class TripService {
         if (trip == null) {
             throw new RuntimeException("Fahrt nicht gefunden oder kein Zugriff");
         }
-        TripDetailedDto tripDetailedDto = new TripDetailedDto(trip);
+        List<Trackingpoint> trackingpoints  = this.trackingpointDao.getByTripId(trip.getId());
+        TripDetailedDto tripDetailedDto = new TripDetailedDto(trip, trackingpoints);
         enrichWithTrackingPoints(tripDetailedDto);
         return tripDetailedDto;
     }

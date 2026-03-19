@@ -38,6 +38,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   DateTime? tripEndTime;
   List<Trackingpoint> trackingPositions = [];
   TripSummary? _activeTrip;
+  TripSummary? _lastTrip;
   
   // Services & Timers
   final TripTrackingService _trackingService = TripTrackingService();
@@ -74,7 +75,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                 children: [
                   StartTripCard(onStart: _onStartTrip),
                   const SizedBox(height: 24),
-                  LastTripCard(),
+                  LastTripCard(lastTrip: _lastTrip),
                 ],
               ),
       ),
@@ -108,6 +109,30 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   void _onAbortTrip() {
+    showDialog(context: context, builder: (context) {
+      return AlertDialog(
+        title: Text('Fahrt abbrechen?'),
+        content: Text('Möchtest du die aktuelle Fahrt wirklich abbrechen? Alle gesammelten Daten gehen verloren.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _stopTrackingAndReset();
+            },
+            child: Text('Fahrt abbrechen'),
+          ),
+        ],
+      );
+    });
+  }
+
+  void _stopTrackingAndReset() {
     _trackingService.stopTracking();
     _stopUiTicker();
 
@@ -156,6 +181,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       _lastSpeed = null;
     });
 
+    _lastTrip = finishedTrip;
     saveTripToDb(finishedTrip, trackingPositions);
     // TODO: hier speichern (Backend/DB)
   }

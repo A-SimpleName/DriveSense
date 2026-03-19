@@ -25,11 +25,16 @@ public class TripController {
         System.out.println(saveTripRequest.getTripSummary());
         System.out.println(saveTripRequest.getTrackingpoints());
         tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
+
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
     public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
-        return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
+        var trips = tripService.getAllByProfileAndProtocolId(profileId, protocolId);
+        for (TripSummary trip : trips) {
+            System.out.println(trip);
+        }
+        return ResponseEntity.ok(trips);
     }
 }

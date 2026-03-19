@@ -55,6 +55,8 @@ CREATE TABLE `protocol` (
   CONSTRAINT `protocol_usergroup_FK` FOREIGN KEY (`usergroup_id`) REFERENCES `usergroup` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- drivesense.trip definition
+
 CREATE TABLE `trip` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `profile_id` bigint NOT NULL,
@@ -65,6 +67,9 @@ CREATE TABLE `trip` (
   `road_surface_conditions` varchar(100) DEFAULT NULL,
   `type` varchar(50) DEFAULT NULL,
   `protocol_id` bigint DEFAULT NULL,
+  `start_point` varchar(100) NOT NULL,
+  `end_point` varchar(100) NOT NULL,
+  `furthest_point` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tracking_profile` (`profile_id`),
   KEY `idx_tracking_vehicle` (`vehicle_id`),
@@ -73,7 +78,7 @@ CREATE TABLE `trip` (
   CONSTRAINT `trip_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
   CONSTRAINT `trip_protocol_FK` FOREIGN KEY (`protocol_id`) REFERENCES `protocol` (`id`),
   CONSTRAINT `trip_vehicle_FK` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `trackingpoint` (
   `id` bigint NOT NULL AUTO_INCREMENT,
