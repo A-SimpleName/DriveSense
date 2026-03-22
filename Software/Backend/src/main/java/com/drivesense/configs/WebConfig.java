@@ -1,4 +1,4 @@
-package com.drivesense;
+package com.drivesense.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

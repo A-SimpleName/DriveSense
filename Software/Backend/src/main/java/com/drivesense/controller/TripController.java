@@ -22,14 +22,15 @@ public class TripController {
     }
 
     @PostMapping("/trips")
-    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest) {
-        System.out.println(saveTripRequest.getTripSummary());
-        System.out.println(saveTripRequest.getTrackingpoints());
+    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        saveTripRequest.getTripSummary().setProfileId(profileId);
+
         tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
+    @GetMapping("/profiles/protocols/{protocolId}/trips")
     public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));

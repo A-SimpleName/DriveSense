@@ -6,6 +6,7 @@ import com.drivesense.dto.response.LoginResponse;
 import com.drivesense.dto.response.RefreshResponse;
 import com.drivesense.dto.response.SelectProfileResponse;
 import com.drivesense.service.AccountService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,8 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping("/register")
-    public AccountResponse register(@Valid @RequestBody RegisterRequest request) {
-        return accountService.register(request);
+    public ResponseEntity<AccountResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(accountService.register(request));
     }
 
     @PostMapping("/login")
@@ -38,23 +39,28 @@ public class AccountController {
         return ResponseEntity.ok(accountService.refresh(request.getRefreshToken()));
     }
 
-    @GetMapping("/{id}")
-    public AccountResponse getById(@PathVariable int id) {
-        return accountService.getById(id);
+    @GetMapping("/")
+    public ResponseEntity<AccountResponse> getById(HttpServletRequest request) {
+        int accountId = (int) request.getAttribute("accountId");
+        return ResponseEntity.ok(accountService.getById(accountId));
+    }
+    @PutMapping("/")
+    public ResponseEntity<AccountResponse> update(@Valid @RequestBody UpdateAccountRequest request, HttpServletRequest httpRequest) {
+        int accountId = (int) httpRequest.getAttribute("accountId");
+        return ResponseEntity.ok(accountService.update(accountId, request));
     }
 
-    @PutMapping("/{id}")
-    public AccountResponse update(@Valid @PathVariable int id, @RequestBody UpdateAccountRequest request) {
-        return accountService.update(id, request);
+    @PutMapping("/password")
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest request, HttpServletRequest httpRequest) {
+        int accountId = (int) httpRequest.getAttribute("accountId");
+        accountService.updatePassword(accountId, request);
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}/password")
-    public void updatePassword(@Valid @PathVariable int id, @RequestBody UpdatePasswordRequest request) {
-        accountService.updatePassword(id, request);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        accountService.delete(id);
+    @DeleteMapping("/")
+    public ResponseEntity<Void> delete(HttpServletRequest request) {
+        int accountId = (int) request.getAttribute("accountId");
+        accountService.delete(accountId);
+        return ResponseEntity.noContent().build();
     }
 }

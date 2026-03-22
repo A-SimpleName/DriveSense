@@ -1,6 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Protocol;
 import com.drivesense.model.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,7 @@ public class ProtocolDao {
             }
             return null;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim speichern des Protokolls", e);
         }
     }
 
@@ -56,8 +56,7 @@ public class ProtocolDao {
             return protocols;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
         }
     }
 
@@ -76,8 +75,7 @@ public class ProtocolDao {
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
         }
     }
 
@@ -97,8 +95,7 @@ public class ProtocolDao {
             return protocols;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
         }
     }
 
@@ -116,8 +113,7 @@ public class ProtocolDao {
             return protocols;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Protokolle", e);
         }
     }
 
@@ -131,7 +127,7 @@ public class ProtocolDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren des Protokolls", e);
         }
     }
 
@@ -142,7 +138,7 @@ public class ProtocolDao {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen des Protokolls", e);
         }
     }
 

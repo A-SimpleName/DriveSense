@@ -1,6 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -33,18 +34,17 @@ public class TripDao {
             ps.setDouble(6, tripSummary.getDistance());
             ps.setString(7, tripSummary.getRoadSurfaceConditions());
             ps.setString(8, tripSummary.getType());
-
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);
                 } else {
-                    throw new SQLException("No trip ID returned.");
+                    throw new DatabaseException("Keine Trip ID zurückgegeben", new SQLException());
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException("Fehler beim Speichern der Fahrt", e);
         }
     }
 
@@ -57,15 +57,11 @@ public class TripDao {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return map(rs);
-            }
-
+            if (rs.next()) return map(rs);
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Fahrt", e);
         }
     }
 
@@ -85,8 +81,7 @@ public class TripDao {
             return tripSummaries;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Fahrten", e);
         }
     }
 
@@ -100,32 +95,28 @@ public class TripDao {
             ps.setInt(2, profileId);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                return map(rs);
-            }
-
+            if (rs.next()) return map(rs);
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Fahrt", e);
         }
     }
 
     public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         String sql = """
-                SELECT t.* 
+                SELECT t.*
                 FROM trip t
                 JOIN protocol pr ON t.protocol_id = pr.id
-                WHERE pr.id = ? 
-                  AND pr.profile_id = ? 
-                  """;
+                WHERE pr.id = ?
+                  AND pr.created_by_profile_id = ?
+                """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, profileId);
-            ps.setInt(2, protocolId);
+            ps.setInt(1, protocolId);
+            ps.setInt(2, profileId);
             ResultSet rs = ps.executeQuery();
 
             List<TripSummary> tripSummaries = new ArrayList<>();
@@ -135,12 +126,11 @@ public class TripDao {
             return tripSummaries;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Fahrten", e);
         }
     }
 
-    public List<TripSummary> getAll () {
+    public List<TripSummary> getAll() {
         String sql = "SELECT * FROM trip";
 
         try (Connection conn = dbConnection.getConnection();
@@ -154,13 +144,12 @@ public class TripDao {
             return tripSummaries;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden aller Fahrten", e);
         }
     }
 
     public void update(TripSummary tripSummary) {
-        String sql = "UPDATE trip SET  starttime = ?, endtime = ? , distance = ?, road_surface_conditions = ?, type = ? WHERE id = ?";
+        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -170,10 +159,10 @@ public class TripDao {
             ps.setString(4, tripSummary.getRoadSurfaceConditions());
             ps.setString(5, tripSummary.getType());
             ps.setInt(6, tripSummary.getId());
-
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren der Fahrt", e);
         }
     }
 
@@ -181,10 +170,12 @@ public class TripDao {
         String sql = "DELETE FROM trip WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1,id);
+
+            ps.setInt(1, id);
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Löschen der Fahrt", e);
         }
     }
 
@@ -201,5 +192,4 @@ public class TripDao {
         tripSummary.setType(rs.getString("type"));
         return tripSummary;
     }
-
 }
