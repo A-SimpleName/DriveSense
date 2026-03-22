@@ -1,4 +1,4 @@
-package com.drivesense;
+package com.drivesense.configs;
 
 import com.drivesense.filter.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
