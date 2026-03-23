@@ -4,9 +4,11 @@ package com.drivesense.service;
 import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.dto.response.TripDetailedDto;
+import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
+import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,8 @@ public class TripService {
     private final WeatherService weatherService;
 
     @Autowired
-    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao, GeocodingService geocodingService,WeatherService weatherService) {
+    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao,
+                       GeocodingService geocodingService, WeatherService weatherService) {
         this.tripDao = tripDao;
         this.trackingpointDao = trackingpointDao;
         this.geocodingService = geocodingService;
@@ -29,10 +32,31 @@ public class TripService {
     }
 
     public void insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
-        int id = tripDao.insert(tripSummary);
+        if (trackingpoints == null || trackingpoints.isEmpty()) {
+            throw new BadRequestException("Mindestens ein Trackingpoint muss vorhanden sein");
+        }
 
         Trackingpoint firstPoint = trackingpoints.get(0);
-        tripSummary.setRoadSurfaceConditions(weatherService.getRoadSurfaceCondition(firstPoint.getLat(),firstPoint.getLng()));
+        Trackingpoint lastPoint = trackingpoints.get(trackingpoints.size() - 1);
+
+        double distanceStartEnd = calculateDistance(
+                firstPoint.getLat(), firstPoint.getLng(),
+                lastPoint.getLat(), lastPoint.getLng()
+        );
+
+        Trackingpoint weatherPoint = distanceStartEnd < 0.5
+                ? getFurthestPoint(trackingpoints, firstPoint)
+                : firstPoint;
+
+        try {
+            tripSummary.setRoadSurfaceConditions(
+                    weatherService.getRoadSurfaceCondition(weatherPoint.getLat(), weatherPoint.getLng())
+            );
+        } catch (ExternalApiException e) {
+            tripSummary.setRoadSurfaceConditions("Unbekannt");
+        }
+
+        int id = tripDao.insert(tripSummary);
 
         for (Trackingpoint trackingpoint : trackingpoints) {
             trackingpoint.setTripId(id);
@@ -44,59 +68,64 @@ public class TripService {
         return tripDao.getAll();
     }
 
-    public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
-        return this.tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+        List<TripSummary> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+        if (trips == null) {
+            throw new NotFoundException("Keine Fahrten gefunden");
+        }
+        return trips;
     }
 
-    public double getTotalKm (int profileId) {
+    public double getTotalKm(int profileId) {
         List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
         if (tripSummaries == null) {
             return 0;
-        } else {
-            return tripSummaries.stream()
-                    .mapToDouble(TripSummary::getDistance)
-                    .sum();
         }
+        return tripSummaries.stream()
+                .mapToDouble(TripSummary::getDistance)
+                .sum();
     }
 
-    // Eine einzelne Fahrt
     public TripDetailedDto getDetailedById(int id, int profileId) {
-        TripSummary trip = this.tripDao.getByIdAndProfileId(id, profileId);
+        TripSummary trip = tripDao.getByIdAndProfileId(id, profileId);
         if (trip == null) {
-            throw new RuntimeException("Fahrt nicht gefunden oder kein Zugriff");
+            throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
         TripDetailedDto tripDetailedDto = new TripDetailedDto(trip);
         enrichWithTrackingPoints(tripDetailedDto);
         return tripDetailedDto;
     }
 
-    // Trackingpunkte berechnen und ins DTO schreiben
     private void enrichWithTrackingPoints(TripDetailedDto trip) {
         List<Trackingpoint> points = trackingpointDao.getByTripId(trip.getTripSummary().getId());
 
         if (points == null || points.isEmpty()) return;
 
-        // erster Punkt = Startpunkt
         Trackingpoint start = points.get(0);
-        // letzter Punkt = Endpunkt
         Trackingpoint end = points.get(points.size() - 1);
-        // weitester Punkt vom Start = Punkt mit größter Distanz zum Startpunkt
-        Trackingpoint furthest = points.stream()
-                .max(Comparator.comparingDouble(p ->
-                        calculateDistance(
-                                start.getLat(), start.getLng(),
-                                p.getLat(), p.getLng()
-                        )
-                ))
-                .orElse(start);
-        trip.getTripSummary().setStartPoint(geocodingService.getCity(start.getLat(), start.getLng()));
-        trip.getTripSummary().setEndPoint(geocodingService.getCity(end.getLat(), end.getLng()));
-        trip.getTripSummary().setFurthestPoint(geocodingService.getCity(furthest.getLat(), furthest.getLng()));
+        Trackingpoint furthest = getFurthestPoint(points, start);
+
+        try {
+            trip.getTripSummary().setStartPoint(geocodingService.getCity(start.getLat(), start.getLng()));
+            trip.getTripSummary().setEndPoint(geocodingService.getCity(end.getLat(), end.getLng()));
+            trip.getTripSummary().setFurthestPoint(geocodingService.getCity(furthest.getLat(), furthest.getLng()));
+        } catch (ExternalApiException e) {
+            trip.getTripSummary().setStartPoint("Unbekannt");
+            trip.getTripSummary().setEndPoint("Unbekannt");
+            trip.getTripSummary().setFurthestPoint("Unbekannt");
+        }
     }
 
-    // Haversine Formel – Distanz zwischen zwei GPS-Punkten in km
+    private Trackingpoint getFurthestPoint(List<Trackingpoint> points, Trackingpoint start) {
+        return points.stream()
+                .max(Comparator.comparingDouble(p ->
+                        calculateDistance(start.getLat(), start.getLng(), p.getLat(), p.getLng())
+                ))
+                .orElse(start);
+    }
+
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-        final int R = 6371; // Erdradius in km
+        final int R = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lng2 - lng1);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
