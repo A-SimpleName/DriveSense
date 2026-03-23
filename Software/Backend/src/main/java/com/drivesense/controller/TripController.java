@@ -4,6 +4,7 @@ import com.drivesense.dto.request.SaveTripRequest;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,20 +23,23 @@ public class TripController {
     }
 
     @PostMapping("/trips")
-    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest) {
-        System.out.println(saveTripRequest.getTripSummary());
-        System.out.println(saveTripRequest.getTrackingpoints());
+    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        saveTripRequest.getTripSummary().setProfileId(profileId);
+
         tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/profiles/{profileId}/protocols/{protocolId}/trips")
-    public ResponseEntity<List<TripSummaryDto>> getAllTripsByProfileAndProtocolId(@PathVariable int profileId, @PathVariable int protocolId) {
+    @GetMapping("/profiles/protocols/{protocolId}/trips")
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
+        int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
     }
 
-    @GetMapping("/trips/totalKm")
-    public ResponseEntity<Double> getTotalKm (@RequestParam int profileId) {
+    @GetMapping("/totalKm")
+    public ResponseEntity<Double> getTotalKm (HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
 

@@ -1,5 +1,6 @@
 package com.drivesense.service;
 
+import com.drivesense.exceptions.ExternalApiException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +67,7 @@ public class GeocodingService {
             return "Unbekannt";
 
         } catch (Exception e) {
-            System.err.println("Geocoding Fehler: " + e.getMessage());
-            return "Unbekannt";
+            throw new ExternalApiException("Geocoding API nicht erreichbar", e);
         }
     }
 }

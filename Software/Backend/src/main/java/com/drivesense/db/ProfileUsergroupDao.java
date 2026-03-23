@@ -1,7 +1,11 @@
+// ============================================================
+// ProfileUsergroupDao.java – Bug Fixes
+// ============================================================
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
 import com.drivesense.dto.response.GroupMemberResponse;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.ProfileUsergroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -25,18 +29,17 @@ public class ProfileUsergroupDao {
             ps.setInt(1, pu.getProfileId());
             ps.setInt(2, pu.getUsergroupId());
             ps.setString(3, pu.getGroupRole());
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Hinzufügen des Mitglieds", e);
         }
     }
 
     public void updateRole(ProfileUsergroup pu) {
         String sql = """
         UPDATE profile_usergroup
-        SET group_role = ? 
+        SET group_role = ?
         WHERE profile_id = ? AND usergroup_id = ?
         """;
 
@@ -46,27 +49,25 @@ public class ProfileUsergroupDao {
             ps.setString(1, pu.getGroupRole());
             ps.setInt(2, pu.getProfileId());
             ps.setInt(3, pu.getUsergroupId());
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren der Rolle", e);
         }
     }
 
     public void delete(int profileId, int usergroupId) {
-        String sql = "DELETE FROM profile_usergroup WHERE profile_id = ? AND usergroupId = ?";
+        String sql = "DELETE FROM profile_usergroup WHERE profile_id = ? AND usergroup_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, profileId);
             ps.setInt(2, usergroupId);
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Entfernen des Mitglieds", e);
         }
     }
 
@@ -76,22 +77,23 @@ public class ProfileUsergroupDao {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            ps.setInt(1, profileId);
+            ps.setInt(2, usergroupId);
+
             ResultSet rs = ps.executeQuery();
-            ProfileUsergroup profileUsergroup = new ProfileUsergroup();
             if (rs.next()) {
                 return map(rs);
             }
-            return profileUsergroup;
+            return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden des Mitglieds", e);
         }
     }
 
     public List<GroupMemberResponse> getMembersByGroupId(int groupId) {
         String sql = """
-            SELECT 
+            SELECT
                 p.id AS profile_id,
                 p.name AS profile_name,
                 p.role AS profile_role,
@@ -104,7 +106,7 @@ public class ProfileUsergroupDao {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setLong(1, groupId);
+            ps.setInt(1, groupId);
             ResultSet rs = ps.executeQuery();
 
             List<GroupMemberResponse> members = new ArrayList<>();
@@ -114,8 +116,7 @@ public class ProfileUsergroupDao {
             return members;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return new ArrayList<>();
+            throw new DatabaseException("Fehler beim Laden der Mitglieder", e);
         }
     }
 
