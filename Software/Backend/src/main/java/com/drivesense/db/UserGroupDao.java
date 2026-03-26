@@ -1,7 +1,7 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -21,9 +21,8 @@ public class UserGroupDao {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1,userGroup.getName());
-            ps.setInt(2,userGroup.getOwner_id());
-
+            ps.setString(1, userGroup.getName());
+            ps.setInt(2, userGroup.getOwner_id());
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
@@ -31,9 +30,9 @@ public class UserGroupDao {
                 userGroup.setId(rs.getInt(1));
             }
             return userGroup;
+
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Erstellen der Gruppe", e);
         }
     }
 
@@ -49,16 +48,14 @@ public class UserGroupDao {
             if (rs.next()) {
                 return map(rs);
             }
-
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Gruppe", e);
         }
     }
 
-    public List<UserGroup> getAll () {
+    public List<UserGroup> getAll() {
         String sql = "SELECT * FROM usergroup";
 
         try (Connection conn = dbConnection.getConnection();
@@ -72,12 +69,11 @@ public class UserGroupDao {
             return userGroups;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim Laden der Gruppen", e);
         }
     }
 
-    public List<UserGroup> getGroupsByProfileId (int profileId) {
+    public List<UserGroup> getGroupsByProfileId(int profileId) {
         String sql = """
             SELECT ug.*
             FROM usergroup ug
@@ -88,7 +84,7 @@ public class UserGroupDao {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setLong(1, profileId);
+            ps.setInt(1, profileId);
             ResultSet rs = ps.executeQuery();
 
             List<UserGroup> groups = new ArrayList<>();
@@ -98,34 +94,35 @@ public class UserGroupDao {
             return groups;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return new ArrayList<>();
+            throw new DatabaseException("Fehler beim Laden der Gruppen", e);
         }
     }
 
     public void update(UserGroup userGroup) {
-        String sql = "UPDATE usergroup SET name = ?,owner_id = ? WHERE id = ?";
+        String sql = "UPDATE usergroup SET name = ?, owner_id = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, userGroup.getName());
-            ps.setInt(2,userGroup.getOwner_id());
-            ps.setInt(3,userGroup.getId());
-
+            ps.setInt(2, userGroup.getOwner_id());
+            ps.setInt(3, userGroup.getId());
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren der Gruppe", e);
         }
     }
 
     public void deleteById(int id) {
-        String sql = "DELETE FROM user_group WHERE id = ?";
+        String sql = "DELETE FROM usergroup WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1,id);
+
+            ps.setInt(1, id);
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Löschen der Gruppe", e);
         }
     }
 

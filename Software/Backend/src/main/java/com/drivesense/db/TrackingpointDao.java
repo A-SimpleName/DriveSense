@@ -1,6 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -41,8 +42,7 @@ public class TrackingpointDao {
             }
             return trackingpoint;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim speichern des Trackingpoints", e);
         }
     }
 
@@ -62,8 +62,7 @@ public class TrackingpointDao {
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Trackingpoints", e);
         }
     }
 
@@ -83,8 +82,7 @@ public class TrackingpointDao {
             return trackingpoints;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Trackingpoints", e);
         }
     }
 
@@ -102,8 +100,7 @@ public class TrackingpointDao {
             return trackingpoints;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Trackingpoints", e);
         }
     }
 
@@ -122,7 +119,7 @@ public class TrackingpointDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim aktualisieren des Trackingpoints", e);
         }
     }
 
@@ -133,7 +130,7 @@ public class TrackingpointDao {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen des Trackingpoints", e);
         }
     }
 
