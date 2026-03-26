@@ -1,12 +1,13 @@
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
-import 'package:drivesense/services/trip_service.dart' as TripService;
+import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
   static List<TripSummary> trips = [];
   static Map<int, TripDetailed> tripDetailCache = {};
   static String authToken = '';
   static int? currentProfileId = 1;
+  static final TripService tripService = TripService();
 
   static void addTrip(TripSummary trip) {
     trips.add(trip);
@@ -37,6 +38,6 @@ class RuntimeStore {
   static Future<void> refreshTrips() async {
     if (currentProfileId == null) return;
 
-    trips = await TripService.fetchTrips(currentProfileId!, 1); // TODO: protocolId dynamisch setzen
+    trips = await tripService.fetchTrips(currentProfileId!, 1); // TODO: protocolId dynamisch setzen
   }
 }

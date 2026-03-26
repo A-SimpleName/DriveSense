@@ -1,7 +1,8 @@
-import 'dart:convert';
 import 'package:drivesense/model/trip_detailed.dart';
+import 'package:drivesense/services/isar_service.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/services/trip_sync_service.dart';
 import 'package:drivesense/widgets/current_trip_card.dart';
 import 'package:drivesense/widgets/start_trip_card.dart';
 import 'package:drivesense/widgets/last_trip_card.dart';
@@ -9,11 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:drivesense/services/trip_tracking_service.dart';
 import 'dart:async';
 import 'package:drivesense/model/trackingpoint.dart';
-import 'package:drivesense/widgets/position_widgets.dart';
 import 'package:drivesense/runtime_store.dart';
 
 class HomePageBody extends StatefulWidget {
-  const HomePageBody({super.key});
+  final TripSyncService tripSyncService;
+  const HomePageBody({super.key, required this.tripSyncService});
 
   @override
   State<HomePageBody> createState() => _HomePageBodyState();
@@ -182,8 +183,17 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
 
     _lastTrip = finishedTrip;
-    saveTripToDb(finishedTrip, trackingPositions);
-    // TODO: hier speichern (Backend/DB)
+    
+    // Trip in Db speichern (mit Retry-Logik für Offline-Fälle)
+    try {
+      widget.tripSyncService.saveTripWithRetry(finishedTrip, trackingPositions);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 
   /// Setup Callbacks für den Tracking-Service
