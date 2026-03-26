@@ -130,6 +130,10 @@ public class UsergroupService {
         return profileUserGroupDao.getMembersByGroupId(groupId);
     }
 
+    public List<UserGroup> getAll () {
+        return userGroupDao.getAll();
+    }
+
     public void updateGroup(int groupId, int profileId, String name) {
 
         UserGroup group = userGroupDao.getById(groupId);

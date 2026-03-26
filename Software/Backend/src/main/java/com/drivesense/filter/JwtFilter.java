@@ -69,6 +69,15 @@ public class JwtFilter extends OncePerRequestFilter {
             request.setAttribute("role", jwtService.extractRole(token));
         }
 
+        if (path.startsWith("/api/admin")) {
+            String role = jwtService.extractRole(token);
+            if (!role.equals("ADMIN")) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Kein Zugriff");
+                return;
+            }
+        }
+
         chain.doFilter(request, response);
     }
 }

@@ -1,5 +1,6 @@
 package com.drivesense.exceptions;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -65,5 +66,16 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Interner Serverfehler");
         return ResponseEntity.status(500).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations()
+                .forEach(v -> errors.put(
+                        v.getPropertyPath().toString(),
+                        v.getMessage()
+                ));
+        return ResponseEntity.status(400).body(errors);
     }
 }

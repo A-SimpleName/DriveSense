@@ -48,4 +48,8 @@ public class ProtocolService {
     public List<Protocol> getByProfileId(int createdByProfileId) {
         return protocolDao.getByProfileId(createdByProfileId);
     }
+
+    public List<Protocol> getAllByProfileId (int profileId) {
+        return protocolDao.getAllByProfileId(profileId);
+    }
 }
