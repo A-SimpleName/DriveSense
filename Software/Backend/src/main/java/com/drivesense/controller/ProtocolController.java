@@ -3,6 +3,8 @@ package com.drivesense.controller;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.model.Protocol;
 import com.drivesense.service.ProtocolService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +19,7 @@ public class ProtocolController {
     private ProtocolService protocolService;
 
     // GET /api/protocols
-    @GetMapping("/")
+    @GetMapping("/admin/all")
     public ResponseEntity<List<Protocol>> getAll() {
         return ResponseEntity.ok(protocolService.getAll());
     }
@@ -45,15 +47,21 @@ public class ProtocolController {
         return ResponseEntity.ok(protocolService.getByGroup(groupId));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Protocol>> getAllByProfileId (HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.ok(protocolService.getAllByProfileId(profileId));
+    }
+
     // POST /api/protocols
     @PostMapping
-    public ResponseEntity<Protocol> insert(@RequestBody Protocol protocol) {
+    public ResponseEntity<Protocol> insert(@Valid @RequestBody Protocol protocol) {
         return ResponseEntity.status(201).body(protocolService.insert(protocol));
     }
 
     // PUT /api/protocols/1
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable int id, @RequestBody Protocol protocol) {
+    public ResponseEntity<Void> update(@PathVariable int id, @Valid @RequestBody Protocol protocol) {
         protocol.setId(id);
         protocolService.update(protocol);
         return ResponseEntity.ok().build();

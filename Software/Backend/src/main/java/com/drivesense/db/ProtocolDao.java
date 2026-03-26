@@ -99,6 +99,36 @@ public class ProtocolDao {
         }
     }
 
+    public List<Protocol> getAllByProfileId(int profileId) {
+        String sql = """
+            SELECT p.*
+            FROM protocol p
+            WHERE p.created_by_profile_id = ?
+            OR EXISTS (
+                SELECT 1
+                FROM profile_usergroup pug
+                WHERE pug.usergroup_id = p.usergroup_id
+                AND pug.profile_id = ?
+            )
+            """;
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ps.setInt(2,profileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Protocol> protocols = new ArrayList<>();
+            while (rs.next()) {
+                protocols.add(map(rs));
+            }
+            return protocols;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
+        }
+    }
+
     public List<Protocol> getAll () {
         String sql = "SELECT * FROM protocol";
 

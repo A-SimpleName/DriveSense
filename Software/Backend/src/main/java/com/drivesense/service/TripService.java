@@ -36,6 +36,10 @@ public class TripService {
             throw new BadRequestException("Mindestens ein Trackingpoint muss vorhanden sein");
         }
 
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
         Trackingpoint firstPoint = trackingpoints.get(0);
         Trackingpoint lastPoint = trackingpoints.get(trackingpoints.size() - 1);
 

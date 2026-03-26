@@ -67,4 +67,8 @@ public class ProtocolService {
         dto.setTrips(trips);
         return dto;
     }
+
+    public List<Protocol> getAllByProfileId (int profileId) {
+        return protocolDao.getAllByProfileId(profileId);
+    }
 }
