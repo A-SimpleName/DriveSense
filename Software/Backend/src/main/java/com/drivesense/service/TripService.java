@@ -68,8 +68,8 @@ public class TripService {
         return tripDao.getAll();
     }
 
-    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
-        List<TripSummary> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+    public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+        List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
         if (trips == null) {
             throw new NotFoundException("Keine Fahrten gefunden");
         }

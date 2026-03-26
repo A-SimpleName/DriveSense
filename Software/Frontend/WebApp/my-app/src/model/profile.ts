@@ -1,7 +1,7 @@
 export interface Profile {
-    id: number;
+    id?: number;
     name: string;
     role: string;
     account_id: number;
-    group_id: number
+    group_id?: number;
 }
