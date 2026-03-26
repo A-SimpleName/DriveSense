@@ -1,6 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.VehicleDao;
+import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -32,7 +32,7 @@ public class TripController {
     }
 
     @GetMapping("/profiles/protocols/{protocolId}/trips")
-    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
+    public ResponseEntity<List<TripSummaryDto>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
     }

@@ -1,7 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.ProtocolDao;
-import com.drivesense.exceptions.NotFoundException;
+import com.drivesense.exceptions.*;
 import com.drivesense.db.*;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.dto.response.TripSummaryDto;
