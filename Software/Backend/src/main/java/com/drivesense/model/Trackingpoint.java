@@ -1,15 +1,25 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 
 public class Trackingpoint {
     private int id;
+    @Min(value = 1, message = "Trip ID muss größer als 0 sein")
     private int tripId;
+    @NotNull(message = "Latitude darf nicht null sein")
+    @DecimalMin(value = "-90.0", message = "Latitude muss zwischen -90 und 90 sein")
+    @DecimalMax(value = "90.0", message = "Latitude muss zwischen -90 und 90 sein")
     private double lat;
+    @NotNull(message = "Longitude darf nicht null sein")
+    @DecimalMin(value = "-180.0", message = "Longitude muss zwischen -180 und 180 sein")
+    @DecimalMax(value = "180.0", message = "Longitude muss zwischen -180 und 180 sein")
     private double lng;
     private double accuracy;
     private double speed;
     private double bearing;
+    @PastOrPresent(message = "Timestamp darf nicht in der Zukunft liegen")
     private LocalDateTime timestamp;
 
     public Trackingpoint(){}

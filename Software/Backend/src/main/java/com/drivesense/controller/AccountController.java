@@ -35,7 +35,7 @@ public class AccountController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<RefreshResponse> refresh(@RequestBody RefreshRequest request) {
+    public ResponseEntity<RefreshResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         return ResponseEntity.ok(accountService.refresh(request.getRefreshToken()));
     }
 
