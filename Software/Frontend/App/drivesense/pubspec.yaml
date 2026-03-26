@@ -37,6 +37,9 @@ dependencies:
   permission_handler: ^12.0.1
   geolocator: 14.0.2
   http: ^1.6.0
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
@@ -50,6 +53,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  build_runner: ^2.4.9
+  isar_generator: ^3.1.0+1
 
   
 
