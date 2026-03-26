@@ -5,6 +5,7 @@ import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class TripController {
     }
 
     @PostMapping("/trips")
-    public ResponseEntity<Void> saveTrip(@RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
+    public ResponseEntity<Void> saveTrip(@Valid @RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
         saveTripRequest.getTripSummary().setProfileId(profileId);
 

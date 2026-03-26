@@ -99,6 +99,10 @@ public class AccountService {
         return toResponse(account);
     }
 
+    public List<Account> getAll () {
+        return accountDao.getAll();
+    }
+
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
         if (account == null) {

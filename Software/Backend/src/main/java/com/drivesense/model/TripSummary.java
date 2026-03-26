@@ -1,20 +1,25 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+
 import java.time.LocalDateTime;
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class TripSummary {
     private int id;
     private int profileId;
+    @Min(value = 1, message = "Vehicle ID muss größer als 0 sein")
     private int vehicleId;
+    @Min(value = 1, message = "Protocol ID muss größer als 0 sein")
     private int protocolId;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @NotNull(message = "Startzeit darf nicht null sein")
+    @PastOrPresent(message = "Startzeit darf nicht in der Zukunft liegen")
     private LocalDateTime startTime;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @NotNull(message = "Endzeit darf nicht null sein")
+    @PastOrPresent(message = "Endzeit darf nicht in der Zukunft liegen")
     private LocalDateTime endTime;
-
+    @Min(value = 0, message = "Distanz darf nicht negativ sein")
     private double distance;
     private String roadSurfaceConditions;
     private String type;
@@ -23,14 +28,13 @@ public class TripSummary {
     private String endPoint;
     private String furthestPoint;
 
-    public TripSummary() {}
 
-    public TripSummary(int profileId, int vehicleId, int protocolId,
-                       LocalDateTime startTime, LocalDateTime endTime,
-                       double distance, String roadSurfaceConditions, String type) {
-        this.protocolId = protocolId;
+    public TripSummary(){}
+
+    public TripSummary(int profileId, int vehicleId, int protocolId, LocalDateTime startTime, LocalDateTime endTime, double distance, String roadSurfaceConditions, String type) {
         this.profileId = profileId;
         this.vehicleId = vehicleId;
+        this.protocolId = protocolId;
         this.startTime = startTime;
         this.endTime = endTime;
         this.distance = distance;
@@ -38,30 +42,101 @@ public class TripSummary {
         this.type = type;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public int getProfileId() { return profileId; }
-    public void setProfileId(int profileId) { this.profileId = profileId; }
-    public int getVehicleId() { return vehicleId; }
-    public void setVehicleId(int vehicleId) { this.vehicleId = vehicleId; }
-    public int getProtocolId() { return protocolId; }
-    public void setProtocolId(int protocolId) { this.protocolId = protocolId; }
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-    public double getDistance() { return distance; }
-    public void setDistance(double distance) { this.distance = distance; }
-    public String getRoadSurfaceConditions() { return roadSurfaceConditions; }
-    public void setRoadSurfaceConditions(String roadSurfaceConditions) { this.roadSurfaceConditions = roadSurfaceConditions; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-    public String getStartPoint() { return startPoint; }
-    public void setStartPoint(String startPoint) { this.startPoint = startPoint; }
-    public String getEndPoint() { return endPoint; }
-    public void setEndPoint(String endPoint) { this.endPoint = endPoint; }
-    public String getFurthestPoint() { return furthestPoint; }
-    public void setFurthestPoint(String furthestPoint) { this.furthestPoint = furthestPoint; }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(int profileId) {
+        this.profileId = profileId;
+    }
+
+    public int getVehicleId() {
+        return vehicleId;
+    }
+
+    public void setVehicleId(int vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
+    public int getProtocolId() {
+        return protocolId;
+    }
+
+    public void setProtocolId(int protocolId) {
+        this.protocolId = protocolId;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public String getRoadSurfaceConditions() {
+        return roadSurfaceConditions;
+    }
+
+    public void setRoadSurfaceConditions(String roadSurfaceConditions) {
+        this.roadSurfaceConditions = roadSurfaceConditions;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStartPoint() {
+        return startPoint;
+    }
+
+    public void setStartPoint(String startPoint) {
+        this.startPoint = startPoint;
+    }
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    public void setEndPoint(String endPoint) {
+        this.endPoint = endPoint;
+    }
+
+    public String getFurthestPoint() {
+        return furthestPoint;
+    }
+
+    public void setFurthestPoint(String furthestPoint) {
+        this.furthestPoint = furthestPoint;
+    }
 
     @Override
     public String toString() {
