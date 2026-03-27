@@ -9,6 +9,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Collections;
 
 import java.io.IOException;
 
@@ -30,15 +33,10 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // ← Token aus Cookie ODER Header lesen
-        String token = null;
+        String token = getCookie(request, "profileToken");
 
-        // zuerst Cookie prüfen (Web)
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("profileToken")) {
-                    token = cookie.getValue();
-                }
-            }
+        if (token == null) {
+            token = getCookie(request, "accountToken");
         }
 
         // dann Header prüfen (Flutter)
@@ -65,7 +63,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String type = jwtService.extractType(token);
 
-        if (type.equals("ACCOUNT") && !path.contains("select-profile")) {
+        if (type.equals("ACCOUNT")
+                && !path.contains("select-profile")
+                && !path.contains("byAccount")
+                && !path.contains("/api/profiles") && request.getMethod().equals("POST")) {
+
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Bitte zuerst Profil auswählen");
             return;
@@ -92,6 +94,26 @@ public class JwtFilter extends OncePerRequestFilter {
             request.setAttribute("role", jwtService.extractRole(token));
         }
 
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        jwtService.extractAccountId(token),
+                        null,
+                        Collections.emptyList()
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         chain.doFilter(request, response);
+    }
+
+    private String getCookie(HttpServletRequest request, String name) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
