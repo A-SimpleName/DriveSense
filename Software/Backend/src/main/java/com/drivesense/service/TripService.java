@@ -1,9 +1,12 @@
 package com.drivesense.service;
 
+
 import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
+import com.drivesense.dto.response.TripSummaryDto;
+import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +72,8 @@ public class TripService {
         return tripDao.getAll();
     }
 
-    public List<TripSummary> getAllByProfileAndProtocolId(int profileId, int protocolId) {
-        List<TripSummary> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+    public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+        List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
         if (trips == null) {
             throw new NotFoundException("Keine Fahrten gefunden");
         }

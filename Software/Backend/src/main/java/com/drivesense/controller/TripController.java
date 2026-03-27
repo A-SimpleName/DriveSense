@@ -1,6 +1,7 @@
 package com.drivesense.controller;
 
 import com.drivesense.dto.request.SaveTripRequest;
+import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.dto.request.UpdatePasswordRequest;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.model.TripSummary;
@@ -34,7 +35,7 @@ public class TripController {
     }
 
     @GetMapping("/profiles/protocols/{protocolId}/trips")
-    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
+    public ResponseEntity<List<TripSummaryDto>> getAllTripsByProfileAndProtocolId(HttpServletRequest request, @PathVariable int protocolId) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getAllByProfileAndProtocolId(profileId, protocolId));
     }
@@ -64,5 +65,10 @@ public class TripController {
         int profileId = (int) request.getAttribute("profileId");
         tripService.delete(id,profileId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/trips")
+    public ResponseEntity<List<TripSummary>> getAllTripsByProfileAndProtocolId() {
+        return ResponseEntity.ok(tripService.getAllTrips());
     }
 }

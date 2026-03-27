@@ -2,8 +2,6 @@ package com.drivesense.dto.response;
 
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.TripSummary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;

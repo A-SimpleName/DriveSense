@@ -1,18 +1,99 @@
+import { tokenService } from "./tokenService";
+
+const BASE_URL = "http://localhost:8080/api";
+
+export async function login(email: string, password: string) {
+  const res = await fetch("http://localhost:8080/api/account/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({ email, password })
+  });
+
+  if (!res.ok) throw new Error("Login fehlgeschlagen");
+
+  return res.json();
+}
+
+export async function selectProfile(profileId: number) {
+  const token = tokenService.getAccountToken();
+
+  const res = await fetch(
+    `${BASE_URL}/account/select-profile?profileId=${profileId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  if (!res.ok) throw new Error("Profil Auswahl fehlgeschlagen");
+
+  const data = await res.json();
+
+  tokenService.setTokens({
+    profileToken: data.profileToken
+  });
+  console.log(tokenService.getAccessToken());
+  return data;
+}
+
+export async function signUp(fname: string, lname: string, email: string, password: string) {
+  const res = await fetch(`${BASE_URL}/account/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ fname, lname, email, password })
+  });
+
+  if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
+  return await res.json();
+}
+
+export async function refresh() {
+  const refreshToken = tokenService.getRefreshToken();
+
+  if (!refreshToken) {
+    tokenService.clear();
+    throw new Error("Kein Refresh Token");
+  }
+
+  const res = await fetch(`${BASE_URL}/account/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  if (!res.ok) {
+    tokenService.clear();
+    throw new Error("Session abgelaufen");
+  }
+
+  const data = await res.json();
+
+  tokenService.setTokens({
+    accountToken: data.accountToken,
+    profileToken: data.profileToken,
+    refreshToken: data.refreshToken
+  });
+
+  return data;
+}
+
 export function logout() {
-     localStorage.removeItem("token");
+  tokenService.clear();
 }
 
-export function login(email: string, password: string) {
-    console.log(email, password);
-    // Backend authentication logic would go here
-    localStorage.setItem("token","prototype")
+export function hasProfile() {
+  return !!localStorage.getItem("profileToken");
 }
 
-export function isAuthenticated(): boolean {
-    return !!localStorage.getItem("token");
-}
-
-export function SignUp(email: string, password: string) {
-    console.log(email, password);
-    // Backend sign-up logic would go here
+export function isAuthenticated() {
+  return !!localStorage.getItem("accountToken");
 }

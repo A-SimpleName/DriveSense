@@ -6,7 +6,7 @@ type AuthLayoutProps = {
   onLogout: () => void;
 };
 
-function AuthLayout({ children, onLogout }: AuthLayoutProps) {
+export function AuthLayout({ children, onLogout }: AuthLayoutProps) {
 
     return ( 
         <div className="app-container">

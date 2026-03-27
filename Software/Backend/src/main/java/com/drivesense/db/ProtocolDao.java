@@ -1,7 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
-import com.drivesense.exceptions.DatabaseException;
+import com.drivesense.exceptions.*;
 import com.drivesense.model.Protocol;
 import com.drivesense.model.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;

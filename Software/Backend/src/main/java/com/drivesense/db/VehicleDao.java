@@ -18,7 +18,7 @@ public class VehicleDao {
     private DbConnection dbConnection;
 
     public List<VehicleDto> getAllVehiclesByAccount() {
-        String sql = "SELECT v.id, v.model, u.name, v.licenseplate, v.mileage " +
+        String sql = "SELECT v.id, v.model, p.name, v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
                 "JOIN profile p ON v.profile_id = p.id";
 

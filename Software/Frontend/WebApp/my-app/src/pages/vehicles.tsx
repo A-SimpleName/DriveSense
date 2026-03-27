@@ -1,18 +1,26 @@
-import { Button } from "../components/button";
-import VehiclesTable from "../components/vehicles/table";
-import { VehicleList } from "../components/vehicles/vehicle";
+import { useState } from "react"
+import { Button } from "../components/button"
+import VehiclesTable from "../components/vehicles/table"
+import { VehicleAddForm } from "../components/vehicles/vehicleAddForm"
 
 function Vehicles() {
-    
+
+    const [showForm, setShowForm] = useState(false)
+
     return (
         <div>
             <h1>Fahrzeuge</h1>
-            <Button label={"+ Fahrzeuge hinzufügen"}/>
+
+            <Button
+                label="+ Fahrzeug hinzufügen"
+                onClick={() => setShowForm(true)}
+            />
+
+            {showForm && <VehicleAddForm />}
+
             <VehiclesTable />
-      
-            <VehicleList />
         </div>
-    );
+    )
 }
 
-export default Vehicles;
+export default Vehicles
