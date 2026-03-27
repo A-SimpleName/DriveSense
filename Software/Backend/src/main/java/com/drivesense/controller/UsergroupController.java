@@ -27,7 +27,7 @@ public class UsergroupController {
     }
 
     // GET /api/groups?profileId=1
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<UserGroup>> getGroupsByProfile(HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(usergroupService.getGroupsByProfile(profileId));

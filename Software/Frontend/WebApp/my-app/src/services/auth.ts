@@ -5,13 +5,14 @@ const BASE_URL = "http://localhost:8080/api";
 export async function login(email: string, password: string) {
   const res = await fetch("http://localhost:8080/api/account/login", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json"
+      
     },
-    credentials: "include",
     body: JSON.stringify({ email, password })
   });
-
+  console.log("Login Response:", res);
   if (!res.ok) throw new Error("Login fehlgeschlagen");
 
   return res.json();
@@ -19,11 +20,13 @@ export async function login(email: string, password: string) {
 
 export async function selectProfile(profileId: number) {
   const token = tokenService.getAccountToken();
+  console.log("Account Token:", token);
 
   const res = await fetch(
     `${BASE_URL}/account/select-profile?profileId=${profileId}`,
     {
       method: "POST",
+      credentials: "include",
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -64,6 +67,7 @@ export async function refresh() {
 
   const res = await fetch(`${BASE_URL}/account/refresh`, {
     method: "POST",
+    credentials: "include", // 🔥 HIER HINZUFÜGEN
     headers: {
       "Content-Type": "application/json"
     },

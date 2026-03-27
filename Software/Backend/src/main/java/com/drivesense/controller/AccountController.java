@@ -36,6 +36,7 @@ public class AccountController {
             accountCookie.setSecure(true);
             accountCookie.setPath("/");
             accountCookie.setMaxAge(60 * 60 * 24); // 24h
+            accountCookie.setAttribute("SameSite", "None");
             httpResponse.addCookie(accountCookie);
 
             // refreshToken als Cookie
@@ -44,6 +45,7 @@ public class AccountController {
             refreshCookie.setSecure(true);
             refreshCookie.setPath("/");
             refreshCookie.setMaxAge(60 * 60 * 24 * 30); // 30 Tage
+            refreshCookie.setAttribute("SameSite", "None");
             httpResponse.addCookie(refreshCookie);
         }
 
@@ -70,6 +72,7 @@ public class AccountController {
             profileCookie.setSecure(true);
             profileCookie.setPath("/");
             profileCookie.setMaxAge(60 * 60 * 24); // 24h
+            profileCookie.setAttribute("SameSite", "None");
             httpResponse.addCookie(profileCookie);
         }
 
@@ -104,6 +107,7 @@ public class AccountController {
             accountCookie.setSecure(true);
             accountCookie.setPath("/");
             accountCookie.setMaxAge(60 * 60 * 24);
+            accountCookie.setAttribute("SameSite", "None");
             httpResponse.addCookie(accountCookie);
         }
 
@@ -131,12 +135,12 @@ public class AccountController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<AccountResponse> getById(HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");
         return ResponseEntity.ok(accountService.getById(accountId));
     }
-    @PutMapping("/")
+    @PutMapping
     public ResponseEntity<AccountResponse> update(@Valid @RequestBody UpdateAccountRequest request, HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
         return ResponseEntity.ok(accountService.update(accountId, request));
@@ -149,7 +153,7 @@ public class AccountController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public ResponseEntity<Void> delete(HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");
         accountService.delete(accountId);
