@@ -4,13 +4,13 @@ package com.drivesense.controller;
 import com.drivesense.model.Profile;
 import com.drivesense.service.ProfileService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/profiles")
 public class ProfileController {
@@ -34,7 +34,7 @@ public class ProfileController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Profile> update(@RequestBody Profile profile, HttpServletRequest request) {
+    public ResponseEntity<Profile> update(@Valid @RequestBody Profile profile, HttpServletRequest request) {
         int id = (int) request.getAttribute("profileId");
         profile.setId(id);
         profileService.update(profile);
@@ -42,7 +42,7 @@ public class ProfileController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Profile> insert(@RequestBody Profile profile, HttpServletRequest httpRequest) {
+    public ResponseEntity<Profile> insert(@Valid @RequestBody Profile profile, HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
         profile.setAccount_id(accountId);
         return ResponseEntity.status(201).body(profileService.insert(profile));

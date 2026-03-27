@@ -2,6 +2,7 @@ package com.drivesense.service;
 
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.exceptions.NotFoundException;
+import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Protocol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,5 +48,20 @@ public class ProtocolService {
 
     public List<Protocol> getByProfileId(int createdByProfileId) {
         return protocolDao.getByProfileId(createdByProfileId);
+    }
+
+    public List<Protocol> getAllByProfileId (int profileId) {
+        return protocolDao.getAllByProfileId(profileId);
+    }
+
+    public void delete (int id, int profileId) {
+        Protocol protocol = protocolDao.getById(id);
+        if (protocol == null) {
+            throw new NotFoundException("Protokoll nicht gefunden");
+        }
+        if (protocol.getCreatedByProfileId() != profileId) {
+            throw new UnauthorizedException("Kein Zugriff auf dieses Protokoll");
+        }
+        protocolDao.deleteById(id);
     }
 }
