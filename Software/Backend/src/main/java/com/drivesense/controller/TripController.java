@@ -1,6 +1,8 @@
 package com.drivesense.controller;
 
 import com.drivesense.dto.request.SaveTripRequest;
+import com.drivesense.dto.request.UpdatePasswordRequest;
+import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,5 +43,26 @@ public class TripController {
     public ResponseEntity<Double> getTotalKm (HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(tripService.getTotalKm(profileId));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TripDetailedDto> getDetailedById(@PathVariable int id, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.ok(tripService.getDetailedById(id,profileId));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable int id, @Valid @RequestBody TripSummary tripSummary, HttpServletRequest httpRequest) {
+        int profileId = (int) httpRequest.getAttribute("profileId");
+        tripSummary.setId(id);
+        tripService.update(tripSummary,profileId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        tripService.delete(id,profileId);
+        return ResponseEntity.noContent().build();
     }
 }
