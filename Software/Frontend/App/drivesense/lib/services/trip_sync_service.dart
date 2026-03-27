@@ -38,7 +38,6 @@ class TripSyncService {
     try {
       await tripService.saveTripToDb(trip, trackingPoints);
     } catch (e) {
-      
       final pendingTrip = PendingTrip()
         ..localId = _createLocalId()
         ..tripSummaryJson = jsonEncode(trip.toJson())
@@ -55,9 +54,9 @@ class TripSyncService {
   }
 
   Future<TripSyncResult> syncPendingTrips() async {
-    final pendingTrips = await pendingTripRepository.getAll();
-    var successful = 0;
-    var failed = 0;
+    final List<PendingTrip> pendingTrips = await pendingTripRepository.getAll();
+    int successful = 0;
+    int failed = 0;
 
     for (final pendingTrip in pendingTrips) {
       try {
@@ -67,21 +66,23 @@ class TripSyncService {
         final List<dynamic> trackingList =
             jsonDecode(pendingTrip.trackingPointsJson) as List<dynamic>;
 
-        final trip = TripSummary.fromJson(tripMap);
-        final trackingPoints = trackingList
+        final TripSummary trip = TripSummary.fromJson(tripMap);
+        final List<Trackingpoint> trackingPoints = trackingList
             .map((item) => Trackingpoint.fromJson(item as Map<String, dynamic>))
             .toList();
 
         await tripService.saveTripToDb(trip, trackingPoints);
         await pendingTripRepository.deleteById(pendingTrip.id);
         successful += 1;
-      } catch (e) {
+      } catch (e, st) {
         pendingTrip.retryCount += 1;
         pendingTrip.lastError = e.toString();
         await pendingTripRepository.update(pendingTrip);
         failed += 1;
 
-        debugPrint('Pending trip sync failed: $e');
+        debugPrint(
+          'Pending trip sync failed (localId=${pendingTrip.localId}, dbId=${pendingTrip.id}): $e\n$st',
+        );
       }
     }
 
