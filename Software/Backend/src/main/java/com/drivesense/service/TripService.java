@@ -33,6 +33,10 @@ public class TripService {
             throw new BadRequestException("Mindestens ein Trackingpoint muss vorhanden sein");
         }
 
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
         Trackingpoint firstPoint = trackingpoints.get(0);
         Trackingpoint lastPoint = trackingpoints.get(trackingpoints.size() - 1);
 
@@ -91,6 +95,35 @@ public class TripService {
         TripDetailedDto tripDetailedDto = new TripDetailedDto(trip);
         enrichWithTrackingPoints(tripDetailedDto);
         return tripDetailedDto;
+    }
+
+    public void update (TripSummary tripSummary,int profileId) {
+        TripSummary existing = tripDao.getById(tripSummary.getId());
+
+        if (existing == null) {
+            throw new NotFoundException("Trip nicht gefunden");
+        }
+
+        if (tripSummary.getProfileId() != profileId) {
+            throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
+        }
+
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
+        tripDao.update(tripSummary);
+    }
+
+    public void delete (int id, int profileId) {
+        TripSummary tripSummary = tripDao.getById(id);
+        if (tripSummary == null) {
+            throw new NotFoundException("Trip nicht gefunden");
+        }
+        if (tripSummary.getProfileId() != profileId) {
+            throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
+        }
+        tripDao.deleteById(id);
     }
 
     private void enrichWithTrackingPoints(TripDetailedDto trip) {

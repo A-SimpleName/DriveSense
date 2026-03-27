@@ -1,9 +1,16 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class Protocol {
     private int id;
+    @Min(value = 1, message = "Profile ID muss größer als 0 sein")
     private int createdByProfileId;
     private int usergroupId;
+    @NotBlank(message = "Name darf nicht leer sein")
+    @Size(max = 100, message = "Name darf maximal 100 Zeichen haben")
     private String name;
 
     public Protocol(){}

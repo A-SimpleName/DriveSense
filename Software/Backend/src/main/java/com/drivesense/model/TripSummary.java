@@ -1,14 +1,25 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+
 import java.time.LocalDateTime;
 
 public class TripSummary {
     private int id;
     private int profileId;
+    @Min(value = 1, message = "Vehicle ID muss größer als 0 sein")
     private int vehicleId;
+    @Min(value = 1, message = "Protocol ID muss größer als 0 sein")
     private int protocolId;
+    @NotNull(message = "Startzeit darf nicht null sein")
+    @PastOrPresent(message = "Startzeit darf nicht in der Zukunft liegen")
     private LocalDateTime startTime;
+    @NotNull(message = "Endzeit darf nicht null sein")
+    @PastOrPresent(message = "Endzeit darf nicht in der Zukunft liegen")
     private LocalDateTime endTime;
+    @Min(value = 0, message = "Distanz darf nicht negativ sein")
     private double distance;
     private String roadSurfaceConditions;
     private String type;

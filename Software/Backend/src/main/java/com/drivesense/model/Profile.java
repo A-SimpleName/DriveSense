@@ -1,8 +1,19 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 public class Profile {
     private int id;
+    @NotBlank(message = "Profilname darf nicht leer sein")
+    @Size(max = 100, message = "Name darf maximal 100 Zeichen haben")
     private String name;
+    @NotBlank(message = "Rolle darf nicht leer sein")
+    @Pattern(
+            regexp = "PRIVAT|FAHRSCHÜLER|BERUFSFAHRER",
+            message = "Rolle muss PRIVAT, Fahrschüler oder BERUFSFAHRER sein"
+    )
     private String role;
     private int account_id;
 
