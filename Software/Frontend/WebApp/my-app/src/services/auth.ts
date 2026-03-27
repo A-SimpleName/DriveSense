@@ -3,24 +3,18 @@ import { tokenService } from "./tokenService";
 const BASE_URL = "http://localhost:8080/api";
 
 export async function login(email: string, password: string) {
-  const res = await fetch(`${BASE_URL}/account/login`, {
+  const res = await fetch("http://localhost:8080/api/account/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
+    credentials: "include",
     body: JSON.stringify({ email, password })
   });
 
   if (!res.ok) throw new Error("Login fehlgeschlagen");
 
-  const data = await res.json();
-
-  tokenService.setTokens({
-    accountToken: data.accountToken,
-    refreshToken: data.refreshToken
-  });
-
-  return data;
+  return res.json();
 }
 
 export async function selectProfile(profileId: number) {
@@ -43,7 +37,7 @@ export async function selectProfile(profileId: number) {
   tokenService.setTokens({
     profileToken: data.profileToken
   });
-
+  console.log(tokenService.getAccessToken());
   return data;
 }
 
@@ -57,7 +51,6 @@ export async function signUp(fname: string, lname: string, email: string, passwo
   });
 
   if (!res.ok) throw new Error("Registrierung fehlgeschlagen");
-
   return await res.json();
 }
 

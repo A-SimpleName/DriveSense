@@ -18,7 +18,6 @@ export const tokenService = {
   },
 
   getAccessToken: () => {
-    // PRIORITÄT: profileToken > accountToken
     return (
       localStorage.getItem("profileToken") ||
       localStorage.getItem("accountToken")
