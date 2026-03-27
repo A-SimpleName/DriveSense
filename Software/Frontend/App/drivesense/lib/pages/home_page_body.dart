@@ -29,7 +29,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   bool hasActiveTrip = false;
   double? currentLatitude;
   double? currentLongitude;
-  
+
   // Trip Data
   double? startMileage;
   double? endMileage;
@@ -40,7 +40,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   List<Trackingpoint> trackingPositions = [];
   TripSummary? _activeTrip;
   TripSummary? _lastTrip;
-  
+
   // Services & Timers
   final TripTrackingService _trackingService = TripTrackingService();
   Timer? _uiTimer;
@@ -110,27 +110,32 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   void _onAbortTrip() {
-    showDialog(context: context, builder: (context) {
-      return AlertDialog(
-        title: Text('Fahrt abbrechen?'),
-        content: Text('Möchtest du die aktuelle Fahrt wirklich abbrechen? Alle gesammelten Daten gehen verloren.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Abbrechen'),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Fahrt abbrechen?'),
+          content: Text(
+            'Möchtest du die aktuelle Fahrt wirklich abbrechen? Alle gesammelten Daten gehen verloren.',
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _stopTrackingAndReset();
-            },
-            child: Text('Fahrt abbrechen'),
-          ),
-        ],
-      );
-    });
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Abbrechen'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _stopTrackingAndReset();
+              },
+              child: Text('Fahrt abbrechen'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _stopTrackingAndReset() {
@@ -164,7 +169,10 @@ class _HomePageBodyState extends State<HomePageBody> {
       trackingPoints: List<Trackingpoint>.from(trackingPositions),
     );
 
-    final finishedTripDetail = TripDetailed(summary: finishedTrip, trackingpoints: trackingPositions);
+    final finishedTripDetail = TripDetailed(
+      summary: finishedTrip,
+      trackingpoints: trackingPositions,
+    );
 
     RuntimeStore.addTrip(finishedTrip); // oben einfügen
     RuntimeStore.addTripDetail(finishedTrip.id, finishedTripDetail);
@@ -183,41 +191,45 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
 
     _lastTrip = finishedTrip;
-    
+
     // Trip in Db speichern (mit Retry-Logik für Offline-Fälle)
     try {
-      widget.tripSyncService.saveTripWithRetry(finishedTrip, trackingPositions);
+      await widget.tripSyncService.saveTripWithRetry(
+        finishedTrip,
+        trackingPositions,
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
 
   /// Setup Callbacks für den Tracking-Service
   void _setupTrackingCallbacks() {
-    _trackingService.onTrackingUpdate = (Trackingpoint tp, double distanceAdded) {
-      if (!hasActiveTrip) return;
+    _trackingService.onTrackingUpdate =
+        (Trackingpoint tp, double distanceAdded) {
+          if (!hasActiveTrip) return;
 
-      setState(() {
-        _eventCount++;
-        currentLatitude = tp.latitude;
-        currentLongitude = tp.longitude;
-        _lastAddedMeters = distanceAdded;
-        _lastAccuracy = tp.accuracy;
-        _lastSpeed = tp.speed;
-        _totalDistanceMeters += distanceAdded;
-        trackingPositions.add(tp);
-      });
-    };
+          setState(() {
+            _eventCount++;
+            currentLatitude = tp.latitude;
+            currentLongitude = tp.longitude;
+            _lastAddedMeters = distanceAdded;
+            _lastAccuracy = tp.accuracy;
+            _lastSpeed = tp.speed;
+            _totalDistanceMeters += distanceAdded;
+            trackingPositions.add(tp);
+          });
+        };
 
     _trackingService.onError = (String error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('GPS Error: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('GPS Error: $error')));
       }
     };
   }
