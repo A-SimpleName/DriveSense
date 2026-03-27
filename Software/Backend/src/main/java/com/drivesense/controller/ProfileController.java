@@ -23,7 +23,7 @@ public class ProfileController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Profile> getById(@PathVariable int id) {
+    public ResponseEntity<Profile> getById(@PathVariable int id) {  
         return ResponseEntity.ok(profileService.getById(id));
     }
 

@@ -7,14 +7,17 @@ type ButtonProps = {
   stopPropagation?: boolean;
 };
 
-export function Button({ label, type, onClick, stopPropagation = false }: ButtonProps) {
+export function Button({ label, type = "button", onClick, stopPropagation = false }: ButtonProps) {
   return (
-    <button type={type} onClick={(e) => {
-      if (stopPropagation) {
-        e.stopPropagation();
+    <button
+      type={type}
+      onClick={(e) => {
+        if (stopPropagation) {
+          e.stopPropagation();
+        }
         onClick?.();
-      }
-      }}>
+      }}
+    >
       {label}
     </button>
   );

@@ -1,7 +1,8 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
-import com.drivesense.exceptions.DatabaseException;
+import com.drivesense.exceptions.*;
+import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -34,7 +35,6 @@ public class TripDao {
             ps.setDouble(6, tripSummary.getDistance());
             ps.setString(7, tripSummary.getRoadSurfaceConditions());
             ps.setString(8, tripSummary.getType());
-
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -104,7 +104,7 @@ public class TripDao {
         }
     }
 
-    public List<TripSummary> getAllByProfileAndProtocolId(int protocolId, int profileId) {
+    public List<TripSummaryDto> getAllByProfileAndProtocolId(int protocolId, int profileId) {
         String sql = """
                 SELECT t.*
                      FROM trip t
@@ -130,9 +130,42 @@ public class TripDao {
             ps.setInt(3, profileId);
             ResultSet rs = ps.executeQuery();
 
-            List<TripSummary> tripSummaries = new ArrayList<>();
+            List<TripSummaryDto> tripSummaries = new ArrayList<>();
             while (rs.next()) {
-                tripSummaries.add(map(rs));
+                tripSummaries.add(mapToDto(rs));
+            }
+            return tripSummaries;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+    public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
+        String sql = """
+        SELECT
+            t.id,
+            t.distance,
+            t.type,
+            v.model AS vehicle_model,
+            a.fname,
+            a.lname
+        FROM trip t
+        JOIN vehicle v ON t.vehicle_id = v.id
+        JOIN profile p ON t.profile_id = p.id
+        JOIN account a ON p.account_id = a.id
+        WHERE t.protocol_id = ?
+    """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, protocolId);
+            ResultSet rs = ps.executeQuery();
+
+            List<TripSummaryDto> tripSummaries = new ArrayList<>();
+            while (rs.next()) {
+                tripSummaries.add(mapToDto(rs));
             }
             return tripSummaries;
 
@@ -170,7 +203,6 @@ public class TripDao {
             ps.setString(4, tripSummary.getRoadSurfaceConditions());
             ps.setString(5, tripSummary.getType());
             ps.setInt(6, tripSummary.getId());
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -203,5 +235,18 @@ public class TripDao {
         tripSummary.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
         tripSummary.setType(rs.getString("type"));
         return tripSummary;
+    }
+
+    private TripSummaryDto mapToDto(ResultSet rs) throws SQLException {
+        TripSummaryDto dto = new TripSummaryDto();
+
+        dto.setId(rs.getInt("id"));
+        dto.setDistance(rs.getDouble("distance"));
+        dto.setType(rs.getString("type"));
+        dto.setVehicleModel(rs.getString("vehicle_model"));
+        dto.setAccountFname(rs.getString("fname"));
+        dto.setAccountLname(rs.getString("lname"));
+
+        return dto;
     }
 }
