@@ -1,6 +1,7 @@
 package com.drivesense.filter;
 
 import com.drivesense.service.JwtService;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,10 +20,8 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
         String path = request.getRequestURI();
 
-        // Login, Register, Refresh brauchen keinen Token
         if (path.contains("/login") ||
                 path.contains("/register") ||
                 path.contains("/refresh")) {
@@ -30,14 +29,32 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+        // ← Token aus Cookie ODER Header lesen
+        String token = null;
+
+        // zuerst Cookie prüfen (Web)
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("profileToken")) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+
+        // dann Header prüfen (Flutter)
+        if (token == null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+        }
+
         // kein Token → 401
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (token == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Kein Token vorhanden");
             return;
         }
-
-        String token = authHeader.substring(7);
 
         // Token ungültig → 401
         if (!jwtService.isValid(token)) {
@@ -48,25 +65,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String type = jwtService.extractType(token);
 
-        // accountToken darf nur select-profile aufrufen
         if (type.equals("ACCOUNT") && !path.contains("select-profile")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Bitte zuerst Profil auswählen");
             return;
         }
 
-        // refreshToken darf gar nichts außer /refresh
         if (type.equals("REFRESH")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Ungültiger Token Typ");
             return;
-        }
-
-        // Daten in Request legen
-        request.setAttribute("accountId", jwtService.extractAccountId(token));
-        if (type.equals("PROFILE")) {
-            request.setAttribute("profileId", jwtService.extractProfileId(token));
-            request.setAttribute("role", jwtService.extractRole(token));
         }
 
         if (path.startsWith("/api/admin")) {
@@ -76,6 +84,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 response.getWriter().write("Kein Zugriff");
                 return;
             }
+        }
+
+        request.setAttribute("accountId", jwtService.extractAccountId(token));
+        if (type.equals("PROFILE")) {
+            request.setAttribute("profileId", jwtService.extractProfileId(token));
+            request.setAttribute("role", jwtService.extractRole(token));
         }
 
         chain.doFilter(request, response);
