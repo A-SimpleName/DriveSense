@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")//origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api")
 public class TripController {
