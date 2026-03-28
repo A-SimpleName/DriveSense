@@ -69,6 +69,8 @@ CREATE TABLE `trip` (
   `start_point` varchar(100) NOT NULL,
   `end_point` varchar(100) NOT NULL,
   `furthest_point` varchar(100) NOT NULL,
+  `start_mileage` int NOT NULL,
+  `end_mileage` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tracking_profile` (`profile_id`),
   KEY `idx_tracking_vehicle` (`vehicle_id`),
