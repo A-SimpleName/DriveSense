@@ -16,6 +16,7 @@ CREATE TABLE `profile` (
   `role` varchar(50) NOT NULL,
   `account_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_profile_account_name_role` (`account_id`,`name`,`role`),
   KEY `fk_profile_account` (`account_id`),
   CONSTRAINT `profile_account_FK` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
