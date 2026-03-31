@@ -33,7 +33,7 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getAllProfilesByAccountId(accountId));
     }
 
-    @PutMapping("/")
+    @PutMapping
     public ResponseEntity<Profile> update(@Valid @RequestBody Profile profile, HttpServletRequest request) {
         int id = (int) request.getAttribute("profileId");
         profile.setId(id);
@@ -41,14 +41,15 @@ public class ProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Profile> insert(@Valid @RequestBody Profile profile, HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
+        System.out.println("accountId: " + httpRequest.getAttribute("accountId"));
         profile.setAccount_id(accountId);
         return ResponseEntity.status(201).body(profileService.insert(profile));
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public ResponseEntity<Void> delete(HttpServletRequest request) {
         int id = (int) request.getAttribute("profileId");
         profileService.deleteById(id);
