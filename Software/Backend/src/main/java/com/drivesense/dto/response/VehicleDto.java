@@ -4,7 +4,7 @@ public class VehicleDto {
     private int id;
     private String model;
     private String profileName;
-    private String licencePlate;
+    private String licenseplate;
     private int mileage;
 
     public VehicleDto() {}
@@ -13,7 +13,7 @@ public class VehicleDto {
         this.id = id;
         this.model = model;
         this.profileName = profileName;
-        this.licencePlate = licencePlate;
+        this.licenseplate = licencePlate;
         this.mileage = mileage;
     }
 
@@ -42,11 +42,11 @@ public class VehicleDto {
     }
 
     public String getLicencePlate() {
-        return licencePlate;
+        return licenseplate;
     }
 
-    public void setLicencePlate(String licencePlate) {
-        this.licencePlate = licencePlate;
+    public void setLicencePlate(String licenseplate) {
+        this.licenseplate = licenseplate;
     }
 
     public int getMileage() {

@@ -10,7 +10,6 @@ class TripSummary {
   final double distanceKm;
   final String roadSurfaceConditions;
   final String? type;
-  
 
   TripSummary({
     required this.id,
@@ -38,22 +37,40 @@ class TripSummary {
   }
 
   factory TripSummary.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value, {int fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString()) ?? fallback;
+    }
+
+    double asDouble(dynamic value, {double fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString()) ?? fallback;
+    }
+
     return TripSummary(
-      id: json["id"],
-      profileId: json["profileId"],
-      vehicleId: json["vehicleId"],
-      protocolId: json["protocolId"],
-      startTime: DateTime.parse(json["startTime"]),
+      id: asInt(json["id"]),
+      profileId: asInt(json["profileId"]),
+      vehicleId: asInt(json["vehicleId"]),
+      protocolId: asInt(json["protocolId"]),
+      startTime: DateTime.parse(json["startTime"].toString()),
       endTime: json["endTime"] != null
-          ? DateTime.parse(json["endTime"])
+          ? DateTime.parse(json["endTime"].toString())
           : null,
-      distanceKm: json["distance"].toDouble(),
-      roadSurfaceConditions: json["roadSurfaceConditions"],
-      type: json["type"],
+      distanceKm: asDouble(json["distance"]),
+      roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
+      type: json["type"]?.toString(),
     );
   }
 
-  TripSummary copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
+  TripSummary copyWith({
+    required DateTime endTime,
+    required double distanceKm,
+    required List<Trackingpoint> trackingPoints,
+  }) {
     return TripSummary(
       id: id,
       profileId: profileId,

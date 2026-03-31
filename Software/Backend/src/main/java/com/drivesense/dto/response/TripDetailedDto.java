@@ -3,14 +3,31 @@ package com.drivesense.dto.response;
 import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.TripSummary;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TripDetailedDto {
     private TripSummary tripSummary;
     private List<Trackingpoint> trackingpoints;
 
+    public TripDetailedDto(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
+        this.tripSummary = tripSummary;
+        this.trackingpoints = trackingpoints;
+    }
+
     public TripDetailedDto(TripSummary tripSummary) {
         this.tripSummary = tripSummary;
+        this.trackingpoints = new ArrayList<>();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(tripSummary).append('\n');
+        for (Trackingpoint t : trackingpoints) {
+            sb.append(t).append('\n');
+        }
+        return sb.toString();
     }
 
     public TripSummary getTripSummary() {

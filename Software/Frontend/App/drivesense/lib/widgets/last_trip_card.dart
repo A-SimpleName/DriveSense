@@ -1,21 +1,19 @@
+import 'package:drivesense/model/trip_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/constants/app_colors.dart';
 
 class LastTripCard extends StatefulWidget {
-  const LastTripCard({super.key});
+  final TripSummary? lastTrip;
+
+  const LastTripCard({super.key, required this.lastTrip});
 
   @override
   State<LastTripCard> createState() => _LastTripCardState();
 }
 
 class _LastTripCardState extends State<LastTripCard> {
-  final int? lastTripId = 1;
-  final double lastTripDistance = 7812.0;
-  final Duration lastTripDuration = const Duration(
-    hours: 0,
-    minutes: 15,
-    seconds: 42,
-  );
+  Duration? get lastTripDuration => widget.lastTrip?.endTime?.difference(widget.lastTrip!.startTime);
+  
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +41,13 @@ class _LastTripCardState extends State<LastTripCard> {
                 Text(''),
                 Text('Distanz: '),
                 Text(
-                  lastTripId != null
-                      ? '${(lastTripDistance / 1000).toStringAsFixed(2)} km'
+                  widget.lastTrip != null
+                      ? '${(widget.lastTrip!.distanceKm / 1000).toStringAsFixed(2)} km'
                       : '--',
                 ),
                 Text('Zeit: '),
                 Text(
-                  lastTripId != null
+                  widget.lastTrip?.endTime != null && lastTripDuration != null
                       ? lastTripDuration.toString().split('.').first
                       : '--',
                 ),
