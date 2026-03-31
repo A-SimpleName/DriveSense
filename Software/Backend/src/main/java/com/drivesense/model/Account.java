@@ -1,18 +1,22 @@
 package com.drivesense.model;
 
+import java.time.LocalDate;
+
 public class Account {
     private int id;
     private String fName;
     private String lName;
     private String password;
     private String email;
+    private LocalDate birthdate;
 
     public Account () {}
-    public Account(String fName, String lName, String password, String email) {
+    public Account(String fName, String lName, String password, String email, LocalDate birthdate) {
         this.fName = fName;
         this.lName = lName;
         this.password = password;
         this.email = email;
+        this.birthdate = birthdate;
     }
 
     public int getId() {
@@ -45,6 +49,14 @@ public class Account {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
     }
 
     public String getEmail() {
