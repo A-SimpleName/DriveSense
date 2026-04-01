@@ -13,7 +13,7 @@ import SignUpPage from "./pages/signUp";
 import { isAuthenticated as checkAuth } from "./services/auth";
 import { useEffect, useState } from "react";
 import { logout } from "./services/auth";
-
+import SelectProfile from "./pages/SelectProfile";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,7 +31,7 @@ function App() {
   return (
     <BrowserRouter>  
           <Routes>
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />} />
+            <Route path="/login" element={isAuthenticated ? <Navigate to="/select-profile" /> : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />} />
             <Route path="/registrieren" element={isAuthenticated ? <Navigate to="/" /> : <SignUpPage />} />
             <Route path="/" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="/fahrten" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout> : <Navigate to="/login" />} />
@@ -41,6 +41,7 @@ function App() {
             <Route path="/impressum" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><ImpressumPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="/datenschutz" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DatenschutzPage /></AuthLayout> : <Navigate to="/login" />} />
             <Route path="*" element={<div>404 Not Found</div>} />
+            <Route path="/select-profile" element={<SelectProfile />} />
           </Routes>
         
     </BrowserRouter>
