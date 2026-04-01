@@ -1,6 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Profile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -32,8 +33,7 @@ public class ProfileDao {
             }
             return profile;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim speichern des Profils", e);
         }
     }
 
@@ -53,8 +53,7 @@ public class ProfileDao {
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Profils", e);
         }
     }
     /*
@@ -74,8 +73,7 @@ public class ProfileDao {
             return profiles;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new RuntimeException(e.getMessage());
         }
     }
     */
@@ -94,8 +92,7 @@ public class ProfileDao {
             return profiles;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Profile", e);
         }
     }
 
@@ -110,7 +107,7 @@ public class ProfileDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren des Profils", e);
         }
     }
 
@@ -121,11 +118,11 @@ public class ProfileDao {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen des Profils", e);
         }
     }
 
-    public List<Profile> getAllUsersByAccount_id(int id) {
+    public List<Profile> getAllProfilesByAccountId(int id) {
         String sql = "SELECT * FROM profile WHERE account_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -138,8 +135,7 @@ public class ProfileDao {
             }
             return profiles;
         } catch(SQLException e) {
-            System.err.println(e.getMessage());
-            return new ArrayList<>();
+            throw new DatabaseException("Fehler beim laden der Profile", e);
         }
     }
 

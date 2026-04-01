@@ -1,59 +1,45 @@
-import { useEffect, useState } from "react";
-import { getAllVehicles } from "../../services/vehicleService";
-import type { Vehicle } from "../../model/vehicle";
-import { Button } from "../button";
-import "../../styles/table.css";
+import { useEffect, useState } from "react"
+import { getAllVehicles, deleteVehicle, updateVehicle} from "../../services/vehicleService"
+import type { Vehicle } from "../../model/vehicle"
+import "../../styles/table.css"
+import { Button } from "../button"
 
 function VehiclesTable() {
-
-    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [vehicles, setVehicles] = useState<Vehicle[]>([])
 
     useEffect(() => {
         getAllVehicles()
             .then(data => setVehicles(data))
-            .catch(err => console.error("Fehler beim Laden:", err));
-    }, []);
+            .catch(err => console.error("Fehler beim Laden:", err))
+    }, [])
 
     return (
-        <table className="ridesTable">
-
+        <table>
             <thead>
                 <tr>
-                    <th>Modell</th>
+                    <th>Model</th>
+                    <th>Profil</th>
                     <th>Kennzeichen</th>
                     <th>Kilometerstand</th>
-                    <th colSpan={2}>Aktionen</th>
+                    <th>Aktionen</th>
                 </tr>
             </thead>
-
             <tbody>
-
                 {vehicles.map(vehicle => (
-
                     <tr key={vehicle.id}>
-
                         <td>{vehicle.model}</td>
-
-                        <td>{vehicle.licenseplate}</td>
-
+                        <td>{vehicle.profileName}</td>
+                        <td>{vehicle.licencePlate}</td>
                         <td>{vehicle.mileage} km</td>
-
                         <td>
-                            <Button label="Bearbeiten"/>
+                            <Button label="Bearbeiten" stopPropagation={true} onClick={() => updateVehicle(vehicle.id, vehicle)}/>
+                            <Button label="Löschen" stopPropagation={true} onClick={() => deleteVehicle(vehicle.id)}/>
                         </td>
-
-                        <td>
-                            <Button label="Löschen"/>
-                        </td>
-
                     </tr>
-
                 ))}
-
             </tbody>
-
         </table>
-    );
+    )
 }
 
-export default VehiclesTable;
+export default VehiclesTable

@@ -1,6 +1,7 @@
 package com.drivesense.db;
 
 import com.drivesense.DbConnection;
+import com.drivesense.exceptions.*;
 import com.drivesense.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -34,8 +35,7 @@ public class AccountDao {
             }
             return acc;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim speichern des Accounts", e);
         }
     }
 
@@ -54,8 +54,7 @@ public class AccountDao {
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Accounts", e);
         }
     }
 
@@ -75,8 +74,7 @@ public class AccountDao {
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Accounts", e);
         }
     }
 
@@ -94,8 +92,7 @@ public class AccountDao {
             return accounts;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Accounts", e);
         }
     }
 
@@ -111,7 +108,7 @@ public class AccountDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren des Accounts", e);
         }
     }
 
@@ -126,7 +123,7 @@ public class AccountDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren des Passworts", e);
         }
     }
 
@@ -137,7 +134,7 @@ public class AccountDao {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen des Accounts", e);
         }
     }
 

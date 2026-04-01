@@ -1,35 +1,47 @@
-import { Link, useNavigate } from "react-router-dom";
-import Label from "../components/label";
-import { login } from "../services/auth";
 import { useState } from "react";
-import { Button } from "../components/button";
+import { useNavigate, Link } from "react-router-dom";
+import { login } from "../services/auth";
 
+export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-function Login({onLoginSuccess}: {onLoginSuccess: () => void}) {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const handleLogin = async () => {
+    try {
+      await login(email, password);
 
-    const handleLogin = () => {
-        login(email, password);
-        onLoginSuccess();
-        navigate("/");
-    };
-  
-    return (
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={(e)=>{
-                e.preventDefault();
-                 handleLogin();
-                }}>
-                <Label type="email" name="email" text="Email" value={email} onchange={(e) => setEmail(e.target.value)} />
-                <Label type="password" name="password" text="Password" value={password} onchange={(e) => setPassword(e.target.value)} />
-                <Button label="Einloggen" type="submit" />
-            </form>
-            <Link to="/registrieren">Noch keinen Account? Registrieren</Link>
-        </div>
-    );
+      onLoginSuccess();
+      navigate("/select-profile");
+    } catch (err) {
+      alert("Login fehlgeschlagen");
+    }
+  };
+
+  return (
+    <div>
+      <h1>Login</h1>
+
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <input
+        type="password"
+        placeholder="Passwort"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <button onClick={handleLogin}>Login</button>
+      <br></br>
+      <p>
+        Noch keinen Account?{" "}
+        <Link to="/registrieren">Registrieren</Link>
+      </p>
+    </div>
+  );
 }
-
-export default Login;

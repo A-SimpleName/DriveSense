@@ -1,0 +1,14 @@
+.vehicleAddForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 3px solid rgb(16, 45, 99);
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.vehicleAddForm * {
+    margin-left: 20px;
+}

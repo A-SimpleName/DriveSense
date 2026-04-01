@@ -2,6 +2,7 @@ package com.drivesense.db;
 
 import com.drivesense.DbConnection;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -30,8 +31,7 @@ public class VehicleDao {
             }
             return vehicleDtos;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return new ArrayList<>();
+            throw new DatabaseException("Fehler beim laden der Vehicles", e);
         }
     }
 
@@ -45,8 +45,7 @@ public class VehicleDao {
             if (rs.next()) return map(rs);
             return null;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Vehicles", e);
         }
     }
 
@@ -67,8 +66,7 @@ public class VehicleDao {
             }
             return vehicle;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim speichern des Vehicles", e);
         }
     }
 
@@ -84,7 +82,7 @@ public class VehicleDao {
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim aktualisieren des Vehicles", e);
         }
     }
 
@@ -95,11 +93,10 @@ public class VehicleDao {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen der Vehicles", e);
         }
     }
 
-    // Mapping
     private Vehicle map(ResultSet rs) throws SQLException {
         Vehicle v = new Vehicle();
         v.setId(rs.getInt("id"));
