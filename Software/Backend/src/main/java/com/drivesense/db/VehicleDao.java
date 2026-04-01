@@ -17,7 +17,7 @@ public class VehicleDao {
     @Autowired
     private DbConnection dbConnection;
 
-    public List<VehicleDto> getAllVehiclesByAccount() {
+    public List<VehicleDto> getAllVehicles() {
         String sql = "SELECT v.id, v.model, p.name, v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
                 "JOIN profile p ON v.profile_id = p.id";
@@ -30,6 +30,30 @@ public class VehicleDao {
                 vehicleDtos.add(mapDto(rs));
             }
             return vehicleDtos;
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden der Vehicles", e);
+        }
+    }
+
+    public List<VehicleDto> getAllVehiclesByAccount(int accountId) {
+        String sql = "SELECT v.id, v.model, p.name, v.licenseplate, v.mileage " +
+                "FROM vehicle v " +
+                "JOIN profile p ON v.profile_id = p.id " +
+                "WHERE p.account_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, accountId); // WICHTIG
+
+            ResultSet rs = ps.executeQuery();
+            List<VehicleDto> vehicleDtos = new ArrayList<>();
+
+            while (rs.next()) {
+                vehicleDtos.add(mapDto(rs));
+            }
+            return vehicleDtos;
+
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim laden der Vehicles", e);
         }
@@ -112,7 +136,7 @@ public class VehicleDao {
         dto.setId(rs.getInt("id"));
         dto.setProfileName(rs.getString("name"));
         dto.setModel(rs.getString("model"));
-        dto.setLicencePlate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setMileage(rs.getInt("mileage"));
         return dto;
     }

@@ -12,7 +12,7 @@ public class Vehicle {
     private String model;
     @NotBlank(message = "Licenseplate darf nicht leer sein")
     @Size(max = 20,message = "Licenseplate darf maximal 20 Zeichen haben")
-    private String licenseplate;
+    private String licensePlate;
     @Min(value = 0, message = "Kilometerstand darf nicht negativ sein")
     private int mileage;
 
@@ -21,7 +21,7 @@ public class Vehicle {
     public Vehicle(int profileId, String model, String licenseplate, int mileage) {
         this.profileId = profileId;
         this.model = model;
-        this.licenseplate = licenseplate;
+        this.licensePlate = licenseplate;
         this.mileage = mileage;
     }
 
@@ -50,11 +50,11 @@ public class Vehicle {
     }
 
     public String getLicenseplate() {
-        return licenseplate;
+        return licensePlate;
     }
 
     public void setLicenseplate(String licenseplate) {
-        this.licenseplate = licenseplate;
+        this.licensePlate = licenseplate;
     }
 
     public int getMileage() {
@@ -71,7 +71,7 @@ public class Vehicle {
                 "id: " + id +
                 ", profileId: " + profileId +
                 ", model: '" + model + '\'' +
-                ", licenseplate: '" + licenseplate + '\'' +
+                ", licenseplate: '" + licensePlate + '\'' +
                 ", mileage: " + mileage;
     }
 }
