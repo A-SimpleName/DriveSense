@@ -1,9 +1,13 @@
 package com.drivesense.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class VehicleDto {
     private int id;
     private String model;
     private String profileName;
+
+    @JsonProperty("licensePlate")
     private String licencePlate;
     private int mileage;
 

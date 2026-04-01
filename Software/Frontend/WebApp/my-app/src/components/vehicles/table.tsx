@@ -29,7 +29,7 @@ function VehiclesTable() {
                     <tr key={vehicle.id}>
                         <td>{vehicle.model}</td>
                         <td>{vehicle.profileName}</td>
-                        <td>{vehicle.licencePlate}</td>
+                        <td>{vehicle.licensePlate}</td>
                         <td>{vehicle.mileage} km</td>
                         <td>
                             <Button label="Bearbeiten" stopPropagation={true} onClick={() => updateVehicle(vehicle.id, vehicle)}/>
