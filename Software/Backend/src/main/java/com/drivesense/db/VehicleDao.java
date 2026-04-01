@@ -136,7 +136,7 @@ public class VehicleDao {
         dto.setId(rs.getInt("id"));
         dto.setProfileName(rs.getString("name"));
         dto.setModel(rs.getString("model"));
-        dto.setLicencePlate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setMileage(rs.getInt("mileage"));
         return dto;
     }
