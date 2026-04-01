@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.dto.request.SaveVehicleRequest;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.Vehicle;
 import com.drivesense.service.VehicleService;
@@ -23,9 +24,20 @@ public class VehicleController {
         return ResponseEntity.ok(vehicleService.getAllVehicles());
     }
 
+    @GetMapping("/account")
+    public ResponseEntity<List<VehicleDto>> getAllVehiclesByAccount(HttpServletRequest request) {
+        int accountId = (int) request.getAttribute("accountId");
+        return ResponseEntity.ok(vehicleService.getAllVehiclesByAccount(accountId));
+    }
+
     @PostMapping
-    public ResponseEntity<Vehicle> saveVehicle(@Valid @RequestBody Vehicle vehicle, HttpServletRequest request) {
+    public ResponseEntity<Vehicle> saveVehicle(@Valid @RequestBody SaveVehicleRequest vehicleRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
+        Vehicle vehicle = new Vehicle();
+        vehicle.setModel(vehicleRequest.getModel());
+        vehicle.setLicenseplate(vehicleRequest.getLicensePlate());
+        vehicle.setMileage(vehicleRequest.getMileage());
+
         vehicle.setProfileId(profileId);
         return ResponseEntity.status(201).body(vehicleService.saveVehicle(vehicle));
     }
