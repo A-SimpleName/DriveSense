@@ -1,5 +1,6 @@
 package com.drivesense.service;
 
+import com.drivesense.exceptions.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -37,8 +38,7 @@ public class WeatherService {
             return json.get("current").get("weathercode").asInt();
 
         } catch (Exception e) {
-            System.err.println("Wetter API Fehler: " + e.getMessage());
-            return -1;
+            throw new ExternalApiException("Wetter API nicht erreichbar", e);
         }
     }
 

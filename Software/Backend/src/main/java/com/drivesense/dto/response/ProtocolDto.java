@@ -1,150 +1,60 @@
 package com.drivesense.dto.response;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class ProtocolDto {
-    // aus protocol
-    private int protocolId;
-    private String roadSurfaceConditions;
-    // aus tracking
-    private LocalDateTime starttime;
-    private LocalDateTime endtime;
-    private int distance;
-    private String weatherMain;
-    private String type;
-    // aus vehicle
-    private String licenseplate;
-    // aus account (Fahrer)
-    private String fname;
-    private String lname;
-    // aus protocol_user
-    private String userRole;
-    // Fahrt
-    private String startPoint;
-    private String furthestPoint;
-    private String endPoint;
-    // tracking
-    private int tripId;
+    private int id;
+    private int created_by_profile_id;
+    private int usergroup_id;
+    private String created_at;
+    private String name;
+    private List<TripSummaryDto> trips;
 
-    public ProtocolDto(){}
-
-    public int getProtocolId() {
-        return protocolId;
+    public int getId() {
+        return id;
     }
 
-    public void setProtocolId(int protocolId) {
-        this.protocolId = protocolId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getRoadSurfaceConditions() {
-        return roadSurfaceConditions;
+    public int getCreated_by_profile_id() {
+        return created_by_profile_id;
     }
 
-    public void setRoadSurfaceConditions(String roadSurfaceConditions) {
-        this.roadSurfaceConditions = roadSurfaceConditions;
+    public void setCreated_by_profile_id(int created_by_profile_id) {
+        this.created_by_profile_id = created_by_profile_id;
     }
 
-    public LocalDateTime getStarttime() {
-        return starttime;
+    public int getUsergroup_id() {
+        return usergroup_id;
     }
 
-    public void setStarttime(LocalDateTime starttime) {
-        this.starttime = starttime;
+    public void setUsergroup_id(int usergroup_id) {
+        this.usergroup_id = usergroup_id;
     }
 
-    public LocalDateTime getEndtime() {
-        return endtime;
+    public String getCreated_at() {
+        return created_at;
     }
 
-    public void setEndtime(LocalDateTime endtime) {
-        this.endtime = endtime;
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 
-    public int getDistance() {
-        return distance;
+    public String getName() {
+        return name;
     }
 
-    public void setDistance(int distance) {
-        this.distance = distance;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getWeatherMain() {
-        return weatherMain;
+    public List<TripSummaryDto> getTrips() {
+        return trips;
     }
 
-    public void setWeatherMain(String weatherMain) {
-        this.weatherMain = weatherMain;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getLicenseplate() {
-        return licenseplate;
-    }
-
-    public void setLicenseplate(String licenseplate) {
-        this.licenseplate = licenseplate;
-    }
-
-    public String getFname() {
-        return fname;
-    }
-
-    public void setFname(String fname) {
-        this.fname = fname;
-    }
-
-    public String getLname() {
-        return lname;
-    }
-
-    public void setLname(String lname) {
-        this.lname = lname;
-    }
-
-    public String getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(String userRole) {
-        this.userRole = userRole;
-    }
-
-    public String getStartPoint() {
-        return startPoint;
-    }
-
-    public void setStartPoint(String startPoint) {
-        this.startPoint = startPoint;
-    }
-
-    public String getFurthestPoint() {
-        return furthestPoint;
-    }
-
-    public void setFurthestPoint(String furthestPoint) {
-        this.furthestPoint = furthestPoint;
-    }
-
-    public String getEndPoint() {
-        return endPoint;
-    }
-
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
-    }
-
-    public int getTripId() {
-        return tripId;
-    }
-
-    public void setTripId(int tripId) {
-        this.tripId = tripId;
+    public void setTrips(List<TripSummaryDto> trips) {
+        this.trips = trips;
     }
 }
