@@ -8,30 +8,30 @@ import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class TripService {
     private final TripDao tripDao;
-    private final TrackingpointDao trackingpointDao;
+    private final TrackingpointService trackingpointService;
     private final GeocodingService geocodingService;
     private final WeatherService weatherService;
 
     @Autowired
-    public TripService(TripDao tripDao, TrackingpointDao trackingpointDao,
+    public TripService(TripDao tripDao, TrackingpointService trackingpointService,
                        GeocodingService geocodingService, WeatherService weatherService) {
         this.tripDao = tripDao;
-        this.trackingpointDao = trackingpointDao;
+        this.trackingpointService = trackingpointService;
         this.geocodingService = geocodingService;
         this.weatherService = weatherService;
     }
 
-    public void insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
+    public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
         if (trackingpoints == null || trackingpoints.isEmpty()) {
             throw new BadRequestException("Mindestens ein Trackingpoint muss vorhanden sein");
         }
@@ -61,11 +61,14 @@ public class TripService {
         }
 
         int id = tripDao.insert(tripSummary);
+        tripSummary.setId(id);
 
+        List<Trackingpoint> createdTrackingpoints = new ArrayList<>();
         for (Trackingpoint trackingpoint : trackingpoints) {
-            trackingpoint.setTripId(id);
-            trackingpointDao.insert(trackingpoint);
+            createdTrackingpoints.add(trackingpointService.insert(trackingpoint,tripSummary));
         }
+        return new TripDetailedDto(tripSummary,createdTrackingpoints);
+
     }
 
     public List<TripSummary> getAllTrips() {
@@ -126,11 +129,12 @@ public class TripService {
         if (tripSummary.getProfileId() != profileId) {
             throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
         }
+        trackingpointService.deleteByTripId(tripSummary.getId());
         tripDao.deleteById(id);
     }
 
     private void enrichWithTrackingPoints(TripDetailedDto trip) {
-        List<Trackingpoint> points = trackingpointDao.getByTripId(trip.getTripSummary().getId());
+        List<Trackingpoint> points = trackingpointService.getByTripId(trip.getTripSummary().getId());
 
         if (points == null || points.isEmpty()) return;
 
