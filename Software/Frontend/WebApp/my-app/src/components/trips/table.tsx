@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getAllTrips } from "../../services/tripService"
+import { deleteTrip, getAllTrips, updateTrip } from "../../services/tripService"
 import type { TripSummary } from "../../model/trip"
 import "../../styles/table.css"
 import { Button } from "../button"
@@ -9,12 +9,27 @@ function TripsTable() {
 
     const navigate = useNavigate()
     const [trips, setTrips] = useState<TripSummary[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        setLoading(true)
         getAllTrips()
             .then(data => setTrips(data)) 
-            .catch(err => console.error("Fehler beim Laden:", err))
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false))
     }, [])
+
+    const handleDelete = (id: number) => {
+            deleteTrip(id)
+                .then(() => {
+                    setTrips(prev => prev.filter(t => t.id !== id))
+                })
+                .catch(err => setError(err.message))
+        }
+
+    if (loading) return <p>Laden...</p>
+    if (error)   return <p>Fehler: {error}</p>
 
     return (
         <table className="ridesTable">
@@ -49,7 +64,7 @@ function TripsTable() {
 
                         <td>
                             <Button label="Bearbeiten" stopPropagation={true}/>
-                            <Button label="Löschen" stopPropagation={true}/>
+                            <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)}/>
                         </td>
 
                     </tr>

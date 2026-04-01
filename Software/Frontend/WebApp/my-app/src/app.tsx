@@ -7,6 +7,7 @@ import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
 import AuthLayout from "./components/Layout/AuthLayout";
+import Vehicles from "./pages/vehicles";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
@@ -75,6 +76,14 @@ export default function App() {
               : <Navigate to="/login" />
           }
         />
+        <Route
+        path="/vehicles"
+        element={
+          isAuth && profileSelected
+            ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout>
+            : <Navigate to="/login" />
+        }
+      />
 
         {/* gleiches für alle anderen */}
         

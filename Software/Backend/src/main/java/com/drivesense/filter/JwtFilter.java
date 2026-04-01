@@ -26,7 +26,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         if (path.contains("/login") ||
-                path.contains("/register") ||
+                path.contains("/signUp") ||
                 path.contains("/refresh")) {
             chain.doFilter(request, response);
             return;
