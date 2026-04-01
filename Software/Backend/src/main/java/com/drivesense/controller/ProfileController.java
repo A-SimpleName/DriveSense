@@ -1,6 +1,5 @@
 package com.drivesense.controller;
 
-
 import com.drivesense.model.Profile;
 import com.drivesense.service.ProfileService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,45 +13,76 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/profiles")
 public class ProfileController {
+
     @Autowired
     private ProfileService profileService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<Profile>> getAll() {
         return ResponseEntity.ok(profileService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Profile> getById(@PathVariable int id) {  
+    public ResponseEntity<Profile> getById(@PathVariable int id) {
         return ResponseEntity.ok(profileService.getById(id));
     }
 
     @GetMapping("/byAccount")
     public ResponseEntity<List<Profile>> getProfilesByAccount(HttpServletRequest request) {
-        int accountId = (int) request.getAttribute("accountId");
-        return ResponseEntity.ok(profileService.getAllProfilesByAccountId(accountId));
-    }
 
-    @PutMapping
-    public ResponseEntity<Profile> update(@Valid @RequestBody Profile profile, HttpServletRequest request) {
-        int id = (int) request.getAttribute("profileId");
-        profile.setId(id);
-        profileService.update(profile);
-        return ResponseEntity.ok().build();
+        Object accountIdObj = request.getAttribute("accountId");
+
+        if (accountIdObj == null) {
+            throw new RuntimeException("accountId fehlt");
+        }
+
+        int accountId = (int) accountIdObj;
+
+        return ResponseEntity.ok(
+                profileService.getAllProfilesByAccountId(accountId)
+        );
     }
 
     @PostMapping
-    public ResponseEntity<Profile> insert(@Valid @RequestBody Profile profile, HttpServletRequest httpRequest) {
-        int accountId = (int) httpRequest.getAttribute("accountId");
-        System.out.println("accountId: " + httpRequest.getAttribute("accountId"));
+    public ResponseEntity<Profile> insert(@Valid @RequestBody Profile profile,
+                                          HttpServletRequest request) {
+
+        int accountId = (int) request.getAttribute("accountId");
+
         profile.setAccount_id(accountId);
+
         return ResponseEntity.status(201).body(profileService.insert(profile));
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> delete(HttpServletRequest request) {
-        int id = (int) request.getAttribute("profileId");
-        profileService.deleteById(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<Profile> update(@PathVariable int id,
+                                          @Valid @RequestBody Profile profile,
+                                          HttpServletRequest request) {
+
+        int profileId = (int) request.getAttribute("profileId");
+
+        if (profileId != id) {
+            throw new RuntimeException("Profil-Token stimmt nicht");
+        }
+
+        profile.setId(profileId);
+        profileService.update(profile);
+
+        return ResponseEntity.ok(profile);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id,
+                                       HttpServletRequest request) {
+
+        int profileId = (int) request.getAttribute("profileId");
+
+        if (profileId != id) {
+            throw new RuntimeException("Nicht erlaubt");
+        }
+
+        profileService.deleteById(profileId);
+
         return ResponseEntity.noContent().build();
     }
 }
