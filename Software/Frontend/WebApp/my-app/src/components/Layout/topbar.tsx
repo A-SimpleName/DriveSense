@@ -14,7 +14,7 @@ function Topbar({ onLogout }: TopbarProps) {
         <nav className='topbar'>
             <Link to="/"><img src={Logo} alt="Logo" className="logo" width={200}/></Link>
             <Link to="/fahrten" className='rides'>Fahrten</Link>
-            <Link to="/fahrzeuge">Fahrzeuge</Link>
+            <Link to="/vehicles">Fahrzeuge</Link>
             <Link to="/einstellungen"><img src={Einstellungen} alt="Einstellungen" width={30} height={30}/></Link>
             <button onClick={onLogout}>Logout</button>
         </nav>
