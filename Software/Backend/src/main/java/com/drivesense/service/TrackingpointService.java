@@ -37,4 +37,7 @@ public class TrackingpointService {
     public void delete (int id) {
         trackingpointDao.deleteById(id);
     }
+    public void deleteByTripId (int tripId) {
+        trackingpointDao.deleteByTripId(tripId);
+    }
 }

@@ -134,6 +134,17 @@ public class TrackingpointDao {
         }
     }
 
+    public void deleteByTripId (int tripId) {
+        String sql = "DELETE FROM trackingpoint WHERE trip_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1,tripId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim löschen des Trackingpoints", e);
+        }
+    }
+
     private Trackingpoint map(ResultSet rs) throws SQLException {
         Trackingpoint trackingpoint = new Trackingpoint();
         trackingpoint.setId(rs.getInt("id"));
