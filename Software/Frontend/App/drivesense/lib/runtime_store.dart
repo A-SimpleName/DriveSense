@@ -1,10 +1,19 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:drivesense/repository/pending_trip_repository.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
+import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
-  static final List<TripSummary> trips = [];
-  static final Map<int, TripDetailed> tripDetailCache = {};
+  static List<TripSummary> trips = [];
+  static Map<int, TripDetailed> tripDetailCache = {};
   static String authToken = '';
+  static int? currentProfileId = 1;
+  static final TripService tripService = TripService();
+  static final PendingTripRepository pendingTripRepository =
+      PendingTripRepository();
 
   static void addTrip(TripSummary trip) {
     trips.add(trip);
@@ -20,11 +29,40 @@ class RuntimeStore {
     return tripDetailCache[tripId];
   }
 
+  static void setTrips(List<TripSummary> newTrips) {
+    trips = newTrips;
+  }
+
   static void setAuthToken(String token) {
     authToken = token;
   }
 
   static String? getAuthToken() {
     return authToken;
+  }
+
+  static Future<void> refreshTrips() async {
+    if (currentProfileId == null) return;
+
+    try {
+      final fetchedTrips = await tripService.fetchTrips(
+        currentProfileId!,
+        1,
+      ); // TODO: protocolId dynamisch setzen
+
+      final pendingTrips = await pendingTripRepository.getAll();
+      final pendingTripSummaries = pendingTrips
+          .map(
+            (pendingTrip) => TripSummary.fromJson(
+              jsonDecode(pendingTrip.tripSummaryJson) as Map<String, dynamic>,
+            ),
+          )
+          .toList();
+
+      // Only replace global state after a fully successful refresh.
+      trips = [...fetchedTrips, ...pendingTripSummaries];
+    } catch (e, st) {
+      debugPrint('refreshTrips failed - keeping existing trips: $e\n$st');
+    }
   }
 }

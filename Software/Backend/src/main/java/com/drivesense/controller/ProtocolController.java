@@ -65,4 +65,11 @@ public class ProtocolController {
         protocolService.update(protocol);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        protocolService.delete(id,profileId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -35,7 +35,6 @@ public class TripDao {
             ps.setDouble(6, tripSummary.getDistance());
             ps.setString(7, tripSummary.getRoadSurfaceConditions());
             ps.setString(8, tripSummary.getType());
-
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -105,27 +104,45 @@ public class TripDao {
         }
     }
 
-    public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
+    public List<TripSummaryDto> getAllByProfileAndProtocolId(int protocolId, int profileId) {
         String sql = """
-        SELECT
-            t.id,
-            t.distance,
-            t.type,
-            v.model AS vehicle_model,
-            a.fname,
-            a.lname
-        FROM trip t
-        JOIN vehicle v ON t.vehicle_id = v.id
-        JOIN profile p ON t.profile_id = p.id
-        JOIN account a ON p.account_id = a.id
-        WHERE t.profile_id = ? AND t.protocol_id = ?
-        """;
+                SELECT
+                    t.id,
+                    t.starttime,
+                    t.distance,
+                    v.mileage,
+                    v.licenseplate,
+                    t.start_point,
+                    t.end_point,
+                    t.road_surface_conditions,
+                    a.fname,
+                    a.lname
+                FROM trip t
+                JOIN protocol pr ON t.protocol_id = pr.id
+                JOIN vehicle v ON t.vehicle_id = v.id
+                JOIN profile prf ON t.profile_id = prf.id
+                JOIN account a ON prf.account_id = a.id
+                WHERE t.protocol_id = ?
+                  AND (
+                        (pr.usergroup_id IS NULL
+                         AND pr.created_by_profile_id = ?)
+                     OR
+                        (pr.usergroup_id IS NOT NULL
+                         AND EXISTS (
+                             SELECT 1
+                             FROM profile_usergroup pug
+                             WHERE pug.usergroup_id = pr.usergroup_id
+                               AND pug.profile_id = ?
+                         ))
+                      );
+                """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, protocolId);
-            ps.setInt(2, profileId);
+            ps.setInt(1, profileId);
+            ps.setInt(2, protocolId);
+            ps.setInt(3, profileId);
             ResultSet rs = ps.executeQuery();
 
             List<TripSummaryDto> tripSummaries = new ArrayList<>();
@@ -139,21 +156,32 @@ public class TripDao {
             return null;
         }
     }
+
+    /***
+     * Für Admin Zwecke, keine Zugriffsrechtprüfung vorhanden!
+     ***/
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
         String sql = """
-        SELECT
-            t.id,
-            t.distance,
-            t.type,
-            v.model AS vehicle_model,
-            a.fname,
-            a.lname
-        FROM trip t
-        JOIN vehicle v ON t.vehicle_id = v.id
-        JOIN profile p ON t.profile_id = p.id
-        JOIN account a ON p.account_id = a.id
-        WHERE t.protocol_id = ?
-    """;
+                    SELECT
+                                t.id,
+                                t.starttime,
+                                t.distance,
+                                t.start_mileage,
+                                t.end_mileage,
+                                v.licenseplate,
+                                v.model AS vehicle_model,
+                                t.start_point,
+                                t.end_point,
+                                t.road_surface_conditions,
+                                t.type,
+                                a.fname,
+                                a.lname
+                            FROM trip t
+                            JOIN protocol pr ON t.protocol_id = pr.id
+                            JOIN vehicle v ON t.vehicle_id = v.id
+                            JOIN profile prf ON t.profile_id = prf.id
+                            JOIN account a ON prf.account_id = a.id
+                """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -201,7 +229,6 @@ public class TripDao {
             ps.setString(4, tripSummary.getRoadSurfaceConditions());
             ps.setString(5, tripSummary.getType());
             ps.setInt(6, tripSummary.getId());
-
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -240,11 +267,18 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
-        dto.setDistance(rs.getDouble("distance"));
+        dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
+        dto.setStartMileage(rs.getInt("start_mileage"));
+        dto.setEndMileage(rs.getInt("end_mileage"));
+        dto.setDistance(rs.getInt("distance"));
         dto.setType(rs.getString("type"));
+        dto.setLicenseplate(rs.getString("licenseplate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
+        dto.setStartPoint(rs.getString("start_point"));
+        dto.setEndPoint(rs.getString("end_point"));
         dto.setAccountFname(rs.getString("fname"));
         dto.setAccountLname(rs.getString("lname"));
+        dto.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
 
         return dto;
     }

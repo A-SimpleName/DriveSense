@@ -30,6 +30,7 @@ public class TripController {
         saveTripRequest.getTripSummary().setProfileId(profileId);
 
         tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints());
+
         return ResponseEntity.ok().build();
     }
 

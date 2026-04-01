@@ -8,7 +8,6 @@ import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
-import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

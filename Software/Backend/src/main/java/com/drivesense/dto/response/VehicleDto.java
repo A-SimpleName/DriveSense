@@ -8,7 +8,7 @@ public class VehicleDto {
     private String profileName;
 
     @JsonProperty("licensePlate")
-    private String licencePlate;
+    private String licensePlate;
     private int mileage;
 
     public VehicleDto() {}
@@ -17,7 +17,7 @@ public class VehicleDto {
         this.id = id;
         this.model = model;
         this.profileName = profileName;
-        this.licencePlate = licencePlate;
+        this.licensePlate = licensePlate;
         this.mileage = mileage;
     }
 
@@ -45,12 +45,12 @@ public class VehicleDto {
         this.profileName = profileName;
     }
 
-    public String getLicencePlate() {
-        return licencePlate;
+    public String getLicensePlate() {
+        return licensePlate;
     }
 
-    public void setLicencePlate(String licencePlate) {
-        this.licencePlate = licencePlate;
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
     }
 
     public int getMileage() {

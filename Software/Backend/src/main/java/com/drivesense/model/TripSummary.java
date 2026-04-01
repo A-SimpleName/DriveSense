@@ -149,6 +149,9 @@ public class TripSummary {
                 ", endTime: " + endTime +
                 ", distance: " + distance +
                 ", road_surface_conditions: '" + roadSurfaceConditions + '\'' +
-                ", type: '" + type + '\'';
+                ", type: '" + type + '\'' +
+                ", startPoint: " + startPoint +
+                ", furthestPoint: " + furthestPoint +
+                ", endPoint: " + endPoint;
     }
 }

@@ -18,7 +18,7 @@ public class AccountDao {
     private DbConnection dbConnection;
 
     public Account insert(Account acc) {
-        String sql = "INSERT INTO account (fname, lname, pwd, email) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO account (fname, lname, pwd, email, birthdate) VALUES (?,?,?,?, ?)";
         try (Connection conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -26,6 +26,11 @@ public class AccountDao {
             ps.setString(2,acc.getlName());
             ps.setString(3,acc.getPassword());
             ps.setString(4,acc.getEmail());
+            if (acc.getBirthdate() != null) {
+                ps.setDate(5, Date.valueOf(acc.getBirthdate()));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
 
             ps.executeUpdate();
 
@@ -97,14 +102,19 @@ public class AccountDao {
     }
 
     public void update(Account acc) {
-        String sql = "UPDATE account SET fname = ?, lname = ?, email = ? WHERE id = ?";
+        String sql = "UPDATE account SET fname = ?, lname = ?, email = ?, birthdate = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, acc.getfName());
             ps.setString(2, acc.getlName());
             ps.setString(3, acc.getEmail());
-            ps.setInt(4, acc.getId());
+            if (acc.getBirthdate() != null) {
+                ps.setDate(4, Date.valueOf(acc.getBirthdate()));
+            } else {
+                ps.setNull(4, Types.DATE);
+            }
+            ps.setInt(5, acc.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -145,6 +155,10 @@ public class AccountDao {
         acc.setlName(rs.getString("lname"));
         acc.setEmail(rs.getString("email"));
         acc.setPassword(rs.getString("pwd"));
+        Date date = rs.getDate("birthdate");
+        if (date != null) {
+            acc.setBirthdate(date.toLocalDate());
+        }
         return acc;
     }
 }

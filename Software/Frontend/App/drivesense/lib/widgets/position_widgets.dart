@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:drivesense/model/trackingpoint.dart';
 
 class PositionWidget extends StatelessWidget {
