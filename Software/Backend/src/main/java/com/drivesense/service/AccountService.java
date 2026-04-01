@@ -3,7 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.AccountDao;
 import com.drivesense.db.ProfileDao;
 import com.drivesense.dto.request.LoginRequest;
-import com.drivesense.dto.request.RegisterRequest;
+import com.drivesense.dto.request.SignUpRequest;
 import com.drivesense.dto.request.UpdateAccountRequest;
 import com.drivesense.dto.request.UpdatePasswordRequest;
 import com.drivesense.dto.response.AccountResponse;
@@ -28,7 +28,7 @@ public class AccountService {
     @Autowired
     private JwtService jwtService;
 
-    public AccountResponse register(RegisterRequest request) {
+    public AccountResponse signUp(SignUpRequest request) {
         Account existing = accountDao.getByEmail(request.getEmail());
         if (existing != null) {
             throw new BadRequestException("Email bereits vergeben");
@@ -41,6 +41,7 @@ public class AccountService {
         account.setlName(request.getLname());
         account.setEmail(request.getEmail());
         account.setPassword(hashedPassword);
+        account.setBirthdate(request.getBirthdate());
         accountDao.insert(account);
 
         return toResponse(account);

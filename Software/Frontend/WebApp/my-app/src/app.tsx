@@ -7,6 +7,8 @@ import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
 import AuthLayout from "./components/Layout/AuthLayout";
+import Vehicles from "./pages/vehicles";
+import Settings from "./pages/settings";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
@@ -68,7 +70,7 @@ export default function App() {
         />
 
         <Route
-          path="/fahrten"
+          path="/trips"
           element={
             isAuth && profileSelected
               ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout>
@@ -76,8 +78,27 @@ export default function App() {
           }
         />
 
-        {/* gleiches für alle anderen */}
-        
+        {
+          <Route
+            path="/vehicles"
+            element={
+              isAuth && profileSelected
+                ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout>
+                : <Navigate to="/login" />
+            }
+          />
+          }
+          {
+          <Route
+            path="/settings"
+            element={
+              isAuth && profileSelected
+                ? <AuthLayout onLogout={handleLogout}><Settings /></AuthLayout>
+                : <Navigate to="/login" />
+            }
+           />
+        }
+
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>

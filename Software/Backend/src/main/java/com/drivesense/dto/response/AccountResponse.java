@@ -1,10 +1,21 @@
 package com.drivesense.dto.response;
 
+import java.time.LocalDate;
+
 public class AccountResponse {
     private int id;
     private String fname;
     private String lname;
     private String email;
+    private LocalDate birthdate;
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
+    }
 
     public int getId() {
         return id;

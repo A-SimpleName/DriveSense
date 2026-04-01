@@ -44,13 +44,13 @@ export async function selectProfile(profileId: number) {
   return data;
 }
 
-export async function signUp(fname: string, lname: string, email: string, password: string) {
-  const res = await fetch(`${BASE_URL}/account/register`, {
+export async function signUp(fname: string, lname: string, email: string, password: string, birthdate: string) {
+  const res = await fetch(`${BASE_URL}/account/signUp`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ fname, lname, email, password })
+    body: JSON.stringify({ fname, lname, email, password, birthdate })
   });
 
   if (!res.ok) throw new Error("Registrierung fehlgeschlagen");

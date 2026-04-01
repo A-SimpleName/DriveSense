@@ -57,7 +57,8 @@ public class UsergroupController {
             @Min(value = 1, message = "Profil ID muss größer als 0 sein") @PathVariable int profileId,
             HttpServletRequest request) {
         int requesterId = (int) request.getAttribute("profileId");
-        usergroupService.addMember(groupId, profileId, requesterId);
+        String role = (String) request.getAttribute("role");
+        usergroupService.addMember(groupId, profileId, requesterId,role);
         return ResponseEntity.status(201).build();
     }
 
@@ -67,7 +68,8 @@ public class UsergroupController {
             @Valid @RequestBody UserGroupCreateRequest request,
             HttpServletRequest httpRequest) {
         int profileId = (int) httpRequest.getAttribute("profileId");
-        usergroupService.updateGroup(groupId, profileId, request.getName());
+        String role = (String) httpRequest.getAttribute("role");
+        usergroupService.updateGroup(groupId, profileId, request.getName(),role);
         return ResponseEntity.ok().build();
     }
 
@@ -78,7 +80,8 @@ public class UsergroupController {
             @Valid @RequestBody UserGroupUpdateRoleRequest request,
             HttpServletRequest httpRequest) {
         int requesterId = (int) httpRequest.getAttribute("profileId");
-        usergroupService.updateRole(groupId, profileId, request.getRole(), requesterId);
+        String role = (String) httpRequest.getAttribute("role");
+        usergroupService.updateRole(groupId, profileId, request.getRole(), requesterId,role);
         return ResponseEntity.ok().build();
     }
 
@@ -87,7 +90,8 @@ public class UsergroupController {
             @Min(value = 1, message = "Gruppen ID muss größer als 0 sein") @PathVariable int groupId,
             HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
-        usergroupService.deleteGroup(groupId, profileId);
+        String role = (String) request.getAttribute("role");
+        usergroupService.deleteGroup(groupId, profileId,role);
         return ResponseEntity.noContent().build();
     }
 
@@ -97,7 +101,8 @@ public class UsergroupController {
             @Min(value = 1, message = "Profil ID muss größer als 0 sein") @PathVariable int profileId,
             HttpServletRequest request) {
         int requesterId = (int) request.getAttribute("profileId");
-        usergroupService.deleteMember(groupId, profileId, requesterId);
+        String role = (String) request.getAttribute("role");
+        usergroupService.deleteMember(groupId, profileId, requesterId,role);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,23 +1,29 @@
 import { useState } from "react"
-import { createVehicle } from "../../services/vehicleService"
 import "../../styles/addForms.css"
+import { createVehicle } from "../../services/vehicleService";
 
 export function VehicleAddForm() {
     console.log("VehicleAddForm gerendert");
     const [model, setModel] = useState("");
-    const [profileName, setProfileName] = useState("");
-    const [licencePlate, setLicencePlate] = useState("");
+    const [licensePlate, setLicensePlate] = useState("");
     const [mileage, setMileage] = useState(0);
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
+        console.log("vehicle submitted");
         e.preventDefault();
 
-        createVehicle({
-            model,
-            profileName,
-            licencePlate,
-            mileage
-        });
+        try {
+            const res = await createVehicle({
+                model,
+                licensePlate,
+                mileage
+            });
+
+            console.log("Erfolg:", res);
+
+        } catch (err) {
+            console.error("Fehler beim Erstellen:", err);
+        }
     }
 
     return (
@@ -35,19 +41,11 @@ export function VehicleAddForm() {
                         /></td>
                     </tr>
                     <tr>
-                        <td><label>Profilname</label></td>
-                        <td><input
-                            type="text"
-                            value={profileName}
-                            onChange={(e) => setProfileName(e.target.value)}
-                        /></td>
-                    </tr>
-                    <tr>
                         <td><label>Kennzeichen</label></td>
                         <td><input
                             type="text"
-                            value={licencePlate}
-                            onChange={(e) => setLicencePlate(e.target.value)}
+                            value={licensePlate}
+                            onChange={(e) => setLicensePlate(e.target.value)}
                         /></td>
                     </tr>
                     <tr>
@@ -60,7 +58,6 @@ export function VehicleAddForm() {
                     </tr>
                 </table>
                 <button type="submit">Hinzufügen</button>
-
             </form>
         </div>
     )

@@ -1,10 +1,14 @@
 package com.drivesense.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class VehicleDto {
     private int id;
     private String model;
     private String profileName;
-    private String licencePlate;
+
+    @JsonProperty("licensePlate")
+    private String licensePlate;
     private int mileage;
 
     public VehicleDto() {}
@@ -13,7 +17,7 @@ public class VehicleDto {
         this.id = id;
         this.model = model;
         this.profileName = profileName;
-        this.licencePlate = licencePlate;
+        this.licensePlate = licensePlate;
         this.mileage = mileage;
     }
 
@@ -41,12 +45,12 @@ public class VehicleDto {
         this.profileName = profileName;
     }
 
-    public String getLicencePlate() {
-        return licencePlate;
+    public String getLicensePlate() {
+        return licensePlate;
     }
 
-    public void setLicencePlate(String licencePlate) {
-        this.licencePlate = licencePlate;
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
     }
 
     public int getMileage() {
