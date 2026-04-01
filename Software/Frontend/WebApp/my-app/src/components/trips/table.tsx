@@ -37,7 +37,7 @@ function TripsTable() {
 
                     <tr
                         key={trip.id}
-                        onClick={() => navigate(`/fahrten/${trip.id}`)}
+                        onClick={() => navigate(`/trips/${trip.id}`)}
                     >
 
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
