@@ -71,6 +71,20 @@ public class ProfileUsergroupDao {
         }
     }
 
+    public void deleteAllByGroupId(int usergroupId) {
+        String sql = "DELETE FROM profile_usergroup WHERE usergroup_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, usergroupId);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Entfernen der Mitglieder", e);
+        }
+    }
+
     public ProfileUsergroup getByProfileIdAndGroupId(int profileId, int usergroupId) {
         String sql = "SELECT * FROM profile_usergroup WHERE profile_id = ? AND usergroup_id = ?";
 

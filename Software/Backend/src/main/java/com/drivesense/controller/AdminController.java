@@ -36,10 +36,21 @@ public class AdminController {
     public ResponseEntity<List<Account>> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAll());
     }
+    @DeleteMapping("/accounts/{id}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable int id) {
+        accountService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/profiles")
     public ResponseEntity<List<Profile>> getAllProfiles() {
         return ResponseEntity.ok(profileService.getAll());
+    }
+
+    @DeleteMapping("/profiles/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        profileService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/trackingpoints")
@@ -60,5 +71,17 @@ public class AdminController {
     @GetMapping("/groups")
     public ResponseEntity<List<UserGroup>> getAllGroups () {
         return ResponseEntity.ok(usergroupService.getAll());
+    }
+
+    @DeleteMapping("/groups/{groupId}/members/{profileId}")
+    public ResponseEntity<Void> deleteMember(@PathVariable int groupId, @PathVariable int profileId) {
+        usergroupService.adminRemoveMember(groupId, profileId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/groups/{groupId}")
+    public ResponseEntity<Void> deleteMember(@PathVariable int groupId) {
+        usergroupService.adminDeleteGroup(groupId);
+        return ResponseEntity.noContent().build();
     }
 }

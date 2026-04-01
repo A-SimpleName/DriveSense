@@ -21,6 +21,12 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
+    @PostMapping("/signUp")
+    public ResponseEntity<AccountResponse> signUp(@Valid @RequestBody SignUpRequest request) {
+        AccountResponse account = accountService.signUp(request);
+        return ResponseEntity.status(201).body(account);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
