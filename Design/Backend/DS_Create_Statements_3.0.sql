@@ -5,6 +5,7 @@ CREATE TABLE `account` (
   `email` varchar(255) NOT NULL,
   `pwd` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `birthdate` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -15,6 +16,7 @@ CREATE TABLE `profile` (
   `role` varchar(50) NOT NULL,
   `account_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_profile_account_name_role` (`account_id`,`name`,`role`),
   KEY `fk_profile_account` (`account_id`),
   CONSTRAINT `profile_account_FK` FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -53,6 +55,8 @@ CREATE TABLE `protocol` (
   CONSTRAINT `protocol_usergroup_FK` FOREIGN KEY (`usergroup_id`) REFERENCES `usergroup` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- drivesense.trip definition
+
 CREATE TABLE `trip` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `profile_id` bigint NOT NULL,
@@ -63,6 +67,11 @@ CREATE TABLE `trip` (
   `road_surface_conditions` varchar(100) DEFAULT NULL,
   `type` varchar(50) DEFAULT NULL,
   `protocol_id` bigint DEFAULT NULL,
+  `start_point` varchar(100) NOT NULL,
+  `end_point` varchar(100) NOT NULL,
+  `furthest_point` varchar(100) NOT NULL,
+  `start_mileage` int NOT NULL,
+  `end_mileage` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tracking_profile` (`profile_id`),
   KEY `idx_tracking_vehicle` (`vehicle_id`),
@@ -71,7 +80,7 @@ CREATE TABLE `trip` (
   CONSTRAINT `trip_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
   CONSTRAINT `trip_protocol_FK` FOREIGN KEY (`protocol_id`) REFERENCES `protocol` (`id`),
   CONSTRAINT `trip_vehicle_FK` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `trackingpoint` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -96,9 +105,16 @@ CREATE TABLE `profile_usergroup` (
   KEY `profile_usergroup_profile_fk` (`profile_id`),
   CONSTRAINT `profile_usergroup_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
   CONSTRAINT `profile_usergroup_usergroup_FK` FOREIGN KEY (`usergroup_id`) REFERENCES `usergroup` (`id`),
-  CONSTRAINT `profile_usergroup_check` CHECK ((`group_role` in ('OWNER','ADMIN','MEMBER')))
+  CONSTRAINT `profile_usergroup_check` CHECK ((`group_role` in (_utf8mb4'OWNER',_utf8mb4'ADMIN',_utf8mb4'MEMBER')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
-
-
+CREATE TABLE `profile_vehicle` (
+  `profile_id` bigint NOT NULL,
+  `vehicle_id` bigint NOT NULL,
+  `role` varchar(100) NOT NULL,
+  PRIMARY KEY (`vehicle_id`,`profile_id`),
+  KEY `profile_vehicle_profile_FK` (`profile_id`),
+  CONSTRAINT `profile_vehicle_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
+  CONSTRAINT `profile_vehicle_vehicle_FK` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`),
+  CONSTRAINT `profile_vehicle_check` CHECK ((`role` in (_utf8mb4'OWNER',_utf8mb4'CO_OWNER',_utf8mb4'DRIVER')))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

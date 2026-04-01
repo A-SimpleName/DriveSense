@@ -31,15 +31,29 @@ class Trackingpoint {
   }
 
   factory Trackingpoint.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value, {int fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString()) ?? fallback;
+    }
+
+    double asDouble(dynamic value, {double fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString()) ?? fallback;
+    }
+
     return Trackingpoint(
-      id: json["id"],
-      tripId: json["tripId"],
-      latitude: json["lat"].toDouble(),
-      longitude: json["lng"].toDouble(),
-      accuracy: json["accuracy"].toDouble(),
-      speed: json["speed"].toDouble(),
-      bearing: json["bearing"].toDouble(),
-      timestamp: DateTime.parse(json["timestamp"]),
+      id: asInt(json["id"]),
+      tripId: asInt(json["tripId"]),
+      latitude: asDouble(json["lat"]),
+      longitude: asDouble(json["lng"]),
+      accuracy: asDouble(json["accuracy"]),
+      speed: asDouble(json["speed"]),
+      bearing: asDouble(json["bearing"]),
+      timestamp: DateTime.parse(json["timestamp"].toString()),
     );
   }
 }

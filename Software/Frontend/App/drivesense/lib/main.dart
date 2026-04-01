@@ -5,8 +5,10 @@ import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/login_and_register.dart';
 import 'package:drivesense/constants/app_colors.dart';
 import 'package:flutter/services.dart';
+import 'package:drivesense/services/isar_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await IsarService.getInstance();
   String token = "abc"; // TODO: get token from secure storage
 
   await SystemChrome.setPreferredOrientations([

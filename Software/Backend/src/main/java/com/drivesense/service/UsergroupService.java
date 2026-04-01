@@ -1,11 +1,9 @@
 package com.drivesense.service;
 
-import com.drivesense.db.ProfileDao;
 import com.drivesense.db.ProfileUsergroupDao;
 import com.drivesense.db.UserGroupDao;
 import com.drivesense.dto.response.GroupMemberResponse;
 import com.drivesense.exceptions.*;
-import com.drivesense.model.Profile;
 import com.drivesense.model.ProfileUsergroup;
 import com.drivesense.model.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +13,10 @@ import java.util.List;
 
 @Service
 public class UsergroupService {
-    private final UserGroupDao userGroupDao;
-    private final ProfileUsergroupDao profileUserGroupDao;
-
     @Autowired
-    public UsergroupService(UserGroupDao userGroupDao, ProfileUsergroupDao profileUserGroupDao) {
-        this.userGroupDao = userGroupDao;
-        this.profileUserGroupDao = profileUserGroupDao;
-    }
+    private UserGroupDao userGroupDao;
+    @Autowired
+    private ProfileUsergroupDao profileUserGroupDao;
 
     public UserGroup insertGroup(String name, int profileId) {
 
@@ -40,27 +34,32 @@ public class UsergroupService {
         return group;
     }
 
-    public void deleteGroup(int groupId, int profileId) {
+    public void deleteGroup(int groupId, int profileId,String profileRole) {
 
         UserGroup group = userGroupDao.getById(groupId);
         if (group == null) {
             throw new NotFoundException("Gruppe nicht gefunden");
         }
-        if (group.getOwner_id() != profileId && !isOwnerOrAdmin(groupId, profileId)) {
+        if (group.getOwner_id() != profileId && !isOwnerOrAdmin(groupId, profileId,profileRole)) {
             throw new UnauthorizedException("Keine Berechtigung");
         }
 
-        profileUserGroupDao.delete(profileId, groupId);
+        profileUserGroupDao.deleteAllByGroupId(groupId);
         userGroupDao.deleteById(groupId);
     }
 
-    public void addMember(int groupId, int profileId, int requesterId) {
+    public void adminDeleteGroup (int groupId) {
+        profileUserGroupDao.deleteAllByGroupId(groupId);
+        userGroupDao.deleteById(groupId);
+    }
+
+    public void addMember(int groupId, int profileId, int requesterId,String profileRole) {
 
         if (requesterId == profileId) {
             throw new BadRequestException("Du kannst dich nicht selbst einladen");
         }
 
-        if (!isOwnerOrAdmin(groupId, requesterId)) {
+        if (!isOwnerOrAdmin(groupId, requesterId,profileRole)) {
             throw new UnauthorizedException("Keine Berechtigung");
         }
 
@@ -76,14 +75,14 @@ public class UsergroupService {
         profileUserGroupDao.insert(pug);
     }
 
-    public void deleteMember(int groupId, int profileId, int requesterId) {
+    public void deleteMember(int groupId, int profileId, int requesterId,String profileRole) {
 
         ProfileUsergroup requester = profileUserGroupDao.getByProfileIdAndGroupId(requesterId, groupId);
         if (requester == null || requester.getProfileId() == 0) {
             throw new UnauthorizedException("Kein Zugriff");
         }
 
-        boolean isOwnerOrAdmin = isOwnerOrAdmin(groupId, requesterId);
+        boolean isOwnerOrAdmin = isOwnerOrAdmin(groupId, requesterId,profileRole);
         boolean isSelf = requesterId == profileId;
 
         if (!isOwnerOrAdmin && !isSelf) {
@@ -97,9 +96,13 @@ public class UsergroupService {
         profileUserGroupDao.delete(profileId, groupId);
     }
 
-    public void updateRole(int groupId, int profileId, String newRole, int requesterId) {
+    public void adminRemoveMember(int groupId, int profileId) {
+        profileUserGroupDao.delete(profileId, groupId);
+    }
 
-        if (!isOwnerOrAdmin(groupId, requesterId)) {
+    public void updateRole(int groupId, int profileId, String newRole, int requesterId, String profileRole) {
+
+        if (!isOwnerOrAdmin(groupId, requesterId,profileRole)) {
             throw new UnauthorizedException("Keine Berechtigung");
         }
 
@@ -134,14 +137,14 @@ public class UsergroupService {
         return userGroupDao.getAll();
     }
 
-    public void updateGroup(int groupId, int profileId, String name) {
+    public void updateGroup(int groupId, int profileId, String name,String profileRole) {
 
         UserGroup group = userGroupDao.getById(groupId);
         if (group == null) {
             throw new NotFoundException("Gruppe nicht gefunden");
         }
 
-        if (!isOwnerOrAdmin(groupId, profileId)) {
+        if (!isOwnerOrAdmin(groupId, profileId,profileRole)) {
             throw new UnauthorizedException("Keine Berechtigung");
         }
 
@@ -149,9 +152,9 @@ public class UsergroupService {
         userGroupDao.update(group);
     }
 
-    private boolean isOwnerOrAdmin(int groupId, int profileId) {
+    private boolean isOwnerOrAdmin(int groupId, int profileId, String profileRole) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
-        return pug.getGroupRole().equals("OWNER") || pug.getGroupRole().equals("ADMIN");
+        return pug.getGroupRole().equals("OWNER") || profileRole.equals("ADMIN");
     }
 }

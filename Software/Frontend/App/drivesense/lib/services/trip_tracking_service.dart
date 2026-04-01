@@ -79,11 +79,11 @@ class TripTrackingService {
   bool _shouldAcceptPoint(Trackingpoint tp) {
     // Unzuverlässig -> skip
     final acc = tp.accuracy;
-    if (acc != null && acc > 25) return false;
+    if (acc > 25) return false;
 
     // Stehst (oder GPS spinnt) -> skip (0.5 m/s ~ 1.8 km/h)
     final spd = tp.speed;
-    if (spd != null && spd < 0.5) return false;
+    if (spd < 0.5) return false;
 
     if (_lastAcceptedPoint == null) return true;
 
