@@ -86,16 +86,16 @@ function VehiclesTable() {
                         <td>
                             {editingId === vehicle.id ? (
                                 <input
-                                    value={editData.licencePlate ?? ""}
+                                    value={editData.licensePlate ?? ""}
                                     onChange={e =>
                                         setEditData(prev => ({
                                             ...prev,
-                                            licencePlate: e.target.value,
+                                            licensePlate: e.target.value,
                                         }))
                                     }
                                 />
                             ) : (
-                                vehicle.licencePlate
+                                vehicle.licensePlate
                             )}
                         </td>
 

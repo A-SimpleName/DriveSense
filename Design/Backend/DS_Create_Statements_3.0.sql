@@ -105,9 +105,16 @@ CREATE TABLE `profile_usergroup` (
   KEY `profile_usergroup_profile_fk` (`profile_id`),
   CONSTRAINT `profile_usergroup_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
   CONSTRAINT `profile_usergroup_usergroup_FK` FOREIGN KEY (`usergroup_id`) REFERENCES `usergroup` (`id`),
-  CONSTRAINT `profile_usergroup_check` CHECK ((`group_role` in ('OWNER','ADMIN','MEMBER')))
+  CONSTRAINT `profile_usergroup_check` CHECK ((`group_role` in (_utf8mb4'OWNER',_utf8mb4'ADMIN',_utf8mb4'MEMBER')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
-
-
+CREATE TABLE `profile_vehicle` (
+  `profile_id` bigint NOT NULL,
+  `vehicle_id` bigint NOT NULL,
+  `role` varchar(100) NOT NULL,
+  PRIMARY KEY (`vehicle_id`,`profile_id`),
+  KEY `profile_vehicle_profile_FK` (`profile_id`),
+  CONSTRAINT `profile_vehicle_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`),
+  CONSTRAINT `profile_vehicle_vehicle_FK` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`),
+  CONSTRAINT `profile_vehicle_check` CHECK ((`role` in (_utf8mb4'OWNER',_utf8mb4'CO_OWNER',_utf8mb4'DRIVER')))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -1,93 +1,91 @@
-import { isAuthenticated, hasProfile, logout } from "./services/auth";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate} from "react-router-dom";
+
+import { checkAuth } from "./services/auth";
+import { getProfilesByAccount } from "./services/profileService";
+
+import TopBar from "./components/Layout/topbar";
 import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
-import AuthLayout from "./components/Layout/AuthLayout";
 import Vehicles from "./pages/vehicles";
+import Settings from "./pages/settings";
 
 export default function App() {
-  const [isAuth, setIsAuth] = useState(false);
-  const [profileSelected, setProfileSelected] = useState(false);
+  const [isAuth, setIsAuth] = useState<boolean>(false);
+  const [profileSelected, setProfileSelected] = useState<boolean>(false);
+  const [profiles, setProfiles] = useState<import("./model/profile").Profile[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    setIsAuth(isAuthenticated());
-    setProfileSelected(hasProfile());
+    async function initAuth() {
+      try {
+        const auth = await checkAuth();
+        setIsAuth(auth);
+
+        if (auth) {
+          const profiles = await getProfilesByAccount();
+          setProfiles(profiles);
+          setProfileSelected(profiles.length > 0);
+        }
+      } catch (e) {
+        setIsAuth(false);
+        setProfileSelected(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initAuth();
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    setIsAuth(false);
-    setProfileSelected(false);
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
+
     <BrowserRouter>
+
+      {isAuth && profileSelected && (
+        <TopBar setUser={setUser} />
+      )}
+
       <Routes>
+        {!isAuth && (
+          <>
+            <Route path="/login" element={<LoginPage onLoginSuccess={() => setIsAuth(true)} />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        )}
 
-        {/* LOGIN */}
-        <Route
-          path="/login"
-          element={
-            isAuth
-              ? <Navigate to={profileSelected ? "/" : "/select-profile"} />
-              : <LoginPage onLoginSuccess={() => setIsAuth(true)} />
-          }
-        />
+        {isAuth && !profileSelected && (
+          <>
+            <Route
+              path="*"
+              element={
+                <SelectProfilePage
+                  profiles={profiles}
+                  setProfiles={setProfiles}
+                  onSelect={() => setProfileSelected(true)}
+                />
+              }
+            />
+          </>
+        )}
 
-        {/* REGISTER */}
-        <Route
-          path="/registrieren"
-          element={
-            isAuth
-              ? <Navigate to="/" />
-              : <SignUpPage />
-          }
-        />
-
-        {/* PROFILE AUSWAHL */}
-        <Route
-          path="/select-profile"
-          element={
-            !isAuth
-              ? <Navigate to="/login" />
-              : <SelectProfilePage onSelect={() => setProfileSelected(true)} />
-          }
-        />
-
-        {/* PROTECTED ROUTES */}
-        <Route
-          path="/"
-          element={
-            isAuth && profileSelected
-              ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout>
-              : <Navigate to="/login" />
-          }
-        />
-
-        <Route
-          path="/fahrten"
-          element={
-            isAuth && profileSelected
-              ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout>
-              : <Navigate to="/login" />
-          }
-        />
-        <Route
-        path="/vehicles"
-        element={
-          isAuth && profileSelected
-            ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout>
-            : <Navigate to="/login" />
-        }
-      />
-
-        {/* gleiches für alle anderen */}
-        
-        <Route path="*" element={<div>404 Not Found</div>} />
+        {isAuth && profileSelected && (
+          <>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/trips" element={<TripsPage />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/settings" element={<Settings />} />
+          </>
+        )}
       </Routes>
     </BrowserRouter>
   );

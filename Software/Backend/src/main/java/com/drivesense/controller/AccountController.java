@@ -39,19 +39,19 @@ public class AccountController {
             // accountToken als Cookie
             Cookie accountCookie = new Cookie("accountToken", loginResponse.getAccountToken());
             accountCookie.setHttpOnly(true);
-            accountCookie.setSecure(true);
+            accountCookie.setSecure(false);
             accountCookie.setPath("/");
             accountCookie.setMaxAge(60 * 60 * 24); // 24h
-            accountCookie.setAttribute("SameSite", "None");
+            accountCookie.setAttribute("SameSite", "Lax");
             httpResponse.addCookie(accountCookie);
 
             // refreshToken als Cookie
             Cookie refreshCookie = new Cookie("refreshToken", loginResponse.getRefreshToken());
             refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
+            refreshCookie.setSecure(false);
             refreshCookie.setPath("/");
             refreshCookie.setMaxAge(60 * 60 * 24 * 30); // 30 Tage
-            refreshCookie.setAttribute("SameSite", "None");
+            refreshCookie.setAttribute("SameSite", "Lax");
             httpResponse.addCookie(refreshCookie);
         }
 
@@ -75,10 +75,10 @@ public class AccountController {
             // profileToken als Cookie setzen
             Cookie profileCookie = new Cookie("profileToken", res.getProfileToken());
             profileCookie.setHttpOnly(true);
-            profileCookie.setSecure(true);
+            profileCookie.setSecure(false);
             profileCookie.setPath("/");
             profileCookie.setMaxAge(60 * 60 * 24); // 24h
-            profileCookie.setAttribute("SameSite", "None");
+            profileCookie.setAttribute("SameSite", "Lax");
             httpResponse.addCookie(profileCookie);
         }
 
@@ -110,10 +110,10 @@ public class AccountController {
         if (clientType.equals("web")) {
             Cookie accountCookie = new Cookie("accountToken", res.getAccountToken());
             accountCookie.setHttpOnly(true);
-            accountCookie.setSecure(true);
+            accountCookie.setSecure(false);
             accountCookie.setPath("/");
             accountCookie.setMaxAge(60 * 60 * 24);
-            accountCookie.setAttribute("SameSite", "None");
+            accountCookie.setAttribute("SameSite", "Lax");
             httpResponse.addCookie(accountCookie);
         }
 
