@@ -2,7 +2,9 @@ package com.drivesense.dto.request;
 
 import jakarta.validation.constraints.*;
 
-public class RegisterRequest {
+import java.time.LocalDate;
+
+public class SignUpRequest {
     @NotBlank(message = "Vorname darf nicht leer sein")
     private String fname;
     @NotBlank(message = "Nachname darf nicht leer sein")
@@ -17,15 +19,26 @@ public class RegisterRequest {
             message = "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
     )
     private String password;
+    @Past
+    private LocalDate birthdate;
 
-    public RegisterRequest(String fname, String lname, String email, String password) {
+    public SignUpRequest(String fname, String lname, String email, String password,LocalDate birthdate) {
         this.fname = fname;
         this.lname = lname;
         this.email = email;
         this.password = password;
+        this.birthdate = birthdate;
     }
 
-    public RegisterRequest(){}
+    public SignUpRequest(){}
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
+    }
 
     public String getFname() {
         return fname;
