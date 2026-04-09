@@ -39,10 +39,24 @@ function TripsTable() {
                     <th>Startzeit</th>
                     <th>Endzeit</th>
                     <th>User</th>
-                    <th>Car</th>
+                    <th>Kennzeichen</th>
+                    <th rowSpan={2}>Kilometerstand</th>
                     <th>Distanz</th>
-                    <th>Wetter</th>
+                    <th>Fahrbahnzustand</th>
+                    <th>Strecke</th>
                     <th>Aktionen</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>Von</th>
+                    <th>Bis</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
 
@@ -57,11 +71,17 @@ function TripsTable() {
 
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
                         <td>{new Date(trip.endTime).toLocaleString()}</td>
-                        <td>{trip.user_id}</td>
-                        <td>{trip.car_id}</td>
+                        <td>{trip.accountFname} {trip.accountLname}</td>
+                        <td>{trip.licensePlate}</td>
+                        <td>{trip.startMileage} km</td>
+                        <td>{trip.endMileage} km</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.roadSurfaceConditions}</td>
-
+                        <td>
+                            {trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
+                                ? `${trip.startPoint} - ${trip.furthestPoint} - ${trip.endPoint}`
+                                : `${trip.startPoint} - ${trip.endPoint}`}
+                        </td>
                         <td>
                             <Button label="Bearbeiten" stopPropagation={true}/>
                             <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)}/>
