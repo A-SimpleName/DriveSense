@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Profile;
 import com.drivesense.service.ProfileService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,17 +31,9 @@ public class ProfileController {
     @GetMapping("/byAccount")
     public ResponseEntity<List<Profile>> getProfilesByAccount(HttpServletRequest request) {
 
-        Object accountIdObj = request.getAttribute("accountId");
+        int accountId = (int) request.getAttribute("accountId");
 
-        if (accountIdObj == null) {
-            throw new RuntimeException("accountId fehlt");
-        }
-
-        int accountId = (int) accountIdObj;
-
-        return ResponseEntity.ok(
-                profileService.getAllProfilesByAccountId(accountId)
-        );
+        return ResponseEntity.ok(profileService.getAllProfilesByAccountId(accountId));
     }
 
     @PostMapping
@@ -63,7 +56,7 @@ public class ProfileController {
         int profileId = (int) request.getAttribute("profileId");
 
         if (profileId != id) {
-            throw new RuntimeException("Profil-Token stimmt nicht");
+            throw new UnauthorizedException("Profil-Token stimmt nicht");
         }
 
         profile.setId(profileId);
@@ -79,7 +72,7 @@ public class ProfileController {
         int profileId = (int) request.getAttribute("profileId");
 
         if (profileId != id) {
-            throw new RuntimeException("Nicht erlaubt");
+            throw new UnauthorizedException("Nicht erlaubt");
         }
 
         profileService.deleteById(profileId);

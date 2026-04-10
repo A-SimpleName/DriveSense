@@ -20,7 +20,7 @@ function Dashboard() {
 
         getAllTrips()
             .then(data => setTrips(data))
-            .catch(err => setError(err.message))
+            .catch(err => setError(err?.message || "Fehler beim Laden der Trips"))
             .finally(() => setLoading(false))
     }, [])
 
@@ -28,7 +28,7 @@ function Dashboard() {
     useEffect(() => {
         getTotalKm()
             .then(km => setTotalKm(`${km} km`))
-            .catch(err => setError(err.message))
+            .catch(err => setError(err?.message || "Fehler beim Laden der gesamt Kilometer"))
     }, [])
 
     // Letzte Fahrt im Detail laden
@@ -39,7 +39,7 @@ function Dashboard() {
 
         getTripById(lastTrip.id)
             .then(data => setLastTripDetailed(data))
-            .catch(err => setError(err.message))
+            .catch(err => setError(err?.message || "Fehler beim Laden der Fahrtdetails"))
     }, [trips])
 
     if (loading) return <p>Laden...</p>
