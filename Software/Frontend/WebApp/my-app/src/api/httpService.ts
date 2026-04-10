@@ -21,7 +21,16 @@ async function request<T>(
   const response = await apiFetch(`${BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorBody = await response.json().catch(() => ({}));
+    const err: any = new Error(errorBody?.message || "HTTP error");
+    err.errors = errorBody?.errors || null;
+    throw err;
+  }
+
+  const contentLength = response.headers.get("content-length");
+  const contentType = response.headers.get("content-type") || "";
+  if (contentLength === "0" || !contentType.includes("application/json")) {
+    return undefined as unknown as T;
   }
 
   return response.json() as Promise<T>;
