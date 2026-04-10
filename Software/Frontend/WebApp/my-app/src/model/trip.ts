@@ -16,6 +16,7 @@ export interface TripSummary {
     furthestPoint?: string | null;
     endPoint: string;
 }
+
 export interface Tripdetailed {
     tripSummary: TripSummary;
     trackingPoints: Trackingpoint[];

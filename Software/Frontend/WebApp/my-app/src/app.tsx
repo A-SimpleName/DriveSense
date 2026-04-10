@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { checkAuth } from "./services/auth";
 import { getProfilesByAccount } from "./services/profileService";
@@ -16,9 +16,10 @@ import Settings from "./pages/settings";
 export default function App() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [profileSelected, setProfileSelected] = useState<boolean>(false);
-  const [profiles, setProfiles] = useState<import("./model/profile").Profile[]>([]);
+  const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [user, setUser] = useState(null);
+  const [reloadAuth, setReloadAuth] = useState(0);
 
   useEffect(() => {
     async function initAuth() {
@@ -27,57 +28,74 @@ export default function App() {
         setIsAuth(auth);
 
         if (auth) {
-          const profiles = await getProfilesByAccount();
-          setProfiles(profiles);
-          setProfileSelected(profiles.length > 0);
+          const profilesData = await getProfilesByAccount();
+          setProfiles(profilesData);
+          setProfileSelected(false);
+        } else {
+          setProfiles([]);
+          setProfileSelected(false);
         }
-      } catch (e) {
+      } catch (err) {
+        console.error("initAuth ERROR:", err);
         setIsAuth(false);
         setProfileSelected(false);
+        setProfiles([]);
       } finally {
         setLoading(false);
       }
     }
 
     initAuth();
-  }, []);
+  }, [reloadAuth]);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-
     <BrowserRouter>
-
       {isAuth && profileSelected && (
         <TopBar setUser={setUser} />
       )}
 
       <Routes>
+
+        {/* NICHT EINGELOGGT */}
         {!isAuth && (
           <>
-            <Route path="/login" element={<LoginPage onLoginSuccess={() => setIsAuth(true)} />} />
+            <Route
+              path="/login"
+              element={
+                <LoginPage
+                  onLoginSuccess={() => {
+                    setIsAuth(true);
+                    setReloadAuth(prev => prev + 1);
+                  }}
+                />
+              }
+            />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </>
         )}
 
+        {/* EINGELOGGT, ABER KEIN PROFIL AKTIV */}
         {isAuth && !profileSelected && (
-          <>
-            <Route
-              path="*"
-              element={
-                <SelectProfilePage
-                  profiles={profiles}
-                  setProfiles={setProfiles}
-                  onSelect={() => setProfileSelected(true)}
-                />
-              }
-            />
-          </>
+          <Route
+            path="*"
+            element={
+              <SelectProfilePage
+                profiles={profiles}
+                setProfiles={setProfiles}
+                onSelect={() => {
+                  setProfileSelected(true);
+                }}
+              />
+            }
+          />
         )}
 
+        {/* VOLLSTÄNDIG EINGELOGGT MIT PROFIL */}
         {isAuth && profileSelected && (
           <>
             <Route path="/" element={<DashboardPage />} />
@@ -86,6 +104,7 @@ export default function App() {
             <Route path="/settings" element={<Settings />} />
           </>
         )}
+
       </Routes>
     </BrowserRouter>
   );

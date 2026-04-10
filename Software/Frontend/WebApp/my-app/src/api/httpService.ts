@@ -1,3 +1,5 @@
+import { apiFetch } from "./api-token";
+
 const BASE_URL = "http://localhost:8080/api";
 
 async function request<T>(
@@ -7,7 +9,6 @@ async function request<T>(
 ): Promise<T> {
   const options: RequestInit = {
     method,
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     }
@@ -17,7 +18,7 @@ async function request<T>(
     options.body = JSON.stringify(data);
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, options);
+  const response = await apiFetch(`${BASE_URL}${endpoint}`, options);
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

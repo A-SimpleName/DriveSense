@@ -32,30 +32,32 @@ export function VehicleAddForm() {
 
             <form onSubmit={handleSubmit}>
                 <table>
-                    <tr>
-                        <td><label>Modell</label></td>
-                        <td><input
-                            type="text"
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
-                        /></td>
-                    </tr>
-                    <tr>
-                        <td><label>Kennzeichen</label></td>
-                        <td><input
-                            type="text"
-                            value={licensePlate}
-                            onChange={(e) => setLicensePlate(e.target.value)}
-                        /></td>
-                    </tr>
-                    <tr>
-                        <td><label>Kilometerstand</label></td>
-                        <td><input
-                            type="number"
-                            value={mileage}
-                            onChange={(e) => setMileage(Number(e.target.value))}
-                        /></td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <td><label>Modell</label></td>
+                            <td><input
+                                type="text"
+                                value={model}
+                                onChange={(e) => setModel(e.target.value)}
+                            /></td>
+                        </tr>
+                        <tr>
+                            <td><label>Kennzeichen</label></td>
+                            <td><input
+                                type="text"
+                                value={licensePlate}
+                                onChange={(e) => setLicensePlate(e.target.value)}
+                            /></td>
+                        </tr>
+                        <tr>
+                            <td><label>Kilometerstand</label></td>
+                            <td><input
+                                type="number"
+                                value={mileage}
+                                onChange={(e) => setMileage(Number(e.target.value))}
+                            /></td>
+                        </tr>
+                    </tbody>
                 </table>
                 <button type="submit">Hinzufügen</button>
             </form>
