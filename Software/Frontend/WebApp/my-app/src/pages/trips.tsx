@@ -1,9 +1,9 @@
-import RidesTable from "../components/trips/table";
+import TripsTable from "../components/trips/table";
 function Trips() {
     return (
         <div>
             <h1>Fahrten</h1>
-            <RidesTable />
+            <TripsTable />
         </div>
     );
 }
