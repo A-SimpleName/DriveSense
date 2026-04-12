@@ -67,7 +67,9 @@ public class TripService {
         for (Trackingpoint trackingpoint : trackingpoints) {
             createdTrackingpoints.add(trackingpointService.insert(trackingpoint,tripSummary));
         }
-        return new TripDetailedDto(tripSummary,createdTrackingpoints);
+        TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary,createdTrackingpoints);
+        enrichWithTrackingPoints(tripDetailedDto);
+        return tripDetailedDto;
 
     }
 
@@ -77,6 +79,14 @@ public class TripService {
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+        if (trips == null) {
+            throw new NotFoundException("Keine Fahrten gefunden");
+        }
+        return trips;
+    }
+
+    public List<TripSummaryDto> getAllByProfileId(int profileId) {
+        List<TripSummaryDto> trips = tripDao.getAllByProfileId(profileId);
         if (trips == null) {
             throw new NotFoundException("Keine Fahrten gefunden");
         }
@@ -98,9 +108,8 @@ public class TripService {
         if (trip == null) {
             throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
-        TripDetailedDto tripDetailedDto = new TripDetailedDto(trip);
-        enrichWithTrackingPoints(tripDetailedDto);
-        return tripDetailedDto;
+        List<Trackingpoint> points = trackingpointService.getByTripId(trip.getId());
+        return new TripDetailedDto(trip,points);
     }
 
     public void update (TripSummary tripSummary,int profileId) {
@@ -132,6 +141,8 @@ public class TripService {
         trackingpointService.deleteByTripId(tripSummary.getId());
         tripDao.deleteById(id);
     }
+
+
 
     private void enrichWithTrackingPoints(TripDetailedDto trip) {
         List<Trackingpoint> points = trackingpointService.getByTripId(trip.getTripSummary().getId());

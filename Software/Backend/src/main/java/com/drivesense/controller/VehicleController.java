@@ -35,7 +35,7 @@ public class VehicleController {
         int profileId = (int) request.getAttribute("profileId");
         Vehicle vehicle = new Vehicle();
         vehicle.setModel(vehicleRequest.getModel());
-        vehicle.setLicenseplate(vehicleRequest.getLicensePlate());
+        vehicle.setLicensePlate(vehicleRequest.getLicensePlate());
         vehicle.setMileage(vehicleRequest.getMileage());
 
         vehicle.setProfileId(profileId);
@@ -58,8 +58,8 @@ public class VehicleController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable int id, HttpServletRequest request) {
-        int profileId = (int) request.getAttribute("profileId");
-        vehicleService.deleteVehicle(id, profileId);
+        int accountId = (int) request.getAttribute("accountId");
+        vehicleService.deleteVehicle(id, accountId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,102 +1,78 @@
 package com.drivesense.filter;
 
 import com.drivesense.service.JwtService;
-import jakarta.servlet.http.Cookie;
-import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import java.util.Collections;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+
     @Autowired
     private JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
-
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        if (path.contains("/login") ||
-                path.contains("/register") ||
-                path.contains("/refresh")) {
-            chain.doFilter(request, response);
-            return;
+        return path.startsWith("/api/account/login")
+                || path.startsWith("/api/account/signUp")
+                || path.startsWith("/api/account/refresh")
+                || path.startsWith("/api/account/logout");
+    }
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain
+    ) throws ServletException, IOException {
+
+        String profileToken = getCookie(request, "profileToken");
+        String accountToken = getCookie(request, "accountToken");
+
+        String token = null;
+        boolean isProfile = false;
+
+        // PRIORITY: profile > account
+        if (profileToken != null && jwtService.isValid(profileToken)) {
+            token = profileToken;
+            isProfile = true;
+        } else if (accountToken != null && jwtService.isValid(accountToken)) {
+            token = accountToken;
         }
 
-        // ← Token aus Cookie ODER Header lesen
-        String token = getCookie(request, "profileToken");
-
-        if (token == null) {
-            token = getCookie(request, "accountToken");
-        }
-
-        // dann Header prüfen (Flutter)
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
-
-        // kein Token → 401
+        // ❌ NO TOKEN → unauthorized
         if (token == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Kein Token vorhanden");
             return;
         }
 
-        // Token ungültig → 401
-        if (!jwtService.isValid(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token ungültig oder abgelaufen");
-            return;
-        }
+        // extract account
+        int accountId = jwtService.extractAccountId(token);
+        request.setAttribute("accountId", accountId);
 
-        String type = jwtService.extractType(token);
-
-        if (type.equals("ACCOUNT")
-                && !path.contains("select-profile")
-                && !path.contains("byAccount")
-                && !path.contains("/api/profiles") && request.getMethod().equals("POST")) {
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Bitte zuerst Profil auswählen");
-            return;
-        }
-
-        if (type.equals("REFRESH")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Ungültiger Token Typ");
-            return;
-        }
-
-        if (path.startsWith("/api/admin")) {
-            String role = jwtService.extractRole(token);
-            if (!role.equals("ADMIN")) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Kein Zugriff");
-                return;
-            }
-        }
-
-        request.setAttribute("accountId", jwtService.extractAccountId(token));
-        if (type.equals("PROFILE")) {
+        // profile only if profile token
+        if (isProfile) {
             request.setAttribute("profileId", jwtService.extractProfileId(token));
             request.setAttribute("role", jwtService.extractRole(token));
         }
 
+        // security context
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
-                        jwtService.extractAccountId(token),
+                        accountId,
                         null,
                         Collections.emptyList()
                 );
@@ -107,11 +83,11 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String getCookie(HttpServletRequest request, String name) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals(name)) {
-                    return cookie.getValue();
-                }
+        if (request.getCookies() == null) return null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
             }
         }
         return null;

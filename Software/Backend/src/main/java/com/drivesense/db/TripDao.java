@@ -200,6 +200,45 @@ public class TripDao {
         }
     }
 
+    public List<TripSummaryDto> getAllByProfileId(int profileId) {
+        String sql = """
+                SELECT
+                    t.id,
+                    t.starttime,
+                    t.distance,
+                    v.mileage,
+                    v.licenseplate,
+                    t.start_point,
+                    t.end_point,
+                    t.road_surface_conditions,
+                    a.fname,
+                    a.lname
+                FROM trip t
+                JOIN protocol pr ON t.protocol_id = pr.id
+                JOIN vehicle v ON t.vehicle_id = v.id
+                JOIN profile prf ON t.profile_id = prf.id
+                JOIN account a ON prf.account_id = a.id
+                WHERE t.profile_id = ? 
+                """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<TripSummaryDto> tripSummaries = new ArrayList<>();
+            while (rs.next()) {
+                tripSummaries.add(mapToDto(rs));
+            }
+            return tripSummaries;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return null;
+        }
+    }
+
     public List<TripSummary> getAll() {
         String sql = "SELECT * FROM trip";
 

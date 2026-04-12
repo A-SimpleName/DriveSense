@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").permitAll()
-                        .requestMatchers("/api/account/register").permitAll()
+                        .requestMatchers("/api/account/signUp").permitAll()
                         .requestMatchers("/api/account/refresh").permitAll()
                         .anyRequest().authenticated()
                 )

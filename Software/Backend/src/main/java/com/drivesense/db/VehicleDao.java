@@ -80,7 +80,7 @@ public class VehicleDao {
 
             ps.setInt(1, vehicle.getProfileId());
             ps.setString(2, vehicle.getModel());
-            ps.setString(3, vehicle.getLicenseplate());
+            ps.setString(3, vehicle.getLicensePlate());
             ps.setInt(4, vehicle.getMileage());
             ps.executeUpdate();
 
@@ -100,7 +100,7 @@ public class VehicleDao {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, vehicle.getModel());
-            ps.setString(2, vehicle.getLicenseplate());
+            ps.setString(2, vehicle.getLicensePlate());
             ps.setInt(3, vehicle.getMileage());
             ps.setInt(4, vehicle.getId());
 
@@ -126,7 +126,7 @@ public class VehicleDao {
         v.setId(rs.getInt("id"));
         v.setProfileId(rs.getInt("profile_id"));
         v.setModel(rs.getString("model"));
-        v.setLicenseplate(rs.getString("licenseplate"));
+        v.setLicensePlate(rs.getString("licenseplate"));
         v.setMileage(rs.getInt("mileage"));
         return v;
     }

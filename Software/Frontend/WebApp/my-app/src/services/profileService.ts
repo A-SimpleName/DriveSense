@@ -1,9 +1,9 @@
-
 import http from "../api/httpService";
 import type { Profile } from "../model/profile";
 
-export const getProfilesByAccount = () =>
-  http.get<Profile[]>("/profiles/byAccount");
+export const getProfilesByAccount = async (): Promise<Profile[]> => {
+  return await http.get<Profile[]>("/profiles/byAccount");
+};
 
 export const createProfile = (profile: Omit<Profile, "id" | "account_id">) =>
   http.post<Profile>("/profiles", profile);
