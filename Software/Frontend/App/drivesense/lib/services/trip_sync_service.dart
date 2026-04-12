@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:drivesense/model/pending_trip.dart';
 import 'package:drivesense/model/trackingpoint.dart';
+import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_summary.dart';
-import 'package:drivesense/repository/pending_trip_repository.dart';
+import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -19,11 +19,11 @@ class TripSyncResult {
 }
 
 class TripSyncService {
-  final PendingTripRepository pendingTripRepository;
+  final TripRepository isarTripRepository;
   final TripService tripService;
 
   TripSyncService({
-    required this.pendingTripRepository,
+    required this.isarTripRepository,
     required this.tripService,
   });
 
@@ -35,49 +35,62 @@ class TripSyncService {
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
   ) async {
+    final localTrip = Trip()
+      ..localId = _createLocalId()
+      ..trackingPointsJson = jsonEncode(
+        trackingPoints.map((tp) => tp.toJson()).toList(),
+      )
+      ..profileId = trip.profileId
+      ..vehicleId = trip.vehicleId
+      ..protocolId = trip.protocolId
+      ..startTime = trip.startTime
+      ..endTime = trip.endTime
+      ..distanceKm = trip.distanceKm
+      ..roadSurfaceConditions = trip.roadSurfaceConditions
+      ..type = trip.type
+      ..createdAt = DateTime.now()
+      ..isSynced = false
+      ..retryCount = 0;
+
+    await isarTripRepository.save(localTrip);
+
     try {
       await tripService.saveTripToDb(trip, trackingPoints);
+      localTrip.isSynced = true;
+      localTrip.lastError = null;
+      await isarTripRepository.update(localTrip);
     } catch (e) {
-      final pendingTrip = PendingTrip()
-        ..localId = _createLocalId()
-        ..tripSummaryJson = jsonEncode(trip.toJson())
-        ..trackingPointsJson = jsonEncode(
-          trackingPoints.map((tp) => tp.toJson()).toList(),
-        )
-        ..createdAt = DateTime.now()
-        ..retryCount = 1
-        ..lastError = e.toString();
-
-      await pendingTripRepository.save(pendingTrip);
+      localTrip.retryCount += 1;
+      localTrip.lastError = e.toString();
+      await isarTripRepository.update(localTrip);
       throw Exception("Trip lokal gespeichert, wird später synchronisiert");
     }
   }
 
   Future<TripSyncResult> syncPendingTrips() async {
-    final List<PendingTrip> pendingTrips = await pendingTripRepository.getAll();
+    final List<Trip> pendingTrips = await isarTripRepository.getUnsynced();
     int successful = 0;
     int failed = 0;
 
     for (final pendingTrip in pendingTrips) {
       try {
-        final Map<String, dynamic> tripMap =
-            jsonDecode(pendingTrip.tripSummaryJson) as Map<String, dynamic>;
-
         final List<dynamic> trackingList =
             jsonDecode(pendingTrip.trackingPointsJson) as List<dynamic>;
 
-        final TripSummary trip = TripSummary.fromJson(tripMap);
+        final TripSummary trip = TripSummary.fromTrip(pendingTrip);
         final List<Trackingpoint> trackingPoints = trackingList
             .map((item) => Trackingpoint.fromJson(item as Map<String, dynamic>))
             .toList();
 
         await tripService.saveTripToDb(trip, trackingPoints);
-        await pendingTripRepository.deleteById(pendingTrip.id);
+        pendingTrip.isSynced = true;
+        pendingTrip.lastError = null;
+        await isarTripRepository.update(pendingTrip);
         successful += 1;
       } catch (e, st) {
         pendingTrip.retryCount += 1;
         pendingTrip.lastError = e.toString();
-        await pendingTripRepository.update(pendingTrip);
+        await isarTripRepository.update(pendingTrip);
         failed += 1;
 
         debugPrint(

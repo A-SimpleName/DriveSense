@@ -53,7 +53,7 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
                         onPressed: () => {
                           Navigator.pushNamedAndRemoveUntil(
                             context,
-                            'LoginPage',
+                            'SignInPage',
                             (route) => false,
                           ),
                         },

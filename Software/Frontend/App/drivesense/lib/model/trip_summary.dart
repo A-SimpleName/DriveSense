@@ -1,4 +1,5 @@
 import 'package:drivesense/model/trackingpoint.dart';
+import 'package:drivesense/model/trip.dart';
 
 class TripSummary {
   final int id;
@@ -10,6 +11,7 @@ class TripSummary {
   final double distanceKm;
   final String roadSurfaceConditions;
   final String? type;
+  bool isSynced;
 
   TripSummary({
     required this.id,
@@ -21,6 +23,7 @@ class TripSummary {
     required this.distanceKm,
     required this.roadSurfaceConditions,
     required this.type,
+    required this.isSynced,
   });
 
   Map<String, dynamic> toJson() {
@@ -33,6 +36,7 @@ class TripSummary {
       "distance": distanceKm,
       "roadSurfaceConditions": roadSurfaceConditions,
       "type": type,
+      "isSynced": isSynced,
     };
   }
 
@@ -63,6 +67,22 @@ class TripSummary {
       distanceKm: asDouble(json["distance"]),
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
       type: json["type"]?.toString(),
+      isSynced: json["isSynced"] == true,
+    );
+  }
+
+  factory TripSummary.fromTrip(Trip trip) {
+    return TripSummary(
+      id: trip.id,
+      profileId: trip.profileId,
+      vehicleId: trip.vehicleId,
+      protocolId: trip.protocolId,
+      startTime: trip.startTime,
+      endTime: trip.endTime,
+      distanceKm: trip.distanceKm,
+      roadSurfaceConditions: trip.roadSurfaceConditions,
+      type: trip.type,
+      isSynced: trip.isSynced,
     );
   }
 
@@ -81,6 +101,7 @@ class TripSummary {
       distanceKm: distanceKm,
       roadSurfaceConditions: roadSurfaceConditions,
       type: type,
+      isSynced: isSynced,
     );
   }
 }

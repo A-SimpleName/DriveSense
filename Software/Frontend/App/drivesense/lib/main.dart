@@ -1,15 +1,17 @@
-import 'package:drivesense/pages/login_page.dart';
+import 'package:drivesense/pages/sign_in_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
-import 'package:drivesense/services/login_and_register.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/constants/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await IsarService.getInstance();
-  String token = "abc"; // TODO: get token from secure storage
+  String? token = ""; // TODO: get token from secure storage
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -29,6 +31,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DriveSense',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('de', 'DE'),
+        Locale('en', 'US'),
+      ],
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -47,11 +58,11 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      initialRoute: LoginAndRegister.redirectToHome(token: token),
+      initialRoute: SignInAndSignUp.redirectToHome(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
-        'LoginPage': (context) => const LoginPage(),
-        'RegisterPage': (context) => const SignUpPage(),
+        'SignInPage': (context) => const SignInPage(),
+        'SignUpPage': (context) => const SignUpPage(),
       },
     );
   }

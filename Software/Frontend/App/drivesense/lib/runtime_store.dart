@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:drivesense/repository/pending_trip_repository.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
+import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
@@ -12,8 +10,8 @@ class RuntimeStore {
   static String authToken = '';
   static int? currentProfileId = 1;
   static final TripService tripService = TripService();
-  static final PendingTripRepository pendingTripRepository =
-      PendingTripRepository();
+  static final TripRepository pendingTripRepository =
+      TripRepository();
 
   static void addTrip(TripSummary trip) {
     trips.add(trip);
@@ -50,13 +48,9 @@ class RuntimeStore {
         1,
       ); // TODO: protocolId dynamisch setzen
 
-      final pendingTrips = await pendingTripRepository.getAll();
+      final pendingTrips = await pendingTripRepository.getUnsynced();
       final pendingTripSummaries = pendingTrips
-          .map(
-            (pendingTrip) => TripSummary.fromJson(
-              jsonDecode(pendingTrip.tripSummaryJson) as Map<String, dynamic>,
-            ),
-          )
+          .map((pendingTrip) => TripSummary.fromTrip(pendingTrip))
           .toList();
 
       // Only replace global state after a fully successful refresh.

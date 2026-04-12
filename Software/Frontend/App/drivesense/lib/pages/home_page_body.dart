@@ -102,6 +102,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       distanceKm: 0, // TODO
       roadSurfaceConditions: 'Clear', // TODO
       type: null, // TODO
+      isSynced: false, // TODO
     );
 
     _setupTrackingCallbacks();
