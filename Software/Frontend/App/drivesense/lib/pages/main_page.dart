@@ -1,4 +1,4 @@
-import 'package:drivesense/repository/pending_trip_repository.dart';
+import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/widgets/ds_app_bar.dart';
@@ -19,7 +19,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
   String _currentAppBarTitle = 'Übersicht';
-  late final PendingTripRepository pendingTripRepository;
+  late final TripRepository isarTripRepository;
   late final TripSyncService tripSyncService;
   late final TripService tripService;
   
@@ -29,9 +29,9 @@ class _MainPageState extends State<MainPage> {
     super.initState();
 
     tripService = TripService();
-    pendingTripRepository = PendingTripRepository();
+    isarTripRepository = TripRepository();
     tripSyncService = TripSyncService(
-      pendingTripRepository: pendingTripRepository,
+      isarTripRepository: isarTripRepository,
       tripService: tripService
     );
 
