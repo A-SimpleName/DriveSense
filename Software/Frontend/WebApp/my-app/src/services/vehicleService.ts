@@ -1,17 +1,32 @@
 import type { Vehicle } from "../model/vehicle";
 import http from "../api/httpService";  
 import type { CreateVehicle } from "../model/vehicle";
+import { getErrorMessage } from "../errorHandling/getErrorMessage";
 
-export const getAllVehicles = () => http.get<Vehicle[]>("/vehicles/account");
+async function handleRequest<T>(request: Promise<T>): Promise<T> {
+    try {
+        const res = await request;
+        return res; 
+    } catch (err: any) {
+        throw {
+            message: getErrorMessage(err),
+            fieldErrors: err?.errors || null
+        };
+    }
+}
+
+
+export const getAllVehicles = () =>
+    handleRequest<Vehicle[]>(http.get<Vehicle[]>("/vehicles/account"));
 
 export const getVehicleById = (id: number) =>
-    http.get<Vehicle>(`/vehicles/${id}`);
+    handleRequest<Vehicle>(http.get<Vehicle>(`/vehicles/${id}`));
 
 export const createVehicle = (vehicle: CreateVehicle) =>
-    http.post<Vehicle>("/vehicles", vehicle);
+    handleRequest<Vehicle>(http.post<Vehicle>("/vehicles", vehicle));
 
 export const updateVehicle = (id: number, vehicle: CreateVehicle) =>
-    http.put<Vehicle>(`/vehicles/${id}`, vehicle);
+    handleRequest<Vehicle>(http.put<Vehicle>(`/vehicles/${id}`, vehicle));
 
 export const deleteVehicle = (id: number) =>
-    http.delete(`/vehicles/${id}`);
+    handleRequest<void>(http.delete(`/vehicles/${id}`));

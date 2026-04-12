@@ -12,13 +12,20 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Validation Fehler (@Valid) → 400
+    // Validation Fehler
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+
+        Map<String, String> fieldErrors = new HashMap<>();
+
         ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        return ResponseEntity.status(400).body(errors);
+                .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Validierungsfehler");
+        response.put("errors", fieldErrors);
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     // Nicht gefunden → 404
@@ -69,13 +76,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleConstraintViolation(ConstraintViolationException ex) {
-        Map<String, String> errors = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+
+        Map<String, String> fieldErrors = new HashMap<>();
+
         ex.getConstraintViolations()
-                .forEach(v -> errors.put(
+                .forEach(v -> fieldErrors.put(
                         v.getPropertyPath().toString(),
                         v.getMessage()
                 ));
-        return ResponseEntity.status(400).body(errors);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Validierungsfehler");
+        response.put("errors", fieldErrors);
+
+        return ResponseEntity.badRequest().body(response);
     }
 }
