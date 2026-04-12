@@ -10,9 +10,10 @@ function SignUpPage() {
     const [password, setPassword] = useState("");
     const [fname, setFname] = useState("");
     const [lname, setLname] = useState("");
+    const [birthdate, setBirthdate] = useState("");
 
     const handleSignUp = () => {
-        signUp(fname, lname, email, password);
+        signUp(fname, lname, email, password, birthdate);
         navigate("/login");
     };
 
@@ -27,6 +28,7 @@ function SignUpPage() {
                 <Label type="text" name="lname" text="Nachname" value={lname} onchange={(e) => setLname(e.target.value)} />
                 <Label type="email" name="email" text="Email" value={email} onchange={(e) => setEmail(e.target.value)} />
                 <Label type="password" name="password" text="Password" value={password} onchange={(e) => setPassword(e.target.value)} />
+                <Label type="date" name="birthdate" text="Geburtsdatum" value={birthdate} onchange={(e) => setBirthdate(e.target.value)} />
                 <Button label="Registrieren" type="submit" />
             </form>
         </div>

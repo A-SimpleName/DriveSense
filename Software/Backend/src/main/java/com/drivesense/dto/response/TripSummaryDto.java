@@ -12,6 +12,7 @@ public class TripSummaryDto {
     private String vehicleModel;
     private String licenseplate;
     private String startPoint;
+    private String furthestPoint;
     private String endPoint;
     private int distance;
     private String roadSurfaceConditions;
@@ -19,6 +20,14 @@ public class TripSummaryDto {
 
     public TripSummaryDto () {
 
+    }
+
+    public String getFurthestPoint() {
+        return furthestPoint;
+    }
+
+    public void setFurthestPoint(String furthestPoint) {
+        this.furthestPoint = furthestPoint;
     }
 
     public String getStartPoint() {
