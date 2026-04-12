@@ -4,8 +4,8 @@ import VehiclesTable from "../components/vehicles/table"
 import { VehicleAddForm } from "../components/vehicles/vehicleAddForm"
 
 function Vehicles() {
-
-    const [showForm, setShowForm] = useState(false)
+    const [showForm, setShowForm] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
 
     return (
         <div>
@@ -16,9 +16,14 @@ function Vehicles() {
                 onClick={() => setShowForm(true)}
             />
 
-            {showForm && <VehicleAddForm />}
+            {showForm && (
+                <VehicleAddForm
+                    onClose={() => setShowForm(false)}
+                    onSuccess={() => setReloadKey(prev => prev + 1)}
+                />
+            )}
 
-            <VehiclesTable />
+            <VehiclesTable key={reloadKey} />
         </div>
     )
 }

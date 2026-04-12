@@ -1,84 +1,112 @@
-import { isAuthenticated, hasProfile, logout } from "./services/auth";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import { checkAuth } from "./services/auth";
+import { getProfilesByAccount } from "./services/profileService";
+
+import TopBar from "./components/Layout/topbar";
 import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
-import AuthLayout from "./components/Layout/AuthLayout";
+import TripDetailPage from "./pages/tripDetailPage";
+import Vehicles from "./pages/vehicles";
+import Settings from "./pages/settings";
 
 export default function App() {
-  const [isAuth, setIsAuth] = useState(false);
-  const [profileSelected, setProfileSelected] = useState(false);
+  const [isAuth, setIsAuth] = useState<boolean>(false);
+  const [profileSelected, setProfileSelected] = useState<boolean>(false);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState(null);
+  const [reloadAuth, setReloadAuth] = useState(0);
 
   useEffect(() => {
-    setIsAuth(isAuthenticated());
-    setProfileSelected(hasProfile());
-  }, []);
+    async function initAuth() {
+      try {
+        const auth = await checkAuth();
+        setIsAuth(auth);
 
-  const handleLogout = () => {
-    logout();
-    setIsAuth(false);
-    setProfileSelected(false);
-  };
+        if (auth) {
+          const profilesData = await getProfilesByAccount();
+          setProfiles(profilesData);
+          setProfileSelected(false);
+        } else {
+          setProfiles([]);
+          setProfileSelected(false);
+        }
+      } catch (err) {
+        console.error("initAuth ERROR:", err);
+        setIsAuth(false);
+        setProfileSelected(false);
+        setProfiles([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initAuth();
+  }, [reloadAuth]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <BrowserRouter>
+      {isAuth && profileSelected && (
+        <TopBar setUser={setUser} />
+      )}
+
       <Routes>
 
-        {/* LOGIN */}
-        <Route
-          path="/login"
-          element={
-            isAuth
-              ? <Navigate to={profileSelected ? "/" : "/select-profile"} />
-              : <LoginPage onLoginSuccess={() => setIsAuth(true)} />
-          }
-        />
+        {/* NICHT EINGELOGGT */}
+        {!isAuth && (
+          <>
+            <Route
+              path="/login"
+              element={
+                <LoginPage
+                  onLoginSuccess={() => {
+                    setIsAuth(true);
+                    setReloadAuth(prev => prev + 1);
+                  }}
+                />
+              }
+            />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        )}
 
-        {/* REGISTER */}
-        <Route
-          path="/registrieren"
-          element={
-            isAuth
-              ? <Navigate to="/" />
-              : <SignUpPage />
-          }
-        />
+        {/* EINGELOGGT, ABER KEIN PROFIL AKTIV */}
+        {isAuth && !profileSelected && (
+          <Route
+            path="*"
+            element={
+              <SelectProfilePage
+                profiles={profiles}
+                setProfiles={setProfiles}
+                onSelect={() => {
+                  setProfileSelected(true);
+                }}
+              />
+            }
+          />
+        )}
 
-        {/* PROFILE AUSWAHL */}
-        <Route
-          path="/select-profile"
-          element={
-            !isAuth
-              ? <Navigate to="/login" />
-              : <SelectProfilePage onSelect={() => setProfileSelected(true)} />
-          }
-        />
+        {/* VOLLSTÄNDIG EINGELOGGT MIT PROFIL */}
+        {isAuth && profileSelected && (
+          <>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/trips" element={<TripsPage />} />
+            <Route path="/trips/:id" element={<TripDetailPage />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/settings" element={<Settings />} />
+          </>
+        )}
 
-        {/* PROTECTED ROUTES */}
-        <Route
-          path="/"
-          element={
-            isAuth && profileSelected
-              ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout>
-              : <Navigate to="/login" />
-          }
-        />
-
-        <Route
-          path="/fahrten"
-          element={
-            isAuth && profileSelected
-              ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout>
-              : <Navigate to="/login" />
-          }
-        />
-
-        {/* gleiches für alle anderen */}
-        
-        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>
   );

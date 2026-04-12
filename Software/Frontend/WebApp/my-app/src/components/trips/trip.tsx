@@ -8,14 +8,14 @@ export function TripsList() {
     useEffect(() => {
         getAllTrips()
             .then(data => setTrips(data))
-            .catch(err => console.error("Fehler beim Laden der Trips:", err));
+            .catch(err => console.error("Fehler:", err));
     }, []);
 
     return (
         <ul>
-            {trips.map(t => (
-                <li key={t.id}>
-                    {t.user_id} - {t.car_id} - {t.distance} km
+            {trips.map(trip => (
+                <li key={trip.id}>
+                    {trip.id} - {trip.user_id} - {trip.car_id} - {new Date(trip.startTime).toLocaleString()} - {new Date(trip.endTime).toLocaleString()} - {trip.distance} km - {trip.roadSurfaceConditions}
                 </li>
             ))}
         </ul>

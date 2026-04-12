@@ -3,14 +3,14 @@ import Topbar from "./topbar";
 
 type AuthLayoutProps = {
   children: React.ReactNode;
-  onLogout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
 };
 
-export function AuthLayout({ children, onLogout }: AuthLayoutProps) {
+export function AuthLayout({ children, setUser }: AuthLayoutProps) {
 
     return ( 
         <div className="app-container">
-            <Topbar onLogout={onLogout} />
+            <Topbar setUser={setUser} />
             <main className="main-content">
                 {children}
             </main>

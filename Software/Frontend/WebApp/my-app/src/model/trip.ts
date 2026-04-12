@@ -1,13 +1,24 @@
+import type { Trackingpoint } from "./trackingpoint";
+
 export interface TripSummary {
     id: number;
-    user_id: number;
-    car_id: number;
     startTime: string; 
     endTime: string;
     distance: number;
+    startMileage: number;
+    endMileage: number;
+    accountFname: string;
+    accountLname: string;
+    vehicleModel: string;
+    licensePlate: string;
     roadSurfaceConditions: string;
-    type: string;
-    startPoint?: string | null;
-    endPoint?: string | null;
+    type?: string | null;
+    startPoint: string;
     furthestPoint?: string | null;
+    endPoint: string;
+}
+
+export interface Tripdetailed {
+    tripSummary: TripSummary;
+    trackingpoints: Trackingpoint[];
 }

@@ -9,16 +9,16 @@ Currently, two official plugins are available:
 
 ## React Compiler
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.  
 
 Note: This will impact Vite dev & build performances.
 
-## Expanding the ESLint configuration
+## Expanding the ESLint configuration 
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
 ```js
-export default defineConfig([
+export default defineConfig([ 
   globalIgnores(['dist']),
   {
     files: ['**/*.{ts,tsx}'],
