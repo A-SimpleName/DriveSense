@@ -43,7 +43,6 @@ function Dashboard() {
             ? `${trips[trips.length - 1].distance} km | ${trips[trips.length - 1].startTime.split("T")[0]}`
             : "Keine Fahrten";
 
-    // Backend gibt trackingpoints (lowercase) zurück
     const route =
         lastTripDetailed?.trackingpoints?.map(p => ({
             lat: p.lat,
