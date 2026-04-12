@@ -10,6 +10,7 @@ import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
+import TripDetailPage from "./pages/tripDetailPage";
 import Vehicles from "./pages/vehicles";
 import Settings from "./pages/settings";
 
@@ -100,6 +101,7 @@ export default function App() {
           <>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/trips" element={<TripsPage />} />
+            <Route path="/trips/:id" element={<TripDetailPage />} />
             <Route path="/vehicles" element={<Vehicles />} />
             <Route path="/settings" element={<Settings />} />
           </>

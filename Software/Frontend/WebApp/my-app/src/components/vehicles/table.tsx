@@ -1,186 +1,67 @@
 import { useEffect, useState } from "react"
-import { getAllVehicles, deleteVehicle, updateVehicle } from "../../services/vehicleService"
-import type { CreateVehicle, Vehicle } from "../../model/vehicle"
+import { useNavigate } from "react-router-dom"
+import { deleteTrip, getAllTrips } from "../../services/tripService"
+import type { TripSummary } from "../../model/trip"
 import "../../styles/table.css"
 import { Button } from "../button"
 
-function VehiclesTable() {
-    const [vehicles, setVehicles] = useState<Vehicle[]>([])
-    const [editingId, setEditingId] = useState<number | null>(null)
-    const [editData, setEditData] = useState<CreateVehicle | null>(null)
-
-    const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+function TripsTable() {
+    const navigate = useNavigate();
+    const [trips, setTrips] = useState<TripSummary[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setLoading(true);
-        getAllVehicles()
-            .then(data => setVehicles(data))
-            .catch(err => setError(err?.message || "Fehler beim Laden der Fahrzeuge"))
+        getAllTrips()
+            .then(data => setTrips(data))
+            .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, []);
 
-    const handleEdit = (vehicle: Vehicle) => {
-        setError(null)
-
-        setEditingId(vehicle.id)
-        setEditData({
-            model: vehicle.model,
-            licensePlate: vehicle.licensePlate,
-            mileage: vehicle.mileage
-        })
-    }
-
-    const handleCancel = () => {
-        setEditingId(null)
-        setEditData(null)
-    }
-
-    const handleSave = async (id: number) => {
-        if (!editData) return;
-
-        if (!editData.model || !editData.licensePlate) {
-            setError("Bitte alle Felder ausfüllen");
-            return;
-        }
-
-        setSaving(true);
-        setError(null);
-
-        try {
-            await updateVehicle(id, editData);
-            setVehicles(prev =>
-                prev.map(v => (v.id === id ? { ...v, ...editData } : v))
-            );
-            handleCancel();
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Speichern");
-        } finally {
-            setSaving(false);
-        }
+    const handleDelete = (id: number) => {
+        deleteTrip(id)
+            .then(() => setTrips(prev => prev.filter(t => t.id !== id)))
+            .catch(err => setError(err.message));
     };
 
-    const handleDelete = async (id: number) => {
-        setError(null);
-
-        try {
-            await deleteVehicle(id);
-            setVehicles(prev => prev.filter(v => v.id !== id));
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Löschen");
-        }
-    };
-
-    if (loading) return <p>Laden...</p>
+    if (loading) return <p>Laden...</p>;
+    if (error) return <p>Fehler: {error}</p>;
 
     return (
-        <div>
-            {error && <p>Fehler: {error}</p>}
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Model</th>
-                        <th>Profil</th>
-                        <th>Kennzeichen</th>
-                        <th>Kilometerstand</th>
-                        <th>Aktionen</th>
+        <table className="ridesTable">
+            <thead>
+                <tr>
+                    <th>Startzeit</th>
+                    <th>Endzeit</th>
+                    <th>Fahrer</th>
+                    <th>Fahrzeug</th>
+                    <th>Distanz</th>
+                    <th>Straßenzustand</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {trips.map(trip => (
+                    <tr
+                        key={trip.id}
+                        onClick={() => navigate(`/trips/${trip.id}`)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <td>{new Date(trip.startTime).toLocaleString()}</td>
+                        <td>{trip.endTime ? new Date(trip.endTime).toLocaleString() : "—"}</td>
+                        <td>{trip.accountFname} {trip.accountLname}</td>
+                        <td>{trip.vehicleModel} ({trip.licensePlate})</td>
+                        <td>{trip.distance} km</td>
+                        <td>{trip.roadSurfaceConditions}</td>
+                        <td>
+                            <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)} />
+                        </td>
                     </tr>
-                </thead>
-
-                <tbody>
-                    {vehicles.map(vehicle => (
-                        <tr key={vehicle.id}>
-                            {/* MODEL */}
-                            <td>
-                                {editingId === vehicle.id ? (
-                                    <input
-                                        value={editData?.model ?? ""}
-                                        onChange={e =>
-                                            setEditData(prev =>
-                                                prev ? { ...prev, model: e.target.value } : prev
-                                            )
-                                        }
-                                    />
-                                ) : (
-                                    vehicle.model
-                                )}
-                            </td>
-
-                            <td>{vehicle.profileName}</td>
-
-                            {/* LICENSE */}
-                            <td>
-                                {editingId === vehicle.id ? (
-                                    <input
-                                        value={editData?.licensePlate ?? ""}
-                                        onChange={e =>
-                                            setEditData(prev =>
-                                                prev
-                                                    ? { ...prev, licensePlate: e.target.value }
-                                                    : prev
-                                            )
-                                        }
-                                    />
-                                ) : (
-                                    vehicle.licensePlate
-                                )}
-                            </td>
-
-                            {/* MILEAGE */}
-                            <td>
-                                {editingId === vehicle.id ? (
-                                    <input
-                                        type="number"
-                                        value={editData?.mileage ?? 0}
-                                        onChange={e =>
-                                            setEditData(prev =>
-                                                prev
-                                                    ? {
-                                                          ...prev,
-                                                          mileage: Number(e.target.value)
-                                                      }
-                                                    : prev
-                                            )
-                                        }
-                                    />
-                                ) : (
-                                    `${vehicle.mileage} km`
-                                )}
-                            </td>
-
-                            {/* ACTIONS */}
-                            <td>
-                                {editingId === vehicle.id ? (
-                                    <>
-                                        <Button
-                                            label="Speichern"
-                                            onClick={() => handleSave(vehicle.id)}
-                                        />
-                                        <Button label="Abbrechen" onClick={handleCancel} />
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button
-                                            label="Bearbeiten"
-                                            stopPropagation={true}
-                                            onClick={() => handleEdit(vehicle)}
-                                        />
-                                        <Button
-                                            label="Löschen"
-                                            stopPropagation={true}
-                                            onClick={() => handleDelete(vehicle.id)}
-                                        />
-                                    </>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    )
+                ))}
+            </tbody>
+        </table>
+    );
 }
 
-export default VehiclesTable
+export default TripsTable;
