@@ -39,6 +39,9 @@ class TripTrackingService {
         debugPrint('GPS STREAM DONE');
       },
     );
+
+    // Emit one initial point right after start so a standing start is captured.
+    unawaited(_emitInitialPoint());
   }
 
   /// Stoppt GPS-Tracking
@@ -81,11 +84,12 @@ class TripTrackingService {
     final acc = tp.accuracy;
     if (acc > 25) return false;
 
-    // Stehst (oder GPS spinnt) -> skip (0.5 m/s ~ 1.8 km/h)
-    final spd = tp.speed;
-    if (spd < 0.5) return false;
-
+    // Always accept the very first point, even with 0 speed/low movement.
     if (_lastAcceptedPoint == null) return true;
+
+    // Stehst (oder GPS spinnt) -> skip (0.5 m/s ~ 1.8 km/h)
+    // final spd = tp.speed;
+    // if (spd < 0.5) return false;
 
     final d = Geolocator.distanceBetween(
       _lastAcceptedPoint!.latitude,
@@ -94,7 +98,7 @@ class TripTrackingService {
       tp.longitude,
     );
 
-    return d >= 10; // Auto: 10m = weniger Müll, weniger Daten
+    return true; // Auto: 10m = weniger Müll, weniger Daten
   }
 
   /// Konvertiert Position zu Trackingpoint
@@ -109,6 +113,19 @@ class TripTrackingService {
       bearing: p.heading,
       timestamp: p.timestamp,
     );
+  }
+
+  Future<void> _emitInitialPoint() async {
+    try {
+      final Position initialPosition = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      ).timeout(const Duration(seconds: 5));
+      _handlePositionUpdate(initialPosition);
+    } catch (e) {
+      debugPrint('Initial GPS point failed: $e');
+    }
   }
 
   /// Cleanup

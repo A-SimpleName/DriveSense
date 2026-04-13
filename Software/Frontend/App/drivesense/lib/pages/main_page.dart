@@ -27,6 +27,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[MainPage.initState] START');
 
     tripService = TripService();
     isarTripRepository = TripRepository();
@@ -35,11 +36,25 @@ class _MainPageState extends State<MainPage> {
       tripService: tripService
     );
 
+    debugPrint('[MainPage.initState] Scheduling _syncPendingTrips via microtask');
     Future.microtask(_syncPendingTrips);
   }
 
   Future<void> _syncPendingTrips() async {
-    await tripSyncService.syncPendingTrips();
+    debugPrint('[_syncPendingTrips] START');
+    try {
+      debugPrint('[_syncPendingTrips] Calling syncPendingTrips...');
+      await tripSyncService.syncPendingTrips();
+      debugPrint('[_syncPendingTrips] syncPendingTrips completed');
+    } catch (e) {
+      debugPrint('[_syncPendingTrips] syncPendingTrips error (continuing anyway): $e');
+    }
+    // Refresh from server after sync to repopulate local DB if cleared by user
+    // (e.g., via phone settings "Clear app data")
+    // This MUST run regardless of sync errors
+    debugPrint('[_syncPendingTrips] Calling refreshTrips...');
+    await RuntimeStore.refreshTrips();
+    debugPrint('[_syncPendingTrips] DONE');
   }
 
   @override

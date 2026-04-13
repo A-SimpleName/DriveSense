@@ -3,6 +3,7 @@ package com.drivesense.controller;
 import com.drivesense.dto.request.SaveTripRequest;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.dto.response.TripDetailedDto;
+import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,25 @@ public class TripController {
         int profileId = (int) request.getAttribute("profileId");
         saveTripRequest.getTripSummary().setProfileId(profileId);
         return ResponseEntity.status(201).body(tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints()));
+    }
+
+    // POST /api/trips/summary
+    @PostMapping("/summary")
+    public ResponseEntity<TripSummary> createTripSummary(@Valid @RequestBody TripSummary tripSummary, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        tripSummary.setProfileId(profileId);
+        return ResponseEntity.status(201).body(tripService.insertTripSummary(tripSummary));
+    }
+
+    // POST /api/trips/{id}/trackingpoints
+    @PostMapping("/{id}/trackingpoints")
+    public ResponseEntity<TripDetailedDto> addTrackingpoints(
+            @PathVariable int id,
+            @RequestBody List<Trackingpoint> trackingpoints,
+            HttpServletRequest request
+    ) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.status(201).body(tripService.addTrackingpointsToTrip(id, trackingpoints, profileId));
     }
 
     // GET /api/trips

@@ -121,6 +121,22 @@ public class VehicleDao {
         }
     }
 
+    public boolean isAssignedToProfile(int profileId, int vehicleId) {
+        String sql = "SELECT 1 FROM profile_vehicle WHERE profile_id = ? AND vehicle_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, profileId);
+            ps.setInt(2, vehicleId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Prüfen der Fahrzeug-Zuordnung", e);
+        }
+    }
+
     private Vehicle map(ResultSet rs) throws SQLException {
         Vehicle v = new Vehicle();
         v.setId(rs.getInt("id"));
