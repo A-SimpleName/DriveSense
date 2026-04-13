@@ -112,6 +112,7 @@ public class TripDao {
                 SELECT
                     t.id,
                     t.starttime,
+                    t.endtime,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
@@ -171,6 +172,7 @@ public class TripDao {
                     SELECT
                                 t.id,
                                 t.starttime,
+                                t.endtime,
                                 t.distance,
                                 t.start_mileage,
                                 t.end_mileage,
@@ -212,6 +214,7 @@ public class TripDao {
                 SELECT
                     t.id,
                     t.starttime,
+                    t.endtime,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
@@ -323,6 +326,10 @@ public class TripDao {
 
         dto.setId(rs.getInt("id"));
         dto.setStartTime(rs.getTimestamp("starttime").toLocalDateTime());
+        Timestamp endTimeTimestamp = rs.getTimestamp("endtime");
+        if (endTimeTimestamp != null) {
+            dto.setEndTime(endTimeTimestamp.toLocalDateTime());
+        }
         dto.setStartMileage(rs.getInt("start_mileage"));
         dto.setEndMileage(rs.getInt("end_mileage"));
         dto.setDistance(rs.getInt("distance"));

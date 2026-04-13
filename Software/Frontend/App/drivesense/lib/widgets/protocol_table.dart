@@ -31,7 +31,17 @@ class _ProtocolTableState extends State<ProtocolTable> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        'Datum',
+                        'Startzeit',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Endzeit',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -103,6 +113,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
                 (trip) => TableRow(
                   children: [
                     _cell(_formatDate(trip.startTime)),
+                    _cell(trip.endTime != null ? _formatDate(trip.endTime!) : '-'),
                     _cell(trip.distanceKm.toStringAsFixed(2)),
                     _cell('-'), // du hast aktuell keinen km-stand im Model
                     _cell(trip.vehicleId.toString()),
