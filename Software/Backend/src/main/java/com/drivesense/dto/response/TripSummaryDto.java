@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class TripSummaryDto {
     private int id;
     private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private int startMileage;
     private int endMileage;
     private String accountFname;
@@ -52,6 +53,14 @@ public class TripSummaryDto {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public int getStartMileage() {
