@@ -6,12 +6,11 @@ import "../../styles/table.css"
 import { Button } from "../button"
 
 function TripsTable() {
-
     const navigate = useNavigate()
     const [trips, setTrips] = useState<TripSummary[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    
+
     useEffect(() => {
         setLoading(true)
         getAllTrips()
@@ -21,15 +20,13 @@ function TripsTable() {
     }, [])
 
     const handleDelete = (id: number) => {
-            deleteTrip(id)
-                .then(() => {
-                    setTrips(prev => prev.filter(t => t.id !== id))
-                })
-                .catch(err => setError(err.message))
-        }
+        deleteTrip(id)
+            .then(() => setTrips(prev => prev.filter(t => t.id !== id)))
+            .catch(err => setError(err.message))
+    }
 
     if (loading) return <p>Laden...</p>
-    if (error)   return <p>Fehler: {error}</p>
+    if (error) return <p>Fehler: {error}</p>
 
     return (
         <table className="ridesTable">
@@ -37,8 +34,8 @@ function TripsTable() {
             <thead>
                 <tr>
                     <th>Startzeit</th>
-                    <th>Endzeit</th>
-                    <th>User</th>
+                    <th>Fahrer</th>
+                    <th>Fahrzeug</th>
                     <th>Kennzeichen</th>
                     <th colSpan={2}>Kilometerstand</th>
                     <th>Distanz</th>
@@ -70,21 +67,21 @@ function TripsTable() {
                     >
 
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
-                        <td>{new Date(trip.endTime).toLocaleString()}</td>
                         <td>{trip.accountFname} {trip.accountLname}</td>
+                        <td>{trip.vehicleModel}</td>
                         <td>{trip.licensePlate}</td>
                         <td>{trip.startMileage} km</td>
                         <td>{trip.endMileage} km</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.roadSurfaceConditions}</td>
                         <td>
-                            {trip.furthestPoint && trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
+                            {trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
                                 ? `${trip.startPoint} - ${trip.furthestPoint} - ${trip.endPoint}`
                                 : `${trip.startPoint} - ${trip.endPoint}`}
                         </td>
                         <td>
-                            <Button label="Bearbeiten" stopPropagation={true}/>
-                            <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)}/>
+                            <Button label="Bearbeiten" stopPropagation={true} />
+                            <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)} />
                         </td>
 
                     </tr>
