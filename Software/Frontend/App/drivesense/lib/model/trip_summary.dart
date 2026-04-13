@@ -1,4 +1,3 @@
-import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 
 class TripSummary {
@@ -10,6 +9,8 @@ class TripSummary {
   final DateTime? endTime;
   final double distanceKm;
   final String roadSurfaceConditions;
+  final String? startPoint;
+  final String? endPoint;
   final String? type;
   bool isSynced;
 
@@ -22,12 +23,15 @@ class TripSummary {
     this.endTime,
     required this.distanceKm,
     required this.roadSurfaceConditions,
+    this.startPoint,
+    this.endPoint,
     required this.type,
     required this.isSynced,
   });
 
   Map<String, dynamic> toJson() {
     return {
+      "id": id,
       "profileId": profileId,
       "vehicleId": vehicleId,
       "protocolId": protocolId,
@@ -35,6 +39,8 @@ class TripSummary {
       "endTime": endTime?.toIso8601String(),
       "distance": distanceKm,
       "roadSurfaceConditions": roadSurfaceConditions,
+      "startPoint": startPoint,
+      "endPoint": endPoint,
       "type": type,
       "isSynced": isSynced,
     };
@@ -66,14 +72,25 @@ class TripSummary {
           : null,
       distanceKm: asDouble(json["distance"]),
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
+      startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
+      endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] == true,
     );
   }
 
   factory TripSummary.fromTrip(Trip trip) {
+    int mappedId = trip.id;
+    if (trip.localId.startsWith('server:')) {
+      final String remoteIdValue = trip.localId.substring('server:'.length);
+      final int? remoteId = int.tryParse(remoteIdValue);
+      if (remoteId != null && remoteId > 0) {
+        mappedId = remoteId;
+      }
+    }
+
     return TripSummary(
-      id: trip.id,
+      id: mappedId,
       profileId: trip.profileId,
       vehicleId: trip.vehicleId,
       protocolId: trip.protocolId,
@@ -81,6 +98,8 @@ class TripSummary {
       endTime: trip.endTime,
       distanceKm: trip.distanceKm,
       roadSurfaceConditions: trip.roadSurfaceConditions,
+      startPoint: null,
+      endPoint: null,
       type: trip.type,
       isSynced: trip.isSynced,
     );
@@ -89,7 +108,6 @@ class TripSummary {
   TripSummary copyWith({
     required DateTime endTime,
     required double distanceKm,
-    required List<Trackingpoint> trackingPoints,
   }) {
     return TripSummary(
       id: id,
@@ -100,6 +118,8 @@ class TripSummary {
       endTime: endTime,
       distanceKm: distanceKm,
       roadSurfaceConditions: roadSurfaceConditions,
+      startPoint: startPoint,
+      endPoint: endPoint,
       type: type,
       isSynced: isSynced,
     );

@@ -1,8 +1,8 @@
 import 'package:drivesense/model/trip_detailed.dart';
-import 'package:drivesense/services/isar_service.dart';
-import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/services/trip_sync_service.dart';
+import 'package:drivesense/services/protocol_service.dart';
+import 'package:drivesense/services/vehicle_service.dart';
 import 'package:drivesense/widgets/current_trip_card.dart';
 import 'package:drivesense/widgets/start_trip_card.dart';
 import 'package:drivesense/widgets/last_trip_card.dart';
@@ -84,6 +84,59 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   void _onStartTrip() {
+    unawaited(_onStartTripAsync());
+  }
+
+  Future<void> _onStartTripAsync() async {
+    final int? profileId = RuntimeStore.currentProfileId;
+    int vehicleId = RuntimeStore.getCurrentVehicleId();
+    int protocolId = RuntimeStore.getCurrentProtocolId();
+
+    if (profileId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Fahrt kann noch nicht gestartet werden. Profil fehlt.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final int? resolvedProtocolId = await ProtocolService
+      .resolveFirstAvailableProtocolId();
+    if (resolvedProtocolId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Fahrt kann nicht gestartet werden. Kein gueltiges Protokoll verfuegbar.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    protocolId = resolvedProtocolId;
+    RuntimeStore.setCurrentProtocolId(protocolId);
+
+    final int? resolvedVehicleId = await VehicleService
+        .resolveFirstAvailableVehicleId();
+    if (resolvedVehicleId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Fahrt kann nicht gestartet werden. Kein gueltiges Fahrzeug verfuegbar.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    vehicleId = resolvedVehicleId;
+    RuntimeStore.setCurrentVehicleId(vehicleId);
+
     setState(() {
       hasActiveTrip = true;
       tripStartTime = DateTime.now();
@@ -93,16 +146,16 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
 
     _activeTrip = TripSummary(
-      id: 5, // TODO
-      profileId: 1, // TODO
-      vehicleId: 1, // TODO
-      protocolId: 1,
+      id: DateTime.now().millisecondsSinceEpoch,
+      profileId: profileId,
+      vehicleId: vehicleId,
+      protocolId: protocolId,
       startTime: tripStartTime!,
-      endTime: tripEndTime, // = null
-      distanceKm: 0, // TODO
-      roadSurfaceConditions: 'Clear', // TODO
-      type: null, // TODO
-      isSynced: false, // TODO
+      endTime: null,
+      distanceKm: 0,
+      roadSurfaceConditions: '',
+      type: null,
+      isSynced: false,
     );
 
     _setupTrackingCallbacks();
@@ -167,7 +220,6 @@ class _HomePageBodyState extends State<HomePageBody> {
     final finishedTrip = _activeTrip!.copyWith(
       endTime: end,
       distanceKm: _totalDistanceMeters / 1000,
-      trackingPoints: List<Trackingpoint>.from(trackingPositions),
     );
 
     final finishedTripDetail = TripDetailed(

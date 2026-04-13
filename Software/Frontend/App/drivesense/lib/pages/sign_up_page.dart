@@ -1,8 +1,11 @@
 import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/model/account.dart';
+import 'package:drivesense/model/profile.dart';
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/profile_service.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/services/sign_in_and_sign_up.dart';
-import 'package:drivesense/model/account.dart';
 
 class SignUpPage extends StatefulWidget {
   final bool? token;
@@ -15,19 +18,20 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
-
-  final ValueNotifier<bool> passwordNotifier = ValueNotifier(true);
-  final ValueNotifier<bool> fieldValidNotifier = ValueNotifier(false);
-
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  DateTime? selectedDate;
-  String? firstName;
-  String? lastName;
-  String? email;
-  String? password;
-
-  final dateController = TextEditingController();
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,50 +44,26 @@ class _SignUpPageState extends State<SignUpPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextFormField(
-              onChanged: (value) => firstName = value,
-              keyboardType: TextInputType.text,
+              controller: _firstNameController,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Vorname',
-                hintText: 'Max',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
-              onChanged: (value) => lastName = value,
-              keyboardType: TextInputType.text,
+              controller: _lastNameController,
+              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Nachname',
-                hintText: 'Mustermann',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Geburtsdatum (optional)',
-                hintText: 'TT.MM.JJJJ',
-                helperText: 'Kann leer bleiben',
-                border: const OutlineInputBorder(),
-                suffixIcon: dateController.text.isNotEmpty
-                    ? IconButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedDate = null;
-                            dateController.clear();
-                          });
-                        },
-                        icon: const Icon(Icons.clear),
-                      )
-                    : null,
-              ),
-              readOnly: true,
-              controller: dateController,
-              onTap: () => pickDate(context),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              onChanged: (value) => email = value,
+              controller: _emailController,
+              textInputAction: TextInputAction.next,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: 'E-Mail Adresse',
@@ -93,7 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             const SizedBox(height: 12),
             TextFormField(
-              onChanged: (value) => password = value,
+              controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Passwort',
@@ -130,7 +110,7 @@ class _SignUpPageState extends State<SignUpPage> {
               onPressed: () => {
                 Navigator.pushReplacementNamed(context, 'SignInPage'),
               },
-              child: Text('Anmelden'),
+              child: const Text('Anmelden'),
             ),
           ],
         ),
@@ -138,87 +118,97 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Future<void> pickDate(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? now,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-      locale: const Locale('de', 'DE'),
-    );
-
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-        dateController.text =
-            "${picked.day.toString().padLeft(2, '0')}."
-            "${picked.month.toString().padLeft(2, '0')}."
-            "${picked.year}";
-      });
-    }
-  }
-
   Future<void> _submitSignUp() async {
-    final String firstNameValue = firstName?.trim() ?? '';
-    final String lastNameValue = lastName?.trim() ?? '';
-    final String emailValue = email?.trim() ?? '';
-    final String passwordValue = password ?? '';
+    final String firstName = _firstNameController.text.trim();
+    final String lastName = _lastNameController.text.trim();
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
 
-    if (firstNameValue.isEmpty || lastNameValue.isEmpty || emailValue.isEmpty || passwordValue.isEmpty) {
+    if (firstName.isEmpty ||
+        lastName.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte füllen Sie alle Felder aus.')),
+        const SnackBar(content: Text('Bitte alle Felder ausfuellen.')),
       );
       return;
     }
-
-    if (passwordValue.length < 8 || !RegExp(r'[A-Z]').hasMatch(passwordValue) || !RegExp(r'[0-9]').hasMatch(passwordValue)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Das Passwort muss mindestens 8 Zeichen lang sein und mindestens einen Großbuchstaben und eine Zahl enthalten.')),
-      );
-      return;
-    }
-
-    final Account account = Account(
-      fName: firstNameValue,
-      lName: lastNameValue,
-      email: emailValue,
-      password: passwordValue,
-      birthdate: selectedDate,
-    );
-
-    debugPrint('Signup pressed: firstName=$firstNameValue, lastName=$lastNameValue, email=$emailValue, birthDate=$selectedDate');
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final SignUpResult result = await SignInAndSignUp.signUp(account);
-      debugPrint('Signup result: success=${result.isSuccess}, status=${result.statusCode}, message=${result.message}, token=${result.token != null ? 'present' : 'null'}');
+      final Account account = Account(
+        fName: firstName,
+        lName: lastName,
+        email: email,
+        password: password,
+      );
+
+      final SignUpResult signUpResult = await SignInAndSignUp.signUp(account);
+      if (!signUpResult.isSuccess) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(signUpResult.message)));
+        return;
+      }
+
+      final SignInResult signInResult = await SignInAndSignUp.signIn(
+        email,
+        password,
+      );
+      if (!signInResult.isSuccess ||
+          signInResult.accountToken == null ||
+          signInResult.accountToken!.isEmpty) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Registrierung erfolgreich, aber automatischer Login fehlgeschlagen.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      RuntimeStore.setAuthToken(signInResult.accountToken!);
+      if (signInResult.refreshToken != null &&
+          signInResult.refreshToken!.isNotEmpty) {
+        RuntimeStore.setRefreshToken(signInResult.refreshToken!);
+      }
+
+      final List<Profile> profiles = signInResult.profiles;
+      final SelectProfileResponse profileResult = profiles.isNotEmpty
+          ? await ProfileService.selectProfile(profiles.first.id)
+          : await ProfileService.ensureDefaultStudentProfile();
+      if (!profileResult.isSuccess) {
+        if (!mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(profileResult.message)));
+        return;
+      }
 
       if (!mounted) {
         return;
       }
 
+      Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
+        SnackBar(content: Text('Fehler bei der Registrierung: $e')),
       );
-
-      if (result.isSuccess) {
-        if (result.token != null && result.token!.isNotEmpty) {
-          Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
-        } else {
-          Navigator.pushNamedAndRemoveUntil(context, 'SignInPage', (route) => false);
-        }
-      }
-    } catch (e, st) {
-      debugPrint('Signup exception: $e\n$st');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler beim Registrieren: $e')),
-        );
-      }
     } finally {
       if (mounted) {
         setState(() {

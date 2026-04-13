@@ -105,4 +105,8 @@ class TripSyncService {
       failed: failed,
     );
   }
+
+  Future<void> clearLocalTrips() async {
+    await isarTripRepository.deleteAll();
+  }
 }

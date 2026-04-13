@@ -6,12 +6,11 @@ import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/constants/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await IsarService.getInstance();
-  String? token = ""; // TODO: get token from secure storage
+  String token = ""; // TODO: get token from secure storage
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -31,15 +30,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DriveSense',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('de', 'DE'),
-        Locale('en', 'US'),
-      ],
       theme: ThemeData(
         // This is the theme of your application.
         //

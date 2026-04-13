@@ -107,7 +107,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
                     _cell('-'), // du hast aktuell keinen km-stand im Model
                     _cell(trip.vehicleId.toString()),
                     _cell(_formatTimeOfDay(trip.startTime)),
-                    _cell(trip.type ?? '-'),
+                    _cell(_formatRoute(trip)),
                     _cell(trip.roadSurfaceConditions),
                   ],
                 ),
@@ -138,5 +138,21 @@ class _ProtocolTableState extends State<ProtocolTable> {
     if (hour < 12) return 'Vormittag';
     if (hour < 18) return 'Nachmittag';
     return 'Abend';
+  }
+
+  String _formatRoute(TripSummary trip) {
+    final String start = (trip.startPoint ?? '').trim();
+    final String end = (trip.endPoint ?? '').trim();
+
+    if (start.isNotEmpty && end.isNotEmpty) {
+      return '$start -> $end';
+    }
+    if (start.isNotEmpty) {
+      return start;
+    }
+    if (end.isNotEmpty) {
+      return end;
+    }
+    return trip.type ?? '-';
   }
 }
