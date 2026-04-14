@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @page { size: A4 portrait; margin: 16mm 14mm 14mm 14mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #1a1a2e; }
+
+  .header { background: #1A3C6E; padding: 10px 14px; display: table; width: 100%; }
+  .header .left  { display: table-cell; vertical-align: middle; width: 50%; }
+  .header .right { display: table-cell; vertical-align: middle; text-align: right; }
+  .brand         { color: white; font-size: 15pt; font-weight: bold; }
+  .proto-name    { color: white; font-size: 12pt; font-weight: bold; }
+  .proto-sub     { color: #BBCDE8; font-size: 7.5pt; }
+  .user-info     { color: #BBCDE8; font-size: 7pt; margin-top: 2px; }
+  .accent        { height: 3px; background: #2E7DCC; margin-bottom: 8px; }
+
+  .summary { display: table; width: 100%; border-collapse: separate; border-spacing: 6px; margin-bottom: 10px; }
+  .sum-cell { display: table-cell; width: 50%; border: 1px solid #2E7DCC; border-radius: 4px; padding: 7px; text-align: center; }}
+  .sum-val  { font-size: 13pt; font-weight: bold; color: #1A3C6E; }
+  .sum-lbl  { font-size: 7pt; color: #6878A0; }
+
+  .section-title { font-size: 9pt; font-weight: bold; color: #1A3C6E; margin-bottom: 4px; border-bottom: 2px solid #2E7DCC; padding-bottom: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  thead th { background: #1A3C6E; color: white; padding: 5px 6px; text-align: center; border: 1px solid #2E7DCC; font-weight: bold; }
+  tbody tr:nth-child(odd)  td { background: #ffffff; }
+  tbody tr:nth-child(even) td { background: #F0F5FF; }
+  tbody td { padding: 5px 6px; border: 1px solid #C0CFDF; text-align: center; }
+  tbody td.left { text-align: left; }
+
+  .footer { display: table; width: 100%; border-top: 1px solid #2E7DCC; padding-top: 4px; margin-top: 8px; font-size: 7pt; color: #9AAAC0; }
+  .footer .left   { display: table-cell; text-align: left; }
+  .footer .center { display: table-cell; text-align: center; }
+  .footer .right  { display: table-cell; text-align: right; }
+  .footer strong  { color: #1A3C6E; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="left">
+    <img src="logo.png" alt="Drivesense Logo" style="height: 24pt; vertical-align: middle;"/>
+    <span class="brand">DRIVESENSE</span>
+    <div class="proto-name" th:text="${protocol.name}"></div>
+    <div class="proto-sub" th:text="${isGroup ? 'Gruppenprotokoll' : 'Einzelprotokoll'} + ' · BERUFSFAHRER'"></div>
+  </div>
+  <div class="right">
+    <div class="proto-sub" th:text="${account.fName + ' ' + account.lName}"></div>
+    <div class="user-info" th:text="'geb. ' + ${#temporals.format(account.birthdate, 'dd.MM.yyyy')}"></div>
+  </div>
+</div>
+<div class="accent"></div>
+
+<div class="summary">
+  <div class="sum-cell">
+    <div class="sum-val" th:text="${totalKm + ' km'}"></div>
+    <div class="sum-lbl">Gesamtstrecke</div>
+  </div>
+  <div class="sum-cell">
+    <div class="sum-val" th:text="${trips.size()}"></div>
+    <div class="sum-lbl">Fahrten</div>
+  </div>
+
+</div>
+
+<div class="section-title">Fahrtenübersicht</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Datum</th>
+      <th>Tageszeit</th>
+      <th>Start</th>
+      <th>Ziel</th>
+      <th>km-Start</th>
+      <th>km-Ende</th>
+      <th>KFZ-Kennzeichen</th>
+      <th>Distanz</th>
+      <th>Typ / Zweck</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="trip : ${trips}">
+      <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
+      <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
+      <td class="left" th:text="${trip.startPoint}"></td>
+      <td class="left" th:text="${trip.endPoint}"></td>
+      <td th:text="${trip.startMileage}"></td>
+      <td th:text="${trip.endMileage}"></td>
+      <td th:text="${trip.licenseplate}"></td>
+      <td th:text="${trip.distance + ' km'}"></td>
+      <td th:text="${trip.type}"></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <div class="left">drivesense.app</div>
+  <div class="center">Erstellt am: <strong th:text="${#temporals.format(protocol.created_at, 'dd.MM.yyyy HH:mm')}"></strong></div>
+  <div class="right">Seite <strong>1</strong></div>
+</div>
+
+</body>
+</html>
