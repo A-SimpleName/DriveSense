@@ -7,43 +7,36 @@ import { useEffect, useState } from "react";
 import type { Tripdetailed, TripSummary } from "../model/trip";
 
 function Dashboard() {
-    const [trips, setTrips] = useState<TripSummary[]>([])
-    const [lastTripDetailed, setLastTripDetailed] = useState<Tripdetailed | null>(null)
-    const [totalKm, setTotalKm] = useState<string>("0 km")
+    const [trips, setTrips] = useState<TripSummary[]>([]);
+    const [lastTripDetailed, setLastTripDetailed] = useState<Tripdetailed | null>(null);
+    const [totalKm, setTotalKm] = useState<string>("0 km");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-
-    // Trips laden
     useEffect(() => {
-        setLoading(true)
-
+        setLoading(true);
         getAllTrips()
             .then(data => setTrips(data))
-            .catch(err => setError(err?.message || "Fehler beim Laden der Trips"))
-            .finally(() => setLoading(false))
-    }, [])
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false));
+    }, []);
 
-    // Gesamt-KM laden
     useEffect(() => {
         getTotalKm()
             .then(km => setTotalKm(`${km} km`))
-            .catch(err => setError(err?.message || "Fehler beim Laden der gesamt Kilometer"))
-    }, [])
+            .catch(err => setError(err.message));
+    }, []);
 
-    // Letzte Fahrt im Detail laden
     useEffect(() => {
-        if (trips.length === 0) return
-
-        const lastTrip = trips[trips.length - 1]
-
+        if (trips.length === 0) return;
+        const lastTrip = trips[trips.length - 1];
         getTripById(lastTrip.id)
             .then(data => setLastTripDetailed(data))
-            .catch(err => setError(err?.message || "Fehler beim Laden der Fahrtdetails"))
-    }, [trips])
+            .catch(err => setError(err.message));
+    }, [trips]);
 
-    if (loading) return <p>Laden...</p>
-    if (error) return <p>Fehler: {error}</p>
+    if (loading) return <p>Laden...</p>;
+    if (error) return <p>Fehler: {error}</p>;
 
     const lastTripText =
     trips.length > 0
@@ -53,10 +46,10 @@ function Dashboard() {
         : "Keine Fahrten";
 
     const route =
-    lastTripDetailed?.trackingPoints?.map(p => ({
-        lat: p.lat,
-        lng: p.lng
-    })) ?? []
+        lastTripDetailed?.trackingpoints?.map(p => ({
+            lat: p.lat,
+            lng: p.lng
+        })) ?? [];
 
     return (
         <div>
@@ -74,13 +67,11 @@ function Dashboard() {
                 </Link>
             </article>
 
-            {}
             {route.length > 0 && (
                 <MapView route={route} />
             )}
         </div>
-    )
+    );
 }
-
 
 export default Dashboard;

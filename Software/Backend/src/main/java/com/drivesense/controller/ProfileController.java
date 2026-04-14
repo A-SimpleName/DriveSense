@@ -47,6 +47,7 @@ public class ProfileController {
         return ResponseEntity.status(201).body(profileService.insert(profile));
     }
 
+
     @PutMapping("/{id}")
     public ResponseEntity<Profile> update(@PathVariable int id,
                                           @Valid @RequestBody Profile profile,

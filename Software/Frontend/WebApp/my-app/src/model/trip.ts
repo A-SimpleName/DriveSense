@@ -9,6 +9,7 @@ export interface TripSummary {
     endMileage: number;
     accountFname: string;
     accountLname: string;
+    vehicleModel: string;
     licensePlate: string;
     roadSurfaceConditions: string;
     type?: string | null;
@@ -16,7 +17,8 @@ export interface TripSummary {
     furthestPoint?: string | null;
     endPoint: string;
 }
+
 export interface Tripdetailed {
     tripSummary: TripSummary;
-    trackingPoints: Trackingpoint[];
+    trackingpoints: Trackingpoint[];
 }
