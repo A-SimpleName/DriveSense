@@ -26,8 +26,8 @@ export function VehicleAddForm({ onClose, onSuccess }: Props) {
 
         try {
             await createVehicle({ model, licensePlate, mileage });
-            onSuccess(); // Tabelle neu laden
-            onClose();   // Form schließen
+            onSuccess(); 
+            onClose(); 
         } catch (err: any) {
             setError(err?.message || "Fehler beim Erstellen");
         } finally {

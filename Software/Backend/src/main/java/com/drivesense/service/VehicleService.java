@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.ProfileDao;
 import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.exceptions.NotFoundException;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Profile;
@@ -41,7 +42,7 @@ public class VehicleService {
     public Vehicle saveVehicle(Vehicle vehicle) {
         Vehicle saved = vehicleDao.insert(vehicle);
         if (saved == null) {
-            throw new RuntimeException("Fehler beim Speichern des Fahrzeugs");
+            throw new DatabaseException("Fehler beim Speichern des Fahrzeugs", null);
         }
         return saved;
     }
