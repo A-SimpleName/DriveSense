@@ -22,27 +22,29 @@ public class JwtFilter extends OncePerRequestFilter {
     private JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain)
-            throws ServletException, IOException {
-
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // Public Routes
-        if (path.contains("/login") || path.contains("/signUp") || path.contains("/refresh")) {
-            chain.doFilter(request, response);
-            return;
-        }
+        return path.startsWith("/api/account/login")
+                || path.startsWith("/api/account/signUp")
+                || path.startsWith("/api/account/refresh")
+                || path.startsWith("/api/account/logout");
+    }
 
-        // Tokens lesen
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain
+    ) throws ServletException, IOException {
+
         String profileToken = getCookie(request, "profileToken");
         String accountToken = getCookie(request, "accountToken");
 
         String token = null;
         boolean isProfile = false;
 
-        // Priorität: PROFILE > ACCOUNT
+        // PRIORITY: profile > account
         if (profileToken != null && jwtService.isValid(profileToken)) {
             token = profileToken;
             isProfile = true;
@@ -50,24 +52,24 @@ public class JwtFilter extends OncePerRequestFilter {
             token = accountToken;
         }
 
-        // Kein gültiger Token
+        // ❌ NO TOKEN → unauthorized
         if (token == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Kein Token vorhanden");
             return;
         }
 
-        // Account ID IMMER setzen
+        // extract account
         int accountId = jwtService.extractAccountId(token);
         request.setAttribute("accountId", accountId);
 
-        // Profil nur wenn Profile Token
+        // profile only if profile token
         if (isProfile) {
             request.setAttribute("profileId", jwtService.extractProfileId(token));
             request.setAttribute("role", jwtService.extractRole(token));
         }
 
-        // SecurityContext setzen
+        // security context
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                         accountId,
@@ -81,11 +83,11 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String getCookie(HttpServletRequest request, String name) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals(name)) {
-                    return cookie.getValue();
-                }
+        if (request.getCookies() == null) return null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
             }
         }
         return null;

@@ -49,12 +49,12 @@ public class Vehicle {
         this.model = model;
     }
 
-    public String getLicenseplate() {
+    public String getLicensePlate() {
         return licensePlate;
     }
 
-    public void setLicenseplate(String licenseplate) {
-        this.licensePlate = licenseplate;
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
     }
 
     public int getMileage() {
