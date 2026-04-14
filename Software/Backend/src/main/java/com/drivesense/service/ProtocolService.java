@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.exceptions.*;
+import com.drivesense.model.Profile;
 import com.drivesense.model.Protocol;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.dto.response.ProtocolDto;
@@ -18,6 +19,8 @@ public class ProtocolService {
 
     @Autowired
     private TripDao tripDao;
+    @Autowired
+    private ProfileService profileService;
 
     public Protocol insert(Protocol protocol) {
         Protocol inserted = protocolDao.insert(protocol);
@@ -33,6 +36,12 @@ public class ProtocolService {
             throw new NotFoundException("Protokoll nicht gefunden");
         }
         return protocol;
+    }
+
+    public String getProtocolRole (int id) {
+        Protocol protocol = getById(id);
+        Profile profile = profileService.getById(protocol.getCreatedByProfileId());
+        return profile.getRole();
     }
 
     public List<Protocol> getByGroup(int usergroupId) {
