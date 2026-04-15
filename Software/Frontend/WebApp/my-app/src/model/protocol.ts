@@ -1,5 +1,10 @@
+import type { TripSummary } from "./trip";
+
 export interface Protocol {
     id: number;
-    tracking_id: number;
-    road_surface_conditions: string;
+    created_by_profile_id: number;
+    usergroup_id: number;
+    created_at: string;
+    name: string;
+    trips: TripSummary[];
 }
