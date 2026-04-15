@@ -33,6 +33,7 @@ function TripsTable() {
             <thead>
                 <tr>
                     <th>Startzeit</th>
+                    <th>Endzeit</th>
                     <th>Fahrer</th>
                     <th>Fahrzeug</th>
                     <th>Kennzeichen</th>
@@ -43,6 +44,7 @@ function TripsTable() {
                     <th>Aktionen</th>
                 </tr>
                 <tr>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -63,6 +65,7 @@ function TripsTable() {
                         style={{ cursor: "pointer" }}
                     >
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
+                        <td>{new Date(trip.endTime).toLocaleString()}</td>
                         <td>{trip.accountFname} {trip.accountLname}</td>
                         <td>{trip.vehicleModel}</td>
                         <td>{trip.licensePlate}</td>
