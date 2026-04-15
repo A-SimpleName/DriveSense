@@ -33,6 +33,11 @@ public class UsergroupController {
         return ResponseEntity.ok(usergroupService.getGroupsByProfile(profileId));
     }
 
+    @GetMapping("/{groupId}")
+    public ResponseEntity<UserGroup> getGroupById(@PathVariable int id) {
+        return ResponseEntity.ok(usergroupService.getUserGroupById(id));
+    }
+
     // GET /api/groups/1/members?requesterId=1
     @GetMapping("/{groupId}/members")
     public ResponseEntity<List<GroupMemberResponse>> getMembers(

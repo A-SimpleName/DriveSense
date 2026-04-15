@@ -4,6 +4,7 @@ package com.drivesense.service;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.dto.response.TripSummaryDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -18,9 +19,12 @@ import java.util.List;
 public class PdfExportService {
 
     private final TemplateEngine templateEngine;
+    private final UsergroupService userGroupService;
 
-    public PdfExportService(TemplateEngine templateEngine) {
+    @Autowired
+    public PdfExportService(TemplateEngine templateEngine,UsergroupService usergroupService) {
         this.templateEngine = templateEngine;
+        this.userGroupService = usergroupService;
     }
 
     public byte[] generateProtocolPdf(ProtocolDto protocol, AccountResponse account,
@@ -38,6 +42,11 @@ public class PdfExportService {
 
         int totalKm = trips.stream().mapToInt(TripSummaryDto::getDistance).sum();
         ctx.setVariable("totalKm", totalKm);
+
+        if (isGroup) {
+            String groupName = userGroupService.getUserGroupById(protocol.getUsergroup_id()).getName();
+            ctx.setVariable("groupName", groupName);
+        }
 
         // Fahrschüler: always show at least 12 rows like the paper form
         if ("FAHRSCHÜLER".equalsIgnoreCase(role)) {

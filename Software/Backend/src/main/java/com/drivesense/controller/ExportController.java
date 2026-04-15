@@ -37,8 +37,8 @@ public class ExportController {
      * Einzelprotokoll – Fahrten die der User alleine aufgezeichnet hat.
      * GET /api/export/single/{protocolId}?profileId=1
      */
-    @GetMapping("/single/{protocolId}")
-    public ResponseEntity<byte[]> exportSingle(
+    @GetMapping("{protocolId}")
+    public ResponseEntity<byte[]> exportPdf(
             @PathVariable int protocolId,
             HttpServletRequest request) throws Exception {
 
@@ -46,31 +46,20 @@ public class ExportController {
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
         Profile profile      = profileService.getById(profileId);
         AccountResponse account      = accountService.getById(profile.getAccount_id());
+        boolean isGroup = false;
+
+        if (protocol.getUsergroup_id() > 0) {
+            isGroup = true;
+        }
 
         byte[] pdf = pdfExportService.generateProtocolPdf(
-                protocol, account, profile.getRole(), false);
+                protocol, account, profile.getRole(), isGroup);
 
-        return buildResponse(pdf, "einzelprotokoll_" + protocolId + ".pdf");
-    }
+        String filename = isGroup
+                ? "gruppenprotokoll_" + protocolId + ".pdf"
+                : "einzelprotokoll_"  + protocolId + ".pdf";
 
-    /**
-     * Gruppenprotokoll – Fahrten die in einer Gruppe aufgezeichnet wurden.
-     * GET /api/export/group/{protocolId}?profileId=1
-     */
-    @GetMapping("/group/{protocolId}")
-    public ResponseEntity<byte[]> exportGroup(
-            @PathVariable int protocolId,
-            HttpServletRequest request) throws Exception {
-
-        int profileId = (int) request.getAttribute("profileId");
-        ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        Profile profile      = profileService.getById(profileId);
-        AccountResponse account      = accountService.getById(profile.getAccount_id());
-
-        byte[] pdf = pdfExportService.generateProtocolPdf(
-                protocol, account, profile.getRole(), true);
-
-        return buildResponse(pdf, "gruppenprotokoll_" + protocolId + ".pdf");
+        return buildResponse(pdf, filename + protocolId + ".pdf");
     }
 
     private ResponseEntity<byte[]> buildResponse(byte[] pdf, String filename) {
