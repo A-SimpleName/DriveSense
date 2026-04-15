@@ -16,6 +16,7 @@ function Topbar({ setUser }: TopbarProps) {
             <Link to="/"><img src={Logo} alt="Logo" className="logo" width={200}/></Link>
             <Link to="/trips" className='rides'>Fahrten</Link>
             <Link to="/vehicles">Fahrzeuge</Link>
+            <Link to="/protocols">Protokolle</Link>
             <Link to="/settings"><img src={Einstellungen} alt="Settings" width={30} height={30}/></Link>
             <button onClick={async () => {
                 await logout();
