@@ -152,6 +152,10 @@ public class UsergroupService {
         userGroupDao.update(group);
     }
 
+    public UserGroup getUserGroupById (int id) {
+        return userGroupDao.getById(id);
+    }
+
     private boolean isOwnerOrAdmin(int groupId, int profileId, String profileRole) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;

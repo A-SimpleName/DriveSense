@@ -43,10 +43,10 @@
   <div class="left">
     <img src="logo.png" alt="Drivesense Logo" style="height: 24pt; vertical-align: middle;"/>
     <span class="brand">DRIVESENSE</span>
-    <div class="proto-name" th:text="${protocol.name}"></div>
+    <div class="proto-name" th:text="${isGroup ? groupName : protocol.name}"></div>
     <div class="proto-sub" th:text="${isGroup ? 'Gruppenprotokoll' : 'Einzelprotokoll'} + ' · PRIVAT'"></div>
   </div>
-  <div class="right">
+  <div class="right" th:if="${!isGroup}">
     <div class="proto-sub" th:text="${account.fName + ' ' + account.lName}"></div>
     <div class="user-info" th:text="'geb. ' + ${#temporals.format(account.birthdate, 'dd.MM.yyyy')}"></div>
   </div>
@@ -68,26 +68,46 @@
 
 <table>
   <thead>
-    <tr>
-      <th>Datum</th>
-      <th>Start</th>
-      <th>Ziel</th>
-      <th>km-Start</th>
-      <th>km-Ende</th>
-      <th>KFZ-Kennzeichen</th>
-      <th>Distanz</th>
-    </tr>
+  <tr th:if="${!isGroup}">
+    <th>Datum</th>
+    <th>Start</th>
+    <th>Ziel</th>
+    <th>km-Start</th>
+    <th>km-Ende</th>
+    <th>Strecke</th>
+    <th>KFZ Kennzeichen</th>
+  </tr>
+  <tr th:if="${isGroup}">
+    <th>Fahrer</th>
+    <th>Datum</th>
+    <th>Start</th>
+    <th>Ziel</th>
+    <th>km-Start</th>
+    <th>km-Ende</th>
+    <th>Strecke</th>
+    <th>KFZ Kennzeichen</th>
+  </tr>
   </thead>
   <tbody>
-    <tr th:each="trip : ${trips}">
-      <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-      <td class="left" th:text="${trip.startPoint}"></td>
-      <td class="left" th:text="${trip.endPoint}"></td>
-      <td th:text="${trip.startMileage}"></td>
-      <td th:text="${trip.endMileage}"></td>
-      <td th:text="${trip.licenseplate}"></td>
-      <td th:text="${trip.distance + ' km'}"></td>
-    </tr>
+  <tr th:if="${!isGroup}" th:each="trip : ${trips}">
+    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td class="left" th:text="${trip.startPoint}"></td>
+    <td class="left" th:text="${trip.endPoint}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${trip.distance + ' km'}"></td>
+    <td th:text="${trip.licenseplate}"></td>
+  </tr>
+  <tr th:if="${isGroup}" th:each="trip : ${trips}">
+    <td class="left" th:text="${trip.accountFname + ' ' + trip.accountLname}"></td>
+    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td class="left" th:text="${trip.startPoint}"></td>
+    <td class="left" th:text="${trip.endPoint}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${trip.distance + ' km'}"></td>
+    <td th:text="${trip.licenseplate}"></td>
+  </tr>
   </tbody>
 </table>
 
