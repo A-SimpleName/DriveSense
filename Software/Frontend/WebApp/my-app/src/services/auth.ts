@@ -38,7 +38,7 @@ export async function logout() {
 }
 
 export async function logoutProfile() {
-    await fetch("http://localhost:8080/api/account/logout-profile", {
+    await fetch("http://localhost:8080/api/profiles/logout", {
         method: "POST",
         credentials: "include"
     });

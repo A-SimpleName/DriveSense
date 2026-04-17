@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { logout } from "../services/auth";
+import { logout, logoutProfile } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 import "../styles/usermeu.css";
 
@@ -14,6 +14,11 @@ function UserMenu({ setAccount, account }: UserMenuProps) {
     
     const initials =
         account?.fname?.[0]?.toUpperCase() + account?.lname?.[0]?.toUpperCase();
+
+    const handleSwitch = async () => {
+        await logoutProfile();  
+        navigate("/");      
+    };
 
     return (
         // man kan irgendiwe kein button in table deswegen vllt keinen oder nur teilweise oder ein link tag
@@ -32,24 +37,24 @@ function UserMenu({ setAccount, account }: UserMenuProps) {
                     <table>
                         <tbody>
                             <tr>
-                                <td>{account.fname} {account.lname}</td>
+                                <td>{account?.fname} {account?.lname}</td>
                             </tr>
                             <tr>
-                                <td>{account.email}</td>
+                                <td>{account?.email}</td>
                             </tr>
                         </tbody>
                     </table>
                     <div className="user-info">
-                        <div>{account.fname} {account.lname}</div>
-                        <div>{account.email}</div>
+                        <div>{account?.fname} {account?.lname}</div>
+                        <div>{account?.email}</div>
                     </div>
 
                     <button onClick={() => navigate("/profile")}>
                         Mein Profil
                     </button>
 
-                    <button onClick={() => navigate("/account")}>
-                        Account Einstellungen
+                    <button onClick={() => navigate("/settings")}>
+                        Einstellungen
                     </button>
 
                     <button
@@ -61,6 +66,7 @@ function UserMenu({ setAccount, account }: UserMenuProps) {
                     >
                         Logout
                     </button>
+                    <button onClick={handleSwitch}>Benutzer wechseln</button>
                 </div>
             )}
         </div>
