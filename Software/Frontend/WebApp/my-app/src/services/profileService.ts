@@ -1,6 +1,10 @@
 import http from "../api/httpService";
 import type { Profile } from "../model/profile";
 
+export const getCurrentProfile = async (): Promise<Profile> => {
+  return await http.get<Profile>("/profiles/me")
+};
+
 export const getProfilesByAccount = async (): Promise<Profile[]> => {
   return await http.get<Profile[]>("/profiles/byAccount");
 };

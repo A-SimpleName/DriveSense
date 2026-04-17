@@ -140,6 +140,20 @@ public class AccountController {
 
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/logout-profile")
+    public ResponseEntity<Void> logoutProfile(HttpServletResponse response) {
+        Cookie profileCookie = new Cookie("profileToken", "");
+        profileCookie.setMaxAge(0);
+        profileCookie.setPath("/");
+        response.addCookie(profileCookie);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AccountResponse> getCurrentAccount(HttpServletRequest request) {
+        int accountId = (int) request.getAttribute("accountId");
+        return ResponseEntity.ok(accountService.getById(accountId));
+    }
 
     @GetMapping
     public ResponseEntity<AccountResponse> getById(HttpServletRequest request) {
