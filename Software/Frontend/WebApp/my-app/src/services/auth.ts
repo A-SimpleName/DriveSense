@@ -37,6 +37,13 @@ export async function logout() {
   });
 }
 
+export async function logoutProfile() {
+    await fetch("http://localhost:8080/api/account/logout-profile", {
+        method: "POST",
+        credentials: "include"
+    });
+}
+
 export async function checkAuth() {
   const res = await apiFetch("http://localhost:8080/api/account");
   return res.ok;

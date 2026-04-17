@@ -23,9 +23,10 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Profile> getById(@PathVariable int id) {
-        return ResponseEntity.ok(profileService.getById(id));
+    @GetMapping("/me")
+    public ResponseEntity<Profile> getById(HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.ok(profileService.getById(profileId));
     }
 
     @GetMapping("/byAccount")
