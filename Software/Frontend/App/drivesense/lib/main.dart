@@ -7,9 +7,11 @@ import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/constants/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await IsarService.getInstance();
   String token = ""; // TODO: get token from secure storage
 
