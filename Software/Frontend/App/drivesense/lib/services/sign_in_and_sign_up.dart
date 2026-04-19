@@ -208,7 +208,7 @@ class SignInAndSignUp {
         .toList();
   }
 
-  static String redirectToHome({String? token}) {
-    return token == null || token.isEmpty ? 'SignInPage' : 'MainPage';
+  static String redirectToProfileSelectPage({String? token}) {
+    return token == null || token.isEmpty ? 'SignInPage' : 'ProfileSelectPage';
   }
 }

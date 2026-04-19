@@ -1,10 +1,10 @@
 class Profile {
   final int id;
-  final String? name;
+  final String name;
   final String? role;
   final int? accountId;
 
-  const Profile({required this.id, this.name, this.role, this.accountId});
+  const Profile({required this.id, required this.name, this.role, this.accountId});
 
   factory Profile.fromJson(Map<String, dynamic> json) {
     int asInt(dynamic value) {
@@ -27,7 +27,7 @@ class Profile {
 
     return Profile(
       id: asInt(json['id']),
-      name: asString(json['name']),
+      name: asString(json['name'])!,
       role: asString(json['role']),
       accountId: asInt(json['account_id'] ?? json['accountId']),
     );

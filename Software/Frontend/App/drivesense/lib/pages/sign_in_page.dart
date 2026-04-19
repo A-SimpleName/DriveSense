@@ -1,9 +1,7 @@
 import 'package:drivesense/constants/app_colors.dart';
-import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/services/profile_service.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
 
 class SignInPage extends StatefulWidget {
@@ -133,28 +131,12 @@ class _SignInPageState extends State<SignInPage> {
           RuntimeStore.setRefreshToken(result.refreshToken!);
         }
 
-        final List<Profile> profiles = result.profiles;
-        final SelectProfileResponse profileSelectResult = profiles.isNotEmpty
-            ? await ProfileService.selectProfile(profiles.first.id)
-            : await ProfileService.ensureDefaultStudentProfile();
-        debugPrint(
-          'Auto profile select result: success=${profileSelectResult.isSuccess}, message=${profileSelectResult.message}',
-        );
-
-        if (!profileSelectResult.isSuccess) {
-          if (!mounted) {
-            return;
-          }
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(profileSelectResult.message)));
-          return;
-        }
-
         Navigator.pushNamedAndRemoveUntil(
           context,
-          'MainPage',
-          (route) => false,
+          SignInAndSignUp.redirectToProfileSelectPage(
+            token: result.accountToken,
+          ),
+          (route) => false
         );
       }
     } catch (e) {

@@ -1,3 +1,4 @@
+import 'package:drivesense/pages/profile_select_page.dart';
 import 'package:drivesense/pages/sign_in_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
@@ -48,11 +49,12 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      initialRoute: SignInAndSignUp.redirectToHome(token: token),
+      initialRoute: SignInAndSignUp.redirectToProfileSelectPage(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
         'SignInPage': (context) => const SignInPage(),
         'SignUpPage': (context) => const SignUpPage(),
+        'ProfileSelectPage': (context) => const ProfileSelectPage(),
       },
     );
   }

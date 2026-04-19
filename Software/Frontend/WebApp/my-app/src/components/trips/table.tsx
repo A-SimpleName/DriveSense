@@ -67,15 +67,15 @@ function TripsTable() {
                     >
 
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
+                        <td>{new Date(trip.endTime).toLocaleString()}</td>
                         <td>{trip.accountFname} {trip.accountLname}</td>
-                        <td>{trip.vehicleModel}</td>
                         <td>{trip.licensePlate}</td>
                         <td>{trip.startMileage} km</td>
                         <td>{trip.endMileage} km</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.roadSurfaceConditions}</td>
                         <td>
-                            {trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
+                            {trip.furthestPoint && trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
                                 ? `${trip.startPoint} - ${trip.furthestPoint} - ${trip.endPoint}`
                                 : `${trip.startPoint} - ${trip.endPoint}`}
                         </td>
