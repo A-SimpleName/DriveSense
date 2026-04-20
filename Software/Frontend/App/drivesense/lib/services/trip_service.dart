@@ -32,6 +32,7 @@ class TripService {
 
     final int? protocolId = await _resolveProtocolIdForSync(
       profileId: profileId,
+      preferredProtocolId: trip.protocolId,
     );
     if (protocolId == null || protocolId <= 0) {
       throw TripHttpException(
@@ -39,9 +40,7 @@ class TripService {
       );
     }
 
-    final int? vehicleId = await _resolveVehicleIdForSync(
-      profileId: profileId,
-    );
+    final int? vehicleId = await _resolveVehicleIdForSync(profileId: profileId);
     if (vehicleId == null || vehicleId <= 0) {
       throw TripHttpException(
         'Trip kann nicht synchronisiert werden: vehicleId fehlt oder ist ungueltig.',
@@ -128,7 +127,7 @@ class TripService {
       Uri.parse('$_baseUrl/api/trips/summary'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        if (cookieHeader != null) 'Cookie': cookieHeader,
+        ..._cookieHeaders(cookieHeader),
       },
       body: jsonEncode(payload),
     );
@@ -177,7 +176,7 @@ class TripService {
       Uri.parse('$_baseUrl/api/trips/$tripId/trackingpoints'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        if (cookieHeader != null) 'Cookie': cookieHeader,
+        ..._cookieHeaders(cookieHeader),
       },
       body: jsonEncode(payload),
     );
@@ -204,8 +203,14 @@ class TripService {
 
   Future<int?> _resolveProtocolIdForSync({
     required int profileId,
+    int preferredProtocolId = 0,
   }) async {
-    final int? resolved = await ProtocolService.resolveFirstAvailableProtocolId();
+    if (preferredProtocolId > 0) {
+      return preferredProtocolId;
+    }
+
+    final int? resolved =
+        await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
     if (resolved != null && resolved > 0) {
       return resolved;
     }
@@ -213,9 +218,7 @@ class TripService {
     return ProtocolService.createDefaultProtocol(profileId);
   }
 
-  Future<int?> _resolveVehicleIdForSync({
-    required int profileId,
-  }) async {
+  Future<int?> _resolveVehicleIdForSync({required int profileId}) async {
     final int? resolved = await VehicleService.resolveFirstAvailableVehicleId();
     if (resolved != null && resolved > 0) {
       return resolved;
@@ -235,9 +238,7 @@ class TripService {
     try {
       final http.Response response = await http.get(
         Uri.parse('$_baseUrl/api/trips/protocols/$protocolId'),
-        headers: <String, String>{
-          if (cookieHeader != null) 'Cookie': cookieHeader,
-        },
+        headers: <String, String>{..._cookieHeaders(cookieHeader)},
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -286,7 +287,9 @@ class TripService {
         ...serverSummaries,
         ...unsyncedLocals,
       ];
-      merged.sort((TripSummary a, TripSummary b) => b.startTime.compareTo(a.startTime));
+      merged.sort(
+        (TripSummary a, TripSummary b) => b.startTime.compareTo(a.startTime),
+      );
       return merged;
     }
 
@@ -323,5 +326,13 @@ class TripService {
     trip.trackingPointsJson = existing?.trackingPointsJson ?? '[]';
 
     await _tripRepository.save(trip);
+  }
+
+  Map<String, String> _cookieHeaders(String? cookieHeader) {
+    if (cookieHeader == null) {
+      return const <String, String>{};
+    }
+
+    return <String, String>{'Cookie': cookieHeader};
   }
 }
