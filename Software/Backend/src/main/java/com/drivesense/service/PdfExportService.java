@@ -19,21 +19,18 @@ import java.util.List;
 public class PdfExportService {
 
     private final TemplateEngine templateEngine;
-    private final UsergroupService userGroupService;
 
     @Autowired
-    public PdfExportService(TemplateEngine templateEngine,UsergroupService usergroupService) {
+    public PdfExportService(TemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
-        this.userGroupService = usergroupService;
     }
 
-    public byte[] generateProtocolPdf(ProtocolDto protocol, AccountResponse account,
-                                      String role, boolean isGroup) throws Exception {
+    public byte[] generateProtocolPdf(ProtocolDto protocol, boolean isGroup) throws Exception {
 
         // 1. Build Thymeleaf context with all data the template needs
         Context ctx = new Context();
         ctx.setVariable("protocol", protocol);
-        ctx.setVariable("account",  account);
+        ctx.setVariable("account",  protocol.getCreated_by_account());
         ctx.setVariable("isGroup",  isGroup);
 
         List<TripSummaryDto> trips = protocol.getTrips() != null
@@ -44,18 +41,18 @@ public class PdfExportService {
         ctx.setVariable("totalKm", totalKm);
 
         if (isGroup) {
-            String groupName = userGroupService.getUserGroupById(protocol.getUsergroup_id()).getName();
+            String groupName = protocol.getUsergroup().getName();
             ctx.setVariable("groupName", groupName);
         }
 
         // Fahrschüler: always show at least 12 rows like the paper form
-        if ("FAHRSCHÜLER".equalsIgnoreCase(role)) {
+        if ("FAHRSCHÜLER".equalsIgnoreCase(protocol.getProtocolRole())) {
             int fillerCount = Math.max(0, 12 - trips.size());
             ctx.setVariable("fillerRows", Collections.nCopies(fillerCount, null));
         }
 
         // 2. Pick the right template based on role
-        String template = switch (role.toUpperCase()) {
+        String template = switch (protocol.getProtocolRole().toUpperCase()) {
             case "FAHRSCHÜLER"  -> "pdf/fahrschüler";
             case "BERUFSFAHRER" -> "pdf/berufsfahrer";
             default             -> "pdf/privat";

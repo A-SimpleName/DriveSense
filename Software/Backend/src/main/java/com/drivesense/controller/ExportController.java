@@ -20,46 +20,32 @@ public class ExportController {
 
     private final PdfExportService pdfExportService;
     private final ProtocolService  protocolService;
-    private final ProfileService   profileService;
-    private final AccountService   accountService;
 
     public ExportController(PdfExportService pdfExportService,
-                            ProtocolService protocolService,
-                            ProfileService profileService,
-                            AccountService accountService) {
+                            ProtocolService protocolService) {
         this.pdfExportService = pdfExportService;
         this.protocolService  = protocolService;
-        this.profileService   = profileService;
-        this.accountService   = accountService;
     }
 
-    /**
-     * Einzelprotokoll – Fahrten die der User alleine aufgezeichnet hat.
-     * GET /api/export/single/{protocolId}?profileId=1
-     */
     @GetMapping("{protocolId}")
     public ResponseEntity<byte[]> exportPdf(
-            @PathVariable int protocolId,
-            HttpServletRequest request) throws Exception {
+            @PathVariable int protocolId) throws Exception {
 
-        int profileId = (int) request.getAttribute("profileId");
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        Profile profile      = profileService.getById(profileId);
-        AccountResponse account      = accountService.getById(profile.getAccount_id());
         boolean isGroup = false;
 
-        if (protocol.getUsergroup_id() > 0) {
+        if (protocol.getUsergroup().getId() > 0) {
             isGroup = true;
         }
 
         byte[] pdf = pdfExportService.generateProtocolPdf(
-                protocol, account, profile.getRole(), isGroup);
+                protocol, isGroup);
 
         String filename = isGroup
                 ? "gruppenprotokoll_" + protocolId + ".pdf"
                 : "einzelprotokoll_"  + protocolId + ".pdf";
 
-        return buildResponse(pdf, filename + protocolId + ".pdf");
+        return buildResponse(pdf, filename + ".pdf");
     }
 
     private ResponseEntity<byte[]> buildResponse(byte[] pdf, String filename) {

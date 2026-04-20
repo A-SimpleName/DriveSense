@@ -119,9 +119,9 @@
     <td th:text="${trip.distance + ' km'}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.licenseplate}"></td>
+    <td th:text="${trip.licensePlate}"></td>
     <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
-    <td class="left" th:text="${trip.startPoint + ' → ' + trip.endPoint}"></td>
+    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
     <td th:text="${trip.roadSurfaceConditions}"></td>
     <td></td>
     <td></td>
@@ -137,9 +137,9 @@
     <td th:text="${trip.distance + ' km'}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.licenseplate}"></td>
+    <td th:text="${trip.licensePlate}"></td>
     <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
-    <td class="left" th:text="${trip.startPoint + ' → ' + trip.endPoint}"></td>
+    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
     <td th:text="${trip.roadSurfaceConditions}"></td>
     <td></td>
     <td></td>

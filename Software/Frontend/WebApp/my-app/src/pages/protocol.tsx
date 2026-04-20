@@ -41,8 +41,8 @@ export default function ProtocolPage() {
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
                     // Erst: null usergroup_id zuerst
-                    if (a.usergroup_id === null && b.usergroup_id !== null) return -1;
-                    if (a.usergroup_id !== null && b.usergroup_id === null) return 1;
+                    if (a.usergroup.id === null && b.usergroup.id !== null) return -1;
+                    if (a.usergroup.id !== null && b.usergroup.id === null) return 1;
 
                     // Dann: nach createdAt absteigend (neueste zuerst)
                     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -53,9 +53,12 @@ export default function ProtocolPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    const groupProtocols = protocols.filter(p => p.usergroup_id !== null);
-    const ownProtocols = protocols.filter(p => p.usergroup_id === null);
+    const groupProtocols = protocols.filter(p => p.usergroup.id !== null);
+    const ownProtocols = protocols.filter(p => p.usergroup.id === null);
 
+    if (loading) return <div>Lade Protokolle...</div>;
+
+    if (error) return <div>{error}</div>;
 
     return (
         <div>
