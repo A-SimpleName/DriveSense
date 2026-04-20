@@ -114,20 +114,31 @@ class RuntimeStore {
   }
 
   static Future<void> refreshTrips() async {
-    debugPrint('[refreshTrips] START - currentProfileId=$currentProfileId, currentProtocolId=$currentProtocolId');
+    debugPrint(
+      '[refreshTrips] START - currentProfileId=$currentProfileId, currentProtocolId=$currentProtocolId',
+    );
     if (currentProfileId == null) {
       debugPrint('[refreshTrips] EARLY RETURN: currentProfileId is null');
       return;
     }
+    if (currentProtocolId <= 0) {
+      debugPrint('[refreshTrips] EARLY RETURN: currentProtocolId is invalid');
+      trips = [];
+      return;
+    }
 
     try {
-      debugPrint('[refreshTrips] Fetching trips for profileId=$currentProfileId, protocolId=$currentProtocolId');
+      debugPrint(
+        '[refreshTrips] Fetching trips for profileId=$currentProfileId, protocolId=$currentProtocolId',
+      );
       final fetchedTrips = await tripService.fetchTrips(
         currentProfileId!,
         currentProtocolId,
       );
 
-      debugPrint('[refreshTrips] SUCCESS: fetched ${fetchedTrips.length} trips');
+      debugPrint(
+        '[refreshTrips] SUCCESS: fetched ${fetchedTrips.length} trips',
+      );
       // fetchTrips already returns Isar-backed data (including unsynced entries)
       // and optionally enriches it from server, so no extra merge is needed.
       trips = fetchedTrips;

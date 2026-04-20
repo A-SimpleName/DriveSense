@@ -103,8 +103,9 @@ class _HomePageBodyState extends State<HomePageBody> {
       return;
     }
 
-    final int? resolvedProtocolId = await ProtocolService
-      .resolveFirstAvailableProtocolId();
+    final int? resolvedProtocolId = protocolId > 0
+        ? protocolId
+        : await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
     if (resolvedProtocolId == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,8 +121,8 @@ class _HomePageBodyState extends State<HomePageBody> {
     protocolId = resolvedProtocolId;
     RuntimeStore.setCurrentProtocolId(protocolId);
 
-    final int? resolvedVehicleId = await VehicleService
-        .resolveFirstAvailableVehicleId();
+    final int? resolvedVehicleId =
+        await VehicleService.resolveFirstAvailableVehicleId();
     if (resolvedVehicleId == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
