@@ -3,12 +3,15 @@ package com.drivesense.service;
 import com.drivesense.db.ProfileUsergroupDao;
 import com.drivesense.db.UserGroupDao;
 import com.drivesense.dto.response.GroupMemberResponse;
+import com.drivesense.dto.response.GroupResponse;
 import com.drivesense.exceptions.*;
 import com.drivesense.model.ProfileUsergroup;
 import com.drivesense.model.UserGroup;
+import org.hibernate.validator.internal.engine.groups.Group;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,6 +20,8 @@ public class UsergroupService {
     private UserGroupDao userGroupDao;
     @Autowired
     private ProfileUsergroupDao profileUserGroupDao;
+    @Autowired
+    private ProfileService profileService;
 
     public UserGroup insertGroup(String name, int profileId) {
 
@@ -120,8 +125,8 @@ public class UsergroupService {
         profileUserGroupDao.updateRole(member);
     }
 
-    public List<UserGroup> getGroupsByProfile(int profileId) {
-        return userGroupDao.getGroupsByProfileId(profileId);
+    public List<GroupResponse> getGroupsByProfile(int profileId) {
+        return mapToGroupResponse(userGroupDao.getGroupsByProfileId(profileId));
     }
 
     public List<GroupMemberResponse> getMembersByGroup(int groupId, int requesterId) {
@@ -133,8 +138,8 @@ public class UsergroupService {
         return profileUserGroupDao.getMembersByGroupId(groupId);
     }
 
-    public List<UserGroup> getAll () {
-        return userGroupDao.getAll();
+    public List<GroupResponse> getAll () {
+        return mapToGroupResponse(userGroupDao.getAll());
     }
 
     public void updateGroup(int groupId, int profileId, String name,String profileRole) {
@@ -152,13 +157,29 @@ public class UsergroupService {
         userGroupDao.update(group);
     }
 
-    public UserGroup getUserGroupById (int id) {
-        return userGroupDao.getById(id);
+    public GroupResponse getUserGroupById (int id) {
+        return mapToGroupResponse(userGroupDao.getById(id));
     }
 
     private boolean isOwnerOrAdmin(int groupId, int profileId, String profileRole) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
         return pug.getGroupRole().equals("OWNER") || profileRole.equals("ADMIN");
+    }
+
+    private GroupResponse mapToGroupResponse(UserGroup group) {
+        GroupResponse newGroup = new GroupResponse();
+        newGroup.setId(group.getId());
+        newGroup.setName(group.getName());
+        newGroup.setOwner(profileService.getById(group.getOwner_id()).getName());
+        return newGroup;
+    }
+
+    private List<GroupResponse> mapToGroupResponse(List<UserGroup> groups) {
+        List<GroupResponse> responses = new ArrayList<>();
+        for (UserGroup group : groups) {
+            responses.add(mapToGroupResponse(group));
+        }
+        return responses;
     }
 }

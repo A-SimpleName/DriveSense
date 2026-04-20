@@ -14,6 +14,9 @@ import TripDetailPage from "./pages/tripDetailPage";
 import Vehicles from "./pages/vehicles";
 import Settings from "./pages/settings";
 import ProtocolPage from "./pages/protocol";
+import ProtocolDetail from "./pages/protocolDetail";
+import GroupPage from "./pages/group";
+import GroupDetailPage from "./pages/groupDetail";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
@@ -103,9 +106,12 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/trips" element={<TripsPage />} />
             <Route path="/trips/:id" element={<TripDetailPage />} />
+            <Route path="/protocols/:id" element={<ProtocolDetail />} />
             <Route path="/vehicles" element={<Vehicles />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/protocols" element={<ProtocolPage />} />
+            <Route path="/groups" element={<GroupPage />} />
+            <Route path="/groups/:id" element={<GroupDetailPage />} />
           </>
         )}
 

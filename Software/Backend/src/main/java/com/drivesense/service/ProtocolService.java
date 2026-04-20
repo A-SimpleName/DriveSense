@@ -16,11 +16,14 @@ import java.util.List;
 public class ProtocolService {
     @Autowired
     private ProtocolDao protocolDao;
-
     @Autowired
     private TripDao tripDao;
     @Autowired
     private ProfileService profileService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private UsergroupService usergroupService;
 
     public Protocol insert(Protocol protocol) {
         Protocol inserted = protocolDao.insert(protocol);
@@ -66,7 +69,7 @@ public class ProtocolService {
 
     public ProtocolDto getProtocolWithTrips(int protocolId) {
         Protocol protocol = protocolDao.getById(protocolId);
-
+        Profile profile = profileService.getById(protocol.getCreatedByProfileId());
         List<TripSummaryDto> trips =
                 tripDao.getAllByProtocolId(protocolId);
 
@@ -74,6 +77,9 @@ public class ProtocolService {
         dto.setId(protocol.getId());
         dto.setName(protocol.getName());
         dto.setTrips(trips);
+        dto.setCreated_by_account(accountService.getById(profile.getAccount_id()));
+        dto.setUsergroup(usergroupService.getUserGroupById(protocol.getUsergroupId()));
+        dto.setProtocolRole(getProtocolRole(protocol.getId()));
         return dto;
     }
 
