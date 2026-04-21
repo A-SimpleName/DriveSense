@@ -81,7 +81,9 @@ class ProtocolService {
             headers: _authHeaders(),
             body: jsonEncode(<String, dynamic>{
               'createdByProfileId': profileId,
+              'created_by_profile_id': profileId,
               if (usergroupId != null) 'usergroupId': usergroupId,
+              if (usergroupId != null) 'usergroup_id': usergroupId,
               'name': trimmedName,
             }),
           )
@@ -97,11 +99,15 @@ class ProtocolService {
 
       final dynamic decoded = _decodeJson(response.body);
       if (decoded is! Map<String, dynamic>) {
-        return null;
+        return _resolveProtocolByNameFallback(trimmedName);
       }
 
       final Protocol protocol = Protocol.fromJson(decoded);
-      return protocol.id > 0 ? protocol : null;
+      if (protocol.id > 0) {
+        return protocol;
+      }
+
+      return _resolveProtocolByNameFallback(trimmedName);
     } catch (e) {
       debugPrint('CreateProtocol failed at $uri: $e');
       return null;
@@ -148,6 +154,22 @@ class ProtocolService {
         .map(Protocol.fromJson)
         .where((Protocol protocol) => protocol.id > 0)
         .toList();
+  }
+
+  static Future<Protocol?> _resolveProtocolByNameFallback(String name) async {
+    final String expected = name.trim().toLowerCase();
+    if (expected.isEmpty) {
+      return null;
+    }
+
+    final List<Protocol> protocols = await fetchProtocols();
+    for (final Protocol protocol in protocols.reversed) {
+      if (protocol.name.trim().toLowerCase() == expected) {
+        return protocol;
+      }
+    }
+
+    return null;
   }
 
   static Map<String, String> _cookieHeaders(String? cookieHeader) {

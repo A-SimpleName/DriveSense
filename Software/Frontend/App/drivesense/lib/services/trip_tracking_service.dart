@@ -88,8 +88,8 @@ class TripTrackingService {
     if (_lastAcceptedPoint == null) return true;
 
     // Stehst (oder GPS spinnt) -> skip (0.5 m/s ~ 1.8 km/h)
-    // final spd = tp.speed;
-    // if (spd < 0.5) return false;
+    final spd = tp.speed;
+    if (spd < 0.5) return false;
 
     final d = Geolocator.distanceBetween(
       _lastAcceptedPoint!.latitude,
@@ -98,7 +98,7 @@ class TripTrackingService {
       tp.longitude,
     );
 
-    return true; // Auto: 10m = weniger Müll, weniger Daten
+    return d > 10; // Auto: 10m = weniger Müll, weniger Daten
   }
 
   /// Konvertiert Position zu Trackingpoint
