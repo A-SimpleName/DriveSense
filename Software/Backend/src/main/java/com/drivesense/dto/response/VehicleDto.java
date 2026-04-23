@@ -1,25 +1,18 @@
 package com.drivesense.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class VehicleDto {
+
     private int id;
     private String model;
-    private String profileName;
-
-    @JsonProperty("licensePlate")
     private String licensePlate;
     private int mileage;
 
-    public VehicleDto() {}
+    private String ownerAccountName;
+    private String ownerProfileName;
 
-    public VehicleDto(int id, String model, String profileName, String licencePlate, int mileage) {
-        this.id = id;
-        this.model = model;
-        this.profileName = profileName;
-        this.licensePlate = licensePlate;
-        this.mileage = mileage;
-    }
+    private String myRole;
+
+    public VehicleDto() {}
 
     public int getId() {
         return id;
@@ -37,14 +30,6 @@ public class VehicleDto {
         this.model = model;
     }
 
-    public String getProfileName() {
-        return profileName;
-    }
-
-    public void setProfileName(String profileName) {
-        this.profileName = profileName;
-    }
-
     public String getLicensePlate() {
         return licensePlate;
     }
@@ -59,5 +44,29 @@ public class VehicleDto {
 
     public void setMileage(int mileage) {
         this.mileage = mileage;
+    }
+
+    public String getOwnerAccountName() {
+        return ownerAccountName;
+    }
+
+    public void setOwnerAccountName(String ownerAccountName) {
+        this.ownerAccountName = ownerAccountName;
+    }
+
+    public String getOwnerProfileName() {
+        return ownerProfileName;
+    }
+
+    public void setOwnerProfileName(String ownerProfileName) {
+        this.ownerProfileName = ownerProfileName;
+    }
+
+    public String getMyRole() {
+        return myRole;
+    }
+
+    public void setMyRole(String myRole) {
+        this.myRole = myRole;
     }
 }
