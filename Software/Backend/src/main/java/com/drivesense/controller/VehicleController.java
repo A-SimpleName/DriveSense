@@ -33,32 +33,37 @@ public class VehicleController {
     @PostMapping
     public ResponseEntity<Vehicle> saveVehicle(@Valid @RequestBody SaveVehicleRequest vehicleRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
+
         Vehicle vehicle = new Vehicle();
         vehicle.setModel(vehicleRequest.getModel());
         vehicle.setLicensePlate(vehicleRequest.getLicensePlate());
         vehicle.setMileage(vehicleRequest.getMileage());
 
-        vehicle.setProfileId(profileId);
-        return ResponseEntity.status(201).body(vehicleService.saveVehicle(vehicle));
+        return ResponseEntity.status(201)
+                .body(vehicleService.saveVehicle(vehicle, profileId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Vehicle> getVehicle(@PathVariable int id, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
-        return ResponseEntity.ok(vehicleService.getVehicleById(id, profileId));
+
+        Vehicle vehicle = vehicleService.getVehicleById(id, profileId);
+        return ResponseEntity.ok(vehicle);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateVehicle(@PathVariable int id, @Valid @RequestBody Vehicle vehicle, HttpServletRequest request) {
-        int accountId = (int) request.getAttribute("accountId");
+        int profileId = (int) request.getAttribute("profileId");
+
         vehicle.setId(id);
-        vehicleService.updateVehicle(vehicle, accountId);
+        vehicleService.updateVehicle(vehicle, profileId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable int id, HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");
+
         vehicleService.deleteVehicle(id, accountId);
         return ResponseEntity.noContent().build();
     }
