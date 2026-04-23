@@ -32,14 +32,11 @@ CREATE TABLE `usergroup` (
 
 CREATE TABLE `vehicle` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `profile_id` bigint NOT NULL,
   `model` varchar(150) NOT NULL,
   `licenseplate` varchar(20) NOT NULL,
   `mileage` int DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `licenseplate` (`licenseplate`),
-  KEY `fk_vehicle_profile` (`profile_id`),
-  CONSTRAINT `vehicle_profile_FK` FOREIGN KEY (`profile_id`) REFERENCES `profile` (`id`)
+  UNIQUE KEY `licenseplate` (`licenseplate`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `protocol` (
