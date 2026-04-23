@@ -1,10 +1,11 @@
 export interface UserGroup {
     id: number;
     name: string;
-    Owner: string;
+    owner : string;
+    ownerId: number;
 }
 export interface GroupMember {
     profileId: number;
     name: string;
-    groupRole: "OWNER" | "MEMBER";
+    groupRole: "OWNER" | "ADMIN" | "MEMBER";
 }

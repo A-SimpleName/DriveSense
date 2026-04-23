@@ -141,6 +141,12 @@ public class AccountController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<AccountResponse> getCurrentAccount(HttpServletRequest request) {
+        int accountId = (int) request.getAttribute("accountId");
+        return ResponseEntity.ok(accountService.getById(accountId));
+    }
+
     @GetMapping
     public ResponseEntity<AccountResponse> getById(HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");

@@ -3,7 +3,16 @@ package com.drivesense.dto.response;
 public class GroupResponse {
     private int id;
     private String name;
+    private int ownerId;
     private String Owner;
+
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(int ownerId) {
+        this.ownerId = ownerId;
+    }
 
     public int getId() {
         return id;
