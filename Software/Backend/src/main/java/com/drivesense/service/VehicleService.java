@@ -15,19 +15,15 @@ public class VehicleService {
     @Autowired
     private VehicleDao vehicleDao;
 
-    public List<VehicleDto> getAllVehicles() {
-        return vehicleDao.getAllVehicles();
-    }
-
     public List<VehicleDto> getAllVehiclesByAccount(int accountId) {
         return vehicleDao.getAllVehiclesByAccount(accountId);
     }
 
-    public Vehicle getVehicleById(int id, int profileId) {
-        Vehicle vehicle = vehicleDao.getById(id, profileId);
+    public VehicleDto getVehicleById(int id, int accountId) {
+        VehicleDto vehicle = vehicleDao.getById(id, accountId);
 
         if (vehicle == null) {
-            throw new NotFoundException("Fahrzeug nicht gefunden oder kein Zugriff");
+            throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
         }
 
         return vehicle;
@@ -37,11 +33,15 @@ public class VehicleService {
         return vehicleDao.insert(vehicle, profileId);
     }
 
-    public void updateVehicle(Vehicle vehicle, int profileId) {
-        vehicleDao.update(vehicle, profileId);
+    public void updateVehicle(Vehicle vehicle, int accountId) {
+        vehicleDao.update(vehicle, accountId);
     }
 
     public void deleteVehicle(int id, int accountId) {
         vehicleDao.deleteById(id, accountId);
+    }
+
+    public List<VehicleDto> getAllVehicles() {
+        return vehicleDao.getAllVehicles();
     }
 }
