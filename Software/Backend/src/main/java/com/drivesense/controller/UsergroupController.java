@@ -35,8 +35,8 @@ public class UsergroupController {
     }
 
     @GetMapping("/{groupId}")
-    public ResponseEntity<GroupResponse> getGroupById(@PathVariable int id) {
-        return ResponseEntity.ok(usergroupService.getUserGroupById(id));
+    public ResponseEntity<GroupResponse> getGroupById(@PathVariable int groupId) {
+        return ResponseEntity.ok(usergroupService.getUserGroupById(groupId));
     }
 
     // GET /api/groups/1/members?requesterId=1
@@ -50,7 +50,7 @@ public class UsergroupController {
     }
 
     @PostMapping
-    public ResponseEntity<UserGroup> insertGroup(
+    public ResponseEntity<GroupResponse> insertGroup(
             @Valid @RequestBody UserGroupCreateRequest request,
             HttpServletRequest httpRequest) {
         int profileId = (int) httpRequest.getAttribute("profileId");

@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { checkAuth } from "./services/auth";
 import { getProfilesByAccount } from "./services/profileService";
+import { getCurrentAccount } from "./services/accountService";
+import type { AccountResponse } from "./model/account";
 
 import TopBar from "./components/Layout/topbar";
 import LoginPage from "./pages/login";
@@ -17,13 +19,14 @@ import ProtocolPage from "./pages/protocol";
 import ProtocolDetail from "./pages/protocolDetail";
 import GroupPage from "./pages/group";
 import GroupDetailPage from "./pages/groupDetail";
+import ProfilePage from "./pages/profile";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [profileSelected, setProfileSelected] = useState<boolean>(false);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [user, setUser] = useState(null);
+  const [account, setAccount] = useState<AccountResponse | null>(null);
   const [reloadAuth, setReloadAuth] = useState(0);
 
   useEffect(() => {
@@ -32,7 +35,10 @@ export default function App() {
         const auth = await checkAuth();
         setIsAuth(auth);
 
-        if (auth) {
+        if (auth) { 
+          const accountData = await getCurrentAccount();
+          setAccount(accountData);
+
           const profilesData = await getProfilesByAccount();
           setProfiles(profilesData);
           setProfileSelected(false);
@@ -60,7 +66,7 @@ export default function App() {
   return (
     <BrowserRouter>
       {isAuth && profileSelected && (
-        <TopBar setUser={setUser} />
+        <TopBar setAccount={setAccount} account={account} />
       )}
 
       <Routes>
@@ -108,10 +114,13 @@ export default function App() {
             <Route path="/trips/:id" element={<TripDetailPage />} />
             <Route path="/protocols/:id" element={<ProtocolDetail />} />
             <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<Settings onSwitchProfile={() => {
+              setProfileSelected(false);
+            }} />} />
             <Route path="/protocols" element={<ProtocolPage />} />
             <Route path="/groups" element={<GroupPage />} />
             <Route path="/groups/:id" element={<GroupDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </>
         )}
 

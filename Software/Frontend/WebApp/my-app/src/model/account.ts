@@ -13,4 +13,5 @@ export interface AccountResponse {
     lname: string;
     email: string;
     birthdate: Date;
+    created_at: Date;
 }

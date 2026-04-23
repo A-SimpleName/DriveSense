@@ -11,7 +11,7 @@ public class ProtocolDto {
     private int id;
     private AccountResponse created_by_account;
     private String protocolRole;
-    private UserGroup usergroup;
+    private GroupResponse usergroup;
     private LocalDateTime created_at;
     private String name;
     private List<TripSummaryDto> trips;
@@ -40,11 +40,11 @@ public class ProtocolDto {
         this.protocolRole = protocolRole;
     }
 
-    public UserGroup getUsergroup() {
+    public GroupResponse getUsergroup() {
         return usergroup;
     }
 
-    public void setUsergroup(UserGroup usergroup) {
+    public void setUsergroup(GroupResponse usergroup) {
         this.usergroup = usergroup;
     }
 

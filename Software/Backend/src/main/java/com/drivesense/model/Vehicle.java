@@ -18,10 +18,10 @@ public class Vehicle {
 
     public Vehicle() {}
 
-    public Vehicle(int profileId, String model, String licenseplate, int mileage) {
+    public Vehicle(int profileId, String model, String licensePlate, int mileage) {
         this.profileId = profileId;
         this.model = model;
-        this.licensePlate = licenseplate;
+        this.licensePlate = licensePlate;
         this.mileage = mileage;
     }
 

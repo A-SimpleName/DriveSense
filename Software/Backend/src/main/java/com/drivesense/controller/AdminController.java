@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.dto.response.GroupResponse;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.model.*;
 import com.drivesense.service.*;
@@ -69,7 +70,7 @@ public class AdminController {
     }
 
     @GetMapping("/groups")
-    public ResponseEntity<List<UserGroup>> getAllGroups () {
+    public ResponseEntity<List<GroupResponse>> getAllGroups () {
         return ResponseEntity.ok(usergroupService.getAll());
     }
 
@@ -80,7 +81,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/groups/{groupId}")
-    public ResponseEntity<Void> deleteMember(@PathVariable int groupId) {
+    public ResponseEntity<Void> deleteGroup(@PathVariable int groupId) {
         usergroupService.adminDeleteGroup(groupId);
         return ResponseEntity.noContent().build();
     }
