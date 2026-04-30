@@ -6,3 +6,12 @@ export interface Account {
     pwd: string;
     created_at: Date;
 }
+
+export interface AccountResponse {
+    id: number;
+    fname: string;
+    lname: string;
+    email: string;
+    birthdate: Date;
+    created_at: Date;
+}

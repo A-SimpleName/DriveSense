@@ -2,6 +2,7 @@ import http from "../api/httpService"
 import type { Tripdetailed, TripSummary } from "../model/trip"
 import { getErrorMessage } from "../errorHandling/getErrorMessage"
 
+// auslagern in die HTTP methdode am besten
 async function handleRequest<T>(request: Promise<T>): Promise<T> {
     try {
         return await request;

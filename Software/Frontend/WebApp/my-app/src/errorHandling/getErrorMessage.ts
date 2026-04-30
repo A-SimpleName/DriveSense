@@ -1,21 +1,21 @@
 export function getErrorMessage(error: any): string {
 
-    // Kein Server erreichbar
-    if (!error?.response) {
-        return "Server nicht erreichbar"
+    // Validation Errors (vom httpService als err.errors gesetzt)
+    if (error?.fieldErrors) {
+        return Object.values(error.fieldErrors).join(", ");
     }
 
-    const data = error.response.data
-
-    // Validation Errors (Backend: { message, errors })
-    if (data?.errors) {
-        return Object.values(data.errors).join(", ")
+    // Normale Message (z.B. new Error("Fahrzeug nicht gefunden"))
+    if (error?.message) {
+        return error.message;
     }
 
-    // Normale Message
-    if (data?.message) {
-        return data.message
-    }
+    return "Unbekannter Fehler";
+}
 
-    return "Unbekannter Fehler"
+export function getFieldErrors(error: any): Record<string, string> | null {
+    if (error?.fieldErrors) {
+        return error.fieldErrors;
+    }
+    return null;
 }

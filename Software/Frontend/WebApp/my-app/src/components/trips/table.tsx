@@ -34,6 +34,7 @@ function TripsTable() {
             <thead>
                 <tr>
                     <th>Startzeit</th>
+                    <th>Endzeit</th>
                     <th>Fahrer</th>
                     <th>Fahrzeug</th>
                     <th>Kennzeichen</th>
@@ -44,6 +45,7 @@ function TripsTable() {
                     <th>Aktionen</th>
                 </tr>
                 <tr>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>

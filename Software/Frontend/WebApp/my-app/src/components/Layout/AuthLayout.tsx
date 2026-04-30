@@ -3,14 +3,15 @@ import Topbar from "./topbar";
 
 type AuthLayoutProps = {
   children: React.ReactNode;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setAccount: React.Dispatch<React.SetStateAction<any>>;
+  account: any;
 };
 
-export function AuthLayout({ children, setUser }: AuthLayoutProps) {
+export function AuthLayout({ children, setAccount, account }: AuthLayoutProps) {
 
     return ( 
         <div className="app-container">
-            <Topbar setUser={setUser} />
+            <Topbar setAccount={setAccount} account={account} />
             <main className="main-content">
                 {children}
             </main>

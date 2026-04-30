@@ -39,9 +39,11 @@ function Dashboard() {
     if (error) return <p>Fehler: {error}</p>;
 
     const lastTripText =
-        trips.length > 0
-            ? `${trips[trips.length - 1].distance} km | ${trips[trips.length - 1].startTime.split("T")[0]}`
-            : "Keine Fahrten";
+    trips.length > 0
+        ? `${trips[trips.length - 1].distance} km | ${
+            new Date(trips[trips.length - 1].startTime).toLocaleDateString()
+        }`
+        : "Keine Fahrten";
 
     const route =
         lastTripDetailed?.trackingpoints?.map(p => ({

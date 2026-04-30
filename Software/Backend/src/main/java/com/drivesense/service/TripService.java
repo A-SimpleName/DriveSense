@@ -8,6 +8,7 @@ import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
+import com.drivesense.model.Profile;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +25,20 @@ public class TripService {
     private final TrackingpointService trackingpointService;
     private final GeocodingService geocodingService;
     private final WeatherService weatherService;
+    private final ProfileService profileService;
+    private final ProtocolService protocolService;
 
     @Autowired
     public TripService(TripDao tripDao, ProtocolDao protocolDao, TrackingpointService trackingpointService,
-                       GeocodingService geocodingService, WeatherService weatherService) {
+                       GeocodingService geocodingService, WeatherService weatherService,
+                       ProtocolService protocolService, ProfileService profileService) {
         this.tripDao = tripDao;
         this.protocolDao = protocolDao;
         this.trackingpointService = trackingpointService;
         this.geocodingService = geocodingService;
         this.weatherService = weatherService;
+        this.profileService = profileService;
+        this.protocolService = protocolService;
     }
 
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
@@ -80,8 +86,16 @@ public class TripService {
             throw new NotFoundException("Trip nicht gefunden");
         }
 
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
         if (tripSummary.getProfileId() != profileId) {
             throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
+        }
+        Profile profile = profileService.getById(tripSummary.getProfileId());
+        if (!profile.getRole().equals(protocolService.getProtocolRole(tripSummary.getProtocolId()))) {
+            throw new BadRequestException("Rolle muss die selbe wie vom Protocol sein");
         }
 
         Trackingpoint firstPoint = trackingpoints.get(0);
@@ -109,22 +123,23 @@ public class TripService {
             trackingpoint.setTripId(tripSummary.getId());
             createdTrackingpoints.add(trackingpointService.insert(trackingpoint, tripSummary));
         }
-        
+
         TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary, createdTrackingpoints);
         enrichWithTrackingPoints(tripDetailedDto);
-        
+
         // Update trip with enriched location data
         tripDao.update(tripSummary);
-        
+
         return tripDetailedDto;
     }
+
 
     public List<TripSummary> getAllTrips() {
         return tripDao.getAll();
     }
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
-            List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(protocolId, profileId);
+        List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(protocolId, profileId);
         if (trips == null) {
             throw new NotFoundException("Keine Fahrten gefunden");
         }
@@ -155,10 +170,10 @@ public class TripService {
             throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
         List<Trackingpoint> points = trackingpointService.getByTripId(trip.getId());
-        return new TripDetailedDto(trip,points);
+        return new TripDetailedDto(trip, points);
     }
 
-    public void update (TripSummary tripSummary,int profileId) {
+    public void update(TripSummary tripSummary, int profileId) {
         TripSummary existing = tripDao.getById(tripSummary.getId());
 
         if (existing == null) {
@@ -174,7 +189,7 @@ public class TripService {
         tripDao.update(tripSummary);
     }
 
-    public void delete (int id, int profileId) {
+    public void delete(int id, int profileId) {
         TripSummary tripSummary = tripDao.getById(id);
         if (tripSummary == null) {
             throw new NotFoundException("Trip nicht gefunden");
@@ -185,7 +200,6 @@ public class TripService {
         trackingpointService.deleteByTripId(tripSummary.getId());
         tripDao.deleteById(id);
     }
-
 
 
     private void enrichWithTrackingPoints(TripDetailedDto trip) {

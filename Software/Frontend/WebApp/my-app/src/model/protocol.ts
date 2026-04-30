@@ -1,5 +1,13 @@
+import type { AccountResponse } from "./account";
+import type { TripSummary } from "./trip";
+import type { UserGroup } from "./usergroup";
+
 export interface Protocol {
     id: number;
-    tracking_id: number;
-    road_surface_conditions: string;
+    created_by_account: AccountResponse;
+    usergroup: UserGroup;
+    created_at: string;
+    name: string;
+    protocolRole: string;
+    trips: TripSummary[];
 }

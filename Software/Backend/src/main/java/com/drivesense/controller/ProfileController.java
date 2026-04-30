@@ -3,7 +3,9 @@ package com.drivesense.controller;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Profile;
 import com.drivesense.service.ProfileService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +25,19 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Profile> getById(@PathVariable int id) {
-        return ResponseEntity.ok(profileService.getById(id));
+    @GetMapping("/me")
+    public ResponseEntity<Profile> getById(HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.ok(profileService.getById(profileId));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logoutProfile(HttpServletResponse response) {
+        Cookie profileCookie = new Cookie("profileToken", "");
+        profileCookie.setMaxAge(0);
+        profileCookie.setPath("/");
+        response.addCookie(profileCookie);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/byAccount")

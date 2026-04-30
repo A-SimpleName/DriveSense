@@ -210,6 +210,8 @@ public class ProtocolDao {
         Protocol protocol = new Protocol();
         protocol.setId(rs.getInt("id"));
         protocol.setCreatedByProfileId(rs.getInt("created_by_profile_id"));
+        protocol.setCreated_at(rs.getTimestamp("created_at").toLocalDateTime());
+        protocol.setUsergroupId(rs.getInt("usergroup_id"));
         protocol.setUsergroupId((Integer) rs.getObject("usergroup_id"));
         protocol.setName(rs.getString("name"));
         return protocol;

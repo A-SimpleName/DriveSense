@@ -50,9 +50,9 @@ public class VehicleController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateVehicle(@PathVariable int id, @Valid @RequestBody Vehicle vehicle, HttpServletRequest request) {
-        int profileId = (int) request.getAttribute("profileId");
+        int accountId = (int) request.getAttribute("accountId");
         vehicle.setId(id);
-        vehicleService.updateVehicle(vehicle, profileId);
+        vehicleService.updateVehicle(vehicle, accountId);
         return ResponseEntity.ok().build();
     }
 
