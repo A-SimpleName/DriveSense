@@ -9,3 +9,4 @@ export const updateMemberRole = (groupId: number, profileId: number, newRole: st
 export const createGroup = (name: string) => http.post<UserGroup>("/groups", { name });
 export const updateGroup = (id: number, name: string) => http.put(`/groups/${id}`, { name });
 export const deleteGroup = (id: number) => http.delete(`/groups/${id}`);
+export const inviteMember = (groupId: number, email: string) => http.post(`/groups/${groupId}/invite`, { email });
