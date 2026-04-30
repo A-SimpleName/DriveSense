@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react"
-import { getAllVehicles, deleteVehicle, updateVehicle} from "../../services/vehicleService"
-import type { Vehicle } from "../../model/vehicle"
+import { getAllVehicles, deleteVehicle, updateVehicle } from "../../services/vehicleService"
+import type { CreateVehicle, Vehicle } from "../../model/vehicle"
 import "../../styles/table.css"
 import { Button } from "../button"
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
     const [editingId, setEditingId] = useState<number | null>(null)
-    const [editData, setEditData] = useState<Vehicle>({} as Vehicle)
+    const [editData, setEditData] = useState<CreateVehicle | null>(null)
     const [loading, setLoading] = useState(false)
+    const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -20,17 +21,24 @@ function VehiclesTable() {
     }, [])
 
     const handleEdit = (vehicle: Vehicle) => {
+        setError(null)
         setEditingId(vehicle.id)
-        setEditData({ ...vehicle })
+        setEditData({
+            model: vehicle.model,
+            licensePlate: vehicle.licensePlate,
+            mileage: vehicle.mileage
+        })
     }
 
     const handleCancel = () => {
         setEditingId(null)
-        setEditData({} as Vehicle)
+        setEditData(null)
     }
 
     const handleSave = (id: number) => {
-        setLoading(true)
+        if (!editData) return
+        setSaving(true)
+        setError(null)
 
         updateVehicle(id, editData)
             .then(() => {
@@ -40,107 +48,105 @@ function VehiclesTable() {
                 handleCancel()
             })
             .catch(err => setError(err.message))
-            .finally(() => setLoading(false))
+            .finally(() => setSaving(false))
     }
 
     const handleDelete = (id: number) => {
+        setError(null)
         deleteVehicle(id)
-            .then(() => {
-                setVehicles(prev => prev.filter(v => v.id !== id))
-            })
+            .then(() => setVehicles(prev => prev.filter(v => v.id !== id)))
             .catch(err => setError(err.message))
     }
 
     if (loading) return <p>Laden...</p>
-    if (error) return <p>Fehler: {error}</p>
 
     return (
-        <table>
-            <thead>
-                <tr>
-                    <th>Model</th>
-                    <th>Profil</th>
-                    <th>Kennzeichen</th>
-                    <th>Kilometerstand</th>
-                    <th>Aktionen</th>
-                </tr>
-            </thead>
-            <tbody>
-                {vehicles.map(vehicle => (
-                    <tr key={vehicle.id}>
-                        <td>
-                            {editingId === vehicle.id ? (
-                                <input
-                                    value={editData.model ?? ""}
-                                    onChange={e =>
-                                        setEditData(prev => ({ ...prev, model: e.target.value }))
-                                    }
-                                />
-                            ) : (
-                                vehicle.model
-                            )}
-                        </td>
-
-                        <td>{vehicle.profileName}</td>
-
-                        <td>
-                            {editingId === vehicle.id ? (
-                                <input
-                                    value={editData.licensePlate ?? ""}
-                                    onChange={e =>
-                                        setEditData(prev => ({
-                                            ...prev,
-                                            licensePlate: e.target.value,
-                                        }))
-                                    }
-                                />
-                            ) : (
-                                vehicle.licensePlate
-                            )}
-                        </td>
-
-                        <td>
-                            {editingId === vehicle.id ? (
-                                <input
-                                    type="number"
-                                    value={editData.mileage ?? 0}
-                                    onChange={e =>
-                                        setEditData(prev => ({
-                                            ...prev,
-                                            mileage: Number(e.target.value),
-                                        }))
-                                    }
-                                />
-                            ) : (
-                                `${vehicle.mileage} km`
-                            )}
-                        </td>
-
-                        <td>
-                            {editingId === vehicle.id ? (
-                                <>
-                                    <Button label="Speichern" onClick={() => handleSave(vehicle.id)} />
-                                    <Button label="Abbrechen" onClick={handleCancel} />
-                                </>
-                            ) : (
-                                <>
-                                    <Button
-                                        label="Bearbeiten"
-                                        stopPropagation={true}
-                                        onClick={() => handleEdit(vehicle)}
-                                    />
-                                    <Button
-                                        label="Löschen"
-                                        stopPropagation={true}
-                                        onClick={() => handleDelete(vehicle.id)}
-                                    />
-                                </>
-                            )}
-                        </td>
+        <div>
+            {error && <p style={{ color: "red" }}>Fehler: {error}</p>}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Profil</th>
+                        <th>Kennzeichen</th>
+                        <th>Kilometerstand</th>
+                        <th>Aktionen</th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {vehicles.map(vehicle => (
+                        <tr key={vehicle.id}>
+                            <td>
+                                {editingId === vehicle.id ? (
+                                    <input
+                                        value={editData?.model ?? ""}
+                                        onChange={e =>
+                                            setEditData(prev => prev ? { ...prev, model: e.target.value } : prev)
+                                        }
+                                    />
+                                ) : (
+                                    vehicle.model
+                                )}
+                            </td>
+
+                            <td>{vehicle.profileName}</td>
+
+                            <td>
+                                {editingId === vehicle.id ? (
+                                    <input
+                                        value={editData?.licensePlate ?? ""}
+                                        onChange={e =>
+                                            setEditData(prev => prev ? { ...prev, licensePlate: e.target.value } : prev)
+                                        }
+                                    />
+                                ) : (
+                                    vehicle.licensePlate
+                                )}
+                            </td>
+
+                            <td>
+                                {editingId === vehicle.id ? (
+                                    <input
+                                        type="number"
+                                        value={editData?.mileage ?? 0}
+                                        onChange={e =>
+                                            setEditData(prev => prev ? { ...prev, mileage: Number(e.target.value) } : prev)
+                                        }
+                                    />
+                                ) : (
+                                    `${vehicle.mileage} km`
+                                )}
+                            </td>
+
+                            <td>
+                                {editingId === vehicle.id ? (
+                                    <>
+                                        <Button
+                                            label={saving ? "Speichert..." : "Speichern"}
+                                            onClick={() => handleSave(vehicle.id)}
+                                        />
+                                        <Button label="Abbrechen" onClick={handleCancel} />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            label="Bearbeiten"
+                                            stopPropagation={true}
+                                            onClick={() => handleEdit(vehicle)}
+                                        />
+                                        <Button
+                                            label="Löschen"
+                                            stopPropagation={true}
+                                            onClick={() => handleDelete(vehicle.id)}
+                                        />
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     )
 }
 

@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
 import com.drivesense.exceptions.*;
+import com.drivesense.model.Profile;
 import com.drivesense.model.Protocol;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.dto.response.ProtocolDto;
@@ -15,9 +16,14 @@ import java.util.List;
 public class ProtocolService {
     @Autowired
     private ProtocolDao protocolDao;
-
     @Autowired
     private TripDao tripDao;
+    @Autowired
+    private ProfileService profileService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private UsergroupService usergroupService;
 
     public Protocol insert(Protocol protocol) {
         Protocol inserted = protocolDao.insert(protocol);
@@ -33,6 +39,12 @@ public class ProtocolService {
             throw new NotFoundException("Protokoll nicht gefunden");
         }
         return protocol;
+    }
+
+    public String getProtocolRole (int id) {
+        Protocol protocol = getById(id);
+        Profile profile = profileService.getById(protocol.getCreatedByProfileId());
+        return profile.getRole();
     }
 
     public List<Protocol> getByGroup(int usergroupId) {
@@ -57,7 +69,7 @@ public class ProtocolService {
 
     public ProtocolDto getProtocolWithTrips(int protocolId) {
         Protocol protocol = protocolDao.getById(protocolId);
-
+        Profile profile = profileService.getById(protocol.getCreatedByProfileId());
         List<TripSummaryDto> trips =
                 tripDao.getAllByProtocolId(protocolId);
 
@@ -65,6 +77,9 @@ public class ProtocolService {
         dto.setId(protocol.getId());
         dto.setName(protocol.getName());
         dto.setTrips(trips);
+        dto.setCreated_by_account(accountService.getById(profile.getAccount_id()));
+        dto.setUsergroup(usergroupService.getUserGroupById(protocol.getUsergroupId()));
+        dto.setProtocolRole(getProtocolRole(protocol.getId()));
         return dto;
     }
 

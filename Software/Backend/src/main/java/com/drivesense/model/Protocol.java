@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
+
 public class Protocol {
     private int id;
     @Min(value = 1, message = "Profile ID muss größer als 0 sein")
@@ -12,13 +14,23 @@ public class Protocol {
     @NotBlank(message = "Name darf nicht leer sein")
     @Size(max = 100, message = "Name darf maximal 100 Zeichen haben")
     private String name;
+    private LocalDateTime created_at;
 
     public Protocol(){}
 
-    public Protocol(int createdByProfileId, Integer usergroupId, String name) {
+    public Protocol(int createdByProfileId, Integer usergroupId, String name, LocalDateTime created_at) {
         this.createdByProfileId = createdByProfileId;
         this.usergroupId = usergroupId;
         this.name = name;
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
     }
 
     public int getId() {

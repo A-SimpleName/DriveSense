@@ -3,6 +3,7 @@ package com.drivesense.controller;
 import com.drivesense.dto.request.UserGroupCreateRequest;
 import com.drivesense.dto.request.UserGroupUpdateRoleRequest;
 import com.drivesense.dto.response.GroupMemberResponse;
+import com.drivesense.dto.response.GroupResponse;
 import com.drivesense.model.UserGroup;
 import com.drivesense.service.UsergroupService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +29,14 @@ public class UsergroupController {
 
     // GET /api/groups?profileId=1
     @GetMapping
-    public ResponseEntity<List<UserGroup>> getGroupsByProfile(HttpServletRequest request) {
+    public ResponseEntity<List<GroupResponse>> getGroupsByProfile(HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
         return ResponseEntity.ok(usergroupService.getGroupsByProfile(profileId));
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<GroupResponse> getGroupById(@PathVariable int groupId) {
+        return ResponseEntity.ok(usergroupService.getUserGroupById(groupId));
     }
 
     // GET /api/groups/1/members?requesterId=1
@@ -44,7 +50,7 @@ public class UsergroupController {
     }
 
     @PostMapping
-    public ResponseEntity<UserGroup> insertGroup(
+    public ResponseEntity<GroupResponse> insertGroup(
             @Valid @RequestBody UserGroupCreateRequest request,
             HttpServletRequest httpRequest) {
         int profileId = (int) httpRequest.getAttribute("profileId");
