@@ -48,6 +48,8 @@ class TripSyncService {
       ..distanceKm = trip.distanceKm
       ..roadSurfaceConditions = trip.roadSurfaceConditions
       ..type = trip.type
+      ..startMileage = trip.startMileage
+      ..endMileage = trip.endMileage
       ..createdAt = DateTime.now()
       ..isSynced = false
       ..retryCount = 0;

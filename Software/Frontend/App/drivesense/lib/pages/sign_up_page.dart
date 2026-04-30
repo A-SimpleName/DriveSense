@@ -1,4 +1,4 @@
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
@@ -22,6 +22,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _birthdateController = TextEditingController();
+  DateTime? _birthdate;
   bool _isLoading = false;
 
   @override
@@ -30,6 +32,7 @@ class _SignUpPageState extends State<SignUpPage> {
     _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _birthdateController.dispose();
     super.dispose();
   }
 
@@ -59,6 +62,32 @@ class _SignUpPageState extends State<SignUpPage> {
                 labelText: 'Nachname',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _birthdateController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                labelText: 'Geburtsdatum (optional)',
+                border: OutlineInputBorder(),
+                hintText: 'TT.MM.JJJJ',
+              ),
+              onTap: () async {
+                final DateTime now = DateTime.now();
+                final DateTime initial = _birthdate ?? DateTime(now.year - 20);
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: initial,
+                  firstDate: DateTime(1900),
+                  lastDate: now,
+                );
+                if (picked != null) {
+                  setState(() {
+                    _birthdate = picked;
+                    _birthdateController.text = '${picked.day.toString().padLeft(2,'0')}.${picked.month.toString().padLeft(2,'0')}.${picked.year.toString().padLeft(4,'0')}';
+                  });
+                }
+              },
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -144,6 +173,7 @@ class _SignUpPageState extends State<SignUpPage> {
         lName: lastName,
         email: email,
         password: password,
+        birthdate: _birthdate,
       );
 
       final SignUpResult signUpResult = await SignInAndSignUp.signUp(account);

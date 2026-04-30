@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';

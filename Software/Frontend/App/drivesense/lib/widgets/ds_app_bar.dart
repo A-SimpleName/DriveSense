@@ -1,5 +1,5 @@
-import 'package:drivesense/constants/app_assets.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_assets.dart';
+import 'package:drivesense/config/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
