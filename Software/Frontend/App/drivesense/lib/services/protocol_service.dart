@@ -48,9 +48,23 @@ class ProtocolService {
   }
 
   static Future<int?> resolveCurrentOrFirstAvailableProtocolId() async {
+    return resolvePreferredCurrentOrFirstAvailableProtocolId();
+  }
+
+  static Future<int?> resolvePreferredCurrentOrFirstAvailableProtocolId({
+    int preferredProtocolId = 0,
+  }) async {
     final List<Protocol> protocols = await fetchProtocols();
     if (protocols.isEmpty) {
       return null;
+    }
+
+    if (preferredProtocolId > 0) {
+      for (final Protocol protocol in protocols) {
+        if (protocol.id == preferredProtocolId) {
+          return protocol.id;
+        }
+      }
     }
 
     final int currentProtocolId = RuntimeStore.getCurrentProtocolId();

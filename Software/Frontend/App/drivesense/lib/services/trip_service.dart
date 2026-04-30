@@ -30,6 +30,12 @@ class TripService {
       );
     }
 
+    if (RuntimeStore.currentProfileId != profileId) {
+      throw TripHttpException(
+        'Trip kann nicht synchronisiert werden: aktives Profil passt nicht zum Trip.',
+      );
+    }
+
     final int? protocolId = await _resolveProtocolIdForSync(
       profileId: profileId,
       preferredProtocolId: trip.protocolId,
@@ -207,12 +213,10 @@ class TripService {
     required int profileId,
     int preferredProtocolId = 0,
   }) async {
-    if (preferredProtocolId > 0) {
-      return preferredProtocolId;
-    }
-
     final int? resolved =
-        await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
+        await ProtocolService.resolvePreferredCurrentOrFirstAvailableProtocolId(
+          preferredProtocolId: preferredProtocolId,
+        );
     if (resolved != null && resolved > 0) {
       return resolved;
     }
