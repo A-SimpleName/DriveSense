@@ -6,6 +6,7 @@ CREATE TABLE `account` (
   `pwd` VARCHAR(255) NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `birthdate` DATE DEFAULT NULL,
+  `email_verified` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_account_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -134,4 +135,53 @@ CREATE TABLE `profile_usergroup` (
 
   CONSTRAINT `chk_pug_role`
     CHECK (`group_role` IN ('OWNER','ADMIN','MEMBER'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Gruppeneinladung
+CREATE TABLE `group_invitation` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `group_id` BIGINT NOT NULL,
+  `invited_account_id` BIGINT NOT NULL,
+  `invited_by_profile_id` BIGINT NOT NULL,
+  `code_hash` VARCHAR(255) NOT NULL,
+  `status` ENUM('PENDING','ACCEPTED','EXPIRED') NOT NULL DEFAULT 'PENDING',
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_gi_group`
+    FOREIGN KEY (`group_id`) REFERENCES `usergroup` (`id`)
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_gi_invited_account`
+    FOREIGN KEY (`invited_account_id`) REFERENCES `account` (`id`)
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_gi_invited_by`
+    FOREIGN KEY (`invited_by_profile_id`) REFERENCES `profile` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Passwort vergessen
+CREATE TABLE `password_reset_token` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `account_id` BIGINT NOT NULL,
+  `code_hash` VARCHAR(255) NOT NULL,
+  `used` BOOLEAN NOT NULL DEFAULT FALSE,
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_prt_account`
+    FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Email Verifizierung
+CREATE TABLE `email_verification` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `account_id` BIGINT NOT NULL,
+  `code_hash` VARCHAR(255) NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_ev_account`
+    FOREIGN KEY (`account_id`) REFERENCES `account` (`id`)
+    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
