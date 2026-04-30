@@ -18,6 +18,7 @@ function Topbar({ setAccount, account }: TopbarProps) {
             <Link to="/trips" className='rides'>Fahrten</Link>
             <Link to="/vehicles">Fahrzeuge</Link>
             <Link to="/protocols">Protokolle</Link>
+            <Link to="/groups">Gruppen</Link>
             <UserMenu setAccount={setAccount} account={account} />
         </nav>
     );
