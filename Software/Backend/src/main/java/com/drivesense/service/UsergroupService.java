@@ -185,19 +185,19 @@ public class UsergroupService {
         return mapToGroupResponse(userGroupDao.getById(id));
     }
 
-    private boolean isGroupOwner(int groupId, int profileId) {
+    public boolean isGroupOwner(int groupId, int profileId) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
         return pug.getGroupRole().equals("OWNER");
     }
 
-    private boolean isGroupAdmin(int groupId, int profileId) {
+    public boolean isGroupAdmin(int groupId, int profileId) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
         return pug.getGroupRole().equals("ADMIN");
     }
 
-    private boolean isGroupOwnerOrAdmin(int groupId, int profileId) {
+    public boolean isGroupOwnerOrAdmin(int groupId, int profileId) {
         return isGroupOwner(groupId, profileId) || isGroupAdmin(groupId, profileId);
     }
 
