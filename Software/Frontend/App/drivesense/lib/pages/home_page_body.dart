@@ -90,7 +90,6 @@ class _HomePageBodyState extends State<HomePageBody> {
   Future<void> _onStartTripAsync() async {
     final int? profileId = RuntimeStore.currentProfileId;
     int vehicleId = RuntimeStore.getCurrentVehicleId();
-    int protocolId = RuntimeStore.getCurrentProtocolId();
 
     if (profileId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,9 +102,8 @@ class _HomePageBodyState extends State<HomePageBody> {
       return;
     }
 
-    final int? resolvedProtocolId = protocolId > 0
-        ? protocolId
-        : await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
+    final int? resolvedProtocolId =
+        await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
     if (resolvedProtocolId == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +116,7 @@ class _HomePageBodyState extends State<HomePageBody> {
       return;
     }
 
-    protocolId = resolvedProtocolId;
+    final int protocolId = resolvedProtocolId;
     RuntimeStore.setCurrentProtocolId(protocolId);
 
     final int? resolvedVehicleId =
@@ -156,7 +154,8 @@ class _HomePageBodyState extends State<HomePageBody> {
       distanceKm: 0,
       roadSurfaceConditions: '',
       type: null,
-      startMileage: 0, // TODO: Basis für startMileage ermitteln (z.B. aus letztem Trip oder Fahrzeugdaten)
+      startMileage:
+          0, // TODO: Basis für startMileage ermitteln (z.B. aus letztem Trip oder Fahrzeugdaten)
       endMileage: 0,
       isSynced: false,
     );
@@ -223,7 +222,10 @@ class _HomePageBodyState extends State<HomePageBody> {
     final finishedTrip = _activeTrip!.copyWith(
       endTime: end,
       distanceKm: _totalDistanceMeters / 1000,
-      endMileage: _activeTrip!.startMileage + (_totalDistanceMeters / 1000).round(), // Beispiel: 1 km = 10 Milage-Einheiten, hier sollte eine realistischere Berechnung basierend auf Fahrzeugdaten erfolgen
+      endMileage:
+          _activeTrip!.startMileage +
+          (_totalDistanceMeters / 1000)
+              .round(), // Beispiel: 1 km = 10 Milage-Einheiten, hier sollte eine realistischere Berechnung basierend auf Fahrzeugdaten erfolgen
     );
 
     final finishedTripDetail = TripDetailed(

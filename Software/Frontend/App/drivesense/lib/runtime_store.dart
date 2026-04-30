@@ -51,8 +51,18 @@ class RuntimeStore {
   }
 
   static void setActiveProfile({required int profileId, String? profileToken}) {
+    final bool profileChanged =
+        currentProfileId != null && currentProfileId != profileId;
+
     currentProfileId = profileId;
     activeProfileToken = profileToken;
+
+    if (profileChanged) {
+      currentVehicleId = 0;
+      currentProtocolId = 0;
+      trips = [];
+      tripDetailCache = {};
+    }
   }
 
   static String? getActiveProfileToken() {
