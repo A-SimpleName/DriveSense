@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -116,6 +117,113 @@ class VehicleService {
     final int resolved = vehicleId ?? 0;
     RuntimeStore.setCurrentVehicleId(resolved);
     return resolved;
+  }
+
+  // ─── Alle Fahrzeuge des aktuellen Profils vom Server laden ───────────────
+  // Gibt eine leere Liste zurück wenn etwas schiefgeht (kein Crash).
+  static Future<List<Vehicle>> fetchVehicles() async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/account');
+
+    try {
+      final http.Response response = await http
+          .get(uri, headers: _authHeaders())
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return [];
+      }
+
+      final dynamic decoded = _decodeJson(response.body);
+      if (decoded is! List) return [];
+
+      // Jeden JSON-Eintrag in ein Vehicle-Objekt umwandeln,
+      // fehlerhafte Einträge werden übersprungen (whereType filtert null raus)
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map((json) => Vehicle.fromJson(json))
+          .toList();
+    } catch (e) {
+      debugPrint('FetchVehicles failed at $uri: $e');
+      return [];
+    }
+  }
+
+  // ─── Ein bestehendes Fahrzeug am Server aktualisieren ────────────────────
+  // Gibt true zurück wenn erfolgreich, false wenn nicht.
+  static Future<bool> updateVehicle(Vehicle vehicle) async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}');
+
+    try {
+      final http.Response response = await http
+          .put(
+            uri,
+            headers: _authHeaders(),
+            body: jsonEncode(vehicle.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      debugPrint('UpdateVehicle failed at $uri: $e');
+      return false;
+    }
+  }
+
+  // ─── Ein Fahrzeug am Server löschen ──────────────────────────────────────
+  static Future<bool> deleteVehicle(int vehicleId) async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/$vehicleId');
+
+    try {
+      final http.Response response = await http
+          .delete(uri, headers: _authHeaders())
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      debugPrint('DeleteVehicle failed at $uri: $e');
+      return false;
+    }
+  }
+
+  // ─── Ein neues Fahrzeug erstellen ─────────────────────────────────────────
+  // Backend gibt die rohe Vehicle-Entity zurück (HTTP 201).
+  // Vehicle.fromJson() verarbeitet beide Key-Varianten (licenseplate / licensePlate).
+  static Future<Vehicle?> createVehicle({
+    required String model,
+    required String licensePlate,
+    required int mileage,
+  }) async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
+
+    try {
+      final http.Response response = await http
+          .post(
+            uri,
+            headers: _authHeaders(),
+            body: jsonEncode({
+              'model': model,
+              'licensePlate': licensePlate,
+              'mileage': mileage,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint(
+        'CreateVehicle <- status=\${response.statusCode}, body=\${response.body}',
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        debugPrint('CreateVehicle failed: HTTP \${response.statusCode}');
+        return null;
+      }
+
+      final dynamic decoded = _decodeJson(response.body);
+      if (decoded is! Map<String, dynamic>) return null;
+      return Vehicle.fromJson(decoded);
+    } catch (e) {
+      debugPrint('CreateVehicle failed at $uri: $e');
+      return null;
+    }
   }
 
   static dynamic _decodeJson(String rawBody) {
