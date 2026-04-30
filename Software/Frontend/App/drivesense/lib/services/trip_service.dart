@@ -7,7 +7,7 @@ import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
 
@@ -148,6 +148,8 @@ class TripService {
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
       'type': tripSummary.type,
+      'startMileage': tripSummary.startMileage,
+      'endMileage': tripSummary.endMileage,
     };
   }
 
@@ -319,6 +321,8 @@ class TripService {
     trip.distanceKm = summary.distanceKm;
     trip.roadSurfaceConditions = summary.roadSurfaceConditions;
     trip.type = summary.type;
+    trip.startMileage = summary.startMileage;
+    trip.endMileage = summary.endMileage;
     trip.createdAt = existing?.createdAt ?? DateTime.now();
     trip.isSynced = true;
     trip.retryCount = 0;

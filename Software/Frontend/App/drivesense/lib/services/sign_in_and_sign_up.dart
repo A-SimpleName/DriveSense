@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:flutter/foundation.dart';

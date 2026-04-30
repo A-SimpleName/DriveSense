@@ -1,6 +1,6 @@
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_colors.dart';
 
 class LastTripCard extends StatefulWidget {
   final TripSummary? lastTrip;

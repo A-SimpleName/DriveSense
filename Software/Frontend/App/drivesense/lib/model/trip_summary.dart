@@ -12,6 +12,8 @@ class TripSummary {
   final String? startPoint;
   final String? endPoint;
   final String? type;
+  final int startMileage;
+  final int endMileage;
   bool isSynced;
 
   TripSummary({
@@ -27,6 +29,8 @@ class TripSummary {
     this.endPoint,
     required this.type,
     required this.isSynced,
+    required this.startMileage,
+    required this.endMileage,
   });
 
   Map<String, dynamic> toJson() {
@@ -43,6 +47,8 @@ class TripSummary {
       "endPoint": endPoint,
       "type": type,
       "isSynced": isSynced,
+      "startMileage": startMileage,
+      "endMileage": endMileage,
     };
   }
 
@@ -76,6 +82,8 @@ class TripSummary {
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] == true,
+      startMileage: asInt(json["startMileage"]),
+      endMileage: asInt(json["endMileage"]),
     );
   }
 
@@ -102,12 +110,15 @@ class TripSummary {
       endPoint: null,
       type: trip.type,
       isSynced: trip.isSynced,
+      startMileage: trip.startMileage,
+      endMileage: trip.endMileage,
     );
   }
 
   TripSummary copyWith({
     required DateTime endTime,
     required double distanceKm,
+    required int endMileage,
   }) {
     return TripSummary(
       id: id,
@@ -122,6 +133,8 @@ class TripSummary {
       endPoint: endPoint,
       type: type,
       isSynced: isSynced,
+      startMileage: startMileage,
+      endMileage: endMileage,
     );
   }
 }

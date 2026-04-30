@@ -156,6 +156,8 @@ class _HomePageBodyState extends State<HomePageBody> {
       distanceKm: 0,
       roadSurfaceConditions: '',
       type: null,
+      startMileage: 0, // TODO: Basis für startMileage ermitteln (z.B. aus letztem Trip oder Fahrzeugdaten)
+      endMileage: 0,
       isSynced: false,
     );
 
@@ -221,6 +223,7 @@ class _HomePageBodyState extends State<HomePageBody> {
     final finishedTrip = _activeTrip!.copyWith(
       endTime: end,
       distanceKm: _totalDistanceMeters / 1000,
+      endMileage: _activeTrip!.startMileage + (_totalDistanceMeters / 1000).round(), // Beispiel: 1 km = 10 Milage-Einheiten, hier sollte eine realistischere Berechnung basierend auf Fahrzeugdaten erfolgen
     );
 
     final finishedTripDetail = TripDetailed(
