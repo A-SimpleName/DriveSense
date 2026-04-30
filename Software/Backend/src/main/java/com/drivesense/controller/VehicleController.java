@@ -58,8 +58,8 @@ public class VehicleController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable int id, HttpServletRequest request) {
-        int accountId = (int) request.getAttribute("accountId");
-        vehicleService.deleteVehicle(id, accountId);
+        int profileId = (int) request.getAttribute("profileId");
+        vehicleService.deleteVehicle(id, profileId);
         return ResponseEntity.noContent().build();
     }
 }

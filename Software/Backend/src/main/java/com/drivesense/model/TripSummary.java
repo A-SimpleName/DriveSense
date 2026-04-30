@@ -28,10 +28,19 @@ public class TripSummary {
     private String endPoint;
     private String furthestPoint;
 
+    @Min(value = 0, message = "Start-Kilometerstand darf nicht negativ sein")
+    private int startMileage;
+    @Min(value = 0, message = "End-Kilometerstand darf nicht negativ sein")
+    private int endMileage;
+
 
     public TripSummary(){}
 
     public TripSummary(int profileId, int vehicleId, int protocolId, LocalDateTime startTime, LocalDateTime endTime, double distance, String roadSurfaceConditions, String type) {
+        this(profileId, vehicleId, protocolId, startTime, endTime, distance, roadSurfaceConditions, type, 0, 0);
+    }
+
+    public TripSummary(int profileId, int vehicleId, int protocolId, LocalDateTime startTime, LocalDateTime endTime, double distance, String roadSurfaceConditions, String type, int startMileage, int endMileage) {
         this.profileId = profileId;
         this.vehicleId = vehicleId;
         this.protocolId = protocolId;
@@ -40,6 +49,8 @@ public class TripSummary {
         this.distance = distance;
         this.roadSurfaceConditions = roadSurfaceConditions;
         this.type = type;
+        this.startMileage = startMileage;
+        this.endMileage = endMileage;
     }
 
     public int getId() {
@@ -138,6 +149,22 @@ public class TripSummary {
         this.furthestPoint = furthestPoint;
     }
 
+    public int getStartMileage() {
+        return startMileage;
+    }
+
+    public void setStartMileage(int startMileage) {
+        this.startMileage = startMileage;
+    }
+
+    public int getEndMileage() {
+        return endMileage;
+    }
+
+    public void setEndMileage(int endMileage) {
+        this.endMileage = endMileage;
+    }
+
     @Override
     public String toString() {
         return "Trip: " +
@@ -152,6 +179,8 @@ public class TripSummary {
                 ", type: '" + type + '\'' +
                 ", startPoint: " + startPoint +
                 ", furthestPoint: " + furthestPoint +
-                ", endPoint: " + endPoint;
+                ", endPoint: " + endPoint +
+                ", startMileage: " + startMileage +
+                ", endMileage: " + endMileage;
     }
 }

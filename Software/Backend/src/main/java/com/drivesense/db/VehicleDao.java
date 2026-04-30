@@ -18,9 +18,13 @@ public class VehicleDao {
     private DbConnection dbConnection;
 
     public List<VehicleDto> getAllVehicles() {
-        String sql = "SELECT v.id, v.model, p.name, v.licenseplate, v.mileage " +
+        String sql = "SELECT v.id, v.model, " +
+                "GROUP_CONCAT(p.name ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), p.name SEPARATOR ', ') AS profile_name, " +
+                "v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
-                "JOIN profile p ON v.profile_id = p.id";
+                "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
+                "JOIN profile p ON p.id = pv.profile_id " +
+                "GROUP BY v.id, v.model, v.licenseplate, v.mileage";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -36,10 +40,14 @@ public class VehicleDao {
     }
 
     public List<VehicleDto> getAllVehiclesByAccount(int accountId) {
-        String sql = "SELECT v.id, v.model, p.name, v.licenseplate, v.mileage " +
+        String sql = "SELECT v.id, v.model, " +
+                "GROUP_CONCAT(p.name ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), p.name SEPARATOR ', ') AS profile_name, " +
+                "v.licenseplate, v.mileage " +
                 "FROM vehicle v " +
-                "JOIN profile p ON v.profile_id = p.id " +
-                "WHERE p.account_id = ?";
+                "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
+                "JOIN profile p ON p.id = pv.profile_id " +
+                "WHERE p.account_id = ? " +
+                "GROUP BY v.id, v.model, v.licenseplate, v.mileage";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -60,7 +68,14 @@ public class VehicleDao {
     }
 
     public Vehicle getById(int id) {
-        String sql = "SELECT * FROM vehicle WHERE id = ?";
+        String sql = "SELECT v.*, (" +
+                "SELECT pv.profile_id " +
+                "FROM profile_vehicle pv " +
+                "WHERE pv.vehicle_id = v.id " +
+                "ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), pv.profile_id " +
+                "LIMIT 1" +
+                ") AS profile_id " +
+                "FROM vehicle v WHERE id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -74,21 +89,39 @@ public class VehicleDao {
     }
 
     public Vehicle insert(Vehicle vehicle) {
-        String sql = "INSERT INTO vehicle (profile_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String vehicleSql = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
+        String profileVehicleSql = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,'OWNER')";
 
-            ps.setInt(1, vehicle.getProfileId());
-            ps.setString(2, vehicle.getModel());
-            ps.setString(3, vehicle.getLicensePlate());
-            ps.setInt(4, vehicle.getMileage());
-            ps.executeUpdate();
+        try (Connection conn = dbConnection.getConnection()) {
+            conn.setAutoCommit(false);
 
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                vehicle.setId(rs.getInt(1));
+            try (PreparedStatement vehiclePs = conn.prepareStatement(vehicleSql, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement profileVehiclePs = conn.prepareStatement(profileVehicleSql)) {
+
+                vehiclePs.setString(1, vehicle.getModel());
+                vehiclePs.setString(2, vehicle.getLicensePlate());
+                vehiclePs.setInt(3, vehicle.getMileage());
+                vehiclePs.executeUpdate();
+
+                try (ResultSet rs = vehiclePs.getGeneratedKeys()) {
+                    if (!rs.next()) {
+                        throw new SQLException("Keine Fahrzeug-ID nach dem Insert erhalten");
+                    }
+                    vehicle.setId(rs.getInt(1));
+                }
+
+                profileVehiclePs.setInt(1, vehicle.getProfileId());
+                profileVehiclePs.setInt(2, vehicle.getId());
+                profileVehiclePs.executeUpdate();
+
+                conn.commit();
+                return vehicle;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
-            return vehicle;
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim speichern des Vehicles", e);
         }
@@ -150,7 +183,7 @@ public class VehicleDao {
     private VehicleDto mapDto(ResultSet rs) throws SQLException {
         VehicleDto dto = new VehicleDto();
         dto.setId(rs.getInt("id"));
-        dto.setProfileName(rs.getString("name"));
+        dto.setProfileName(rs.getString("profile_name"));
         dto.setModel(rs.getString("model"));
         dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setMileage(rs.getInt("mileage"));

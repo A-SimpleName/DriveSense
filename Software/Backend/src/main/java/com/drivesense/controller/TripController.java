@@ -28,8 +28,15 @@ public class TripController {
     @PostMapping
     public ResponseEntity<TripDetailedDto> saveTrip(@Valid @RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
-        saveTripRequest.getTripSummary().setProfileId(profileId);
-        return ResponseEntity.status(201).body(tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints()));
+        TripSummary tripSummary = saveTripRequest.getTripSummary();
+        tripSummary.setProfileId(profileId);
+        if (saveTripRequest.getStartMileage() != null) {
+            tripSummary.setStartMileage(saveTripRequest.getStartMileage());
+        }
+        if (saveTripRequest.getEndMileage() != null) {
+            tripSummary.setEndMileage(saveTripRequest.getEndMileage());
+        }
+        return ResponseEntity.status(201).body(tripService.insertTrip(tripSummary, saveTripRequest.getTrackingpoints()));
     }
 
     // POST /api/trips/summary
