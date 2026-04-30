@@ -36,18 +36,14 @@ public class TripService {
     }
 
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
-        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
-            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
-        }
+        validateTripSummary(tripSummary);
 
         TripSummary createdTrip = insertTripSummary(tripSummary);
         return addTrackingpointsToTrip(createdTrip.getId(), trackingpoints, createdTrip.getProfileId());
     }
 
     public TripSummary insertTripSummary(TripSummary tripSummary) {
-        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
-            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
-        }
+        validateTripSummary(tripSummary);
 
         if (!protocolDao.isAccessibleByProfile(tripSummary.getProtocolId(), tripSummary.getProfileId())) {
             throw new UnauthorizedException("Kein Zugriff auf dieses Protokoll");
@@ -173,9 +169,7 @@ public class TripService {
             throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
         }
 
-        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
-            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
-        }
+        validateTripSummary(tripSummary);
 
         tripDao.update(tripSummary);
     }
@@ -231,5 +225,15 @@ public class TripService {
                 * Math.sin(dLng / 2) * Math.sin(dLng / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private void validateTripSummary(TripSummary tripSummary) {
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
+        if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
+            throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
+        }
     }
 }
