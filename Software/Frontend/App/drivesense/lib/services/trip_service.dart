@@ -156,6 +156,8 @@ class TripService {
       'type': tripSummary.type,
       'startMileage': tripSummary.startMileage,
       'endMileage': tripSummary.endMileage,
+      'start_mileage': tripSummary.startMileage,
+      'end_mileage': tripSummary.endMileage,
     };
   }
 
