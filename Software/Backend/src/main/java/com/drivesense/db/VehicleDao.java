@@ -17,118 +17,114 @@ public class VehicleDao {
     @Autowired
     private DbConnection dbConnection;
 
-    public List<VehicleDto> getAllVehicles() {
-        String sql = "SELECT v.id, v.model, " +
-                "GROUP_CONCAT(p.name ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), p.name SEPARATOR ', ') AS profile_name, " +
-                "v.licenseplate, v.mileage " +
-                "FROM vehicle v " +
-                "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
-                "JOIN profile p ON p.id = pv.profile_id " +
-                "GROUP BY v.id, v.model, v.licenseplate, v.mileage";
-
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-            List<VehicleDto> vehicleDtos = new ArrayList<>();
-            while (rs.next()) {
-                vehicleDtos.add(mapDto(rs));
-            }
-            return vehicleDtos;
-        } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim laden der Vehicles", e);
-        }
-    }
-
     public List<VehicleDto> getAllVehiclesByAccount(int accountId) {
-        String sql = "SELECT v.id, v.model, " +
-                "GROUP_CONCAT(p.name ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), p.name SEPARATOR ', ') AS profile_name, " +
-                "v.licenseplate, v.mileage " +
-                "FROM vehicle v " +
-                "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
-                "JOIN profile p ON p.id = pv.profile_id " +
-                "WHERE p.account_id = ? " +
-                "GROUP BY v.id, v.model, v.licenseplate, v.mileage";
+        String sql =
+                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
+                        "       acc.fname AS owner_account_name, " +
+                        "       p.name AS owner_profile_name, " +
+                        "       pv2.role AS my_role " +
+                        "FROM vehicle v " +
+                        "JOIN profile_vehicle pv2 ON pv2.vehicle_id = v.id " +
+                        "JOIN profile p2 ON p2.id = pv2.profile_id AND p2.account_id = ? " +
+                        "JOIN profile_vehicle pv_owner ON pv_owner.vehicle_id = v.id AND pv_owner.role = 'OWNER' " +
+                        "JOIN profile p ON p.id = pv_owner.profile_id " +
+                        "JOIN account acc ON acc.id = p.account_id";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, accountId); // WICHTIG
+            ps.setInt(1, accountId);
 
             ResultSet rs = ps.executeQuery();
-            List<VehicleDto> vehicleDtos = new ArrayList<>();
+            List<VehicleDto> list = new ArrayList<>();
 
             while (rs.next()) {
-                vehicleDtos.add(mapDto(rs));
+                list.add(mapDetail(rs));
             }
-            return vehicleDtos;
+
+            return list;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim laden der Vehicles", e);
+            throw new DatabaseException("Fehler beim Laden der Vehicles", e);
         }
     }
 
-    public Vehicle getById(int id) {
-        String sql = "SELECT v.*, (" +
-                "SELECT pv.profile_id " +
-                "FROM profile_vehicle pv " +
-                "WHERE pv.vehicle_id = v.id " +
-                "ORDER BY FIELD(pv.role, 'OWNER', 'CO_OWNER', 'DRIVER'), pv.profile_id " +
-                "LIMIT 1" +
-                ") AS profile_id " +
-                "FROM vehicle v WHERE id = ?";
+    public VehicleDto getById(int vehicleId, int accountId) {
+        String sql =
+                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
+                        "       acc.fname AS owner_account_name, " +
+                        "       p.name AS owner_profile_name, " +
+                        "       pv.role AS my_role " +
+                        "FROM vehicle v " +
+                        "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
+                        "JOIN profile p_user ON p_user.id = pv.profile_id AND p_user.account_id = ? " +
+                        "JOIN profile_vehicle pv_owner ON pv_owner.vehicle_id = v.id AND pv_owner.role = 'OWNER' " +
+                        "JOIN profile p ON p.id = pv_owner.profile_id " +
+                        "JOIN account acc ON acc.id = p.account_id " +
+                        "WHERE v.id = ?";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
+
+            ps.setInt(1, accountId);
+            ps.setInt(2, vehicleId);
+
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return map(rs);
+
+            if (rs.next()) {
+                return mapDetail(rs);
+            }
+
             return null;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim laden des Vehicles", e);
+            throw new DatabaseException("Fehler beim Laden des Vehicles", e);
         }
     }
 
-    public Vehicle insert(Vehicle vehicle) {
-        String vehicleSql = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
-        String profileVehicleSql = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,'OWNER')";
+    public Vehicle insert(Vehicle vehicle, int profileId) {
+        String sqlVehicle = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
+        String sqlLink = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,?)";
 
         try (Connection conn = dbConnection.getConnection()) {
+
             conn.setAutoCommit(false);
 
-            try (PreparedStatement vehiclePs = conn.prepareStatement(vehicleSql, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement profileVehiclePs = conn.prepareStatement(profileVehicleSql)) {
+            PreparedStatement ps1 = conn.prepareStatement(sqlVehicle, Statement.RETURN_GENERATED_KEYS);
+            ps1.setString(1, vehicle.getModel());
+            ps1.setString(2, vehicle.getLicensePlate());
+            ps1.setInt(3, vehicle.getMileage());
+            ps1.executeUpdate();
 
-                vehiclePs.setString(1, vehicle.getModel());
-                vehiclePs.setString(2, vehicle.getLicensePlate());
-                vehiclePs.setInt(3, vehicle.getMileage());
-                vehiclePs.executeUpdate();
+            ResultSet rs = ps1.getGeneratedKeys();
 
-                try (ResultSet rs = vehiclePs.getGeneratedKeys()) {
-                    if (!rs.next()) {
-                        throw new SQLException("Keine Fahrzeug-ID nach dem Insert erhalten");
-                    }
-                    vehicle.setId(rs.getInt(1));
-                }
+            if (rs.next()) {
+                int vehicleId = rs.getInt(1);
+                vehicle.setId(vehicleId);
 
-                profileVehiclePs.setInt(1, vehicle.getProfileId());
-                profileVehiclePs.setInt(2, vehicle.getId());
-                profileVehiclePs.executeUpdate();
-
-                conn.commit();
-                return vehicle;
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
+                PreparedStatement ps2 = conn.prepareStatement(sqlLink);
+                ps2.setInt(1, profileId);
+                ps2.setInt(2, vehicleId);
+                ps2.setString(3, "OWNER");
+                ps2.executeUpdate();
             }
+
+            conn.commit();
+            return vehicle;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim speichern des Vehicles", e);
+            throw new DatabaseException("Fehler beim Speichern des Vehicles", e);
         }
     }
 
-    public void update(Vehicle vehicle) {
-        String sql = "UPDATE vehicle SET model = ?, licenseplate = ?, mileage = ? WHERE id = ?";
+    public void update(Vehicle vehicle, int accountId) {
+        String sql =
+                "UPDATE vehicle v " +
+                        "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
+                        "JOIN profile p ON p.id = pv.profile_id " +
+                        "SET v.model = ?, v.licenseplate = ?, v.mileage = ? " +
+                        "WHERE v.id = ? AND p.account_id = ?";
+
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -136,57 +132,79 @@ public class VehicleDao {
             ps.setString(2, vehicle.getLicensePlate());
             ps.setInt(3, vehicle.getMileage());
             ps.setInt(4, vehicle.getId());
+            ps.setInt(5, accountId);
 
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim aktualisieren des Vehicles", e);
+            throw new DatabaseException("Fehler beim Updaten des Vehicles", e);
         }
     }
 
-    public void deleteById(int id) {
-        String sql = "DELETE FROM vehicle WHERE id = ?";
+    public void deleteById(int vehicleId, int accountId) {
+        String sql =
+                "DELETE v FROM vehicle v " +
+                        "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
+                        "JOIN profile p ON p.id = pv.profile_id " +
+                        "WHERE v.id = ? " +
+                        "AND p.account_id = ? " +
+                        "AND pv.role = 'OWNER'";
+
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
+
+            ps.setInt(1, vehicleId);
+            ps.setInt(2, accountId);
+
             ps.executeUpdate();
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim löschen der Vehicles", e);
+            throw new DatabaseException("Fehler beim Löschen des Vehicles", e);
         }
     }
 
-    public boolean isAssignedToProfile(int profileId, int vehicleId) {
-        String sql = "SELECT 1 FROM profile_vehicle WHERE profile_id = ? AND vehicle_id = ?";
+    public List<VehicleDto> getAllVehicles() {
+        String sql =
+                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
+                        "       acc.fname AS owner_account_name, " +
+                        "       p.name AS owner_profile_name, " +
+                        "       pv_user.role AS my_role " +
+                        "FROM vehicle v " +
+                        "JOIN profile_vehicle pv_owner ON pv_owner.vehicle_id = v.id AND pv_owner.role = 'OWNER' " +
+                        "JOIN profile p ON p.id = pv_owner.profile_id " +
+                        "JOIN account acc ON acc.id = p.account_id " +
+                        "LEFT JOIN profile_vehicle pv_user ON pv_user.vehicle_id = v.id";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, profileId);
-            ps.setInt(2, vehicleId);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
+            ResultSet rs = ps.executeQuery();
+            List<VehicleDto> list = new ArrayList<>();
+
+            while (rs.next()) {
+                list.add(mapDetail(rs));
             }
+
+            return list;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim Prüfen der Fahrzeug-Zuordnung", e);
+            throw new DatabaseException("Fehler beim Laden aller Vehicles", e);
         }
     }
 
-    private Vehicle map(ResultSet rs) throws SQLException {
-        Vehicle v = new Vehicle();
-        v.setId(rs.getInt("id"));
-        v.setProfileId(rs.getInt("profile_id"));
-        v.setModel(rs.getString("model"));
-        v.setLicensePlate(rs.getString("licenseplate"));
-        v.setMileage(rs.getInt("mileage"));
-        return v;
-    }
-
-    private VehicleDto mapDto(ResultSet rs) throws SQLException {
+    private VehicleDto mapDetail(ResultSet rs) throws SQLException {
         VehicleDto dto = new VehicleDto();
+
         dto.setId(rs.getInt("id"));
-        dto.setProfileName(rs.getString("profile_name"));
         dto.setModel(rs.getString("model"));
         dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setMileage(rs.getInt("mileage"));
+
+        dto.setOwnerAccountName(rs.getString("owner_account_name"));
+        dto.setOwnerProfileName(rs.getString("owner_profile_name"));
+
+        dto.setMyRole(rs.getString("my_role"));
+
         return dto;
     }
 }
