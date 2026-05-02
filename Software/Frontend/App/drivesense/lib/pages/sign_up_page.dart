@@ -213,19 +213,7 @@ class _SignUpPageState extends State<SignUpPage> {
         RuntimeStore.setRefreshToken(signInResult.refreshToken!);
       }
 
-      final List<Profile> profiles = signInResult.profiles;
-      final SelectProfileResponse profileResult = profiles.isNotEmpty
-          ? await ProfileService.selectProfile(profiles.first.id)
-          : await ProfileService.ensureDefaultStudentProfile();
-      if (!profileResult.isSuccess) {
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(profileResult.message)));
-        return;
-      }
+      SignInAndSignUp.redirectToProfileSelectPage(token: signInResult.accountToken);
 
       if (!mounted) {
         return;

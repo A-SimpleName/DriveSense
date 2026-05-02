@@ -82,8 +82,12 @@ class TripSummary {
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] == true,
-      startMileage: asInt(json["startMileage"]),
-      endMileage: asInt(json["endMileage"]),
+      startMileage: asInt(
+        json["startMileage"] ?? json["start_mileage"],
+      ),
+      endMileage: asInt(
+        json["endMileage"] ?? json["end_mileage"],
+      ),
     );
   }
 

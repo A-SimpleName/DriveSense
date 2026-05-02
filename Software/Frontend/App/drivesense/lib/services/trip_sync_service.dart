@@ -79,6 +79,7 @@ class TripSyncService {
         final List<dynamic> trackingList =
             jsonDecode(pendingTrip.trackingPointsJson) as List<dynamic>;
 
+        await _repairMileageForPendingTrip(pendingTrip);
         final TripSummary trip = TripSummary.fromTrip(pendingTrip);
         final List<Trackingpoint> trackingPoints = trackingList
             .map((item) => Trackingpoint.fromJson(item as Map<String, dynamic>))
@@ -110,5 +111,28 @@ class TripSyncService {
 
   Future<void> clearLocalTrips() async {
     await isarTripRepository.deleteAll();
+  }
+
+  Future<void> _repairMileageForPendingTrip(Trip pendingTrip) async {
+    final int startMileage = pendingTrip.startMileage < 0
+        ? 0
+        : pendingTrip.startMileage;
+    final int calculatedEndMileage =
+        startMileage + pendingTrip.distanceKm.round();
+    final bool missingEndMileage =
+        pendingTrip.endMileage == 0 && pendingTrip.distanceKm > 0;
+    final int endMileage =
+        pendingTrip.endMileage < startMileage || missingEndMileage
+        ? calculatedEndMileage
+        : pendingTrip.endMileage;
+
+    if (startMileage == pendingTrip.startMileage &&
+        endMileage == pendingTrip.endMileage) {
+      return;
+    }
+
+    pendingTrip.startMileage = startMileage;
+    pendingTrip.endMileage = endMileage;
+    await isarTripRepository.update(pendingTrip);
   }
 }
