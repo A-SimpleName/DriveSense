@@ -2,8 +2,10 @@ import { useState } from "react";
 import GroupTable from "../components/group/table";
 import { GroupAddForm } from "../components/group/groupAddForm";
 import type { UserGroup } from "../model/usergroup";
+import { useNavigate } from "react-router-dom";
 
 function GroupPage() {
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [newGroup, setNewGroup] = useState<UserGroup | null>(null);
 
@@ -11,6 +13,7 @@ function GroupPage() {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h1>Gruppenverwaltung</h1>
+                <button onClick={() => navigate("/invite")}>Gruppeneinladung annehmen</button>
                 <button onClick={() => setShowModal(true)}>Gruppe erstellen</button>
             </div>
 
