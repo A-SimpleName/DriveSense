@@ -1,4 +1,5 @@
 import http from "../api/httpService";
+import type { Profile } from "../model/profile";
 import type { GroupMember, UserGroup } from "../model/usergroup";
 
 export const getGroups = () => http.get<UserGroup[]>("/groups");
@@ -10,3 +11,5 @@ export const createGroup = (name: string) => http.post<UserGroup>("/groups", { n
 export const updateGroup = (id: number, name: string) => http.put(`/groups/${id}`, { name });
 export const deleteGroup = (id: number) => http.delete(`/groups/${id}`);
 export const inviteMember = (groupId: number, email: string) => http.post(`/groups/${groupId}/invite`, { email });
+export const verifyInvite = (code: string) => http.post<Profile[]>(`/groups/verify-invite`, { code });
+export const acceptInvite = (code: string, profileId: number) => http.post<void>(`/groups/accept-invite`, { code, profileId });

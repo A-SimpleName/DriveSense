@@ -92,9 +92,9 @@ public class UsergroupService {
             throw new UnauthorizedException("Admins können keine anderen Admins entfernen");
         }
 
-        // Owner/Admin kann sich nicht selbst entfernen
-        if (isSelf && (requesterGroupRole.equals("OWNER") || requesterGroupRole.equals("ADMIN"))) {
-            throw new BadRequestException("Owner/Admin kann sich nicht selbst entfernen");
+        // Owner kann sich nicht selbst entfernen
+        if (isSelf && (requesterGroupRole.equals("OWNER"))) {
+            throw new BadRequestException("Owner kann sich nicht selbst entfernen");
         }
 
         // normaler Member darf sich selbst entfernen
