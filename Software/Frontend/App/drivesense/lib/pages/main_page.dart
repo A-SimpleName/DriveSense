@@ -1,4 +1,4 @@
-import 'package:drivesense/repository/pending_trip_repository.dart';
+import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/widgets/ds_app_bar.dart';
@@ -19,7 +19,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
   String _currentAppBarTitle = 'Übersicht';
-  late final PendingTripRepository pendingTripRepository;
+  late final TripRepository isarTripRepository;
   late final TripSyncService tripSyncService;
   late final TripService tripService;
   
@@ -27,19 +27,34 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[MainPage.initState] START');
 
     tripService = TripService();
-    pendingTripRepository = PendingTripRepository();
+    isarTripRepository = TripRepository();
     tripSyncService = TripSyncService(
-      pendingTripRepository: pendingTripRepository,
+      isarTripRepository: isarTripRepository,
       tripService: tripService
     );
 
+    debugPrint('[MainPage.initState] Scheduling _syncPendingTrips via microtask');
     Future.microtask(_syncPendingTrips);
   }
 
   Future<void> _syncPendingTrips() async {
-    await tripSyncService.syncPendingTrips();
+    debugPrint('[_syncPendingTrips] START');
+    try {
+      debugPrint('[_syncPendingTrips] Calling syncPendingTrips...');
+      await tripSyncService.syncPendingTrips();
+      debugPrint('[_syncPendingTrips] syncPendingTrips completed');
+    } catch (e) {
+      debugPrint('[_syncPendingTrips] syncPendingTrips error (continuing anyway): $e');
+    }
+    // Refresh from server after sync to repopulate local DB if cleared by user
+    // (e.g., via phone settings "Clear app data")
+    // This MUST run regardless of sync errors
+    debugPrint('[_syncPendingTrips] Calling refreshTrips...');
+    await RuntimeStore.refreshTrips();
+    debugPrint('[_syncPendingTrips] DONE');
   }
 
   @override

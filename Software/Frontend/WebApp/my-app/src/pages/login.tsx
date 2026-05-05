@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/auth";
+import { Button } from "../components/button";
 
 export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [show, setShow] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -30,10 +32,16 @@ export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }
       />
 
       <input
-        type="password"
+        type={show ? "text" : "password"}
         placeholder="Passwort"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+      />
+      
+     <Button
+        label={show ? "Verbergen" : "Anzeigen"}
+        type="button"
+        onClick={() => setShow(prev => !prev)}
       />
 
       <button onClick={handleLogin}>Login</button>

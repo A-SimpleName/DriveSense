@@ -5,6 +5,8 @@ import type { Protocol } from "../model/protocol";
 // import { getGroups } from "../services/groupService";
 // import type { UserGroup } from "../model/usergroup";
 import ProtocolTable from "../components/Protocols/table";
+import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
+import { Button } from "../components/button";
 
 export default function ProtocolPage() {
     // const { id } = useParams();
@@ -12,6 +14,8 @@ export default function ProtocolPage() {
     const [protocols, setProtocols] = useState<Protocol[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showForm, setShowForm] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
 
 
     // 1. Gruppen laden
@@ -36,6 +40,10 @@ export default function ProtocolPage() {
     // });
 
     // oder gleich getAllByProfileId in ProtocolDao im Backend aufrufen
+
+
+
+
     useEffect(() => {
         getAllProtocols()
             .then(data => {
@@ -51,10 +59,10 @@ export default function ProtocolPage() {
             })
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
-    }, []);
+    }, [reloadKey]);
 
-    const groupProtocols = protocols.filter(p => p.usergroup?.id !== null);
-    const ownProtocols = protocols.filter(p => p.usergroup.id === null);
+    const groupProtocols = protocols.filter(p => p.usergroup?.id != null);
+    const ownProtocols = protocols.filter(p => p.usergroup?.id == null);
 
     if (loading) return <div>Lade Protokolle...</div>;
 
@@ -62,6 +70,19 @@ export default function ProtocolPage() {
 
     return (
         <div>
+            <Button
+                label="+ Protokoll hinzufügen"
+                onClick={() => setShowForm(true)}
+            />
+
+            {
+                showForm && (
+                    <ProtocolAddForm
+                        onClose={() => setShowForm(false)}
+                        onSuccess={() => setReloadKey(prev => prev + 1)}
+                    />
+                )
+            }
             <h2> Protokolle</h2>
             <ProtocolTable ownProtocols={ownProtocols} groupProtocols={groupProtocols} />
         </div>
