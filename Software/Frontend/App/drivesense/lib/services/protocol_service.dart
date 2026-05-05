@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
@@ -10,20 +11,12 @@ import 'package:http/http.dart' as http;
 class ProtocolService {
   ProtocolService._();
 
-  static Map<String, String> _authHeaders() {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
-    return <String, String>{
-      'Content-Type': 'application/json',
-      ..._cookieHeaders(cookieHeader),
-    };
-  }
-
   static Future<List<Protocol>> fetchProtocols() async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -90,7 +83,7 @@ class ProtocolService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(<String, dynamic>{
               'name': trimmedName,
             }),
@@ -177,11 +170,4 @@ class ProtocolService {
     return null;
   }
 
-  static Map<String, String> _cookieHeaders(String? cookieHeader) {
-    if (cookieHeader == null) {
-      return const <String, String>{};
-    }
-
-    return <String, String>{'Cookie': cookieHeader};
-  }
 }
