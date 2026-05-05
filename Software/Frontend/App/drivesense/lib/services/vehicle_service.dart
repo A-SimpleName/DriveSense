@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
@@ -10,20 +11,12 @@ import 'package:http/http.dart' as http;
 class VehicleService {
   VehicleService._();
 
-  static Map<String, String> _authHeaders() {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
-    return <String, String>{
-      'Content-Type': 'application/json',
-      ..._cookieHeaders(cookieHeader),
-    };
-  }
-
   static Future<int?> resolveFirstAvailableVehicleId() async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/account');
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -96,7 +89,7 @@ class VehicleService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(<String, dynamic>{
               'model': 'L17 Fahrzeug',
               'licensePlate': 'L17-$profileId',
@@ -154,7 +147,7 @@ class VehicleService {
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -187,7 +180,7 @@ class VehicleService {
       final http.Response response = await http
           .put(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(vehicle.toJson()),
           )
           .timeout(const Duration(seconds: 10));
@@ -205,7 +198,7 @@ class VehicleService {
 
     try {
       final http.Response response = await http
-          .delete(uri, headers: _authHeaders())
+          .delete(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode >= 200 && response.statusCode < 300;
@@ -229,7 +222,7 @@ class VehicleService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode({
               'model': model,
               'licensePlate': licensePlate,
@@ -268,11 +261,4 @@ class VehicleService {
     }
   }
 
-  static Map<String, String> _cookieHeaders(String? cookieHeader) {
-    if (cookieHeader == null) {
-      return const <String, String>{};
-    }
-
-    return <String, String>{'Cookie': cookieHeader};
-  }
 }

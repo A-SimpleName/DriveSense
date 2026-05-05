@@ -1,6 +1,7 @@
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
@@ -121,7 +122,6 @@ class TripService {
     required int vehicleId,
     required int protocolId,
   }) async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
     final Map<String, dynamic> payload = _createTripSummaryPayload(
       tripSummary,
       profileId: profileId,
@@ -134,8 +134,7 @@ class TripService {
     return http.post(
       Uri.parse('$_baseUrl/api/trips/summary'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        ..._cookieHeaders(cookieHeader),
+        ...RequestHeaders.authenticatedJson(),
       },
       body: jsonEncode(payload),
     );
@@ -164,7 +163,6 @@ class TripService {
       );
     }
 
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
     final Map<String, dynamic> payload = _createTripSummaryPayload(
       tripSummary,
       profileId: profileId,
@@ -177,8 +175,7 @@ class TripService {
     final http.Response response = await http.put(
       Uri.parse('$_baseUrl/api/trips/${tripSummary.id}'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        ..._cookieHeaders(cookieHeader),
+        ...RequestHeaders.authenticatedJson(),
       },
       body: jsonEncode(payload),
     );
@@ -196,14 +193,11 @@ class TripService {
       return false;
     }
 
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
 
     try {
       final http.Response response = await http.delete(
         Uri.parse('$_baseUrl/api/trips/$tripId'),
-        headers: <String, String>{
-          ..._cookieHeaders(cookieHeader),
-        },
+        headers: RequestHeaders.authenticated(),
       );
 
       return response.statusCode >= 200 && response.statusCode < 300;
@@ -252,7 +246,6 @@ class TripService {
     int tripId,
     List<Trackingpoint> trackingpoints,
   ) async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
     final List<Map<String, dynamic>> payload = trackingpoints
         .map((Trackingpoint tp) => _createTrackingpointPayload(tp))
         .toList();
@@ -260,8 +253,7 @@ class TripService {
     return http.post(
       Uri.parse('$_baseUrl/api/trips/$tripId/trackingpoints'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        ..._cookieHeaders(cookieHeader),
+        ...RequestHeaders.authenticatedJson(),
       },
       body: jsonEncode(payload),
     );
@@ -321,12 +313,11 @@ class TripService {
         .getByProfileAndProtocol(profileId, protocolId);
     final List<TripSummary> serverSummaries = <TripSummary>[];
 
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
 
     try {
       final http.Response response = await http.get(
         Uri.parse('$_baseUrl/api/trips/protocols/$protocolId'),
-        headers: <String, String>{..._cookieHeaders(cookieHeader)},
+        headers: RequestHeaders.authenticated(),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -418,11 +409,4 @@ class TripService {
     await _tripRepository.save(trip);
   }
 
-  Map<String, String> _cookieHeaders(String? cookieHeader) {
-    if (cookieHeader == null) {
-      return const <String, String>{};
-    }
-
-    return <String, String>{'Cookie': cookieHeader};
-  }
 }

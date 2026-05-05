@@ -3,6 +3,7 @@ import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/vehicle.dart';
+import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
@@ -38,6 +39,12 @@ class TripSyncService {
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
   ) async {
+    if (trackingPoints.isEmpty) {
+      throw TripHttpException(
+        'Trip verworfen: Es wurden keine Trackingpunkte aufgezeichnet.',
+      );
+    }
+
     final localTrip = Trip()
       ..localId = _createLocalId()
       ..trackingPointsJson = jsonEncode(
@@ -81,6 +88,14 @@ class TripSyncService {
       try {
         final List<dynamic> trackingList =
             jsonDecode(pendingTrip.trackingPointsJson) as List<dynamic>;
+
+        if (trackingList.isEmpty) {
+          await isarTripRepository.deleteById(pendingTrip.id);
+          debugPrint(
+            'Discarded pending trip without tracking points (localId=${pendingTrip.localId}, dbId=${pendingTrip.id}).',
+          );
+          continue;
+        }
 
         await _repairMileageForPendingTrip(pendingTrip);
         final TripSummary trip = TripSummary.fromTrip(pendingTrip);
