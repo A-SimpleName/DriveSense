@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { deleteTrip, getAllTrips, updateTrip } from "../../services/tripService"
+import { deleteTrip, getAllTrips } from "../../services/tripService"
 import type { TripSummary } from "../../model/trip"
 import "../../styles/table.css"
 import { Button } from "../button"
