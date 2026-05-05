@@ -23,7 +23,7 @@ public class ProtocolDao {
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,protocol.getCreatedByProfileId());
-            ps.setInt(2,protocol.getUsergroupId());
+            ps.setObject(2, protocol.getUsergroupId());
             ps.setString(3,protocol.getName());
 
 
