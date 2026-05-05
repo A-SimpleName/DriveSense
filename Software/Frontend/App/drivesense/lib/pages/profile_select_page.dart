@@ -215,7 +215,7 @@ class _ProfileList extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: profiles.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final Profile profile = profiles[index];
         return Material(

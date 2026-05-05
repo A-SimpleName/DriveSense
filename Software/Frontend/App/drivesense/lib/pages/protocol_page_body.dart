@@ -42,45 +42,56 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _resolveDropdownValue(selectedProtocolId),
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Ausgewaehltes Protokoll',
-                      border: OutlineInputBorder(),
-                    ),
-                    hint: Text(
-                      _isLoading
-                          ? 'Protokolle werden geladen...'
-                          : 'Protokoll auswaehlen',
-                    ),
-                    items: _protocols
-                        .map(
-                          (Protocol protocol) => DropdownMenuItem<int>(
-                            value: protocol.id,
-                            child: Text(protocol.name),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _isLoading || _protocols.isEmpty
-                        ? null
-                        : _handleProtocolChanged,
+                DropdownButtonFormField<int>(
+                  initialValue: _resolveDropdownValue(selectedProtocolId),
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Ausgewaehltes Protokoll',
+                    border: OutlineInputBorder(),
                   ),
+                  hint: Text(
+                    _isLoading
+                        ? 'Protokolle werden geladen...'
+                        : 'Protokoll auswaehlen',
+                  ),
+                  items: _protocols
+                      .map(
+                        (Protocol protocol) => DropdownMenuItem<int>(
+                          value: protocol.id,
+                          child: Text(protocol.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _isLoading || _protocols.isEmpty
+                      ? null
+                      : _handleProtocolChanged,
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: _isCreating ? null : _showCreateProtocolDialog,
-                  icon: _isCreating
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.add),
-                  label: Text(_isCreating ? 'Erstelle...' : 'Neu'),
+                const SizedBox(height: 8),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _handlePdfExportPressed,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('PDF exportieren'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: _isCreating ? null : _showCreateProtocolDialog,
+                      icon: _isCreating
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add),
+                      label: Text(_isCreating ? 'Erstelle...' : 'Neu'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -102,7 +113,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   ? const Center(
                       child: Text('Keine Protokolle fuer das aktuelle Profil.'),
                     )
-                  : const ProtocolTable(),
+                  : ProtocolTable(onChanged: _refreshVisibleTrips),
             ),
           ),
           Padding(
@@ -112,6 +123,21 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         ],
       ),
     );
+  }
+
+  void _handlePdfExportPressed() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('PDF Export ist noch nicht implementiert.')),
+    );
+  }
+
+  Future<void> _refreshVisibleTrips() async {
+    await RuntimeStore.refreshTrips();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
   }
 
   void _reloadIfProfileChanged() {
@@ -278,7 +304,6 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
 
     try {
       final Protocol? createdProtocol = await ProtocolService.createProtocol(
-        profileId: profileId,
         name: name,
       );
 
