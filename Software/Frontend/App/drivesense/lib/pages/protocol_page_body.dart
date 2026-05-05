@@ -70,6 +70,20 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                       : _handleProtocolChanged,
                 ),
                 const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading || _protocols.isEmpty
+                        ? null
+                        : _handleDeleteProtocolPressed,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Protokoll löschen'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: <Widget>[
                     Expanded(
@@ -123,6 +137,67 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleDeleteProtocolPressed() async {
+    final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
+    if (selectedProtocolId <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kein Protokoll ausgewählt.')),
+      );
+      return;
+    }
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Protokoll löschen'),
+          content: const Text(
+            'möchten Sie das Protokoll wirklich Löschen, alle darin eingetragenen Fahrten werden dadurch gelöscht',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Löschen'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final bool success = await ProtocolService.deleteProtocol(
+      selectedProtocolId,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      await _loadProtocolsAndTrips();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Protokoll wurde gelöscht.')),
+        );
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Löschen fehlgeschlagen.')));
+    }
   }
 
   void _handlePdfExportPressed() {
