@@ -20,6 +20,7 @@ import ProtocolDetail from "./pages/protocolDetail";
 import GroupPage from "./pages/group";
 import GroupDetailPage from "./pages/groupDetail";
 import ProfilePage from "./pages/profile";
+import InviteAcceptPage from "./pages/inviteAccept";
 
 export default function App() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
@@ -121,6 +122,7 @@ export default function App() {
             <Route path="/groups" element={<GroupPage />} />
             <Route path="/groups/:id" element={<GroupDetailPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/invite" element={<InviteAcceptPage />} />
           </>
         )}
 
