@@ -92,9 +92,9 @@ public class UsergroupService {
             throw new UnauthorizedException("Admins können keine anderen Admins entfernen");
         }
 
-        // Owner/Admin kann sich nicht selbst entfernen
-        if (isSelf && (requesterGroupRole.equals("OWNER") || requesterGroupRole.equals("ADMIN"))) {
-            throw new BadRequestException("Owner/Admin kann sich nicht selbst entfernen");
+        // Owner kann sich nicht selbst entfernen
+        if (isSelf && (requesterGroupRole.equals("OWNER"))) {
+            throw new BadRequestException("Owner kann sich nicht selbst entfernen");
         }
 
         // normaler Member darf sich selbst entfernen
@@ -185,19 +185,19 @@ public class UsergroupService {
         return mapToGroupResponse(userGroupDao.getById(id));
     }
 
-    private boolean isGroupOwner(int groupId, int profileId) {
+    public boolean isGroupOwner(int groupId, int profileId) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
         return pug.getGroupRole().equals("OWNER");
     }
 
-    private boolean isGroupAdmin(int groupId, int profileId) {
+    public boolean isGroupAdmin(int groupId, int profileId) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return false;
         return pug.getGroupRole().equals("ADMIN");
     }
 
-    private boolean isGroupOwnerOrAdmin(int groupId, int profileId) {
+    public boolean isGroupOwnerOrAdmin(int groupId, int profileId) {
         return isGroupOwner(groupId, profileId) || isGroupAdmin(groupId, profileId);
     }
 

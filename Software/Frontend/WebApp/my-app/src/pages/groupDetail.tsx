@@ -4,6 +4,7 @@ import type { GroupMember, UserGroup } from "../model/usergroup";
 import { deleteMember, getGroupById, getGroupMembers, updateMemberRole } from "../services/groupService";
 import { getCurrentProfile } from "../services/profileService";
 import { Button } from "../components/button";
+import { InviteMemberForm } from "../components/group/InviteMemberForm";
 
 // wer darf wen entfernen
 const canRemove = (myRole: string, targetRole: string): boolean => {
@@ -28,7 +29,7 @@ function GroupDetailPage() {
     const [group, setGroup] = useState<UserGroup | null>(null);
     const [members, setMembers] = useState<GroupMember[]>([]);
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
-
+    const [showInviteForm, setShowInviteForm] = useState(false);
     
 
     useEffect(() => {
@@ -78,6 +79,30 @@ function GroupDetailPage() {
     return (
         <div>
             <h2>{group?.name} - Mitglieder</h2>
+
+            {(myRole === "OWNER" || myRole === "ADMIN") && (
+                <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
+            )}
+
+            {showInviteForm && (
+                <div
+                    onClick={() => setShowInviteForm(false)}
+                    style={{
+                        position: "fixed", inset: 0,
+                        background: "rgba(0,0,0,0.4)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        zIndex: 100,
+                    }}
+                >
+                    <div onClick={e => e.stopPropagation()}>
+                        <InviteMemberForm
+                            groupId={groupId}
+                            onClose={() => setShowInviteForm(false)}
+                        />
+                    </div>
+                </div>
+            )}
+
             <table>
                 <thead>
                     <tr>
@@ -98,15 +123,24 @@ function GroupDetailPage() {
                                             <Button
                                                 label="Entfernen"
                                                 onClick={() => handleRemove(member.profileId)}
+                                                stopPropagation
                                             />
                                         )}
                                         {canChangeRole(myRole, member.groupRole) && (
                                             <Button
                                                 label={member.groupRole === "ADMIN" ? "Zu Member" : "Zu Admin"}
                                                 onClick={() => handleUpdateRole(member.profileId, member.groupRole)}
+                                                stopPropagation
                                             />
                                         )}
                                     </>
+                                )}
+                                {member.profileId === currentProfileId && myRole !== "OWNER" && (
+                                    <Button
+                                        label="Gruppe verlassen"
+                                        onClick={() => handleRemove(member.profileId)}
+                                        stopPropagation
+                                    />
                                 )}
                             </td>
                         </tr>
