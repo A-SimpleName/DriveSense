@@ -19,3 +19,16 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     z-index: 1000;
 }
+
+.avatar {
+    padding: 5px;
+    border: 2px solid black;
+    border-radius: 40%;
+    background-color: blue;
+    color: white;
+}
+
+.avatar:hover {
+    cursor: pointer;
+    background-color: deepskyblue;
+}
