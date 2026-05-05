@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { inviteMember } from "../../services/groupService";
 import "../../styles/addForms.css";
+import { Button } from "../button";
 
 interface Props {
     groupId: number;
@@ -37,14 +38,14 @@ export function InviteMemberForm({ groupId, onClose }: Props) {
         <div className="vehicleAddForm">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2>Mitglied einladen</h2>
-                <button type="button" onClick={onClose} style={{ cursor: "pointer" }}>✕</button>
+                <Button label="✕" type="button" onClick={onClose} />
             </div>
 
             {success ? (
                 <div>
                     <p style={{ color: "green" }}>Einladung wurde an {email} gesendet!</p>
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button type="button" onClick={onClose}>Schließen</button>
+                        <Button label="Schließen" type="button" onClick={onClose} />
                     </div>
                 </div>
             ) : (

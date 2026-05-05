@@ -81,7 +81,7 @@ function GroupDetailPage() {
             <h2>{group?.name} - Mitglieder</h2>
 
             {(myRole === "OWNER" || myRole === "ADMIN") && (
-                <button onClick={() => setShowInviteForm(true)}>Mitglied einladen</button>
+                <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
             )}
 
             {showInviteForm && (
@@ -123,15 +123,24 @@ function GroupDetailPage() {
                                             <Button
                                                 label="Entfernen"
                                                 onClick={() => handleRemove(member.profileId)}
+                                                stopPropagation
                                             />
                                         )}
                                         {canChangeRole(myRole, member.groupRole) && (
                                             <Button
                                                 label={member.groupRole === "ADMIN" ? "Zu Member" : "Zu Admin"}
                                                 onClick={() => handleUpdateRole(member.profileId, member.groupRole)}
+                                                stopPropagation
                                             />
                                         )}
                                     </>
+                                )}
+                                {member.profileId === currentProfileId && myRole !== "OWNER" && (
+                                    <Button
+                                        label="Gruppe verlassen"
+                                        onClick={() => handleRemove(member.profileId)}
+                                        stopPropagation
+                                    />
                                 )}
                             </td>
                         </tr>
