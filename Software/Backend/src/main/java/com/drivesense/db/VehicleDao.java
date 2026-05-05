@@ -83,7 +83,7 @@ public class VehicleDao {
     }
 
     public Vehicle insert(Vehicle vehicle, int profileId) {
-        String sqlVehicle = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
+        String sqlVehicle = "INSERT INTO vehicle (profile_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
         String sqlLink = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,?)";
 
         try (Connection conn = dbConnection.getConnection()) {
@@ -91,9 +91,10 @@ public class VehicleDao {
             conn.setAutoCommit(false);
 
             PreparedStatement ps1 = conn.prepareStatement(sqlVehicle, Statement.RETURN_GENERATED_KEYS);
-            ps1.setString(1, vehicle.getModel());
-            ps1.setString(2, vehicle.getLicensePlate());
-            ps1.setInt(3, vehicle.getMileage());
+            ps1.setInt(1, profileId);
+            ps1.setString(2, vehicle.getModel());
+            ps1.setString(3, vehicle.getLicensePlate());
+            ps1.setInt(4, vehicle.getMileage());
             ps1.executeUpdate();
 
             ResultSet rs = ps1.getGeneratedKeys();
