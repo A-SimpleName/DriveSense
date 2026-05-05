@@ -75,6 +75,10 @@ public class ProtocolService {
 
     public ProtocolDto getProtocolWithTrips(int protocolId) {
         Protocol protocol = protocolDao.getById(protocolId);
+        if (protocol == null) {
+            throw new NotFoundException("Protokoll nicht gefunden");
+        }
+
         Profile profile = profileService.getById(protocol.getCreatedByProfileId());
         List<TripSummaryDto> trips =
                 tripDao.getAllByProtocolId(protocolId);
@@ -82,9 +86,12 @@ public class ProtocolService {
         ProtocolDto dto = new ProtocolDto();
         dto.setId(protocol.getId());
         dto.setName(protocol.getName());
+        dto.setCreated_at(protocol.getCreated_at());
         dto.setTrips(trips);
         dto.setCreated_by_account(accountService.getById(profile.getAccount_id()));
-        dto.setUsergroup(usergroupService.getUserGroupById(protocol.getUsergroupId()));
+        if (protocol.getUsergroupId() != null) {
+            dto.setUsergroup(usergroupService.getUserGroupById(protocol.getUsergroupId()));
+        }
         dto.setProtocolRole(getProtocolRole(protocol.getId()));
         return dto;
     }

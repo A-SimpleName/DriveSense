@@ -13,6 +13,9 @@ export default function ProtocolView({
 }) {
     const trips = protocol.trips ?? [];
     const totalKm = trips.map(trip => trip.distance).reduce((a, b) => a + b, 0);
+    const birthdate = protocol.created_by_account?.birthdate
+        ? new Date(protocol.created_by_account.birthdate).toLocaleDateString()
+        : "";
 
     const getColumns = () => {
         switch (type) {
@@ -114,7 +117,7 @@ export default function ProtocolView({
                     <span className="brand">DRIVESENSE</span>
 
                     <div className="proto-name">
-                        {isGroup ? protocol.usergroup.name : protocol.name}
+                        {isGroup ? protocol.usergroup?.name ?? protocol.name : protocol.name}
                     </div>
 
                     <div className="proto-sub">
@@ -126,10 +129,10 @@ export default function ProtocolView({
                 {!isGroup && (
                     <div className="right">
                         <div className="proto-sub">
-                            {protocol.created_by_account.fname} {protocol.created_by_account.lname}
+                            {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
                         </div>
                         <div className="user-info">
-                            geb. {protocol.created_by_account.birthdate.toDateString()}
+                            geb. {birthdate}
                         </div>
                     </div>
                 )}

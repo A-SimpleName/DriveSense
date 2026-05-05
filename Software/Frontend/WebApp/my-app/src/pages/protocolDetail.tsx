@@ -36,7 +36,7 @@ export default function ProtocolDetail() {
 
     if (!protocol) return <div>Kein Protokoll gefunden</div>;
 
-    const isGroup = protocol.usergroup.id != null;
+    const isGroup = protocol.usergroup?.id != null;
 
     switch (`${protocol.protocolRole}`) {
         case "FAHRSCHÜLER":

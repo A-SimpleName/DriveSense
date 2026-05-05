@@ -32,11 +32,8 @@ public class ExportController {
             @PathVariable int protocolId) throws Exception {
 
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        boolean isGroup = false;
-
-        if (protocol.getUsergroup().getId() > 0) {
-            isGroup = true;
-        }
+        boolean isGroup = protocol.getUsergroup() != null
+                && protocol.getUsergroup().getId() > 0;
 
         byte[] pdf = pdfExportService.generateProtocolPdf(
                 protocol, isGroup);
