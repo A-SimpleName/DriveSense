@@ -32,7 +32,7 @@ class ProfileService {
     return <String, String>{
       'Content-Type': 'application/json',
       'X-Client-Type': 'mobile',
-      if (cookieHeader != null) 'Cookie': cookieHeader,
+      ..._cookieHeaders(cookieHeader),
     };
   }
 
@@ -165,7 +165,7 @@ class ProfileService {
         profileToken: profileToken,
       );
       final int activeProfileId = profile?.id ?? profileId;
-      await ProtocolService.ensureDefaultProtocolForActiveProfile(activeProfileId);
+      await ProtocolService.ensureDefaultProtocolForActiveProfile();
       await VehicleService.ensureDefaultVehicleForActiveProfile(activeProfileId);
       await RuntimeStore.refreshTrips();
 
@@ -308,4 +308,11 @@ class ProfileService {
     return null;
   }
 
+  static Map<String, String> _cookieHeaders(String? cookieHeader) {
+    if (cookieHeader == null) {
+      return const <String, String>{};
+    }
+
+    return <String, String>{'Cookie': cookieHeader};
+  }
 }

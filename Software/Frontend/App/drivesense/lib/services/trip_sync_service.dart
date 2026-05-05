@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/repository/trip_repository.dart';
+import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
+import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
 
 class TripSyncResult {
@@ -86,6 +89,7 @@ class TripSyncService {
             .toList();
 
         await tripService.saveTripToDb(trip, trackingPoints);
+        await _syncVehicleMileageForTrip(trip);
         pendingTrip.isSynced = true;
         pendingTrip.lastError = null;
         await isarTripRepository.update(pendingTrip);
@@ -111,6 +115,43 @@ class TripSyncService {
 
   Future<void> clearLocalTrips() async {
     await isarTripRepository.deleteAll();
+  }
+
+  Future<void> _syncVehicleMileageForTrip(TripSummary trip) async {
+    List<Vehicle> vehicles = RuntimeStore.vehicles;
+    if (vehicles.isEmpty) {
+      vehicles = await VehicleService.fetchVehicles();
+    }
+
+    Vehicle? vehicle;
+    for (final Vehicle candidate in vehicles) {
+      if (candidate.id == trip.vehicleId) {
+        vehicle = candidate;
+        break;
+      }
+    }
+
+    if (vehicle == null || trip.endMileage <= vehicle.mileage) {
+      return;
+    }
+
+    final Vehicle updatedVehicle = Vehicle(
+      id: vehicle.id,
+      userId: vehicle.userId,
+      model: vehicle.model,
+      licensePlate: vehicle.licensePlate,
+      mileage: trip.endMileage,
+    );
+
+    final bool updated = await VehicleService.updateVehicle(updatedVehicle);
+    if (updated) {
+      RuntimeStore.upsertVehicle(updatedVehicle);
+      return;
+    }
+
+    debugPrint(
+      'Vehicle mileage sync skipped after trip sync (vehicleId=${trip.vehicleId}, endMileage=${trip.endMileage}).',
+    );
   }
 
   Future<void> _repairMileageForPendingTrip(Trip pendingTrip) async {

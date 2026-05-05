@@ -61,7 +61,6 @@ class SignInAndSignUp {
       debugPrint(
         'SignUp response <- status=$statusCode, body=${response.body}',
       );
-      final Map<String, dynamic>? body = _parseJsonObject(response.body);
 
       if (statusCode >= 200 && statusCode < 300) {
         return SignUpResult(

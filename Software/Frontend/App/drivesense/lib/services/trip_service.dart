@@ -37,7 +37,6 @@ class TripService {
     }
 
     final int? protocolId = await _resolveProtocolIdForSync(
-      profileId: profileId,
       preferredProtocolId: trip.protocolId,
     );
     if (protocolId == null || protocolId <= 0) {
@@ -46,7 +45,10 @@ class TripService {
       );
     }
 
-    final int? vehicleId = await _resolveVehicleIdForSync(profileId: profileId);
+    final int? vehicleId = await _resolveVehicleIdForSync(
+      profileId: profileId,
+      preferredVehicleId: trip.vehicleId,
+    );
     if (vehicleId == null || vehicleId <= 0) {
       throw TripHttpException(
         'Trip kann nicht synchronisiert werden: vehicleId fehlt oder ist ungueltig.',
@@ -139,6 +141,77 @@ class TripService {
     );
   }
 
+  Future<void> updateTripSummary(TripSummary tripSummary) async {
+    if (tripSummary.endTime == null) {
+      throw TripHttpException(
+        'Trip kann nicht aktualisiert werden: endTime fehlt.',
+      );
+    }
+
+    final int profileId = tripSummary.profileId > 0
+        ? tripSummary.profileId
+        : (RuntimeStore.currentProfileId ?? 0);
+    final int protocolId = tripSummary.protocolId > 0
+        ? tripSummary.protocolId
+        : RuntimeStore.getCurrentProtocolId();
+    final int vehicleId = tripSummary.vehicleId > 0
+        ? tripSummary.vehicleId
+        : RuntimeStore.getCurrentVehicleId();
+
+    if (profileId <= 0 || protocolId <= 0 || vehicleId <= 0) {
+      throw TripHttpException(
+        'Trip kann nicht aktualisiert werden: Profil, Protokoll oder Fahrzeug fehlt.',
+      );
+    }
+
+    final String? cookieHeader = RuntimeStore.getCookieHeader();
+    final Map<String, dynamic> payload = _createTripSummaryPayload(
+      tripSummary,
+      profileId: profileId,
+      vehicleId: vehicleId,
+      protocolId: protocolId,
+    );
+
+    debugPrint('PUT /api/trips/${tripSummary.id} payload=$payload');
+
+    final http.Response response = await http.put(
+      Uri.parse('$_baseUrl/api/trips/${tripSummary.id}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        ..._cookieHeaders(cookieHeader),
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw TripHttpException(
+        'Failed to update trip summary: ${response.statusCode} - ${response.body}',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  Future<bool> deleteTripSummary(int tripId) async {
+    if (tripId <= 0) {
+      return false;
+    }
+
+    final String? cookieHeader = RuntimeStore.getCookieHeader();
+
+    try {
+      final http.Response response = await http.delete(
+        Uri.parse('$_baseUrl/api/trips/$tripId'),
+        headers: <String, String>{
+          ..._cookieHeaders(cookieHeader),
+        },
+      );
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Map<String, dynamic> _createTripSummaryPayload(
     TripSummary tripSummary, {
     required int profileId,
@@ -153,6 +226,8 @@ class TripService {
       'endTime': _toBackendLocalDateTime(tripSummary.endTime!),
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
+      'startPoint': tripSummary.startPoint,
+      'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
       'startMileage': tripSummary.startMileage,
       'endMileage': tripSummary.endMileage,
@@ -212,7 +287,6 @@ class TripService {
   }
 
   Future<int?> _resolveProtocolIdForSync({
-    required int profileId,
     int preferredProtocolId = 0,
   }) async {
     final int? resolved =
@@ -223,11 +297,17 @@ class TripService {
       return resolved;
     }
 
-    return ProtocolService.createDefaultProtocol(profileId);
+    return ProtocolService.createDefaultProtocol();
   }
 
-  Future<int?> _resolveVehicleIdForSync({required int profileId}) async {
-    final int? resolved = await VehicleService.resolveFirstAvailableVehicleId();
+  Future<int?> _resolveVehicleIdForSync({
+    required int profileId,
+    int preferredVehicleId = 0,
+  }) async {
+    final int? resolved =
+        await VehicleService.resolvePreferredCurrentOrFirstAvailableVehicleId(
+          preferredVehicleId: preferredVehicleId,
+        );
     if (resolved != null && resolved > 0) {
       return resolved;
     }

@@ -14,7 +14,7 @@ class VehicleService {
     final String? cookieHeader = RuntimeStore.getCookieHeader();
     return <String, String>{
       'Content-Type': 'application/json',
-      if (cookieHeader != null) 'Cookie': cookieHeader,
+      ..._cookieHeaders(cookieHeader),
     };
   }
 
@@ -59,6 +59,34 @@ class VehicleService {
     }
 
     return null;
+  }
+
+  static Future<int?> resolvePreferredCurrentOrFirstAvailableVehicleId({
+    int preferredVehicleId = 0,
+  }) async {
+    List<Vehicle> vehicles = RuntimeStore.vehicles;
+    if (vehicles.isEmpty) {
+      vehicles = await fetchVehicles();
+    }
+
+    if (preferredVehicleId > 0) {
+      for (final Vehicle vehicle in vehicles) {
+        if (vehicle.id == preferredVehicleId) {
+          return vehicle.id;
+        }
+      }
+    }
+
+    final int currentVehicleId = RuntimeStore.getCurrentVehicleId();
+    for (final Vehicle vehicle in vehicles) {
+      if (vehicle.id == currentVehicleId && vehicle.id > 0) {
+        return vehicle.id;
+      }
+    }
+
+    return vehicles.isNotEmpty && vehicles.first.id > 0
+        ? vehicles.first.id
+        : null;
   }
 
   static Future<int?> createDefaultVehicle(int profileId) async {
@@ -138,10 +166,12 @@ class VehicleService {
 
       // Jeden JSON-Eintrag in ein Vehicle-Objekt umwandeln,
       // fehlerhafte Einträge werden übersprungen (whereType filtert null raus)
-      return decoded
+      final List<Vehicle> vehicles = decoded
           .whereType<Map<String, dynamic>>()
           .map((json) => Vehicle.fromJson(json))
           .toList();
+      RuntimeStore.setVehicles(vehicles);
+      return vehicles;
     } catch (e) {
       debugPrint('FetchVehicles failed at $uri: $e');
       return [];
@@ -209,11 +239,11 @@ class VehicleService {
           .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        'CreateVehicle <- status=\${response.statusCode}, body=\${response.body}',
+        'CreateVehicle <- status=${response.statusCode}, body=${response.body}',
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        debugPrint('CreateVehicle failed: HTTP \${response.statusCode}');
+        debugPrint('CreateVehicle failed: HTTP ${response.statusCode}');
         return null;
       }
 
@@ -236,5 +266,13 @@ class VehicleService {
     } catch (_) {
       return null;
     }
+  }
+
+  static Map<String, String> _cookieHeaders(String? cookieHeader) {
+    if (cookieHeader == null) {
+      return const <String, String>{};
+    }
+
+    return <String, String>{'Cookie': cookieHeader};
   }
 }

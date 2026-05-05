@@ -1,8 +1,6 @@
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/account.dart';
-import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
-import 'package:drivesense/services/profile_service.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';

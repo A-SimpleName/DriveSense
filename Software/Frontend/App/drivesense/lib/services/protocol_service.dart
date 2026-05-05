@@ -78,9 +78,7 @@ class ProtocolService {
   }
 
   static Future<Protocol?> createProtocol({
-    required int profileId,
     required String name,
-    int? usergroupId,
   }) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
     final String trimmedName = name.trim();
@@ -94,10 +92,6 @@ class ProtocolService {
             uri,
             headers: _authHeaders(),
             body: jsonEncode(<String, dynamic>{
-              'createdByProfileId': profileId,
-              'created_by_profile_id': profileId,
-              if (usergroupId != null) 'usergroupId': usergroupId,
-              if (usergroupId != null) 'usergroup_id': usergroupId,
               'name': trimmedName,
             }),
           )
@@ -128,19 +122,16 @@ class ProtocolService {
     }
   }
 
-  static Future<int?> createDefaultProtocol(int profileId) async {
+  static Future<int?> createDefaultProtocol() async {
     final Protocol? protocol = await createProtocol(
-      profileId: profileId,
       name: 'L17 Protokoll',
     );
     return protocol?.id;
   }
 
-  static Future<int> ensureDefaultProtocolForActiveProfile(
-    int profileId,
-  ) async {
+  static Future<int> ensureDefaultProtocolForActiveProfile() async {
     int? protocolId = await resolveCurrentOrFirstAvailableProtocolId();
-    protocolId ??= await createDefaultProtocol(profileId);
+    protocolId ??= await createDefaultProtocol();
     final int resolved = protocolId ?? 0;
     RuntimeStore.setCurrentProtocolId(resolved);
     return resolved;
