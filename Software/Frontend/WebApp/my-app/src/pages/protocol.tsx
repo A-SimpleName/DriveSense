@@ -61,7 +61,7 @@ export default function ProtocolPage() {
             .finally(() => setLoading(false));
     }, [reloadKey]);
 
-    const groupProtocols = protocols.filter(p => p.usergroup.id !== null);
+    const groupProtocols = protocols.filter(p => p.usergroup?.id !== null);
     const ownProtocols = protocols.filter(p => p.usergroup.id === null);
 
     if (loading) return <div>Lade Protokolle...</div>;
