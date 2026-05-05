@@ -6,9 +6,11 @@ import "../styles/usermeu.css";
 type UserMenuProps = {
     setAccount: React.Dispatch<React.SetStateAction<any>>;
     account: any;
+    onProfileSelect: () => void;
+    setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function UserMenu({ setAccount, account }: UserMenuProps) {
+function UserMenu({ setAccount, account, onProfileSelect, setIsAuth }: UserMenuProps) {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     
@@ -17,6 +19,7 @@ function UserMenu({ setAccount, account }: UserMenuProps) {
 
     const handleSwitch = async () => {
         await logoutProfile();  
+        onProfileSelect();
         navigate("/");      
     };
 
@@ -61,6 +64,7 @@ function UserMenu({ setAccount, account }: UserMenuProps) {
                         onClick={async () => {
                             await logout();
                             setAccount(null);
+                            setIsAuth(false);
                             navigate("/login");
                         }}
                     >

@@ -2,16 +2,18 @@ import Footer from "./footer";
 import Topbar from "./topbar";
 
 type AuthLayoutProps = {
-  children: React.ReactNode;
-  setAccount: React.Dispatch<React.SetStateAction<any>>;
-  account: any;
+    children: React.ReactNode;
+    setAccount: React.Dispatch<React.SetStateAction<any>>;
+    account: any;
+    onProfileSelect: () => void;
+    setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export function AuthLayout({ children, setAccount, account }: AuthLayoutProps) {
+export function AuthLayout({ children, setAccount, account, onProfileSelect, setIsAuth }: AuthLayoutProps) {
 
     return ( 
         <div className="app-container">
-            <Topbar setAccount={setAccount} account={account} />
+            <Topbar setAccount={setAccount} account={account} onProfileSelect={onProfileSelect} setIsAuth={setIsAuth} />
             <main className="main-content">
                 {children}
             </main>
@@ -21,4 +23,3 @@ export function AuthLayout({ children, setAccount, account }: AuthLayoutProps) {
 }
 
 export default AuthLayout;
-

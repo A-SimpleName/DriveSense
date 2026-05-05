@@ -67,7 +67,9 @@ export default function App() {
   return (
     <BrowserRouter>
       {isAuth && profileSelected && (
-        <TopBar setAccount={setAccount} account={account} />
+        <TopBar setAccount={setAccount} account={account} onProfileSelect={() => {
+          setProfileSelected(false);
+        }} setIsAuth={setIsAuth} />
       )}
 
       <Routes>

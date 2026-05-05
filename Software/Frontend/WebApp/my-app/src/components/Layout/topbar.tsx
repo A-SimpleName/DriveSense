@@ -9,9 +9,11 @@ import UserMenu from '../userMenu';
 type TopbarProps = {
     setAccount: React.Dispatch<React.SetStateAction<any>>;
     account: any;
+    onProfileSelect: () => void;
+    setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function Topbar({ setAccount, account }: TopbarProps) {
+function Topbar({ setAccount, account, onProfileSelect, setIsAuth }: TopbarProps) {
     return (
         <nav className='topbar'>
             <Link to="/"><img src={Logo} alt="Logo" className="logo" width={200}/></Link>
@@ -19,7 +21,7 @@ function Topbar({ setAccount, account }: TopbarProps) {
             <Link to="/vehicles">Fahrzeuge</Link>
             <Link to="/protocols">Protokolle</Link>
             <Link to="/groups">Gruppen</Link>
-            <UserMenu setAccount={setAccount} account={account} />
+            <UserMenu setAccount={setAccount} account={account} onProfileSelect={onProfileSelect} setIsAuth={setIsAuth} />
         </nav>
     );
 }
