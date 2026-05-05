@@ -170,4 +170,22 @@ class ProtocolService {
     return null;
   }
 
+  static Future<bool> deleteProtocol(int protocolId) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/protocols/$protocolId',
+    );
+
+    try {
+      final http.Response response = await http
+          .delete(uri, headers: RequestHeaders.authenticated())
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint('DeleteProtocol <- status=${response.statusCode}, uri=$uri');
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      debugPrint('DeleteProtocol failed at $uri: $e');
+      return false;
+    }
+  }
 }

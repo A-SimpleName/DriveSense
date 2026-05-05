@@ -2,6 +2,7 @@ package com.drivesense.db;
 
 import com.drivesense.DbConnection;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,37 +84,49 @@ public class VehicleDao {
     }
 
     public Vehicle insert(Vehicle vehicle, int profileId) {
-        String sqlVehicle = "INSERT INTO vehicle (profile_id, model, licenseplate, mileage) VALUES (?,?,?,?)";
+        String sqlVehicle = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
         String sqlLink = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,?)";
 
         try (Connection conn = dbConnection.getConnection()) {
 
             conn.setAutoCommit(false);
 
-            PreparedStatement ps1 = conn.prepareStatement(sqlVehicle, Statement.RETURN_GENERATED_KEYS);
-            ps1.setInt(1, profileId);
-            ps1.setString(2, vehicle.getModel());
-            ps1.setString(3, vehicle.getLicensePlate());
-            ps1.setInt(4, vehicle.getMileage());
-            ps1.executeUpdate();
+            try {
+                try (PreparedStatement ps1 = conn.prepareStatement(sqlVehicle, Statement.RETURN_GENERATED_KEYS)) {
+                    ps1.setString(1, vehicle.getModel());
+                    ps1.setString(2, vehicle.getLicensePlate());
+                    ps1.setInt(3, vehicle.getMileage());
+                    ps1.executeUpdate();
 
-            ResultSet rs = ps1.getGeneratedKeys();
+                    try (ResultSet rs = ps1.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new SQLException("Keine generierte Fahrzeug-ID erhalten");
+                        }
 
-            if (rs.next()) {
-                int vehicleId = rs.getInt(1);
-                vehicle.setId(vehicleId);
+                        int vehicleId = rs.getInt(1);
+                        vehicle.setId(vehicleId);
 
-                PreparedStatement ps2 = conn.prepareStatement(sqlLink);
-                ps2.setInt(1, profileId);
-                ps2.setInt(2, vehicleId);
-                ps2.setString(3, "OWNER");
-                ps2.executeUpdate();
+                        try (PreparedStatement ps2 = conn.prepareStatement(sqlLink)) {
+                            ps2.setInt(1, profileId);
+                            ps2.setInt(2, vehicleId);
+                            ps2.setString(3, "OWNER");
+                            ps2.executeUpdate();
+                        }
+                    }
+                }
+
+                conn.commit();
+                return vehicle;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
             }
 
-            conn.commit();
-            return vehicle;
-
         } catch (SQLException e) {
+            if ("23000".equals(e.getSQLState()) && e.getMessage() != null
+                    && e.getMessage().contains("uq_vehicle_licenseplate")) {
+                throw new BadRequestException("Kennzeichen ist bereits vergeben");
+            }
             throw new DatabaseException("Fehler beim Speichern des Vehicles", e);
         }
     }
