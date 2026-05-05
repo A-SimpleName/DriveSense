@@ -37,7 +37,7 @@ public class PdfExportService {
                 ? protocol.getTrips() : List.of();
         ctx.setVariable("trips", trips);
 
-        int totalKm = trips.stream().mapToInt(TripSummaryDto::getDistance).sum();
+        double totalKm = trips.stream().mapToDouble(TripSummaryDto::getDistance).sum();
         ctx.setVariable("totalKm", totalKm);
 
         if (isGroup) {

@@ -25,7 +25,6 @@ public class VehicleService {
         if (vehicle == null) {
             throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
         }
-        checkProfileAccess(profileId, id);
         return vehicle;
     }
 

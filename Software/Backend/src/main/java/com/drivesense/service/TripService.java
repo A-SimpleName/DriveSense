@@ -180,8 +180,31 @@ public class TripService {
             throw new NotFoundException("Trip nicht gefunden");
         }
 
-        if (tripSummary.getProfileId() != profileId) {
+        if (existing.getProfileId() != profileId) {
             throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
+        }
+
+        tripSummary.setProfileId(profileId);
+        if (tripSummary.getVehicleId() <= 0) {
+            tripSummary.setVehicleId(existing.getVehicleId());
+        }
+        if (tripSummary.getProtocolId() <= 0) {
+            tripSummary.setProtocolId(existing.getProtocolId());
+        }
+        if (tripSummary.getStartPoint() == null) {
+            tripSummary.setStartPoint(existing.getStartPoint());
+        }
+        if (tripSummary.getEndPoint() == null) {
+            tripSummary.setEndPoint(existing.getEndPoint());
+        }
+        if (tripSummary.getFurthestPoint() == null) {
+            tripSummary.setFurthestPoint(existing.getFurthestPoint());
+        }
+        if (tripSummary.getRoadSurfaceConditions() == null) {
+            tripSummary.setRoadSurfaceConditions(existing.getRoadSurfaceConditions());
+        }
+        if (tripSummary.getType() == null) {
+            tripSummary.setType(existing.getType());
         }
 
         validateTripSummary(tripSummary);
