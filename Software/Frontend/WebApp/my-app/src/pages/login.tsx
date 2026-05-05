@@ -40,7 +40,7 @@ export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }
       <br></br>
       <p>
         Noch keinen Account?{" "}
-        <Link to="/registrieren">Registrieren</Link>
+        <Link to="/signUp">Registrieren</Link>
       </p>
     </div>
   );

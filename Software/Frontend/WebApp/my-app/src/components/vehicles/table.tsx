@@ -8,22 +8,20 @@ function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
     const [editingId, setEditingId] = useState<number | null>(null)
     const [editData, setEditData] = useState<CreateVehicle | null>(null)
-
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        setLoading(true);
+        setLoading(true)
         getAllVehicles()
             .then(data => setVehicles(data))
-            .catch(err => setError(err?.message || "Fehler beim Laden der Fahrzeuge"))
-            .finally(() => setLoading(false));
-    }, []);
+            .catch(err => setError(err.message))
+            .finally(() => setLoading(false))
+    }, [])
 
     const handleEdit = (vehicle: Vehicle) => {
         setError(null)
-
         setEditingId(vehicle.id)
         setEditData({
             model: vehicle.model,
@@ -37,47 +35,34 @@ function VehiclesTable() {
         setEditData(null)
     }
 
-    const handleSave = async (id: number) => {
-        if (!editData) return;
+    const handleSave = (id: number) => {
+        if (!editData) return
+        setSaving(true)
+        setError(null)
 
-        if (!editData.model || !editData.licensePlate) {
-            setError("Bitte alle Felder ausfüllen");
-            return;
-        }
+        updateVehicle(id, editData)
+            .then(() => {
+                setVehicles(prev =>
+                    prev.map(v => (v.id === id ? { ...v, ...editData } : v))
+                )
+                handleCancel()
+            })
+            .catch(err => setError(err.message))
+            .finally(() => setSaving(false))
+    }
 
-        setSaving(true);
-        setError(null);
-
-        try {
-            await updateVehicle(id, editData);
-            setVehicles(prev =>
-                prev.map(v => (v.id === id ? { ...v, ...editData } : v))
-            );
-            handleCancel();
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Speichern");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleDelete = async (id: number) => {
-        setError(null);
-
-        try {
-            await deleteVehicle(id);
-            setVehicles(prev => prev.filter(v => v.id !== id));
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Löschen");
-        }
-    };
+    const handleDelete = (id: number) => {
+        setError(null)
+        deleteVehicle(id)
+            .then(() => setVehicles(prev => prev.filter(v => v.id !== id)))
+            .catch(err => setError(err.message))
+    }
 
     if (loading) return <p>Laden...</p>
 
     return (
         <div>
-            {error && <p>Fehler: {error}</p>}
-
+            {error && <p style={{ color: "red" }}>Fehler: {error}</p>}
             <table>
                 <thead>
                     <tr>
@@ -88,19 +73,15 @@ function VehiclesTable() {
                         <th>Aktionen</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     {vehicles.map(vehicle => (
                         <tr key={vehicle.id}>
-                            {/* MODEL */}
                             <td>
                                 {editingId === vehicle.id ? (
                                     <input
                                         value={editData?.model ?? ""}
                                         onChange={e =>
-                                            setEditData(prev =>
-                                                prev ? { ...prev, model: e.target.value } : prev
-                                            )
+                                            setEditData(prev => prev ? { ...prev, model: e.target.value } : prev)
                                         }
                                     />
                                 ) : (
@@ -110,17 +91,12 @@ function VehiclesTable() {
 
                             <td>{vehicle.profileName}</td>
 
-                            {/* LICENSE */}
                             <td>
                                 {editingId === vehicle.id ? (
                                     <input
                                         value={editData?.licensePlate ?? ""}
                                         onChange={e =>
-                                            setEditData(prev =>
-                                                prev
-                                                    ? { ...prev, licensePlate: e.target.value }
-                                                    : prev
-                                            )
+                                            setEditData(prev => prev ? { ...prev, licensePlate: e.target.value } : prev)
                                         }
                                     />
                                 ) : (
@@ -128,21 +104,13 @@ function VehiclesTable() {
                                 )}
                             </td>
 
-                            {/* MILEAGE */}
                             <td>
                                 {editingId === vehicle.id ? (
                                     <input
                                         type="number"
                                         value={editData?.mileage ?? 0}
                                         onChange={e =>
-                                            setEditData(prev =>
-                                                prev
-                                                    ? {
-                                                          ...prev,
-                                                          mileage: Number(e.target.value)
-                                                      }
-                                                    : prev
-                                            )
+                                            setEditData(prev => prev ? { ...prev, mileage: Number(e.target.value) } : prev)
                                         }
                                     />
                                 ) : (
@@ -150,12 +118,11 @@ function VehiclesTable() {
                                 )}
                             </td>
 
-                            {/* ACTIONS */}
                             <td>
                                 {editingId === vehicle.id ? (
                                     <>
                                         <Button
-                                            label="Speichern"
+                                            label={saving ? "Speichert..." : "Speichern"}
                                             onClick={() => handleSave(vehicle.id)}
                                         />
                                         <Button label="Abbrechen" onClick={handleCancel} />
