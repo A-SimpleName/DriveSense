@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GroupInvitationService {
@@ -20,6 +21,8 @@ public class GroupInvitationService {
     private ProfileDao profileDao;
     @Autowired
     private UserGroupDao userGroupDao;
+    @Autowired
+    private ProfileUsergroupDao profileUsergroupDao;
     @Autowired
     private UsergroupService usergroupService;
     @Autowired
@@ -41,6 +44,18 @@ public class GroupInvitationService {
         // Account mit dieser Email finden
         Account invitedAccount = accountDao.getByEmail(email);
         if (invitedAccount == null) throw new NotFoundException("Kein Account mit dieser E-Mail gefunden");
+
+        List<Profile> invitedProfiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
+        boolean isSelf = invitedProfiles.stream()
+                .anyMatch(p -> p.getId() == inviterProfileId);
+        if (isSelf) throw new BadRequestException("Du kannst dich nicht selbst einladen");
+
+        // Prüfen ob noch ein Profil verfügbar ist das nicht schon in der Gruppe ist
+        boolean hasAvailableProfile = invitedProfiles.stream()
+                .anyMatch(p -> profileUsergroupDao.getByProfileIdAndGroupId(p.getId(), groupId) == null);
+        if (!hasAvailableProfile) {
+            throw new BadRequestException("Alle Profile dieses Accounts sind bereits in der Gruppe");
+        }
 
         // Code generieren
         String code = generateCode();
@@ -66,6 +81,8 @@ public class GroupInvitationService {
         Profile inviterProfile = profileDao.getById(inviterProfileId);
         if (inviterProfile == null) throw new NotFoundException("Profil nicht gefunden");
 
+
+
         emailService.sendGroupInvitation(
                 email,
                 inviterProfile.getName(),
@@ -87,10 +104,13 @@ public class GroupInvitationService {
         }
 
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(accountId);
+
         if (profiles == null || profiles.isEmpty()) {
             throw new NotFoundException("Keine Profile gefunden");
         }
-        return profiles;
+        return profiles.stream()
+                .filter(p -> profileUsergroupDao.getByProfileIdAndGroupId(p.getId(), invitation.getGroupId()) == null)
+                .collect(Collectors.toList());
     }
 
     // ──────────────────────────────────────────
@@ -110,6 +130,11 @@ public class GroupInvitationService {
         if (profile == null) throw new NotFoundException("Profil nicht gefunden");
         if (profile.getAccount_id() != accountId) {
             throw new UnauthorizedException("Dieses Profil gehört nicht zu deinem Account");
+        }
+
+        ProfileUsergroup existing = profileUsergroupDao.getByProfileIdAndGroupId(profileId, invitation.getGroupId());
+        if (existing != null) {
+            throw new BadRequestException("Dieses Profil ist bereits in der Gruppe");
         }
 
         usergroupService.addMember(
