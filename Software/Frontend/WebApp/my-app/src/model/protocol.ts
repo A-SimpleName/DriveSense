@@ -11,3 +11,7 @@ export interface Protocol {
     protocolRole: string;
     trips: TripSummary[];
 }
+
+export interface ProtocolCreateRequest {
+    name: string;
+}

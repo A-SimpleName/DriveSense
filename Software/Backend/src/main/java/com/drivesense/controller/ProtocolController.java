@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.dto.request.ProtocolCreateRequest;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.model.Protocol;
 import com.drivesense.service.ProtocolService;
@@ -7,8 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -54,8 +57,14 @@ public class ProtocolController {
 
     // POST /api/protocols
     @PostMapping
-    public ResponseEntity<Protocol> insert(@Valid @RequestBody Protocol protocol) {
-        return ResponseEntity.status(201).body(protocolService.insert(protocol));
+    public ResponseEntity<Protocol> insert(
+            @Valid @RequestBody ProtocolCreateRequest requestBody,
+            HttpServletRequest request
+    ) {
+        int profileId = (int) request.getAttribute("profileId");
+        Protocol protocol = protocolService.insert(requestBody.getName(), profileId);
+
+        return ResponseEntity.status(201).body(protocol);
     }
 
     // PUT /api/protocols/1

@@ -10,6 +10,7 @@ import com.drivesense.dto.response.ProtocolDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,7 +26,12 @@ public class ProtocolService {
     @Autowired
     private UsergroupService usergroupService;
 
-    public Protocol insert(Protocol protocol) {
+    public Protocol insert(String protocolName, int profileId) {
+        Protocol protocol = new Protocol();
+        protocol.setName(protocolName);
+        protocol.setCreatedByProfileId(profileId);
+        protocol.setCreated_at(LocalDateTime.now());
+
         Protocol inserted = protocolDao.insert(protocol);
         if (inserted == null) {
             throw new RuntimeException("Fehler beim Erstellen des Protokolls");
