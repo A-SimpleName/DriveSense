@@ -1,12 +1,13 @@
 package com.drivesense.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ProtocolDto {
     private int id;
     private int created_by_profile_id;
     private int usergroup_id;
-    private String created_at;
+    private LocalDateTime created_at;
     private String name;
     private List<TripSummaryDto> trips;
 
@@ -34,11 +35,11 @@ public class ProtocolDto {
         this.usergroup_id = usergroup_id;
     }
 
-    public String getCreated_at() {
+    public LocalDateTime getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreated_at(LocalDateTime created_at) {
         this.created_at = created_at;
     }
 

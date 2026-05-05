@@ -6,6 +6,7 @@ import com.drivesense.db.TripDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
+import com.drivesense.model.Profile;
 import com.drivesense.model.TripSummary;
 import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +22,18 @@ public class TripService {
     private final TrackingpointService trackingpointService;
     private final GeocodingService geocodingService;
     private final WeatherService weatherService;
+    private final ProfileService profileService;
+    private final ProtocolService protocolService;
 
     @Autowired
     public TripService(TripDao tripDao, TrackingpointService trackingpointService,
-                       GeocodingService geocodingService, WeatherService weatherService) {
+                       GeocodingService geocodingService, WeatherService weatherService,ProfileService profileService, ProtocolService protocolService) {
         this.tripDao = tripDao;
         this.trackingpointService = trackingpointService;
         this.geocodingService = geocodingService;
         this.weatherService = weatherService;
+        this.profileService = profileService;
+        this.protocolService = protocolService;
     }
 
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
@@ -38,6 +43,10 @@ public class TripService {
 
         if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
             throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+        Profile profile = profileService.getById(tripSummary.getProfileId());
+        if (!profile.getRole().equals(protocolService.getProtocolRole(tripSummary.getProtocolId()))) {
+            throw new BadRequestException("Rolle muss die selbe wie vom Protocol sein");
         }
 
         Trackingpoint firstPoint = trackingpoints.get(0);

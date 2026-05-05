@@ -1,70 +1,78 @@
-import { useEffect, useState } from "react";
-import "./SelectProfile.css";
+import { useNavigate } from "react-router-dom";
+import { createProfile } from "../services/profileService";
 import type { Profile } from "../model/profile";
-import { getAllProfiles, createProfile } from "../services/userService";
+import { selectProfile } from "../services/auth";
+import { useState } from "react";
 
-const SelectProfile = () => {
-    const [profiles, setProfiles] = useState<Profile[]>([]);
+export default function SelectProfilePage({
+    profiles,
+    setProfiles,
+    onSelect
+}: {
+    profiles: Profile[];
+    setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>;
+    onSelect: () => void;
+}) {
 
-    useEffect(() => {
-        loadProfiles();
-    }, []);
+    const navigate = useNavigate();
+    const [newName, setNewName] = useState("");
+    const [newRole, setNewRole] = useState("PRIVAT");
 
-    const loadProfiles = async () => {
-        try {
-            const data = await getAllProfiles();
-            setProfiles(data);
-        } catch (err) {
-            console.error("Fehler beim Laden:", err);
-        }
+    const ROLE_OPTIONS = ["PRIVAT", "FAHRSCHÜLER", "BERUFSFAHRER"];
+
+    const handleSelect = async (id: number) => {
+        await selectProfile(id);
+        onSelect();
+        navigate("/");
     };
 
-    const handleSelect = (profile: Profile) => {
-        localStorage.setItem("selectedProfile", JSON.stringify(profile));
-        window.location.href = "/dashboard";
-    };
+    const handleCreate = async () => {
+        if (!newName) return;
 
-    const handleAdd = async () => {
-        const name = prompt("Name:");
-        if (!name) return;
+        const profile = await createProfile({
+            name: newName,
+            role: newRole
+        });
 
-        const role = prompt("Rolle (Privat/Beruflich/Fahrlehrer):") || "Privat";
+        setProfiles([...profiles, profile]);
 
-        const newProfile = {
-            name,
-            role,
-            account_id: 1, // später aus Login
-            group_id: 1
-        };
+        await selectProfile(profile.id!);
 
-        try {
-            await createProfile(newProfile);
-            loadProfiles(); // neu laden
-        } catch (err) {
-            console.error("Fehler beim Erstellen:", err);
-        }
+        onSelect();
+        navigate("/");
     };
 
     return (
-        <div className="container">
-            <h1>Wer fährt heute?</h1>
+        <div>
+            <h2>Profile auswählen</h2>
 
-            <div className="profile-grid">
-                {profiles.map((p) => (
-                    <div key={p.id} className="profile-card" onClick={() => handleSelect(p)}>
-                        <div className="avatar">🚗</div>
-                        <div className="name">{p.name}</div>
-                        <div className="type">{p.role}</div>
-                    </div>
+            {profiles.length > 0 ? (
+                profiles.map(p => (
+                    <button key={p.id} onClick={() => handleSelect(p.id!)}>
+                        {p.name} ({p.role})
+                    </button>
+                ))
+            ) : (
+                <p>Keine Profile vorhanden → bitte erstellen</p>
+            )}
+
+            <h3>Neues Profil</h3>
+
+            <input
+                placeholder="Name"
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+            />
+
+            <select value={newRole} onChange={e => setNewRole(e.target.value)}>
+                {ROLE_OPTIONS.map(r => (
+                    <option key={r}>{r}</option>
                 ))}
+            </select>
 
-                <div className="profile-card add" onClick={handleAdd}>
-                    <div className="avatar">➕</div>
-                    <div className="name">Profil hinzufügen</div>
-                </div>
-            </div>
+            <button onClick={handleCreate}>
+                Profil erstellen
+            </button>
         </div>
     );
-};
-
-export default SelectProfile;
+}
