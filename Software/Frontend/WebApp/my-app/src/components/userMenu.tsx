@@ -1,32 +1,36 @@
 import { useState } from "react";
 import { logout, logoutProfile } from "../services/auth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
+import { Button } from "./button";
+
 import "../styles/usermeu.css";
 
-type UserMenuProps = {
-    setAccount: React.Dispatch<React.SetStateAction<any>>;
-    account: any;
-    onProfileSelect: () => void;
-    setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-function UserMenu({ setAccount, account, onProfileSelect, setIsAuth }: UserMenuProps) {
+function UserMenu() {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-    
+
+    const {
+        account,
+        setAccount,
+        setIsAuth,
+        setProfile,
+        setProfileSelected
+    } = useAuth();
+
     const initials =
-        account?.fname?.[0]?.toUpperCase() + account?.lname?.[0]?.toUpperCase();
+        account?.fname?.[0]?.toUpperCase() +
+        account?.lname?.[0]?.toUpperCase();
 
     const handleSwitch = async () => {
-        await logoutProfile();  
-        onProfileSelect();
-        navigate("/");      
+        await logoutProfile();
+        setProfile(null);
+        setProfileSelected(false);
+        navigate("/");
     };
 
     return (
-        // man kan irgendiwe kein button in table deswegen vllt keinen oder nur teilweise oder ein link tag
         <div className="user-menu">
-            {/* Avatar */}
             <div
                 className="avatar"
                 onClick={() => setOpen(!open)}
@@ -34,43 +38,26 @@ function UserMenu({ setAccount, account, onProfileSelect, setIsAuth }: UserMenuP
                 {initials || "?"}
             </div>
 
-            {/* Dropdown */}
             {open && (
                 <div className="dropdown">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>{account?.fname} {account?.lname}</td>
-                            </tr>
-                            <tr>
-                                <td>{account?.email}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
                     <div className="user-info">
                         <div>{account?.fname} {account?.lname}</div>
                         <div>{account?.email}</div>
                     </div>
 
-                    <button onClick={() => navigate("/profile")}>
-                        Mein Profil
-                    </button>
-
-                    <button onClick={() => navigate("/settings")}>
-                        Einstellungen
-                    </button>
-
-                    <button
-                        onClick={async () => {
+                    <Button label="Mein Profil" onClick={() => navigate("/profile")} />
+                    <Button label="Einstellungen" onClick={() => navigate("/settings")} />
+          
+                    <Button label="Logout" onClick={async () => {
                             await logout();
                             setAccount(null);
+                            setProfile(null);
+                            setProfileSelected(false);
                             setIsAuth(false);
-                            navigate("/login");
-                        }}
-                    >
-                        Logout
-                    </button>
-                    <button onClick={handleSwitch}>Benutzer wechseln</button>
+                        }} />
+
+                    <Button label="Benutzer wechseln" onClick={handleSwitch} />
                 </div>
             )}
         </div>

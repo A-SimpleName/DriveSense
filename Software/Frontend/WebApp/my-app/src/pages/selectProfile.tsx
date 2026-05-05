@@ -3,6 +3,9 @@ import { createProfile } from "../services/profileService";
 import type { Profile } from "../model/profile";
 import { selectProfile } from "../services/auth";
 import { useState } from "react";
+import { useAuth } from "../context/authContext";
+
+import "../styles/selectProfile.css"
 
 export default function SelectProfilePage({
     profiles,
@@ -17,11 +20,18 @@ export default function SelectProfilePage({
     const navigate = useNavigate();
     const [newName, setNewName] = useState("");
     const [newRole, setNewRole] = useState("PRIVAT");
-
     const ROLE_OPTIONS = ["PRIVAT", "FAHRSCHÜLER", "BERUFSFAHRER"];
+    const { setProfile, setProfileSelected } = useAuth();
 
     const handleSelect = async (id: number) => {
         await selectProfile(id);
+
+        const selected = profiles.find(p => p.id === id);
+        
+        setProfile(selected);
+
+        setProfileSelected(true);
+
         onSelect();
         navigate("/");
     };
@@ -38,12 +48,15 @@ export default function SelectProfilePage({
 
         await selectProfile(profile.id!);
 
+        setProfile(profile);
+        setProfileSelected(true);
+
         onSelect();
         navigate("/");
     };
 
     return (
-        <div>
+        <div className="container">
             <h2>Profile auswählen</h2>
 
             {profiles.length > 0 ? (
