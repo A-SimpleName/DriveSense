@@ -1,6 +1,8 @@
 import 'package:drivesense/services/profile_service.dart';
 import 'package:drivesense/widgets/vehicle_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/model/profile.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ProfilePageBody
@@ -30,16 +32,32 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
   }
 
   Future<void> _loadProfile() async {
-    // ProfileService.fetchProfiles() holt alle Profile des Accounts vom Server.
-    // Wir nehmen das erste — das ist das aktive Profil.
     final profiles = await ProfileService.fetchProfiles();
 
     if (!mounted) return;
 
+    final int? currentId = RuntimeStore.currentProfileId;
+
+    Profile? selectedProfile;
+
+    if (currentId != null) {
+      try {
+        selectedProfile = profiles.firstWhere((p) => p.id == currentId);
+      } catch (_) {
+        selectedProfile = null;
+      }
+    }
+
+    // Fallback (wenn nichts gefunden wurde)
+    selectedProfile ??= profiles.isNotEmpty ? profiles.first : null;
+
     setState(() {
-      if (profiles.isNotEmpty) {
-        _profileName = profiles.first.name;
-        _profileRole = profiles.first.role ?? 'Fahrschüler';
+      if (selectedProfile != null) {
+        _profileName = selectedProfile.name;
+        _profileRole = selectedProfile.role ?? 'Fahrschüler';
+      } else {
+        _profileName = 'Unbekannt';
+        _profileRole = '';
       }
       _isLoading = false;
     });
@@ -61,7 +79,6 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
             _buildProfileHeader(),
 
             const SizedBox(height: 24), // vertikaler Abstand
-
             // ── Fahrzeug-Tabelle ───────────────────────────────────────────
             // VehicleTableWidget ist ein eigenes Widget das sich selbst um
             // Laden, Anzeigen, Bearbeiten und Löschen kümmert.
@@ -93,50 +110,54 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
 
     // Card: eine Karte mit leichtem Schatten — gut zum Gruppieren von Infos
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row: Icon und Text nebeneinander
-            Row(
-              children: [
-                // CircleAvatar: runder Kreis mit einem Icon oder Buchstaben drin
-                CircleAvatar(
-                  radius: 28,
-                  child: Text(
-                    // Ersten Buchstaben des Namens anzeigen, oder "?" wenn leer
-                    _profileName?.isNotEmpty == true
-                        ? _profileName![0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(fontSize: 22),
+      child: InkWell(
+        onTap: () {
+          debugPrint('Clicked');
+          Navigator.pushNamed(
+            context,
+            'ProfileSelectPage',
+          ).then((_) => _loadProfile()); 
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    child: Text(
+                      _profileName?.isNotEmpty == true
+                          ? _profileName![0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(fontSize: 22),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                // Expanded: nimmt den restlichen horizontalen Platz ein
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _profileName ?? 'Unbekannt',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _profileName ?? 'Unbekannt',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _profileRole ?? '',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          _profileRole ?? '',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

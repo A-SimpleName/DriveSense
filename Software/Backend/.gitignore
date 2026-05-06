@@ -40,6 +40,3 @@ out/
 .env
 
 application.properties
-
-# Localhost config
-localhost_jdbc.txt
