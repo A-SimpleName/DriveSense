@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public class AccountResponse {
     private int id;
-    private String fname;
-    private String lname;
+    private String fName;
+    private String lName;
     private String email;
     private LocalDate birthdate;
 
@@ -25,12 +25,12 @@ public class AccountResponse {
         this.id = id;
     }
 
-    public String getFname() {
-        return fname;
+    public String getfName() {
+        return fName;
     }
 
-    public void setFname(String fname) {
-        this.fname = fname;
+    public void setfName(String fName) {
+        this.fName = fName;
     }
 
     public String getEmail() {
@@ -41,11 +41,11 @@ public class AccountResponse {
         this.email = email;
     }
 
-    public String getLname() {
-        return lname;
+    public String getlName() {
+        return lName;
     }
 
-    public void setLname(String lname) {
-        this.lname = lname;
+    public void setlName(String lName) {
+        this.lName = lName;
     }
 }

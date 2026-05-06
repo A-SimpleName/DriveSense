@@ -23,10 +23,10 @@ public class ProtocolDao {
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,protocol.getCreatedByProfileId());
-            if (protocol.getUsergroupId() == null) {
-                ps.setNull(2, Types.INTEGER);
+            if (protocol.getUsergroupId() != null) {
+                ps.setInt(2, protocol.getUsergroupId());
             } else {
-                ps.setInt(2,protocol.getUsergroupId());
+                ps.setNull(2, Types.INTEGER);
             }
             ps.setString(3,protocol.getName());
 
@@ -211,8 +211,7 @@ public class ProtocolDao {
         protocol.setId(rs.getInt("id"));
         protocol.setCreatedByProfileId(rs.getInt("created_by_profile_id"));
         protocol.setCreated_at(rs.getTimestamp("created_at").toLocalDateTime());
-        protocol.setUsergroupId(rs.getInt("usergroup_id"));
-        protocol.setUsergroupId((Integer) rs.getObject("usergroup_id"));
+        protocol.setUsergroupId(rs.getObject("usergroup_id", Integer.class));
         protocol.setName(rs.getString("name"));
         return protocol;
     }
