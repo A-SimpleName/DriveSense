@@ -5,9 +5,6 @@ import ProtocolTable from "../components/Protocols/table";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { Button } from "../components/button";
 
-const getUsergroupId = (protocol: Protocol) =>
-    protocol.usergroup?.id ?? protocol.usergroupId ?? null;
-
 export default function ProtocolPage() {
     const [protocols, setProtocols] = useState<Protocol[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,8 +16,6 @@ export default function ProtocolPage() {
         getAllProtocols()
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
-                    const aUsergroupId = getUsergroupId(a);
-                    const bUsergroupId = getUsergroupId(b);
 
                     // Erst: null usergroup_id zuerst
                     if (a.usergroupId === null && b.usergroupId !== null) return -1;
