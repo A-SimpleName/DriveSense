@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { checkAuth } from "./services/auth";
 import { getProfilesByAccount } from "./services/profileService";
 import { getCurrentAccount } from "./services/accountService";
-import type { AccountResponse } from "./model/account";
+
+import { AuthProvider, useAuth } from "./context/authContext";
 
 import TopBar from "./components/Layout/topbar";
 import LoginPage from "./pages/login";
@@ -22,133 +23,119 @@ import GroupDetailPage from "./pages/groupDetail";
 import ProfilePage from "./pages/profile";
 import InviteAcceptPage from "./pages/inviteAccept";
 
-// speichert den aktuellen Pfad bevor zum Login weitergeleitet wird
-function SaveAndRedirect({ to }: { to: string }) {
-    const location = useLocation();
-    useEffect(() => {
-        sessionStorage.setItem("pendingRedirect", location.pathname + location.search);
-    }, []);
-    return <Navigate to={to} />;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
 
-export default function App() {
-    const [isAuth, setIsAuth] = useState<boolean>(false);
-    const [profileSelected, setProfileSelected] = useState<boolean>(
-        sessionStorage.getItem("profileSelected") === "true"
-    );
-    const [profiles, setProfiles] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [account, setAccount] = useState<AccountResponse | null>(null);
-    const [reloadAuth, setReloadAuth] = useState(0);
+function AppContent() {
+  const {
+    isAuth,
+    setIsAuth,
+    setAccount,
+    profileSelected,
+    setProfileSelected
+  } = useAuth();
 
-    useEffect(() => {
-        async function initAuth() {
-            try {
-                const auth = await checkAuth();
-                setIsAuth(auth);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reloadAuth, setReloadAuth] = useState(0);
 
-                if (auth) {
-                    const accountData = await getCurrentAccount();
-                    setAccount(accountData);
+  useEffect(() => {
+    async function initAuth() {
+      try {
+        const auth = await checkAuth();
+        setIsAuth(auth);
 
-                    const profilesData = await getProfilesByAccount();
-                    setProfiles(profilesData);
-                } else {
-                    setProfiles([]);
-                    setProfileSelected(false);
-                    sessionStorage.removeItem("profileSelected");
-                }
-            } catch (err) {
-                console.error("initAuth ERROR:", err);
-                setIsAuth(false);
-                setProfileSelected(false);
-                setProfiles([]);
-                sessionStorage.removeItem("profileSelected");
-            } finally {
-                setLoading(false);
-            }
+        if (auth) {
+          const accountData = await getCurrentAccount();
+          setAccount(accountData);
+
+          const profilesData = await getProfilesByAccount();
+          setProfiles(profilesData);
+
+          setProfileSelected(false);
+        } else {
+          setProfiles([]);
+          setProfileSelected(false);
         }
-
-        initAuth();
-    }, [reloadAuth]);
-
-    if (loading) {
-        return <div>Loading...</div>;
+      } catch (err) {
+        console.error("initAuth ERROR:", err);
+        setIsAuth(false);
+        setProfileSelected(false);
+        setProfiles([]);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    return (
-        <BrowserRouter>
-            {isAuth && profileSelected && (
-                <TopBar setAccount={setAccount} account={account} />
-            )}
+    initAuth();
+  }, [reloadAuth]);
 
-            <Routes>
+  if (loading) return <div>Loading...</div>;
 
-                {/* NICHT EINGELOGGT */}
-                {!isAuth && (
-                    <>
-                        <Route
-                            path="/login"
-                            element={
-                                <LoginPage
-                                    onLoginSuccess={() => {
-                                        setIsAuth(true);
-                                        setReloadAuth(prev => prev + 1);
-                                    }}
-                                />
-                            }
-                        />
-                        <Route path="/signup" element={<SignUpPage />} />
-                        <Route path="*" element={<SaveAndRedirect to="/login" />} />
-                    </>
-                )}
+  return (
+    <BrowserRouter>
 
-                {/* EINGELOGGT, ABER KEIN PROFIL AKTIV */}
-                {isAuth && !profileSelected && (
-                    <Route
-                        path="*"
-                        element={
-                            <SelectProfilePage
-                                profiles={profiles}
-                                setProfiles={setProfiles}
-                                onSelect={() => {
-                                    sessionStorage.setItem("profileSelected", "true");
-                                    setProfileSelected(true);
+      {/* Topbar nur wenn komplett eingeloggt */}
+      {isAuth && profileSelected && <TopBar />}
 
-                                    // nach Profilauswahl pendingRedirect prüfen
-                                    const pendingRedirect = sessionStorage.getItem("pendingRedirect");
-                                    if (pendingRedirect) {
-                                        sessionStorage.removeItem("pendingRedirect");
-                                        window.location.href = pendingRedirect;
-                                    }
-                                }}
-                            />
-                        }
-                    />
-                )}
+      <Routes>
 
-                {/* VOLLSTÄNDIG EINGELOGGT MIT PROFIL */}
-                {isAuth && profileSelected && (
-                    <>
-                        <Route path="/" element={<DashboardPage />} />
-                        <Route path="/trips" element={<TripsPage />} />
-                        <Route path="/trips/:id" element={<TripDetailPage />} />
-                        <Route path="/protocols/:id" element={<ProtocolDetail />} />
-                        <Route path="/vehicles" element={<Vehicles />} />
-                        <Route path="/settings" element={<Settings onSwitchProfile={() => {
-                            sessionStorage.removeItem("profileSelected");
-                            setProfileSelected(false);
-                        }} />} />
-                        <Route path="/protocols" element={<ProtocolPage />} />
-                        <Route path="/groups" element={<GroupPage />} />
-                        <Route path="/groups/:id" element={<GroupDetailPage />} />
-                        <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/invite" element={<InviteAcceptPage />} />
-                        <Route path="*" element={<Navigate to="/" />} />
-                    </>
-                )}
+        {/* NICHT EINGELOGGT */}
+        {!isAuth && (
+          <>
+            <Route
+              path="/login"
+              element={
+                <LoginPage
+                  onLoginSuccess={() => {
+                    setIsAuth(true);
+                    setReloadAuth(prev => prev + 1);
+                  }}
+                />
+              }
+            />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </>
+        )}
 
-            </Routes>
-        </BrowserRouter>
-    );
+        {/* EINGELOGGT, ABER KEIN PROFIL */}
+        {isAuth && !profileSelected && (
+          <Route
+            path="*"
+            element={
+              <SelectProfilePage
+                profiles={profiles}
+                setProfiles={setProfiles}
+                onSelect={() => setProfileSelected(true)}
+              />
+            }
+          />
+        )}
+
+        {/* VOLLSTÄNDIG EINGELOGGT */}
+        {isAuth && profileSelected && (
+          <>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/trips" element={<TripsPage />} />
+            <Route path="/trips/:id" element={<TripDetailPage />} />
+            <Route path="/protocols/:id" element={<ProtocolDetail />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/settings" element={<Settings/>}/>
+            <Route path="/protocols" element={<ProtocolPage />} />
+            <Route path="/groups" element={<GroupPage />} />
+            <Route path="/groups/:id" element={<GroupDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/invite" element={<InviteAcceptPage />} />
+          </>
+        )}
+        
+      </Routes>
+    </BrowserRouter>
+  );
 }
