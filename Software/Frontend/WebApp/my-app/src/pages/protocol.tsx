@@ -8,6 +8,9 @@ import ProtocolTable from "../components/Protocols/table";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { Button } from "../components/button";
 
+const getUsergroupId = (protocol: Protocol) =>
+    protocol.usergroup?.id ?? protocol.usergroupId ?? null;
+
 export default function ProtocolPage() {
     // const { id } = useParams();
     // const [groups, setGroups] = useState<UserGroup[]>([]);
@@ -48,9 +51,12 @@ export default function ProtocolPage() {
         getAllProtocols()
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
+                    const aUsergroupId = getUsergroupId(a);
+                    const bUsergroupId = getUsergroupId(b);
+
                     // Erst: null usergroup_id zuerst
-                    if (a.usergroup.id === null && b.usergroup.id !== null) return -1;
-                    if (a.usergroup.id !== null && b.usergroup.id === null) return 1;
+                    if (aUsergroupId === null && bUsergroupId !== null) return -1;
+                    if (aUsergroupId !== null && bUsergroupId === null) return 1;
 
                     // Dann: nach createdAt absteigend (neueste zuerst)
                     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -61,8 +67,8 @@ export default function ProtocolPage() {
             .finally(() => setLoading(false));
     }, [reloadKey]);
 
-    const groupProtocols = protocols.filter(p => p.usergroup?.id != null);
-const ownProtocols = protocols.filter(p => p.usergroup?.id == null);
+    const groupProtocols = protocols.filter(p => getUsergroupId(p) != null);
+    const ownProtocols = protocols.filter(p => getUsergroupId(p) == null);
 
     if (loading) return <div>Lade Protokolle...</div>;
 

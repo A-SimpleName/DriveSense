@@ -23,7 +23,11 @@ public class ProtocolDao {
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1,protocol.getCreatedByProfileId());
-            ps.setObject(2, protocol.getUsergroupId());
+            if (protocol.getUsergroupId() == null) {
+                ps.setNull(2, Types.INTEGER);
+            } else {
+                ps.setInt(2,protocol.getUsergroupId());
+            }
             ps.setString(3,protocol.getName());
 
 
@@ -172,12 +176,43 @@ public class ProtocolDao {
         }
     }
 
+    public boolean isAccessibleByProfile(int protocolId, int profileId) {
+        String sql = """
+            SELECT 1
+            FROM protocol p
+            WHERE p.id = ?
+              AND (
+                    p.created_by_profile_id = ?
+                    OR EXISTS (
+                        SELECT 1
+                        FROM profile_usergroup pug
+                        WHERE pug.usergroup_id = p.usergroup_id
+                          AND pug.profile_id = ?
+                    )
+                  )
+            """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, protocolId);
+            ps.setInt(2, profileId);
+            ps.setInt(3, profileId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Prüfen des Protokollzugriffs", e);
+        }
+    }
+
     private Protocol map(ResultSet rs) throws SQLException {
         Protocol protocol = new Protocol();
         protocol.setId(rs.getInt("id"));
         protocol.setCreatedByProfileId(rs.getInt("created_by_profile_id"));
         protocol.setCreated_at(rs.getTimestamp("created_at").toLocalDateTime());
         protocol.setUsergroupId(rs.getInt("usergroup_id"));
+        protocol.setUsergroupId((Integer) rs.getObject("usergroup_id"));
         protocol.setName(rs.getString("name"));
         return protocol;
     }

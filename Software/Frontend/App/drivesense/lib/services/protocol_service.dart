@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
@@ -10,20 +11,12 @@ import 'package:http/http.dart' as http;
 class ProtocolService {
   ProtocolService._();
 
-  static Map<String, String> _authHeaders() {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
-    return <String, String>{
-      'Content-Type': 'application/json',
-      ..._cookieHeaders(cookieHeader),
-    };
-  }
-
   static Future<List<Protocol>> fetchProtocols() async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -48,9 +41,23 @@ class ProtocolService {
   }
 
   static Future<int?> resolveCurrentOrFirstAvailableProtocolId() async {
+    return resolvePreferredCurrentOrFirstAvailableProtocolId();
+  }
+
+  static Future<int?> resolvePreferredCurrentOrFirstAvailableProtocolId({
+    int preferredProtocolId = 0,
+  }) async {
     final List<Protocol> protocols = await fetchProtocols();
     if (protocols.isEmpty) {
       return null;
+    }
+
+    if (preferredProtocolId > 0) {
+      for (final Protocol protocol in protocols) {
+        if (protocol.id == preferredProtocolId) {
+          return protocol.id;
+        }
+      }
     }
 
     final int currentProtocolId = RuntimeStore.getCurrentProtocolId();
@@ -64,9 +71,7 @@ class ProtocolService {
   }
 
   static Future<Protocol?> createProtocol({
-    required int profileId,
     required String name,
-    int? usergroupId,
   }) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
     final String trimmedName = name.trim();
@@ -78,12 +83,8 @@ class ProtocolService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(<String, dynamic>{
-              'createdByProfileId': profileId,
-              'created_by_profile_id': profileId,
-              if (usergroupId != null) 'usergroupId': usergroupId,
-              if (usergroupId != null) 'usergroup_id': usergroupId,
               'name': trimmedName,
             }),
           )
@@ -114,19 +115,16 @@ class ProtocolService {
     }
   }
 
-  static Future<int?> createDefaultProtocol(int profileId) async {
+  static Future<int?> createDefaultProtocol() async {
     final Protocol? protocol = await createProtocol(
-      profileId: profileId,
       name: 'L17 Protokoll',
     );
     return protocol?.id;
   }
 
-  static Future<int> ensureDefaultProtocolForActiveProfile(
-    int profileId,
-  ) async {
+  static Future<int> ensureDefaultProtocolForActiveProfile() async {
     int? protocolId = await resolveCurrentOrFirstAvailableProtocolId();
-    protocolId ??= await createDefaultProtocol(profileId);
+    protocolId ??= await createDefaultProtocol();
     final int resolved = protocolId ?? 0;
     RuntimeStore.setCurrentProtocolId(resolved);
     return resolved;
@@ -172,11 +170,22 @@ class ProtocolService {
     return null;
   }
 
-  static Map<String, String> _cookieHeaders(String? cookieHeader) {
-    if (cookieHeader == null) {
-      return const <String, String>{};
-    }
+  static Future<bool> deleteProtocol(int protocolId) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/protocols/$protocolId',
+    );
 
-    return <String, String>{'Cookie': cookieHeader};
+    try {
+      final http.Response response = await http
+          .delete(uri, headers: RequestHeaders.authenticated())
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint('DeleteProtocol <- status=${response.statusCode}, uri=$uri');
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (e) {
+      debugPrint('DeleteProtocol failed at $uri: $e');
+      return false;
+    }
   }
 }

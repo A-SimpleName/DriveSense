@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Pattern;
 public class UserGroupUpdateRoleRequest {
     @NotBlank(message = "Rolle darf nicht leer sein")
     @Pattern(
-            regexp = "OWNER|ADMIN|MEMBER",
-            message = "Rolle muss OWNER, ADMIN oder MEMBER sein"
+            regexp = "ADMIN|MEMBER",
+            message = "Rolle muss ADMIN oder MEMBER sein"
     )
     private String role;
 

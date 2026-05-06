@@ -54,19 +54,19 @@ function GroupDetailPage() {
 
     const handleRemove = (profileId: number) => {
         setError(null);
-        deleteMember(profileId, groupId)
+        deleteMember(groupId, profileId)
             .then(() => setMembers(prev => prev.filter(m => m.profileId !== profileId)))
             .catch(err => setError(err.message));
     };
 
     const handleUpdateRole = (profileId: number, currentRole: string) => {
-        const newRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
+        const groupRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
         setError(null);
-        updateMemberRole(profileId, groupId, newRole)
+        updateMemberRole(groupId, profileId, groupRole)
             .then(() =>
                 setMembers(prev =>
                     prev.map(m =>
-                        m.profileId === profileId ? { ...m, groupRole: newRole } : m
+                        m.profileId === profileId ? { ...m, groupRole: groupRole } : m
                     )
                 )
             )
