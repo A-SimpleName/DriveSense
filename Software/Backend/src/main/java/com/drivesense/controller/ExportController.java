@@ -29,7 +29,7 @@ public class ExportController {
 
     @GetMapping("{protocolId}")
     public ResponseEntity<byte[]> exportPdf(
-            @PathVariable int protocolId) throws Exception {
+            @PathVariable int protocolId) {
 
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
         boolean isGroup = protocol.getUsergroup() != null

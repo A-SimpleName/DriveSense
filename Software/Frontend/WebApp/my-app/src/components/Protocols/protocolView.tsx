@@ -1,4 +1,6 @@
 import type { ProtocolDetail } from "../../model/protocol";
+import type { TripSummary } from "../../model/trip";
+import "../../styles/protocol.css"
 
 type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
 
@@ -57,7 +59,7 @@ export default function ProtocolView({
         }
     };
 
-    const renderRow = (trip: any, i: number) => {
+    const renderRow = (trip: TripSummary, i: number) => {
         return (
             <tr key={i}>
                 {isGroup && (
@@ -68,12 +70,24 @@ export default function ProtocolView({
 
                 {type === "FAHRSCHÜLER" && (
                     <>
-                        <td>{trip.startTime}</td>
+                        <td>
+                            {new Date(trip.startTime).toLocaleDateString(
+                                "de-AT"
+                            )}
+                        </td>
                         <td>{trip.distance}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
                         <td>{trip.licensePlate}</td>
-                        <td>{trip.startTime}</td>
+                        <td>
+                            {new Date(trip.endTime).toLocaleTimeString(
+                                "de-AT",
+                                {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                }
+                            )}
+                        </td>
                         <td>
                             {trip.startPoint} → {trip.furthestPoint} → {trip.endPoint}
                         </td>
@@ -83,7 +97,11 @@ export default function ProtocolView({
 
                 {type === "PRIVAT" && (
                     <>
-                        <td>{trip.startTime}</td>
+                        <td>
+                            {new Date(trip.startTime).toLocaleDateString(
+                                "de-AT"
+                            )}
+                        </td>
                         <td className="left">{trip.startPoint}</td>
                         <td className="left">{trip.endPoint}</td>
                         <td>{trip.startMileage}</td>
@@ -95,7 +113,11 @@ export default function ProtocolView({
 
                 {type === "BERUFSFAHRER" && (
                     <>
-                        <td>{trip.startTime}</td>
+                        <td>
+                            {new Date(trip.startTime).toLocaleDateString(
+                                "de-AT"
+                            )}
+                        </td>
                         <td className="left">{trip.startPoint}</td>
                         <td className="left">{trip.endPoint}</td>
                         <td>{trip.distance} km</td>
@@ -165,7 +187,7 @@ export default function ProtocolView({
                 </thead>
 
                 <tbody>
-                    {trips.map((trip: any, i: number) =>
+                    {trips.map((trip: TripSummary, i: number) =>
                         renderRow(trip, i)
                     )}
                 </tbody>
