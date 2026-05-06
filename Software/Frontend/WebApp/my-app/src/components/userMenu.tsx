@@ -46,10 +46,10 @@ function UserMenu() {
                         <div>{account?.email}</div>
                     </div>
 
-                    <Button label="Mein Profil" onClick={() => navigate("/profile")} />
-                    <Button label="Einstellungen" onClick={() => navigate("/settings")} />
+                    <Button className="userMenu-btn" label="Mein Profil" onClick={() => navigate("/profile")} />
+                    <Button className="userMenu-btn" label="Einstellungen" onClick={() => navigate("/settings")} />
           
-                    <Button label="Logout" onClick={async () => {
+                    <Button className="userMenu-btn" label="Logout" onClick={async () => {
                             await logout();
                             setAccount(null);
                             setProfile(null);
@@ -57,7 +57,7 @@ function UserMenu() {
                             setIsAuth(false);
                         }} />
 
-                    <Button label="Benutzer wechseln" onClick={handleSwitch} />
+                    <Button className="userMenu-btn" label="Benutzer wechseln" onClick={handleSwitch} />
                 </div>
             )}
         </div>
