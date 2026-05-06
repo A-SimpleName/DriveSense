@@ -10,7 +10,7 @@ public class Protocol {
     private int id;
     @Min(value = 1, message = "Profile ID muss größer als 0 sein")
     private int createdByProfileId;
-    private int usergroupId;
+    private Integer usergroupId;
     @NotBlank(message = "Name darf nicht leer sein")
     @Size(max = 100, message = "Name darf maximal 100 Zeichen haben")
     private String name;
@@ -18,7 +18,7 @@ public class Protocol {
 
     public Protocol(){}
 
-    public Protocol(int createdByProfileId, int usergroupId, String name,LocalDateTime created_at) {
+    public Protocol(int createdByProfileId, Integer usergroupId, String name, LocalDateTime created_at) {
         this.createdByProfileId = createdByProfileId;
         this.usergroupId = usergroupId;
         this.name = name;
@@ -49,11 +49,11 @@ public class Protocol {
         this.createdByProfileId = createdByProfileId;
     }
 
-    public int getUsergroupId() {
+    public Integer getUsergroupId() {
         return usergroupId;
     }
 
-    public void setUsergroupId(int usergroupId) {
+    public void setUsergroupId(Integer usergroupId) {
         this.usergroupId = usergroupId;
     }
 

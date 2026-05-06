@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:drivesense/model/pending_trip.dart';
+import 'package:drivesense/model/trip.dart';
 
 class IsarService {
   static Isar? _isar;
@@ -11,7 +11,7 @@ class IsarService {
     final directory = await getApplicationDocumentsDirectory();
 
     _isar = await Isar.open(
-      [PendingTripSchema],
+      [TripSchema],
       directory: directory.path,
       name: 'drivesense_db',
     );

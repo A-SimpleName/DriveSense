@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 
 public class Vehicle {
     private int id;
-    private int profileId;
     @NotBlank(message = "Model darf nicht leer sein")
     @Size(max = 150, message = "Model darf maximal 150 Zeichen haben")
     private String model;
@@ -18,10 +17,9 @@ public class Vehicle {
 
     public Vehicle() {}
 
-    public Vehicle(int profileId, String model, String licenseplate, int mileage) {
-        this.profileId = profileId;
+    public Vehicle(int profileId, String model, String licensePlate, int mileage) {
         this.model = model;
-        this.licensePlate = licenseplate;
+        this.licensePlate = licensePlate;
         this.mileage = mileage;
     }
 
@@ -31,14 +29,6 @@ public class Vehicle {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getProfileId() {
-        return profileId;
-    }
-
-    public void setProfileId(int profileId) {
-        this.profileId = profileId;
     }
 
     public String getModel() {
@@ -69,7 +59,6 @@ public class Vehicle {
     public String toString() {
         return "Vehicle: " +
                 "id: " + id +
-                ", profileId: " + profileId +
                 ", model: '" + model + '\'' +
                 ", licenseplate: '" + licensePlate + '\'' +
                 ", mileage: " + mileage;

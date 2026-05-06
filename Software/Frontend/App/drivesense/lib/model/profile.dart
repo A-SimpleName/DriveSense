@@ -1,35 +1,39 @@
 class Profile {
   final int id;
   final String name;
-  final String role;
-  final int accountId;
-  final int userGroupId;
+  final String? role;
+  final int? accountId;
 
-  Profile({
-    required this.id,
-    required this.name,
-    required this.role,
-    required this.accountId,
-    required this.userGroupId,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "role": role,
-      "accountId": accountId,
-      "userGroupId": userGroupId,
-    };
-  }
+  const Profile({required this.id, required this.name, this.role, this.accountId});
 
   factory Profile.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value) {
+      if (value is int) {
+        return value;
+      }
+      if (value is String) {
+        return int.tryParse(value) ?? 0;
+      }
+      return 0;
+    }
+
+    String? asString(dynamic value) {
+      if (value == null) {
+        return null;
+      }
+      final String text = value.toString().trim();
+      return text.isEmpty ? null : text;
+    }
+
     return Profile(
-      id: json["id"],
-      name: json["name"],
-      role: json["role"],
-      accountId: json["accountId"],
-      userGroupId: json["userGroupId"],
+      id: asInt(json['id']),
+      name: asString(json['name'])!,
+      role: asString(json['role']),
+      accountId: asInt(json['account_id'] ?? json['accountId']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'role': role, 'account_id': accountId};
   }
 }

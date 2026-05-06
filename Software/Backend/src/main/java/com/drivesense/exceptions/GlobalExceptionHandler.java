@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +58,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDatabaseException(DatabaseException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Datenbankfehler – bitte später erneut versuchen");
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            error.put("detail", ex.getCause().getMessage());
+        }
         return ResponseEntity.status(500).body(error);
     }
 
@@ -65,6 +69,14 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Externer Dienst nicht verfügbar – bitte später erneut versuchen");
         return ResponseEntity.status(503).body(error); // 503 = Service Unavailable
+    }
+
+    // Falsche HTTP-Methode -> 405
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "HTTP-Methode nicht erlaubt: " + ex.getMethod());
+        return ResponseEntity.status(405).body(error);
     }
 
     // Alles andere → 500

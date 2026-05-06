@@ -1,15 +1,19 @@
-import 'package:drivesense/pages/login_page.dart';
+import 'package:drivesense/pages/profile_select_page.dart';
+import 'package:drivesense/pages/sign_in_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
-import 'package:drivesense/services/login_and_register.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
+import 'package:drivesense/config/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await IsarService.getInstance();
-  String token = "abc"; // TODO: get token from secure storage
+  String token = ""; // TODO: get token from secure storage
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -47,11 +51,12 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      initialRoute: LoginAndRegister.redirectToHome(token: token),
+      initialRoute: SignInAndSignUp.redirectToProfileSelectPage(token: token),
       routes: {
         'MainPage': (context) => const MainPage(),
-        'LoginPage': (context) => const LoginPage(),
+        'SignInPage': (context) => const SignInPage(),
         'SignUpPage': (context) => const SignUpPage(),
+        'ProfileSelectPage': (context) => const ProfileSelectPage(),
       },
     );
   }

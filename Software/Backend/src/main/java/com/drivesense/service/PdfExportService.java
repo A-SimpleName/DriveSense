@@ -4,6 +4,7 @@ package com.drivesense.service;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.dto.response.TripSummaryDto;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -19,34 +20,39 @@ public class PdfExportService {
 
     private final TemplateEngine templateEngine;
 
+    @Autowired
     public PdfExportService(TemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
     }
 
-    public byte[] generateProtocolPdf(ProtocolDto protocol, AccountResponse account,
-                                      String role, boolean isGroup) throws Exception {
+    public byte[] generateProtocolPdf(ProtocolDto protocol, boolean isGroup) throws Exception {
 
         // 1. Build Thymeleaf context with all data the template needs
         Context ctx = new Context();
         ctx.setVariable("protocol", protocol);
-        ctx.setVariable("account",  account);
+        ctx.setVariable("account",  protocol.getCreated_by_account());
         ctx.setVariable("isGroup",  isGroup);
 
         List<TripSummaryDto> trips = protocol.getTrips() != null
                 ? protocol.getTrips() : List.of();
         ctx.setVariable("trips", trips);
 
-        int totalKm = trips.stream().mapToInt(TripSummaryDto::getDistance).sum();
+        double totalKm = trips.stream().mapToDouble(TripSummaryDto::getDistance).sum();
         ctx.setVariable("totalKm", totalKm);
 
+        if (isGroup) {
+            String groupName = protocol.getUsergroup().getName();
+            ctx.setVariable("groupName", groupName);
+        }
+
         // Fahrschüler: always show at least 12 rows like the paper form
-        if ("FAHRSCHÜLER".equalsIgnoreCase(role)) {
+        if ("FAHRSCHÜLER".equalsIgnoreCase(protocol.getProtocolRole())) {
             int fillerCount = Math.max(0, 12 - trips.size());
             ctx.setVariable("fillerRows", Collections.nCopies(fillerCount, null));
         }
 
         // 2. Pick the right template based on role
-        String template = switch (role.toUpperCase()) {
+        String template = switch (protocol.getProtocolRole().toUpperCase()) {
             case "FAHRSCHÜLER"  -> "pdf/fahrschüler";
             case "BERUFSFAHRER" -> "pdf/berufsfahrer";
             default             -> "pdf/privat";
