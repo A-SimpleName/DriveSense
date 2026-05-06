@@ -1,62 +1,72 @@
 .container {
+    padding-top: 100px;
     text-align: center;
     padding-top: 80px;
     font-family: Arial, sans-serif;
-    background: #141414;
+
+    background: #ffffff;
     min-height: 100vh;
-    color: white;
+    color: #111;
 }
 
-h1 {
-    margin-bottom: 50px;
-    font-size: 32px;
+h2, h3 {
+    margin-bottom: 20px;
 }
 
-.profile-grid {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
+.selectProfile-btn {
+    display: block;
+    margin: 10px auto;
 
-.profile-card {
-    width: 150px;
-    height: 180px;
-    background: #222;
-    border-radius: 10px;
+    width: 260px;
+    height: 44px;
+
+    padding: 0 14px;
+
+    background: #f5f5f5;
+    color: #111;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
     cursor: pointer;
     transition: 0.2s;
+
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 }
 
-.profile-card:hover {
-    transform: scale(1.08);
+.selectProfile-btn:hover {
     background: #333;
+    transform: scale(1.03);
 }
 
-.avatar {
-    font-size: 50px;
-    margin-bottom: 10px;
+input, select {
+    display: block;
+    margin: 10px auto;
+    width: 260px;
+    height: 44px;
+
+    padding: 0 12px;
+
+    border-radius: 6px;
+    border: 1px solid #ddd;
+
+    background: white;
+    color: #111;
 }
 
-.name {
-    font-weight: bold;
-    margin-bottom: 5px;
+input:focus, select:focus {
+    outline: none;
+    border-color: deepskyblue;
 }
 
-.type {
-    font-size: 13px;
-    color: #aaa;
-}
-
-.profile-card.add {
-    border: 2px dashed #555;
+/* optional: "Add profile" Button Styling */
+.selectProfile-btn:last-of-type {
+    border: 1px dashed #666;
     background: transparent;
 }
 
-.profile-card.add:hover {
+.selectProfile-btn:last-of-type:hover {
     background: #222;
 }
