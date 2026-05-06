@@ -352,7 +352,7 @@ public class TripDao {
         dto.setEndMileage(rs.getInt("end_mileage"));
         dto.setDistance(rs.getDouble("distance"));
         dto.setType(rs.getString("type"));
-        dto.setLicenseplate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
         dto.setStartPoint(rs.getString("start_point"));
         dto.setEndPoint(rs.getString("end_point"));
