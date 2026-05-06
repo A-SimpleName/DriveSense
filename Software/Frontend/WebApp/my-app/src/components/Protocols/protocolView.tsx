@@ -138,15 +138,9 @@ export default function ProtocolView({
                 <div className="left">
                     <span className="brand">DRIVESENSE</span>
 
-<<<<<<< HEAD
-                    <div className="proto-name">
-                        {isGroup ? protocol.usergroup?.name ?? protocol.name : protocol.name}
-                    </div>
-=======
                     <div className="proto-name">
                         {isGroup ? protocol.usergroup?.name : protocol.name}
                     </div>
->>>>>>> Niklas
 
                     <div className="proto-sub">
                         {isGroup ? "Gruppenprotokoll" : "Einzelprotokoll"} ·{" "}
@@ -157,7 +151,7 @@ export default function ProtocolView({
                 {!isGroup && (
                     <div className="right">
                         <div className="proto-sub">
-                            {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
+                            {protocol.created_by_account?.fName} {protocol.created_by_account?.lName}
                         </div>
                         <div className="user-info">
                             geb. {birthdate}

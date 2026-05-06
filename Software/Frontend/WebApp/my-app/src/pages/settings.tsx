@@ -11,7 +11,7 @@ export default function Settings() {
             <h1>Einstellungen</h1>
             <h2>Account</h2>
             
-            <p>Angemeldeter Account: {account?.fname} {account?.lname}</p>
+            <p>Angemeldeter Account: {account?.fName} {account?.lName}</p>
             <p>Email: {account?.email}</p>
 
             <Button label="Passwort ändern" type="button" /*onClick={() => navigate("/change-password")}*/ />
