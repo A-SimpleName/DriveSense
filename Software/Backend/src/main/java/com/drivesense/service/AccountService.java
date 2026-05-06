@@ -148,8 +148,8 @@ public class AccountService {
     private AccountResponse toResponse(Account account) {
         AccountResponse res = new AccountResponse();
         res.setId(account.getId());
-        res.setFname(account.getfName());
-        res.setLname(account.getlName());
+        res.setfName(account.getfName());
+        res.setlName(account.getlName());
         res.setEmail(account.getEmail());
         return res;
     }
