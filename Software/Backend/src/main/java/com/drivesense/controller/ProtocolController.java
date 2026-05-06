@@ -62,7 +62,7 @@ public class ProtocolController {
             HttpServletRequest request
     ) {
         int profileId = (int) request.getAttribute("profileId");
-        Protocol protocol = protocolService.insert(requestBody.getName(), profileId);
+        Protocol protocol = protocolService.insert(requestBody.getName(), profileId, requestBody.getUsergroupId());
 
         return ResponseEntity.status(201).body(protocol);
     }
