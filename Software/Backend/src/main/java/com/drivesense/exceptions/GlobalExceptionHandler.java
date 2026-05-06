@@ -28,6 +28,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(PdfExportException.class)
+    public ResponseEntity<Map<String, String>> handlePdfExport(PdfExportException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(500).body(error);
+    }
+
     // Nicht gefunden → 404
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(NotFoundException ex) {

@@ -157,9 +157,6 @@ public class TripDao {
         }
     }
 
-    /***
-     * Für Admin Zwecke, keine Zugriffsrechtprüfung vorhanden!
-     ***/
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
         String sql = """
                     SELECT
