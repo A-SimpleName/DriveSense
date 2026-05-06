@@ -39,8 +39,8 @@ public class PdfExportService {
                     ? protocol.getTrips() : List.of();
             ctx.setVariable("trips", trips);
 
-        double totalKm = trips.stream().mapToDouble(TripSummaryDto::getDistance).sum();
-        ctx.setVariable("totalKm", totalKm);
+            double totalKm = trips.stream().mapToDouble(TripSummaryDto::getDistance).sum();
+            ctx.setVariable("totalKm", totalKm);
 
             if (isGroup) {
                 String groupName = protocol.getUsergroup().getName();
