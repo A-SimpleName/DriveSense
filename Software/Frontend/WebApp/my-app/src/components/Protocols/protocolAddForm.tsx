@@ -5,9 +5,10 @@ import { createProtocol } from "../../services/protocolService";
 interface Props {
     onClose: () => void;
     onSuccess: () => void;
+    usergroupId: number | null;
 }
 
-export function ProtocolAddForm({ onClose, onSuccess }: Props) {
+export function ProtocolAddForm({ onClose, onSuccess, usergroupId }: Props) {
     const [name, setName] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
@@ -23,9 +24,9 @@ export function ProtocolAddForm({ onClose, onSuccess }: Props) {
         setError(null);
 
         try {
-            await createProtocol({ name });
-            onSuccess(); 
-            onClose(); 
+            await createProtocol({ name, usergroupId: usergroupId });
+            onSuccess();
+            onClose();
         } catch (err: any) {
             setError(err?.message || "Fehler beim Erstellen");
         } finally {

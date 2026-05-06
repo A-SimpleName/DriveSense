@@ -5,6 +5,7 @@ import { deleteMember, getGroupById, getGroupMembers, updateMemberRole } from ".
 import { getCurrentProfile } from "../services/profileService";
 import { Button } from "../components/button";
 import { InviteMemberForm } from "../components/group/InviteMemberForm";
+import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 
 // wer darf wen entfernen
 const canRemove = (myRole: string, targetRole: string): boolean => {
@@ -30,6 +31,7 @@ function GroupDetailPage() {
     const [members, setMembers] = useState<GroupMember[]>([]);
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
     const [showInviteForm, setShowInviteForm] = useState(false);
+    const [showProtocolForm, setShowProtocolForm] = useState(false);
     
 
     useEffect(() => {
@@ -102,6 +104,21 @@ function GroupDetailPage() {
                     </div>
                 </div>
             )}
+
+            <Button
+                label="+ Protokoll hinzufügen"
+                onClick={() => setShowProtocolForm(true)}
+            />
+
+            {
+                showProtocolForm && (
+                    <ProtocolAddForm
+                        onClose={() => setShowProtocolForm(false)}
+                        onSuccess={() => setShowProtocolForm(false)}
+                        usergroupId={groupId}
+                    />
+                )
+            }
 
             <table>
                 <thead>

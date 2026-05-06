@@ -1,4 +1,4 @@
-import type { Protocol } from "../../model/protocol";
+import type { ProtocolDetail } from "../../model/protocol";
 
 type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
 
@@ -7,7 +7,7 @@ export default function ProtocolView({
     type,
     isGroup,
 }: {
-    protocol: Protocol;
+    protocol: ProtocolDetail;
     type: ProtocolType;
     isGroup: boolean;
 }) {
@@ -114,7 +114,7 @@ export default function ProtocolView({
                     <span className="brand">DRIVESENSE</span>
 
                     <div className="proto-name">
-                        {isGroup ? protocol.usergroup.name : protocol.name}
+                        {isGroup ? protocol.usergroup?.name : protocol.name}
                     </div>
 
                     <div className="proto-sub">

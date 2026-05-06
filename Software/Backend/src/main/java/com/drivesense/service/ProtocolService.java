@@ -26,11 +26,12 @@ public class ProtocolService {
     @Autowired
     private UsergroupService usergroupService;
 
-    public Protocol insert(String protocolName, int profileId) {
+    public Protocol insert(String protocolName, int profileId,Integer usergroupId) {
         Protocol protocol = new Protocol();
         protocol.setName(protocolName);
         protocol.setCreatedByProfileId(profileId);
         protocol.setCreated_at(LocalDateTime.now());
+        protocol.setUsergroupId(usergroupId);
 
         Protocol inserted = protocolDao.insert(protocol);
         if (inserted == null) {
