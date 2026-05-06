@@ -1,63 +1,95 @@
 .user-menu {
-    position: relative;
+  position: relative;
 }
 
 .avatar {
-    padding: 6px 10px;
-    border: 2px solid black;
-    border-radius: 20%;
-    background-color: rgb(70, 70, 255);
-    color: white;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255,255,255,0.8);
 }
 
 .avatar:hover {
-    background-color: deepskyblue;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+  border-color: #ffffff;
 }
 
 .dropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  animation: slideDown 0.2s ease;
+}
 
-    width: 220px;
-    background: white;
-
-    border: 1px solid #ccc;
-    border-radius: 8px;
-
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-
-    display: flex;
-    flex-direction: column;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-info {
-    padding: 10px 12px;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9rem;
-    text-align: center;
-    line-height: 2em;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.user-info div:first-child {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.user-info div:last-child {
+  font-size: 0.9rem;
+  color: var(--muted);
 }
 
 .userMenu-btn {
-    all: unset;           
-    display: block;
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 12px 0 12px 10px;
-    cursor: pointer;
-
-    font: inherit;
-    text-align: left;
+  all: unset;
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-light);
+  box-sizing: border-box;
 }
+
 .userMenu-btn:hover {
-    background-color: #b9b4b4;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding-left: 20px;
+  color: white;
 }
 
-.userMenu-btn:not(:last-child) {
-    border-bottom: 1px solid #eee;
+.userMenu-btn:last-of-type {
+  border-bottom: none;
 }

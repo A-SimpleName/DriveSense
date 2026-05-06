@@ -1,47 +1,78 @@
-
 footer {
-    background-color: #f2f2f2;
-    padding: 20px 40px;
-    font-size: 14px;
+  background: linear-gradient(135deg, #f5f8fe 0%, #f0f4fa 100%);
+  border-top: 1px solid rgba(148,163,184,0.15);
+  padding: 40px 32px 32px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: auto;
 }
 
-/* Oberer Bereich: links / rechts */
-.infos {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+footer .infos {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+  flex-wrap: wrap;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
-/* Copyright links */
-.copyright {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
+footer .copyright {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
 }
 
-/* Kontakt rechts */
-.infos h3 {
-    margin: 0 0 5px 0;
+footer .infos h3 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.infos p {
-    margin: 2px 0;
+footer .infos p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
 }
 
-/* Links unten */
-.links {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+footer .links {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  padding-top: 24px;
+  border-top: 1px solid rgba(148,163,184,0.15);
 }
 
-.links a {
-    text-decoration: none;
-    color: #000;
+footer .links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.links a:hover {
-    text-decoration: underline;
+footer .links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+footer .links a:hover {
+  color: var(--primary);
+}
+
+footer .links a:hover::after {
+  width: 100%;
 }
