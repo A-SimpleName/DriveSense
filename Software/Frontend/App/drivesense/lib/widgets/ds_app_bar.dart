@@ -33,44 +33,45 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
               return PopupMenuItem<String>(value: choice, child: Text(choice));
             }).toList();
           },
-          onSelected: (String choice) => {
+          onSelected: (String choice) {
             switch (choice) {
-              'Einstellungen' => {Navigator.pushNamed(context, '/settings')},
-              'Account' => {Navigator.pushNamed(context, '/account')},
-              'Abmelden' => {
+              case 'Einstellungen':
+                Navigator.pushNamed(context, 'SettingsPage');
+                break;
+
+              case 'Account':
+                Navigator.pushNamed(context, 'AccountPage');
+                break;
+
+              case 'Abmelden':
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    actionsAlignment: MainAxisAlignment.center,
-                    actionsOverflowAlignment: OverflowBarAlignment.center,
-                    title: Text('Möchten Sie sich abmelden?'),
+                    title: const Text('Möchten Sie sich abmelden?'),
                     actions: [
                       TextButton(
-                        onPressed: () => {Navigator.pop(context)},
-                        child: Text('Abbrechen'),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Abbrechen'),
                       ),
                       TextButton(
-                        onPressed: () => {
+                        onPressed: () {
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             'SignInPage',
                             (route) => false,
-                          ),
+                          );
                         },
-                        child: Text('Abmelden'),
+                        child: const Text('Abmelden'),
                       ),
                     ],
                   ),
-                ),
-              },
-              // TODO: Handle this case.
-              String() => throw UnimplementedError(),
-            },
+                );
+                break;
+            }
           },
-          icon: Icon(Icons.settings),
+          icon: const Icon(Icons.settings),
         ),
       ],
-      centerTitle: true,
     );
   }
 }

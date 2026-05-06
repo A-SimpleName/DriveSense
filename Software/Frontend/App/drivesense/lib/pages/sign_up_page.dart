@@ -23,6 +23,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _birthdateController = TextEditingController();
   DateTime? _birthdate;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -82,7 +83,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 if (picked != null) {
                   setState(() {
                     _birthdate = picked;
-                    _birthdateController.text = '${picked.day.toString().padLeft(2,'0')}.${picked.month.toString().padLeft(2,'0')}.${picked.year.toString().padLeft(4,'0')}';
+                    _birthdateController.text =
+                        '${picked.day.toString().padLeft(2, '0')}.${picked.month.toString().padLeft(2, '0')}.${picked.year.toString().padLeft(4, '0')}';
                   });
                 }
               },
@@ -101,10 +103,20 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Passwort',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -211,7 +223,9 @@ class _SignUpPageState extends State<SignUpPage> {
         RuntimeStore.setRefreshToken(signInResult.refreshToken!);
       }
 
-      SignInAndSignUp.redirectToProfileSelectPage(token: signInResult.accountToken);
+      SignInAndSignUp.redirectToProfileSelectPage(
+        token: signInResult.accountToken,
+      );
 
       if (!mounted) {
         return;
