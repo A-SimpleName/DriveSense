@@ -46,7 +46,8 @@
 </head>
 <body>
 
-<div class="meta-bar">
+<!-- Einzelprotokoll: Name + Geburtsdatum -->
+<div class="meta-bar" th:if="${!isGroup}">
   <div class="left">
     <span class="meta-label">Name des Fahrschülers / der Fahrschülerin: </span>
     <span class="meta-value" th:text="${account.fName + ' ' + account.lName}"></span>
@@ -54,6 +55,14 @@
   <div class="right">
     <span class="meta-label">Geburtsdatum: </span>
     <span class="meta-value" th:text="${#temporals.format(account.birthdate, 'dd.MM.yyyy')}"></span>
+  </div>
+</div>
+
+<!-- Gruppenprotokoll: Gruppenname -->
+<div class="meta-bar" th:if="${isGroup}">
+  <div class="left">
+    <span class="meta-label">Gruppe: </span>
+    <span class="meta-value" th:text="${groupName}"></span>
   </div>
 </div>
 
@@ -71,38 +80,70 @@
 
 <table>
   <thead>
-    <tr class="top">
-      <th rowspan="2">DATUM</th>
-      <th rowspan="2">GEFAHRENE<br/>KILOMETER</th>
-      <th colspan="2">KILOMETER STAND</th>
-      <th rowspan="2">KFZ<br/>KENNZEICHEN</th>
-      <th rowspan="2">TAGES-<br/>ZEIT</th>
-      <th rowspan="2">FAHRSTRECKE / ZIEL</th>
-      <th rowspan="2">STRASSENZUSTAND /<br/>WITTERUNG</th>
-      <th colspan="2">UNTERSCHRIFT DES</th>
-    </tr>
-    <tr class="sub">
-      <th>VON</th><th>BIS</th>
-      <th>BEGLEITERS</th><th>BEWERBERS</th>
-    </tr>
+  <!-- Einzelprotokoll: ohne Fahrer-Spalte -->
+  <tr class="top" th:if="${!isGroup}">
+    <th rowspan="2">DATUM</th>
+    <th rowspan="2">GEFAHRENE<br/>KILOMETER</th>
+    <th colspan="2">KILOMETER STAND</th>
+    <th rowspan="2">KFZ<br/>KENNZEICHEN</th>
+    <th rowspan="2">TAGES-<br/>ZEIT</th>
+    <th rowspan="2">FAHRSTRECKE / ZIEL</th>
+    <th rowspan="2">STRASSENZUSTAND /<br/>WITTERUNG</th>
+    <th colspan="2">UNTERSCHRIFT DES</th>
+  </tr>
+  <tr class="sub" th:if="${!isGroup}">
+    <th>VON</th><th>BIS</th>
+    <th>BEGLEITERS</th><th>BEWERBERS</th>
+  </tr>
+  <!-- Gruppenprotokoll: mit Fahrer-Spalte -->
+  <tr class="top" th:if="${isGroup}">
+    <th rowspan="2">FAHRER</th>
+    <th rowspan="2">DATUM</th>
+    <th rowspan="2">GEFAHRENE<br/>KILOMETER</th>
+    <th colspan="2">KILOMETER STAND</th>
+    <th rowspan="2">KFZ<br/>KENNZEICHEN</th>
+    <th rowspan="2">TAGES-<br/>ZEIT</th>
+    <th rowspan="2">FAHRSTRECKE / ZIEL</th>
+    <th rowspan="2">STRASSENZUSTAND /<br/>WITTERUNG</th>
+    <th colspan="2">UNTERSCHRIFT DES</th>
+  </tr>
+  <tr class="sub" th:if="${isGroup}">
+    <th>VON</th><th>BIS</th>
+    <th>BEGLEITERS</th><th>BEWERBERS</th>
+  </tr>
   </thead>
   <tbody>
-    <tr th:each="trip : ${trips}">
-      <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-      <td th:text="${trip.distance + ' km'}"></td>
-      <td th:text="${trip.startMileage}"></td>
-      <td th:text="${trip.endMileage}"></td>
-      <td th:text="${trip.licenseplate}"></td>
-      <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
-      <td class="left" th:text="${trip.startPoint + ' → ' + trip.endPoint}"></td>
-      <td th:text="${trip.roadSurfaceConditions}"></td>
-      <td></td>
-      <td></td>
-    </tr>
-    <tr th:each="i : ${fillerRows}">
-      <td></td><td></td><td></td><td></td><td></td>
-      <td></td><td></td><td></td><td></td><td></td>
-    </tr>
+  <!-- Einzelprotokoll rows -->
+  <tr th:if="${!isGroup}" th:each="trip : ${trips}">
+    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${trip.distance + ' km'}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${trip.licensePlate}"></td>
+    <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
+    <td th:text="${trip.roadSurfaceConditions}"></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr th:if="${!isGroup}" th:each="i : ${fillerRows}">
+    <td></td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+  <!-- Gruppenprotokoll rows: mit Fahrer -->
+  <tr th:if="${isGroup}" th:each="trip : ${trips}">
+    <td class="left" th:text="${trip.accountFname + ' ' + trip.accountLname}"></td>
+    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${trip.distance + ' km'}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${trip.licensePlate}"></td>
+    <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
+    <td th:text="${trip.roadSurfaceConditions}"></td>
+    <td></td>
+    <td></td>
+  </tr>
   </tbody>
 </table>
 

@@ -15,6 +15,19 @@ class TripRepository {
     return isar.trips.where().findAll();
   }
 
+  Future<List<Trip>> getByProfileAndProtocol(
+    int profileId,
+    int protocolId,
+  ) async {
+    final isar = await IsarService.getInstance();
+    return isar.trips
+        .filter()
+        .profileIdEqualTo(profileId)
+        .and()
+        .protocolIdEqualTo(protocolId)
+        .findAll();
+  }
+
   Future<List<Trip>> getUnsynced() async {
     final isar = await IsarService.getInstance();
     return isar.trips.filter().isSyncedEqualTo(false).findAll();
@@ -36,6 +49,13 @@ class TripRepository {
     final isar = await IsarService.getInstance();
     await isar.writeTxn(() async {
       await isar.trips.put(trip);
+    });
+  }
+
+  Future<void> deleteAll() async {
+    final isar = await IsarService.getInstance();
+    await isar.writeTxn(() async {
+      await isar.trips.clear();
     });
   }
 }

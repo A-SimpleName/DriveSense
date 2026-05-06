@@ -2,7 +2,9 @@ package com.drivesense.service;
 
 
 import com.drivesense.db.TrackingpointDao;
+import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
+import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
@@ -19,6 +21,7 @@ import java.util.List;
 @Service
 public class TripService {
     private final TripDao tripDao;
+    private final ProtocolDao protocolDao;
     private final TrackingpointService trackingpointService;
     private final GeocodingService geocodingService;
     private final WeatherService weatherService;
@@ -26,9 +29,11 @@ public class TripService {
     private final ProtocolService protocolService;
 
     @Autowired
-    public TripService(TripDao tripDao, TrackingpointService trackingpointService,
-                       GeocodingService geocodingService, WeatherService weatherService,ProfileService profileService, ProtocolService protocolService) {
+    public TripService(TripDao tripDao, ProtocolDao protocolDao, TrackingpointService trackingpointService,
+                       GeocodingService geocodingService, WeatherService weatherService,
+                       ProtocolService protocolService, ProfileService profileService) {
         this.tripDao = tripDao;
+        this.protocolDao = protocolDao;
         this.trackingpointService = trackingpointService;
         this.geocodingService = geocodingService;
         this.weatherService = weatherService;
@@ -37,12 +42,56 @@ public class TripService {
     }
 
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
+        validateTripSummary(tripSummary);
+
+        TripSummary createdTrip = insertTripSummary(tripSummary);
+        return addTrackingpointsToTrip(createdTrip.getId(), trackingpoints, createdTrip.getProfileId());
+    }
+
+    public TripSummary insertTripSummary(TripSummary tripSummary) {
+        validateTripSummary(tripSummary);
+
+        if (!protocolDao.isAccessibleByProfile(tripSummary.getProtocolId(), tripSummary.getProfileId())) {
+            throw new UnauthorizedException("Kein Zugriff auf dieses Protokoll");
+        }
+
+        // Road condition will be finalized after trackingpoints are attached.
+        if (tripSummary.getRoadSurfaceConditions() == null || tripSummary.getRoadSurfaceConditions().isBlank()) {
+            tripSummary.setRoadSurfaceConditions("Unbekannt");
+        }
+
+        // Set default values for location fields (will be enriched later when tracking points are added)
+        if (tripSummary.getStartPoint() == null) {
+            tripSummary.setStartPoint("Unbekannt");
+        }
+        if (tripSummary.getEndPoint() == null) {
+            tripSummary.setEndPoint("Unbekannt");
+        }
+        if (tripSummary.getFurthestPoint() == null) {
+            tripSummary.setFurthestPoint("Unbekannt");
+        }
+
+        int id = tripDao.insert(tripSummary);
+        tripSummary.setId(id);
+        return tripSummary;
+    }
+
+    public TripDetailedDto addTrackingpointsToTrip(int tripId, List<Trackingpoint> trackingpoints, int profileId) {
         if (trackingpoints == null || trackingpoints.isEmpty()) {
             throw new BadRequestException("Mindestens ein Trackingpoint muss vorhanden sein");
         }
 
+        TripSummary tripSummary = tripDao.getById(tripId);
+        if (tripSummary == null) {
+            throw new NotFoundException("Trip nicht gefunden");
+        }
+
         if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
             throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
+        if (tripSummary.getProfileId() != profileId) {
+            throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
         }
         Profile profile = profileService.getById(tripSummary.getProfileId());
         if (!profile.getRole().equals(protocolService.getProtocolRole(tripSummary.getProtocolId()))) {
@@ -69,25 +118,28 @@ public class TripService {
             tripSummary.setRoadSurfaceConditions("Unbekannt");
         }
 
-        int id = tripDao.insert(tripSummary);
-        tripSummary.setId(id);
-
         List<Trackingpoint> createdTrackingpoints = new ArrayList<>();
         for (Trackingpoint trackingpoint : trackingpoints) {
-            createdTrackingpoints.add(trackingpointService.insert(trackingpoint,tripSummary));
+            trackingpoint.setTripId(tripSummary.getId());
+            createdTrackingpoints.add(trackingpointService.insert(trackingpoint, tripSummary));
         }
-        TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary,createdTrackingpoints);
-        enrichWithTrackingPoints(tripDetailedDto);
-        return tripDetailedDto;
 
+        TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary, createdTrackingpoints);
+        enrichWithTrackingPoints(tripDetailedDto);
+
+        // Update trip with enriched location data
+        tripDao.update(tripSummary);
+
+        return tripDetailedDto;
     }
+
 
     public List<TripSummary> getAllTrips() {
         return tripDao.getAll();
     }
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
-        List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(profileId, protocolId);
+        List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(protocolId, profileId);
         if (trips == null) {
             throw new NotFoundException("Keine Fahrten gefunden");
         }
@@ -118,28 +170,49 @@ public class TripService {
             throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
         List<Trackingpoint> points = trackingpointService.getByTripId(trip.getId());
-        return new TripDetailedDto(trip,points);
+        return new TripDetailedDto(trip, points);
     }
 
-    public void update (TripSummary tripSummary,int profileId) {
+    public void update(TripSummary tripSummary, int profileId) {
         TripSummary existing = tripDao.getById(tripSummary.getId());
 
         if (existing == null) {
             throw new NotFoundException("Trip nicht gefunden");
         }
 
-        if (tripSummary.getProfileId() != profileId) {
+        if (existing.getProfileId() != profileId) {
             throw new UnauthorizedException("Kein Zugriff auf diesen Trip");
         }
 
-        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
-            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        tripSummary.setProfileId(profileId);
+        if (tripSummary.getVehicleId() <= 0) {
+            tripSummary.setVehicleId(existing.getVehicleId());
         }
+        if (tripSummary.getProtocolId() <= 0) {
+            tripSummary.setProtocolId(existing.getProtocolId());
+        }
+        if (tripSummary.getStartPoint() == null) {
+            tripSummary.setStartPoint(existing.getStartPoint());
+        }
+        if (tripSummary.getEndPoint() == null) {
+            tripSummary.setEndPoint(existing.getEndPoint());
+        }
+        if (tripSummary.getFurthestPoint() == null) {
+            tripSummary.setFurthestPoint(existing.getFurthestPoint());
+        }
+        if (tripSummary.getRoadSurfaceConditions() == null) {
+            tripSummary.setRoadSurfaceConditions(existing.getRoadSurfaceConditions());
+        }
+        if (tripSummary.getType() == null) {
+            tripSummary.setType(existing.getType());
+        }
+
+        validateTripSummary(tripSummary);
 
         tripDao.update(tripSummary);
     }
 
-    public void delete (int id, int profileId) {
+    public void delete(int id, int profileId) {
         TripSummary tripSummary = tripDao.getById(id);
         if (tripSummary == null) {
             throw new NotFoundException("Trip nicht gefunden");
@@ -150,7 +223,6 @@ public class TripService {
         trackingpointService.deleteByTripId(tripSummary.getId());
         tripDao.deleteById(id);
     }
-
 
 
     private void enrichWithTrackingPoints(TripDetailedDto trip) {
@@ -190,5 +262,15 @@ public class TripService {
                 * Math.sin(dLng / 2) * Math.sin(dLng / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    private void validateTripSummary(TripSummary tripSummary) {
+        if (tripSummary.getEndTime().isBefore(tripSummary.getStartTime())) {
+            throw new BadRequestException("Endzeit darf nicht vor der Startzeit liegen");
+        }
+
+        if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
+            throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
+        }
     }
 }

@@ -38,3 +38,5 @@ out/
 
 # API
 .env
+
+application.properties

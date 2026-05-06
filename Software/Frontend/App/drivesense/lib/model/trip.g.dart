@@ -27,63 +27,73 @@ const TripSchema = CollectionSchema(
       name: r'distanceKm',
       type: IsarType.double,
     ),
-    r'endTime': PropertySchema(
+    r'endMileage': PropertySchema(
       id: 2,
+      name: r'endMileage',
+      type: IsarType.long,
+    ),
+    r'endTime': PropertySchema(
+      id: 3,
       name: r'endTime',
       type: IsarType.dateTime,
     ),
     r'isSynced': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isSynced',
       type: IsarType.bool,
     ),
     r'lastError': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'lastError',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'localId',
       type: IsarType.string,
     ),
     r'profileId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'profileId',
       type: IsarType.long,
     ),
     r'protocolId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'protocolId',
       type: IsarType.long,
     ),
     r'retryCount': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'retryCount',
       type: IsarType.long,
     ),
     r'roadSurfaceConditions': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'roadSurfaceConditions',
       type: IsarType.string,
     ),
+    r'startMileage': PropertySchema(
+      id: 11,
+      name: r'startMileage',
+      type: IsarType.long,
+    ),
     r'startTime': PropertySchema(
-      id: 10,
+      id: 12,
       name: r'startTime',
       type: IsarType.dateTime,
     ),
     r'trackingPointsJson': PropertySchema(
-      id: 11,
+      id: 13,
       name: r'trackingPointsJson',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 12,
+      id: 14,
       name: r'type',
       type: IsarType.string,
     ),
     r'vehicleId': PropertySchema(
-      id: 13,
+      id: 15,
       name: r'vehicleId',
       type: IsarType.long,
     )
@@ -148,18 +158,20 @@ void _tripSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeDouble(offsets[1], object.distanceKm);
-  writer.writeDateTime(offsets[2], object.endTime);
-  writer.writeBool(offsets[3], object.isSynced);
-  writer.writeString(offsets[4], object.lastError);
-  writer.writeString(offsets[5], object.localId);
-  writer.writeLong(offsets[6], object.profileId);
-  writer.writeLong(offsets[7], object.protocolId);
-  writer.writeLong(offsets[8], object.retryCount);
-  writer.writeString(offsets[9], object.roadSurfaceConditions);
-  writer.writeDateTime(offsets[10], object.startTime);
-  writer.writeString(offsets[11], object.trackingPointsJson);
-  writer.writeString(offsets[12], object.type);
-  writer.writeLong(offsets[13], object.vehicleId);
+  writer.writeLong(offsets[2], object.endMileage);
+  writer.writeDateTime(offsets[3], object.endTime);
+  writer.writeBool(offsets[4], object.isSynced);
+  writer.writeString(offsets[5], object.lastError);
+  writer.writeString(offsets[6], object.localId);
+  writer.writeLong(offsets[7], object.profileId);
+  writer.writeLong(offsets[8], object.protocolId);
+  writer.writeLong(offsets[9], object.retryCount);
+  writer.writeString(offsets[10], object.roadSurfaceConditions);
+  writer.writeLong(offsets[11], object.startMileage);
+  writer.writeDateTime(offsets[12], object.startTime);
+  writer.writeString(offsets[13], object.trackingPointsJson);
+  writer.writeString(offsets[14], object.type);
+  writer.writeLong(offsets[15], object.vehicleId);
 }
 
 Trip _tripDeserialize(
@@ -171,19 +183,21 @@ Trip _tripDeserialize(
   final object = Trip();
   object.createdAt = reader.readDateTime(offsets[0]);
   object.distanceKm = reader.readDouble(offsets[1]);
-  object.endTime = reader.readDateTimeOrNull(offsets[2]);
+  object.endMileage = reader.readLong(offsets[2]);
+  object.endTime = reader.readDateTimeOrNull(offsets[3]);
   object.id = id;
-  object.isSynced = reader.readBool(offsets[3]);
-  object.lastError = reader.readStringOrNull(offsets[4]);
-  object.localId = reader.readString(offsets[5]);
-  object.profileId = reader.readLong(offsets[6]);
-  object.protocolId = reader.readLong(offsets[7]);
-  object.retryCount = reader.readLong(offsets[8]);
-  object.roadSurfaceConditions = reader.readString(offsets[9]);
-  object.startTime = reader.readDateTime(offsets[10]);
-  object.trackingPointsJson = reader.readString(offsets[11]);
-  object.type = reader.readStringOrNull(offsets[12]);
-  object.vehicleId = reader.readLong(offsets[13]);
+  object.isSynced = reader.readBool(offsets[4]);
+  object.lastError = reader.readStringOrNull(offsets[5]);
+  object.localId = reader.readString(offsets[6]);
+  object.profileId = reader.readLong(offsets[7]);
+  object.protocolId = reader.readLong(offsets[8]);
+  object.retryCount = reader.readLong(offsets[9]);
+  object.roadSurfaceConditions = reader.readString(offsets[10]);
+  object.startMileage = reader.readLong(offsets[11]);
+  object.startTime = reader.readDateTime(offsets[12]);
+  object.trackingPointsJson = reader.readString(offsets[13]);
+  object.type = reader.readStringOrNull(offsets[14]);
+  object.vehicleId = reader.readLong(offsets[15]);
   return object;
 }
 
@@ -199,28 +213,32 @@ P _tripDeserializeProp<P>(
     case 1:
       return (reader.readDouble(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
-      return (reader.readStringOrNull(offset)) as P;
-    case 5:
-      return (reader.readString(offset)) as P;
-    case 6:
       return (reader.readLong(offset)) as P;
+    case 3:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
+    case 6:
+      return (reader.readString(offset)) as P;
     case 7:
       return (reader.readLong(offset)) as P;
     case 8:
       return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 10:
-      return (reader.readDateTime(offset)) as P;
-    case 11:
       return (reader.readString(offset)) as P;
+    case 11:
+      return (reader.readLong(offset)) as P;
     case 12:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
+      return (reader.readStringOrNull(offset)) as P;
+    case 15:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -524,6 +542,58 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
         upper: upper,
         includeUpper: includeUpper,
         epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> endMileageEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'endMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> endMileageGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'endMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> endMileageLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'endMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> endMileageBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'endMileage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -1222,6 +1292,59 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> startMileageEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> startMileageGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> startMileageLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startMileage',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> startMileageBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startMileage',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterFilterCondition> startTimeEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -1632,6 +1755,18 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endMileage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndMileageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endMileage', Sort.desc);
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.asc);
@@ -1728,6 +1863,18 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startMileage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartMileageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startMileage', Sort.desc);
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.asc);
@@ -1799,6 +1946,18 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByDistanceKmDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'distanceKm', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endMileage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndMileageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'endMileage', Sort.desc);
     });
   }
 
@@ -1910,6 +2069,18 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startMileage', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartMileageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'startMileage', Sort.desc);
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.asc);
@@ -1972,6 +2143,12 @@ extension TripQueryWhereDistinct on QueryBuilder<Trip, Trip, QDistinct> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QDistinct> distinctByEndMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'endMileage');
+    });
+  }
+
   QueryBuilder<Trip, Trip, QDistinct> distinctByEndTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'endTime');
@@ -2024,6 +2201,12 @@ extension TripQueryWhereDistinct on QueryBuilder<Trip, Trip, QDistinct> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QDistinct> distinctByStartMileage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'startMileage');
+    });
+  }
+
   QueryBuilder<Trip, Trip, QDistinct> distinctByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startTime');
@@ -2068,6 +2251,12 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
   QueryBuilder<Trip, double, QQueryOperations> distanceKmProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'distanceKm');
+    });
+  }
+
+  QueryBuilder<Trip, int, QQueryOperations> endMileageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'endMileage');
     });
   }
 
@@ -2116,6 +2305,12 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
   QueryBuilder<Trip, String, QQueryOperations> roadSurfaceConditionsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'roadSurfaceConditions');
+    });
+  }
+
+  QueryBuilder<Trip, int, QQueryOperations> startMileageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'startMileage');
     });
   }
 

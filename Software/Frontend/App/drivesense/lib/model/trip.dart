@@ -21,6 +21,8 @@ class Trip {
   String? type;
 
   late DateTime createdAt;
+  late int startMileage;
+  late int endMileage;
 
   bool isSynced = false;
   int retryCount = 0;

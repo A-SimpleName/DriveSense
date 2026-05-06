@@ -21,6 +21,8 @@ class Trackingpoint {
 
   Map<String, dynamic> toJson() {
     return {
+      "id": id,
+      "tripId": tripId,
       "lat": latitude,
       "lng": longitude,
       "accuracy": accuracy,

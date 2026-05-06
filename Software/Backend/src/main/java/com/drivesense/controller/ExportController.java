@@ -20,57 +20,29 @@ public class ExportController {
 
     private final PdfExportService pdfExportService;
     private final ProtocolService  protocolService;
-    private final ProfileService   profileService;
-    private final AccountService   accountService;
 
     public ExportController(PdfExportService pdfExportService,
-                            ProtocolService protocolService,
-                            ProfileService profileService,
-                            AccountService accountService) {
+                            ProtocolService protocolService) {
         this.pdfExportService = pdfExportService;
         this.protocolService  = protocolService;
-        this.profileService   = profileService;
-        this.accountService   = accountService;
     }
 
-    /**
-     * Einzelprotokoll – Fahrten die der User alleine aufgezeichnet hat.
-     * GET /api/export/single/{protocolId}?profileId=1
-     */
-    @GetMapping("/single/{protocolId}")
-    public ResponseEntity<byte[]> exportSingle(
-            @PathVariable int protocolId,
-            HttpServletRequest request) throws Exception {
+    @GetMapping("{protocolId}")
+    public ResponseEntity<byte[]> exportPdf(
+            @PathVariable int protocolId) throws Exception {
 
-        int profileId = (int) request.getAttribute("profileId");
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        Profile profile      = profileService.getById(profileId);
-        AccountResponse account      = accountService.getById(profile.getAccount_id());
+        boolean isGroup = protocol.getUsergroup() != null
+                && protocol.getUsergroup().getId() > 0;
 
         byte[] pdf = pdfExportService.generateProtocolPdf(
-                protocol, account, profile.getRole(), false);
+                protocol, isGroup);
 
-        return buildResponse(pdf, "einzelprotokoll_" + protocolId + ".pdf");
-    }
+        String filename = isGroup
+                ? "gruppenprotokoll_" + protocolId + ".pdf"
+                : "einzelprotokoll_"  + protocolId + ".pdf";
 
-    /**
-     * Gruppenprotokoll – Fahrten die in einer Gruppe aufgezeichnet wurden.
-     * GET /api/export/group/{protocolId}?profileId=1
-     */
-    @GetMapping("/group/{protocolId}")
-    public ResponseEntity<byte[]> exportGroup(
-            @PathVariable int protocolId,
-            HttpServletRequest request) throws Exception {
-
-        int profileId = (int) request.getAttribute("profileId");
-        ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        Profile profile      = profileService.getById(profileId);
-        AccountResponse account      = accountService.getById(profile.getAccount_id());
-
-        byte[] pdf = pdfExportService.generateProtocolPdf(
-                protocol, account, profile.getRole(), true);
-
-        return buildResponse(pdf, "gruppenprotokoll_" + protocolId + ".pdf");
+        return buildResponse(pdf, filename + ".pdf");
     }
 
     private ResponseEntity<byte[]> buildResponse(byte[] pdf, String filename) {

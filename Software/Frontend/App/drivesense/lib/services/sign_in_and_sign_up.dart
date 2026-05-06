@@ -2,35 +2,39 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
+import 'package:drivesense/model/profile.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class SignUpResult {
   final bool isSuccess;
-  final String? token;
   final String message;
   final int? statusCode;
 
   const SignUpResult({
     required this.isSuccess,
     required this.message,
-    this.token,
     this.statusCode,
   });
 }
 
 class SignInResult {
   final bool isSuccess;
-  final String? token;
+  final String? accountToken;
+  final String? refreshToken;
+  final List<Profile> profiles;
   final String message;
   final int? statusCode;
 
   const SignInResult({
     required this.isSuccess,
     required this.message,
-    this.token,
+    this.accountToken,
+    this.refreshToken,
+    this.profiles = const <Profile>[],
     this.statusCode,
   });
 }
@@ -49,7 +53,7 @@ class SignInAndSignUp {
       final http.Response response = await http
           .post(
             uri,
-            headers: const {'Content-Type': 'application/json'},
+            headers: RequestHeaders.json(),
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 10));
@@ -58,14 +62,10 @@ class SignInAndSignUp {
       debugPrint(
         'SignUp response <- status=$statusCode, body=${response.body}',
       );
-      final Map<String, dynamic>? body = _parseJsonObject(response.body);
 
       if (statusCode >= 200 && statusCode < 300) {
-        final String? token = _extractToken(body);
-
         return SignUpResult(
           isSuccess: true,
-          token: token,
           message: 'Registrierung erfolgreich.',
           statusCode: statusCode,
         );
@@ -131,15 +131,6 @@ class SignInAndSignUp {
     }
   }
 
-  static String? _extractToken(Map<String, dynamic>? body) {
-    if (body == null) {
-      return null;
-    }
-
-    final dynamic token = body['accountToken'];
-    return token is String && token.isNotEmpty ? token : null;
-  }
-
   static Future<SignInResult> signIn(String email, String password) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account/login');
     final Map<String, String> payload = {'email': email, 'password': password};
@@ -148,21 +139,22 @@ class SignInAndSignUp {
       final http.Response response = await http
           .post(
             uri,
-            headers: const {
-              'Content-Type': 'application/json',
-              'X-Client-Type': 'mobile',
-            },
+            headers: RequestHeaders.json(clientType: 'mobile'),
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final Map<String, dynamic>? body = _parseJsonObject(response.body);
-        final String? token = _extractToken(body);
+        final String? accountToken = _extractAccountToken(body);
+        final String? refreshToken = _extractRefreshToken(body);
+        final List<Profile> profiles = _extractProfiles(body);
 
         return SignInResult(
           isSuccess: true,
-          token: token,
+          accountToken: accountToken,
+          refreshToken: refreshToken,
+          profiles: profiles,
           message: 'Login erfolgreich.',
           statusCode: response.statusCode,
         );
@@ -178,7 +170,42 @@ class SignInAndSignUp {
     }
   }
 
-  static String redirectToHome({String? token}) {
-    return token == null || token.isEmpty ? 'SignInPage' : 'MainPage';
+  static String? _extractAccountToken(Map<String, dynamic>? body) {
+    if (body == null) {
+      return null;
+    }
+
+    final dynamic token = body['accountToken'];
+    return token is String && token.isNotEmpty ? token : null;
+  }
+
+  static String? _extractRefreshToken(Map<String, dynamic>? body) {
+    if (body == null) {
+      return null;
+    }
+
+    final dynamic token = body['refreshToken'];
+    return token is String && token.isNotEmpty ? token : null;
+  }
+
+  static List<Profile> _extractProfiles(Map<String, dynamic>? body) {
+    if (body == null) {
+      return <Profile>[];
+    }
+
+    final dynamic profilesValue = body['profiles'];
+    if (profilesValue is! List) {
+      return <Profile>[];
+    }
+
+    return profilesValue
+        .whereType<Map<String, dynamic>>()
+        .map(Profile.fromJson)
+        .where((Profile profile) => profile.id > 0)
+        .toList();
+  }
+
+  static String redirectToProfileSelectPage({String? token}) {
+    return token == null || token.isEmpty ? 'SignInPage' : 'ProfileSelectPage';
   }
 }
