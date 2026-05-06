@@ -1,117 +1,132 @@
-/* Grundlayout */
 .protocol-container {
-    font-family: Arial, sans-serif;
-    font-size: 8pt;
-    color: #1a1a2e;
-    padding: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: var(--text);
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
-/* META BAR */
 .meta-bar {
-    background: #E8F0FB;
-    border-bottom: 1px solid #B4C8E8;
-    padding: 6px 10px;
-    display: flex;
-    justify-content: space-between;
+  background: var(--surface-strong);
+  border-bottom: 2px solid var(--border);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .meta-label {
-    color: #6878A0;
-    font-size: 7pt;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .meta-value {
-    color: #1A3C6E;
-    font-weight: bold;
+  color: var(--primary-dark);
+  font-weight: 800;
+  font-size: 1rem;
 }
 
-/* HEADER */
 .header {
-    background: #1A3C6E;
-    padding: 8px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  padding: 24px 28px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
 .brand {
-    color: white;
-    font-size: 15pt;
-    font-weight: bold;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .proto-title {
-    color: white;
-    font-size: 11pt;
-    font-weight: bold;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .proto-sub {
-    color: #BBCDE8;
-    font-size: 7pt;
+  color: rgba(255,255,255,0.9);
+  font-size: 0.9rem;
 }
 
 .accent {
-    height: 3px;
-    background: #2E7DCC;
-    margin-bottom: 8px;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+  margin-bottom: 20px;
+  border-radius: 2px;
 }
 
-/* TABLE */
 .protocol-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 7.5pt;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  min-width: 500px;
+  margin-top: 24px;
 }
 
-/* Header */
-.protocol-table thead tr:first-child th {
-    background: #1A3C6E;
-    color: white;
-    font-weight: bold;
-    padding: 5px 4px;
-    text-align: center;
-    border: 1px solid #2E7DCC;
+.protocol-table thead th {
+  background: linear-gradient(135deg, #f0f4fa 0%, #e5edf8 100%);
+  color: #111827;
+  padding: 16px 18px;
+  text-align: center;
+  font-weight: 700;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.protocol-table thead tr:nth-child(2) th {
-    background: #2E7DCC;
-    color: white;
-    font-size: 7pt;
-    padding: 3px;
-    border: 1px solid #1A3C6E;
-}
-
-/* Body */
 .protocol-table tbody tr:nth-child(odd) td {
-    background: #ffffff;
+  background: var(--surface);
 }
 
 .protocol-table tbody tr:nth-child(even) td {
-    background: #F0F5FF;
+  background: var(--surface-soft);
+}
+
+.protocol-table tbody tr:hover td {
+  background: rgba(37,99,235,0.05);
+  transition: background 0.2s ease;
 }
 
 .protocol-table td {
-    padding: 4px;
-    border: 1px solid #C0CFDF;
-    text-align: center;
+  padding: 14px 18px;
+  border: 1px solid var(--border-light);
+  text-align: center;
+  color: var(--text-secondary);
 }
 
 .protocol-table td.left {
-    text-align: left;
+  text-align: left;
 }
 
-/* FOOTER */
 .footer {
-    display: flex;
-    justify-content: space-between;
-    border-top: 1px solid #2E7DCC;
-    padding-top: 6px;
-    margin-top: 10px;
-    font-size: 7pt;
-    color: #9AAAC0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 28px;
+  font-size: 0.95rem;
+  color: var(--muted);
 }
 
 .footer strong {
-    color: #1A3C6E;
+  color: var(--primary-dark);
+  font-weight: 700;
 }

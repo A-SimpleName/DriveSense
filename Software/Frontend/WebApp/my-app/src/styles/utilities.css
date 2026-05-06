@@ -1,0 +1,181 @@
+/* BADGES & BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--primary-light);
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge.success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.badge.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* ALERTS */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+}
+
+.alert.success {
+  border-left-color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+}
+
+.alert.warning {
+  border-left-color: #d97706;
+  background: rgba(245, 158, 11, 0.1);
+  color: #78350f;
+}
+
+.alert.danger {
+  border-left-color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: #7f1d1d;
+}
+
+/* STAT CARDS */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.stat-card-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-card-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-card-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* LOADING STATES */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 25%,
+    var(--surface-strong) 50%,
+    var(--surface-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* MODAL & OVERLAYS */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+/* TABS */
+.tabs {
+  display: flex;\n  gap: 0;\n  border-bottom: 1px solid var(--border);\n  margin-bottom: 24px;\n}\n\n.tab {\n  padding: 12px 20px;\n  background: transparent;\n  border: none;\n  cursor: pointer;\n  font-weight: 700;\n  color: var(--muted);\n  position: relative;\n  transition: color 0.2s ease;\n}\n\n.tab:hover {\n  color: var(--text);\n}\n\n.tab.active {\n  color: var(--primary);\n}\n\n.tab.active::after {\n  content: '';\n  position: absolute;\n  bottom: -1px;\n  left: 0;\n  right: 0;\n  height: 3px;\n  background: var(--primary);\n}\n\n/* BREADCRUMBS */\n.breadcrumbs {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  font-size: 0.95rem;\n  margin-bottom: 24px;\n}\n\n.breadcrumb-item {\n  color: var(--muted);\n}\n\n.breadcrumb-item a {\n  color: var(--primary);\n}\n\n.breadcrumb-item.active {\n  color: var(--text);\n  font-weight: 700;\n}\n\n.breadcrumb-separator {\n  color: var(--border);\n}\n\n/* PAGINATION */\n.pagination {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  justify-content: center;\n  margin: 24px 0;\n}\n\n.pagination button {\n  min-width: 40px;\n  height: 40px;\n  padding: 0;\n  border: 1px solid var(--border);\n  border-radius: 8px;\n  background: var(--surface);\n  color: var(--text);\n  cursor: pointer;\n  font-weight: 700;\n  transition: all 0.2s ease;\n}\n\n.pagination button:hover:not(:disabled) {\n  background: var(--primary-light);\n  border-color: var(--primary);\n  color: var(--primary);\n}\n\n.pagination button.active {\n  background: var(--primary);\n  border-color: var(--primary);\n  color: #ffffff;\n}\n\n.pagination button:disabled {\n  opacity: 0.5;\n  cursor: not-allowed;\n}\n\n/* TOOLTIPS */\n.tooltip {\n  position: relative;\n}\n\n.tooltip::after {\n  content: attr(data-tooltip);\n  position: absolute;\n  bottom: 125%;\n  left: 50%;\n  transform: translateX(-50%);\n  background: #111827;\n  color: #ffffff;\n  padding: 8px 12px;\n  border-radius: 6px;\n  font-size: 0.85rem;\n  white-space: nowrap;\n  opacity: 0;\n  pointer-events: none;\n  transition: opacity 0.2s ease;\n  z-index: 1000;\n}\n\n.tooltip:hover::after {\n  opacity: 1;\n}\n\n/* TRANSITIONS & ANIMATIONS */\n@keyframes slideUp {\n  from {\n    opacity: 0;\n    transform: translateY(12px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n@keyframes slideDown {\n  from {\n    opacity: 0;\n    transform: translateY(-8px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n@keyframes fadeOut {\n  from {\n    opacity: 1;\n  }\n  to {\n    opacity: 0;\n  }\n}\n\n/* RESPONSIVE UTILITIES */\n@media (max-width: 768px) {\n  .main-content {\n    padding: 24px 16px;\n  }\n\n  h1 {\n    font-size: 2rem;\n  }\n\n  h2 {\n    font-size: 1.5rem;\n  }\n\n  .grid {\n    grid-template-columns: 1fr;\n  }\n\n  .stat-card-value {\n    font-size: 1.4rem;\n  }\n}\n\n@media (max-width: 480px) {\n  h1 {\n    font-size: 1.5rem;\n  }\n\n  h2 {\n    font-size: 1.25rem;\n  }\n\n  button {\n    width: 100%;\n  }\n\n  input,\n  select,\n  textarea {\n    font-size: 16px;\n  }\n}\n
