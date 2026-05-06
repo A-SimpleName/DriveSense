@@ -16,6 +16,7 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
 
+  bool _obscurePassword = true;
   bool _isLoading = false;
   String? email;
   String? password;
@@ -42,10 +43,20 @@ class _SignInPageState extends State<SignInPage> {
             const SizedBox(height: 12),
             TextFormField(
               onChanged: (value) => password = value,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Passwort',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -136,7 +147,7 @@ class _SignInPageState extends State<SignInPage> {
           SignInAndSignUp.redirectToProfileSelectPage(
             token: result.accountToken,
           ),
-          (route) => false
+          (route) => false,
         );
       }
     } catch (e) {
