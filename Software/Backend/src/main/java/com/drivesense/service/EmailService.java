@@ -1,18 +1,14 @@
 package com.drivesense.service;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
 
 @Service
 public class EmailService {
@@ -20,32 +16,11 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Autowired
-    private ResourceLoader resourceLoader;
-
     @Value("${app.mail.from}")
     private String fromAddress;
 
     @Value("${app.mail.from-name}")
     private String fromName;
-
-    private String logoBase64;
-
-    // ──────────────────────────────────────────
-    // LOGO LADEN BEIM START
-    // ──────────────────────────────────────────
-
-    @PostConstruct
-    public void init() {
-        try {
-            Resource resource = resourceLoader.getResource("classpath:static/logo.png");
-            byte[] bytes = resource.getInputStream().readAllBytes();
-            logoBase64 = Base64.getEncoder().encodeToString(bytes);
-        } catch (Exception e) {
-            System.err.println("Logo konnte nicht geladen werden: " + e.getMessage());
-            logoBase64 = null;
-        }
-    }
 
     // ──────────────────────────────────────────
     // PUBLIC METHODEN
@@ -131,10 +106,7 @@ public class EmailService {
 
     private String baseTemplate(String title, String heading,
                                 String bodyText, String code, String footer) {
-        String logoTag = (logoBase64 != null)
-                ? "<img src=\"data:image/png;base64," + logoBase64 + "\" alt=\"DriveSense\" " +
-                "style=\"height:40px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;\">"
-                : "";
+        String logoTag = buildLogoTag();
 
         return """
             <!DOCTYPE html>
@@ -151,13 +123,10 @@ public class EmailService {
 
                     <!-- Header -->
                     <tr>
-                      <td style="background:#1a1a2e;padding:28px 32px;text-align:center;">
-                        %s
-                        <span style="color:#ffffff;font-size:20px;font-weight:600;letter-spacing:-0.3px;">
-                          Drive<span style="color:#4f8ef7;">Sense</span>
-                        </span>
-                      </td>
-                    </tr>
+                       <td style="background:#1a1a2e;padding:28px 32px;text-align:center;">
+                         %s
+                       </td>
+                     </tr>
 
                     <!-- Body -->
                     <tr>
@@ -205,5 +174,10 @@ public class EmailService {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
+    }
+
+    private String buildLogoTag() {
+        return "<img src=\"https://raw.githubusercontent.com/A-SimpleName/DriveSense/main/Design/Logos/DS_Logo.png\" " +
+                "alt=\"DriveSense\" style=\"height:70px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;\">";
     }
 }

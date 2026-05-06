@@ -5,7 +5,9 @@ import type { UserGroup } from "./usergroup";
 export interface Protocol {
     id: number;
     created_by_account: AccountResponse;
-    usergroup: UserGroup;
+    createdByProfileId?: number;
+    usergroupId?: number | null;
+    usergroup?: UserGroup | null;
     created_at: string;
     name: string;
     protocolRole: string;

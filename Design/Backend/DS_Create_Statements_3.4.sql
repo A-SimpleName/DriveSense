@@ -101,7 +101,7 @@ CREATE TABLE `trip` (
     FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`),
 
   CONSTRAINT `fk_trip_protocol`
-    FOREIGN KEY (`protocol_id`) REFERENCES `protocol` (`id`)
+    FOREIGN KEY (`protocol_id`) REFERENCES `protocol` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `trackingpoint` (

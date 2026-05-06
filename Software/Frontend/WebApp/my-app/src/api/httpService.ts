@@ -1,6 +1,6 @@
 import { apiFetch } from "./api-token";
 
-const BASE_URL = "http://localhost:8080/api";
+export const BASE_URL = "/api";
 
 type ResponseType = "json" | "blob";
 
@@ -17,6 +17,7 @@ async function request<T>(
 ): Promise<T> {
   const options: RequestInit = {
     method,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },

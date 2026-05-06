@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
@@ -27,20 +28,12 @@ class SelectProfileResponse {
 class ProfileService {
   ProfileService._();
 
-  static Map<String, String> _authHeaders() {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
-    return <String, String>{
-      'Content-Type': 'application/json',
-      'X-Client-Type': 'mobile',
-      if (cookieHeader != null) 'Cookie': cookieHeader,
-    };
-  }
-
   static Future<List<Profile>> fetchProfiles() async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader(
+    final Map<String, String> headers = RequestHeaders.authenticated(
+      clientType: 'mobile',
       includeProfileToken: false,
     );
-    if (cookieHeader == null) {
+    if (!headers.containsKey('Cookie')) {
       return <Profile>[];
     }
 
@@ -48,7 +41,7 @@ class ProfileService {
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: headers)
           .timeout(const Duration(seconds: 10));
 
       debugPrint('FetchProfiles <- ${response.statusCode} $uri');
@@ -66,10 +59,11 @@ class ProfileService {
   }
 
   static Future<Profile?> createDefaultStudentProfile() async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader(
+    final Map<String, String> headers = RequestHeaders.authenticatedJson(
+      clientType: 'mobile',
       includeProfileToken: false,
     );
-    if (cookieHeader == null) {
+    if (!headers.containsKey('Cookie')) {
       return null;
     }
 
@@ -79,7 +73,7 @@ class ProfileService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: headers,
             body: jsonEncode(<String, dynamic>{
               'name': 'Fahrschüler',
               'role': 'FAHRSCHÜLER',
@@ -108,10 +102,11 @@ class ProfileService {
   }
 
   static Future<SelectProfileResponse> selectProfile(int profileId) async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader(
+    final Map<String, String> headers = RequestHeaders.authenticatedJson(
+      clientType: 'mobile',
       includeProfileToken: false,
     );
-    if (cookieHeader == null) {
+    if (!headers.containsKey('Cookie')) {
       return const SelectProfileResponse(
         isSuccess: false,
         message: 'Kein Account-Token vorhanden. Bitte erneut einloggen.',
@@ -128,7 +123,7 @@ class ProfileService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: headers,
             body: jsonEncode(<String, dynamic>{}),
           )
           .timeout(const Duration(seconds: 10));
@@ -165,7 +160,7 @@ class ProfileService {
         profileToken: profileToken,
       );
       final int activeProfileId = profile?.id ?? profileId;
-      await ProtocolService.ensureDefaultProtocolForActiveProfile(activeProfileId);
+      await ProtocolService.ensureDefaultProtocolForActiveProfile();
       await VehicleService.ensureDefaultVehicleForActiveProfile(activeProfileId);
       await RuntimeStore.refreshTrips();
 
