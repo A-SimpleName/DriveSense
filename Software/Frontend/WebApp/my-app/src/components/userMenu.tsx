@@ -20,8 +20,8 @@ function UserMenu() {
     } = useAuth();
 
     const initials =
-        account?.fname?.[0]?.toUpperCase() +
-        account?.lname?.[0]?.toUpperCase();
+        account?.fName?.[0]?.toUpperCase() +
+        account?.lName?.[0]?.toUpperCase();
 
     const handleSwitch = async () => {
         await logoutProfile();
@@ -60,7 +60,7 @@ function UserMenu() {
                 <div className="dropdown">
 
                     <div className="user-info">
-                        <div>{account?.fname} {account?.lname}</div>
+                        <div>{account?.fName} {account?.lName}</div>
                         <div>{account?.email}</div>
                     </div>
 
