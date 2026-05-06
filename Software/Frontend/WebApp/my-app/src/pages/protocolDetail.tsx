@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Protocol } from "../model/protocol";
-import { getProtocolById } from "../services/protocolService";
+import type { ProtocolDetail } from "../model/protocol";
+import { getProtocolByIdWithTrips } from "../services/protocolService";
 import ProtocolView from "../components/Protocols/protocolView";
 
 export default function ProtocolDetail() {
     const { id } = useParams();
 
-    const [protocol, setProtocol] = useState<Protocol | null>(null);
+    const [protocol, setProtocol] = useState<ProtocolDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +21,7 @@ export default function ProtocolDetail() {
         setLoading(true);
         setError(null);
 
-        getProtocolById(parseInt(id!))
+        getProtocolByIdWithTrips(parseInt(id!))
             .then(data => setProtocol(data))
             .catch(err => {
                 console.error(err);
