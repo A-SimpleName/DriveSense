@@ -45,7 +45,7 @@ export default function ProtocolDetail() {
         case "PRIVAT":
             return <ProtocolView protocol={protocol} type="PRIVAT" isGroup={isGroup} />;
 
-        case "BERUFSFAHRER_SINGLE":
+        case "BERUFSFAHRER":
             return <ProtocolView protocol={protocol} type="BERUFSFAHRER" isGroup={isGroup} />;
 
         default:
