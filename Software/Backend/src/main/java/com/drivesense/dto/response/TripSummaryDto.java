@@ -162,6 +162,14 @@ public class TripSummaryDto {
         this.licenseplate = licenseplate;
     }
 
+    public String getLicensePlate() {
+        return licenseplate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licenseplate = licensePlate;
+    }
+
     public double getDistance() {
         return distance;
     }
