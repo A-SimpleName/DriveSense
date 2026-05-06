@@ -41,7 +41,7 @@
     line-height: 2em;
 }
 
-.dropdown button {
+.userMenu-btn {
     all: unset;           
     display: block;
     width: 100%;
@@ -54,10 +54,10 @@
     font: inherit;
     text-align: left;
 }
-.dropdown button:hover {
+.userMenu-btn:hover {
     background-color: #b9b4b4;
 }
 
-.dropdown button:not(:last-child) {
+.userMenu-btn:not(:last-child) {
     border-bottom: 1px solid #eee;
 }

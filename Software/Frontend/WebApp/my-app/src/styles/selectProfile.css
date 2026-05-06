@@ -13,7 +13,7 @@ h2, h3 {
     margin-bottom: 20px;
 }
 
-button {
+.selectProfile-btn {
     display: block;
     margin: 10px auto;
 
@@ -36,7 +36,7 @@ button {
     justify-content: center;
 }
 
-button:hover {
+.selectProfile-btn:hover {
     background: #333;
     transform: scale(1.03);
 }
@@ -62,11 +62,11 @@ input:focus, select:focus {
 }
 
 /* optional: "Add profile" Button Styling */
-button:last-of-type {
+.selectProfile-btn:last-of-type {
     border: 1px dashed #666;
     background: transparent;
 }
 
-button:last-of-type:hover {
+.selectProfile-btn:last-of-type:hover {
     background: #222;
 }

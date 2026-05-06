@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAuth } from "../context/authContext";
 
 import "../styles/selectProfile.css"
+import { Button } from "../components/button";
 
 export default function SelectProfilePage({
     profiles,
@@ -61,9 +62,12 @@ export default function SelectProfilePage({
 
             {profiles.length > 0 ? (
                 profiles.map(p => (
-                    <button key={p.id} onClick={() => handleSelect(p.id!)}>
-                        {p.name} ({p.role})
-                    </button>
+                    <Button
+                        key={p.id}
+                        className="selectProfile-btn"
+                        label={`${p.name} (${p.role})`}
+                        onClick={() => handleSelect(p.id!)}
+                    />
                 ))
             ) : (
                 <p>Keine Profile vorhanden → bitte erstellen</p>
@@ -83,9 +87,7 @@ export default function SelectProfilePage({
                 ))}
             </select>
 
-            <button onClick={handleCreate}>
-                Profil erstellen
-            </button>
+            <Button className="selectProfile-btn" label="Profil erstellen" onClick={handleCreate} />
         </div>
     );
 }
