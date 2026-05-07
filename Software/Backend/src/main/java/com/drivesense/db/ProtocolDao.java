@@ -176,6 +176,36 @@ public class ProtocolDao {
         }
     }
 
+    public boolean isAccessibleByProfile(int protocolId, int profileId) {
+        String sql = """
+            SELECT 1
+            FROM protocol p
+            WHERE p.id = ?
+              AND (
+                    p.created_by_profile_id = ?
+                    OR EXISTS (
+                        SELECT 1
+                        FROM profile_usergroup pug
+                        WHERE pug.usergroup_id = p.usergroup_id
+                          AND pug.profile_id = ?
+                    )
+                  )
+            """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, protocolId);
+            ps.setInt(2, profileId);
+            ps.setInt(3, profileId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Prüfen des Protokollzugriffs", e);
+        }
+    }
+
     private Protocol map(ResultSet rs) throws SQLException {
         Protocol protocol = new Protocol();
         protocol.setId(rs.getInt("id"));

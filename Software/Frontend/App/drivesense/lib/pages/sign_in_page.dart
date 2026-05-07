@@ -1,4 +1,4 @@
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +16,7 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _formKey = GlobalKey<FormState>();
 
+  bool _obscurePassword = true;
   bool _isLoading = false;
   String? email;
   String? password;
@@ -42,10 +43,20 @@ class _SignInPageState extends State<SignInPage> {
             const SizedBox(height: 12),
             TextFormField(
               onChanged: (value) => password = value,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Passwort',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -136,7 +147,7 @@ class _SignInPageState extends State<SignInPage> {
           SignInAndSignUp.redirectToProfileSelectPage(
             token: result.accountToken,
           ),
-          (route) => false
+          (route) => false,
         );
       }
     } catch (e) {

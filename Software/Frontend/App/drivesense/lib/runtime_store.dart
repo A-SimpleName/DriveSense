@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
+  static List<Vehicle> vehicles = [];
   static List<TripSummary> trips = [];
   static Map<int, TripDetailed> tripDetailCache = {};
   static String authToken = '';
@@ -18,6 +20,42 @@ class RuntimeStore {
 
   static void addTrip(TripSummary trip) {
     trips.add(trip);
+  }
+
+  static void setVehicles(List<Vehicle> newVehicles) {
+    vehicles = newVehicles;
+
+    final bool currentVehicleStillAvailable = vehicles.any(
+      (Vehicle vehicle) => vehicle.id == currentVehicleId,
+    );
+    if (!currentVehicleStillAvailable) {
+      currentVehicleId = vehicles.isNotEmpty ? vehicles.first.id : 0;
+    }
+  }
+
+  static void upsertVehicle(Vehicle vehicle) {
+    bool replaced = false;
+    vehicles = vehicles.map((Vehicle existing) {
+      if (existing.id == vehicle.id) {
+        replaced = true;
+        return vehicle;
+      }
+      return existing;
+    }).toList();
+
+    if (!replaced) {
+      vehicles = <Vehicle>[...vehicles, vehicle];
+    }
+  }
+
+  static Vehicle? getCurrentVehicle() {
+    for (final Vehicle vehicle in vehicles) {
+      if (vehicle.id == currentVehicleId) {
+        return vehicle;
+      }
+    }
+
+    return vehicles.isNotEmpty ? vehicles.first : null;
   }
 
   static void addTripDetail(int tripId, TripDetailed detail) {
@@ -51,8 +89,19 @@ class RuntimeStore {
   }
 
   static void setActiveProfile({required int profileId, String? profileToken}) {
+    final bool profileChanged =
+        currentProfileId != null && currentProfileId != profileId;
+
     currentProfileId = profileId;
     activeProfileToken = profileToken;
+
+    if (profileChanged) {
+      currentVehicleId = 0;
+      currentProtocolId = 0;
+      vehicles = [];
+      trips = [];
+      tripDetailCache = {};
+    }
   }
 
   static String? getActiveProfileToken() {
@@ -109,6 +158,7 @@ class RuntimeStore {
     currentProfileId = null;
     currentVehicleId = 0;
     currentProtocolId = 0;
+    vehicles = [];
     trips = [];
     tripDetailCache = {};
   }

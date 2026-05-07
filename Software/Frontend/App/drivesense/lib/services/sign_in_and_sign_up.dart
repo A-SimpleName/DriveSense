@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:flutter/foundation.dart';
@@ -52,7 +53,7 @@ class SignInAndSignUp {
       final http.Response response = await http
           .post(
             uri,
-            headers: const {'Content-Type': 'application/json'},
+            headers: RequestHeaders.json(),
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 10));
@@ -61,7 +62,6 @@ class SignInAndSignUp {
       debugPrint(
         'SignUp response <- status=$statusCode, body=${response.body}',
       );
-      final Map<String, dynamic>? body = _parseJsonObject(response.body);
 
       if (statusCode >= 200 && statusCode < 300) {
         return SignUpResult(
@@ -139,10 +139,7 @@ class SignInAndSignUp {
       final http.Response response = await http
           .post(
             uri,
-            headers: const {
-              'Content-Type': 'application/json',
-              'X-Client-Type': 'mobile',
-            },
+            headers: RequestHeaders.json(clientType: 'mobile'),
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 10));

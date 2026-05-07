@@ -2,6 +2,7 @@ package com.drivesense.controller;
 
 import com.drivesense.dto.request.SaveVehicleRequest;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Vehicle;
 import com.drivesense.service.VehicleService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +33,11 @@ public class VehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<Vehicle> saveVehicle(@RequestBody SaveVehicleRequest req, HttpServletRequest request) {
-        int profileId = (int) request.getAttribute("profileId");
+    public ResponseEntity<Vehicle> saveVehicle(@Valid @RequestBody SaveVehicleRequest req, HttpServletRequest request) {
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewählt");
+        }
 
         Vehicle v = new Vehicle();
         v.setModel(req.getModel());

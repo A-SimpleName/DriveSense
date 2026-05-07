@@ -3,6 +3,7 @@ package com.drivesense.controller;
 import com.drivesense.dto.request.SaveTripRequest;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.dto.response.TripDetailedDto;
+import com.drivesense.model.Trackingpoint;
 import com.drivesense.model.TripSummary;
 import com.drivesense.service.TripService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,8 +28,34 @@ public class TripController {
     @PostMapping
     public ResponseEntity<TripDetailedDto> saveTrip(@Valid @RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
-        saveTripRequest.getTripSummary().setProfileId(profileId);
-        return ResponseEntity.status(201).body(tripService.insertTrip(saveTripRequest.getTripSummary(), saveTripRequest.getTrackingpoints()));
+        TripSummary tripSummary = saveTripRequest.getTripSummary();
+        tripSummary.setProfileId(profileId);
+        if (saveTripRequest.getStartMileage() != null) {
+            tripSummary.setStartMileage(saveTripRequest.getStartMileage());
+        }
+        if (saveTripRequest.getEndMileage() != null) {
+            tripSummary.setEndMileage(saveTripRequest.getEndMileage());
+        }
+        return ResponseEntity.status(201).body(tripService.insertTrip(tripSummary, saveTripRequest.getTrackingpoints()));
+    }
+
+    // POST /api/trips/summary
+    @PostMapping("/summary")
+    public ResponseEntity<TripSummary> createTripSummary(@Valid @RequestBody TripSummary tripSummary, HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        tripSummary.setProfileId(profileId);
+        return ResponseEntity.status(201).body(tripService.insertTripSummary(tripSummary));
+    }
+
+    // POST /api/trips/{id}/trackingpoints
+    @PostMapping("/{id}/trackingpoints")
+    public ResponseEntity<TripDetailedDto> addTrackingpoints(
+            @PathVariable int id,
+            @RequestBody List<Trackingpoint> trackingpoints,
+            HttpServletRequest request
+    ) {
+        int profileId = (int) request.getAttribute("profileId");
+        return ResponseEntity.status(201).body(tripService.addTrackingpointsToTrip(id, trackingpoints, profileId));
     }
 
     // GET /api/trips

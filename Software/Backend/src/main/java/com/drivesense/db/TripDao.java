@@ -23,7 +23,7 @@ public class TripDao {
     }
 
     public int insert(TripSummary tripSummary) {
-        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, starttime, endtime, distance, road_surface_conditions, type) VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, starttime, endtime, distance, road_surface_conditions, type, start_point, end_point, furthest_point, start_mileage, end_mileage) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -35,6 +35,11 @@ public class TripDao {
             ps.setDouble(6, tripSummary.getDistance());
             ps.setString(7, tripSummary.getRoadSurfaceConditions());
             ps.setString(8, tripSummary.getType());
+            ps.setString(9, tripSummary.getStartPoint());
+            ps.setString(10, tripSummary.getEndPoint());
+            ps.setString(11, tripSummary.getFurthestPoint());
+            ps.setInt(12, tripSummary.getStartMileage());
+            ps.setInt(13, tripSummary.getEndMileage());
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -108,13 +113,21 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
+                    t.profile_id,
+                    t.vehicle_id,
+                    t.protocol_id,
                     t.starttime,
+                    t.endtime,
                     t.distance,
-                    v.mileage,
+                    t.start_mileage,
+                    t.end_mileage,
                     v.licenseplate,
+                    v.model AS vehicle_model,
                     t.start_point,
+                    t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
+                    t.type,
                     a.fname,
                     a.lname
                 FROM trip t
@@ -140,8 +153,8 @@ public class TripDao {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, profileId);
-            ps.setInt(2, protocolId);
+            ps.setInt(1, protocolId);
+            ps.setInt(2, profileId);
             ps.setInt(3, profileId);
             ResultSet rs = ps.executeQuery();
 
@@ -157,17 +170,25 @@ public class TripDao {
         }
     }
 
+    /***
+     * Für Admin Zwecke, keine Zugriffsrechtprüfung vorhanden!
+     ***/
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
         String sql = """
                     SELECT
                                 t.id,
+                                t.profile_id,
+                                t.vehicle_id,
+                                t.protocol_id,
                                 t.starttime,
+                                t.endtime,
                                 t.distance,
                                 t.start_mileage,
                                 t.end_mileage,
                                 v.licenseplate,
                                 v.model AS vehicle_model,
                                 t.start_point,
+                                t.furthest_point,
                                 t.end_point,
                                 t.road_surface_conditions,
                                 t.type,
@@ -178,6 +199,7 @@ public class TripDao {
                             JOIN vehicle v ON t.vehicle_id = v.id
                             JOIN profile prf ON t.profile_id = prf.id
                             JOIN account a ON prf.account_id = a.id
+                            WHERE t.protocol_id = ?
                 """;
 
         try (Connection conn = dbConnection.getConnection();
@@ -201,13 +223,21 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
+                    t.profile_id,
+                    t.vehicle_id,
+                    t.protocol_id,
                     t.starttime,
+                    t.endtime,
                     t.distance,
-                    v.mileage,
+                    t.start_mileage,
+                    t.end_mileage,
                     v.licenseplate,
+                    v.model AS vehicle_model,
                     t.start_point,
+                    t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
+                    t.type,
                     a.fname,
                     a.lname
                 FROM trip t
@@ -215,7 +245,7 @@ public class TripDao {
                 JOIN vehicle v ON t.vehicle_id = v.id
                 JOIN profile prf ON t.profile_id = prf.id
                 JOIN account a ON prf.account_id = a.id
-                WHERE t.profile_id = ? 
+                WHERE t.profile_id = ?
                 """;
 
         try (Connection conn = dbConnection.getConnection();
@@ -255,7 +285,7 @@ public class TripDao {
     }
 
     public void update(TripSummary tripSummary) {
-        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ? WHERE id = ?";
+        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -264,7 +294,12 @@ public class TripDao {
             ps.setDouble(3, tripSummary.getDistance());
             ps.setString(4, tripSummary.getRoadSurfaceConditions());
             ps.setString(5, tripSummary.getType());
-            ps.setInt(6, tripSummary.getId());
+            ps.setString(6, tripSummary.getStartPoint());
+            ps.setString(7, tripSummary.getEndPoint());
+            ps.setString(8, tripSummary.getFurthestPoint());
+            ps.setInt(9, tripSummary.getStartMileage());
+            ps.setInt(10, tripSummary.getEndMileage());
+            ps.setInt(11, tripSummary.getId());
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -296,6 +331,11 @@ public class TripDao {
         tripSummary.setDistance(rs.getDouble("distance"));
         tripSummary.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
         tripSummary.setType(rs.getString("type"));
+        tripSummary.setStartPoint(rs.getString("start_point"));
+        tripSummary.setEndPoint(rs.getString("end_point"));
+        tripSummary.setFurthestPoint(rs.getString("furthest_point"));
+        tripSummary.setStartMileage(rs.getInt("start_mileage"));
+        tripSummary.setEndMileage(rs.getInt("end_mileage"));
         return tripSummary;
     }
 
@@ -303,14 +343,22 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
-        dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
+        dto.setProfileId(rs.getInt("profile_id"));
+        dto.setVehicleId(rs.getInt("vehicle_id"));
+        dto.setProtocolId(rs.getInt("protocol_id"));
+        dto.setStartTime(rs.getTimestamp("starttime").toLocalDateTime());
+        Timestamp endTimeTimestamp = rs.getTimestamp("endtime");
+        if (endTimeTimestamp != null) {
+            dto.setEndTime(endTimeTimestamp.toLocalDateTime());
+        }
         dto.setStartMileage(rs.getInt("start_mileage"));
         dto.setEndMileage(rs.getInt("end_mileage"));
-        dto.setDistance(rs.getInt("distance"));
+        dto.setDistance(rs.getDouble("distance"));
         dto.setType(rs.getString("type"));
-        dto.setLicenseplate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
         dto.setStartPoint(rs.getString("start_point"));
+        dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));
         dto.setAccountFname(rs.getString("fname"));
         dto.setAccountLname(rs.getString("lname"));

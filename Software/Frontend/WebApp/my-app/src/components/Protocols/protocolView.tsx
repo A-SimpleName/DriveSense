@@ -15,6 +15,9 @@ export default function ProtocolView({
 }) {
     const trips = protocol.trips ?? [];
     const totalKm = trips.map(trip => trip.distance).reduce((a, b) => a + b, 0);
+    const birthdate = protocol.created_by_account?.birthdate
+        ? new Date(protocol.created_by_account.birthdate).toLocaleDateString()
+        : "";
 
     const getColumns = () => {
         switch (type) {

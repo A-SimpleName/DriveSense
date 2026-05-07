@@ -1,13 +1,14 @@
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
 
@@ -30,8 +31,13 @@ class TripService {
       );
     }
 
+    if (RuntimeStore.currentProfileId != profileId) {
+      throw TripHttpException(
+        'Trip kann nicht synchronisiert werden: aktives Profil passt nicht zum Trip.',
+      );
+    }
+
     final int? protocolId = await _resolveProtocolIdForSync(
-      profileId: profileId,
       preferredProtocolId: trip.protocolId,
     );
     if (protocolId == null || protocolId <= 0) {
@@ -40,7 +46,10 @@ class TripService {
       );
     }
 
-    final int? vehicleId = await _resolveVehicleIdForSync(profileId: profileId);
+    final int? vehicleId = await _resolveVehicleIdForSync(
+      profileId: profileId,
+      preferredVehicleId: trip.vehicleId,
+    );
     if (vehicleId == null || vehicleId <= 0) {
       throw TripHttpException(
         'Trip kann nicht synchronisiert werden: vehicleId fehlt oder ist ungueltig.',
@@ -113,7 +122,6 @@ class TripService {
     required int vehicleId,
     required int protocolId,
   }) async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
     final Map<String, dynamic> payload = _createTripSummaryPayload(
       tripSummary,
       profileId: profileId,
@@ -126,11 +134,76 @@ class TripService {
     return http.post(
       Uri.parse('$_baseUrl/api/trips/summary'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        ..._cookieHeaders(cookieHeader),
+        ...RequestHeaders.authenticatedJson(),
       },
       body: jsonEncode(payload),
     );
+  }
+
+  Future<void> updateTripSummary(TripSummary tripSummary) async {
+    if (tripSummary.endTime == null) {
+      throw TripHttpException(
+        'Trip kann nicht aktualisiert werden: endTime fehlt.',
+      );
+    }
+
+    final int profileId = tripSummary.profileId > 0
+        ? tripSummary.profileId
+        : (RuntimeStore.currentProfileId ?? 0);
+    final int protocolId = tripSummary.protocolId > 0
+        ? tripSummary.protocolId
+        : RuntimeStore.getCurrentProtocolId();
+    final int vehicleId = tripSummary.vehicleId > 0
+        ? tripSummary.vehicleId
+        : RuntimeStore.getCurrentVehicleId();
+
+    if (profileId <= 0 || protocolId <= 0 || vehicleId <= 0) {
+      throw TripHttpException(
+        'Trip kann nicht aktualisiert werden: Profil, Protokoll oder Fahrzeug fehlt.',
+      );
+    }
+
+    final Map<String, dynamic> payload = _createTripSummaryPayload(
+      tripSummary,
+      profileId: profileId,
+      vehicleId: vehicleId,
+      protocolId: protocolId,
+    );
+
+    debugPrint('PUT /api/trips/${tripSummary.id} payload=$payload');
+
+    final http.Response response = await http.put(
+      Uri.parse('$_baseUrl/api/trips/${tripSummary.id}'),
+      headers: <String, String>{
+        ...RequestHeaders.authenticatedJson(),
+      },
+      body: jsonEncode(payload),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw TripHttpException(
+        'Failed to update trip summary: ${response.statusCode} - ${response.body}',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  Future<bool> deleteTripSummary(int tripId) async {
+    if (tripId <= 0) {
+      return false;
+    }
+
+
+    try {
+      final http.Response response = await http.delete(
+        Uri.parse('$_baseUrl/api/trips/$tripId'),
+        headers: RequestHeaders.authenticated(),
+      );
+
+      return response.statusCode >= 200 && response.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
   }
 
   Map<String, dynamic> _createTripSummaryPayload(
@@ -147,7 +220,13 @@ class TripService {
       'endTime': _toBackendLocalDateTime(tripSummary.endTime!),
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
+      'startPoint': tripSummary.startPoint,
+      'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
+      'startMileage': tripSummary.startMileage,
+      'endMileage': tripSummary.endMileage,
+      'start_mileage': tripSummary.startMileage,
+      'end_mileage': tripSummary.endMileage,
     };
   }
 
@@ -167,7 +246,6 @@ class TripService {
     int tripId,
     List<Trackingpoint> trackingpoints,
   ) async {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
     final List<Map<String, dynamic>> payload = trackingpoints
         .map((Trackingpoint tp) => _createTrackingpointPayload(tp))
         .toList();
@@ -175,8 +253,7 @@ class TripService {
     return http.post(
       Uri.parse('$_baseUrl/api/trips/$tripId/trackingpoints'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        ..._cookieHeaders(cookieHeader),
+        ...RequestHeaders.authenticatedJson(),
       },
       body: jsonEncode(payload),
     );
@@ -202,24 +279,27 @@ class TripService {
   }
 
   Future<int?> _resolveProtocolIdForSync({
-    required int profileId,
     int preferredProtocolId = 0,
   }) async {
-    if (preferredProtocolId > 0) {
-      return preferredProtocolId;
-    }
-
     final int? resolved =
-        await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
+        await ProtocolService.resolvePreferredCurrentOrFirstAvailableProtocolId(
+          preferredProtocolId: preferredProtocolId,
+        );
     if (resolved != null && resolved > 0) {
       return resolved;
     }
 
-    return ProtocolService.createDefaultProtocol(profileId);
+    return ProtocolService.createDefaultProtocol();
   }
 
-  Future<int?> _resolveVehicleIdForSync({required int profileId}) async {
-    final int? resolved = await VehicleService.resolveFirstAvailableVehicleId();
+  Future<int?> _resolveVehicleIdForSync({
+    required int profileId,
+    int preferredVehicleId = 0,
+  }) async {
+    final int? resolved =
+        await VehicleService.resolvePreferredCurrentOrFirstAvailableVehicleId(
+          preferredVehicleId: preferredVehicleId,
+        );
     if (resolved != null && resolved > 0) {
       return resolved;
     }
@@ -233,12 +313,11 @@ class TripService {
         .getByProfileAndProtocol(profileId, protocolId);
     final List<TripSummary> serverSummaries = <TripSummary>[];
 
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
 
     try {
       final http.Response response = await http.get(
         Uri.parse('$_baseUrl/api/trips/protocols/$protocolId'),
-        headers: <String, String>{..._cookieHeaders(cookieHeader)},
+        headers: RequestHeaders.authenticated(),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -319,6 +398,8 @@ class TripService {
     trip.distanceKm = summary.distanceKm;
     trip.roadSurfaceConditions = summary.roadSurfaceConditions;
     trip.type = summary.type;
+    trip.startMileage = summary.startMileage;
+    trip.endMileage = summary.endMileage;
     trip.createdAt = existing?.createdAt ?? DateTime.now();
     trip.isSynced = true;
     trip.retryCount = 0;
@@ -328,11 +409,4 @@ class TripService {
     await _tripRepository.save(trip);
   }
 
-  Map<String, String> _cookieHeaders(String? cookieHeader) {
-    if (cookieHeader == null) {
-      return const <String, String>{};
-    }
-
-    return <String, String>{'Cookie': cookieHeader};
-  }
 }

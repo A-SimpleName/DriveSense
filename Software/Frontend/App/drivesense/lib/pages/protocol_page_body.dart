@@ -42,45 +42,70 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _resolveDropdownValue(selectedProtocolId),
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Ausgewaehltes Protokoll',
-                      border: OutlineInputBorder(),
-                    ),
-                    hint: Text(
-                      _isLoading
-                          ? 'Protokolle werden geladen...'
-                          : 'Protokoll auswaehlen',
-                    ),
-                    items: _protocols
-                        .map(
-                          (Protocol protocol) => DropdownMenuItem<int>(
-                            value: protocol.id,
-                            child: Text(protocol.name),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _isLoading || _protocols.isEmpty
+                DropdownButtonFormField<int>(
+                  initialValue: _resolveDropdownValue(selectedProtocolId),
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Ausgewaehltes Protokoll',
+                    border: OutlineInputBorder(),
+                  ),
+                  hint: Text(
+                    _isLoading
+                        ? 'Protokolle werden geladen...'
+                        : 'Protokoll auswaehlen',
+                  ),
+                  items: _protocols
+                      .map(
+                        (Protocol protocol) => DropdownMenuItem<int>(
+                          value: protocol.id,
+                          child: Text(protocol.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _isLoading || _protocols.isEmpty
+                      ? null
+                      : _handleProtocolChanged,
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading || _protocols.isEmpty
                         ? null
-                        : _handleProtocolChanged,
+                        : _handleDeleteProtocolPressed,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Protokoll löschen'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: _isCreating ? null : _showCreateProtocolDialog,
-                  icon: _isCreating
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.add),
-                  label: Text(_isCreating ? 'Erstelle...' : 'Neu'),
+                const SizedBox(height: 8),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _handlePdfExportPressed,
+                        icon: const Icon(Icons.picture_as_pdf),
+                        label: const Text('PDF exportieren'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: _isCreating ? null : _showCreateProtocolDialog,
+                      icon: _isCreating
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.add),
+                      label: Text(_isCreating ? 'Erstelle...' : 'Neu'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -102,7 +127,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   ? const Center(
                       child: Text('Keine Protokolle fuer das aktuelle Profil.'),
                     )
-                  : const ProtocolTable(),
+                  : ProtocolTable(onChanged: _refreshVisibleTrips),
             ),
           ),
           Padding(
@@ -112,6 +137,82 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleDeleteProtocolPressed() async {
+    final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
+    if (selectedProtocolId <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kein Protokoll ausgewählt.')),
+      );
+      return;
+    }
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Protokoll löschen'),
+          content: const Text(
+            'möchten Sie das Protokoll wirklich Löschen, alle darin eingetragenen Fahrten werden dadurch gelöscht',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Abbrechen'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Löschen'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final bool success = await ProtocolService.deleteProtocol(
+      selectedProtocolId,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      await _loadProtocolsAndTrips();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Protokoll wurde gelöscht.')),
+        );
+      }
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Löschen fehlgeschlagen.')));
+    }
+  }
+
+  void _handlePdfExportPressed() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('PDF Export ist noch nicht implementiert.')),
+    );
+  }
+
+  Future<void> _refreshVisibleTrips() async {
+    await RuntimeStore.refreshTrips();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
   }
 
   void _reloadIfProfileChanged() {
@@ -278,7 +379,6 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
 
     try {
       final Protocol? createdProtocol = await ProtocolService.createProtocol(
-        profileId: profileId,
         name: name,
       );
 

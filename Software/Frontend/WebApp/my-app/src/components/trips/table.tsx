@@ -14,7 +14,7 @@ function TripsTable() {
     useEffect(() => {
         setLoading(true)
         getAllTrips()
-            .then(data => setTrips(data))
+            .then(data => setTrips(data)) 
             .catch(err => setError(err.message))
             .finally(() => setLoading(false))
     }, [])
@@ -30,6 +30,7 @@ function TripsTable() {
 
     return (
         <table className="ridesTable">
+
             <thead>
                 <tr>
                     <th>Startzeit</th>
@@ -57,13 +58,16 @@ function TripsTable() {
                     <th></th>
                 </tr>
             </thead>
+
             <tbody>
+
                 {trips.map(trip => (
+
                     <tr
                         key={trip.id}
                         onClick={() => navigate(`/trips/${trip.id}`)}
-                        style={{ cursor: "pointer" }}
                     >
+
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
                         <td>{new Date(trip.endTime).toLocaleString()}</td>
                         <td>{trip.accountFname} {trip.accountLname}</td>
@@ -74,7 +78,7 @@ function TripsTable() {
                         <td>{trip.distance} km</td>
                         <td>{trip.roadSurfaceConditions}</td>
                         <td>
-                            {trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
+                            {trip.furthestPoint && trip.furthestPoint?.toLowerCase() !== trip.endPoint?.toLowerCase()
                                 ? `${trip.startPoint} - ${trip.furthestPoint} - ${trip.endPoint}`
                                 : `${trip.startPoint} - ${trip.endPoint}`}
                         </td>
@@ -82,9 +86,13 @@ function TripsTable() {
                             <Button label="Bearbeiten" stopPropagation={true} />
                             <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)} />
                         </td>
+
                     </tr>
+
                 ))}
+
             </tbody>
+
         </table>
     )
 }

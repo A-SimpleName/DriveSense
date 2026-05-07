@@ -36,6 +36,15 @@ public class AccountController {
         LoginResponse loginResponse = accountService.login(request);
 
         if (clientType.equals("web")) {
+            // Beim Account-Login darf kein altes Profil aktiv bleiben.
+            Cookie profileCookie = new Cookie("profileToken", "");
+            profileCookie.setHttpOnly(true);
+            profileCookie.setSecure(false);
+            profileCookie.setPath("/");
+            profileCookie.setMaxAge(0);
+            profileCookie.setAttribute("SameSite", "Lax");
+            httpResponse.addCookie(profileCookie);
+
             // accountToken als Cookie
             Cookie accountCookie = new Cookie("accountToken", loginResponse.getAccountToken());
             accountCookie.setHttpOnly(true);

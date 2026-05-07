@@ -15,6 +15,35 @@ class TripRepository {
     return isar.trips.where().findAll();
   }
 
+  Future<Trip?> getLatestCompleted({int? profileId, int? protocolId}) async {
+    final List<Trip> trips = await getAll();
+    final List<Trip> completedTrips = trips.where((Trip trip) {
+      if (trip.endTime == null) {
+        return false;
+      }
+      if (profileId != null && trip.profileId != profileId) {
+        return false;
+      }
+      if (protocolId != null &&
+          protocolId > 0 &&
+          trip.protocolId != protocolId) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    if (completedTrips.isEmpty) {
+      return null;
+    }
+
+    completedTrips.sort((Trip a, Trip b) {
+      final DateTime aTime = a.endTime ?? a.startTime;
+      final DateTime bTime = b.endTime ?? b.startTime;
+      return bTime.compareTo(aTime);
+    });
+    return completedTrips.first;
+  }
+
   Future<List<Trip>> getByProfileAndProtocol(
     int profileId,
     int protocolId,

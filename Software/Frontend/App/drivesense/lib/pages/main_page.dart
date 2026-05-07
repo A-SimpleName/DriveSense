@@ -80,7 +80,12 @@ class _MainPageState extends State<MainPage> {
                 break;
               case 1:
                 _currentAppBarTitle = 'Protokoll';
-                RuntimeStore.refreshTrips(); // TODO: ProfileId dynamisch setzen
+                Future<void>(() async {
+                  await RuntimeStore.refreshTrips();
+                  if (mounted) {
+                    setState(() {});
+                  }
+                });
                 break;
               case 2:
                 _currentAppBarTitle = 'Profil';

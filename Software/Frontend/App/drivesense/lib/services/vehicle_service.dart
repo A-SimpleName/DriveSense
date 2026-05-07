@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:drivesense/constants/api_config.dart';
+import 'package:drivesense/config/api_config.dart';
+import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
@@ -10,20 +11,12 @@ import 'package:http/http.dart' as http;
 class VehicleService {
   VehicleService._();
 
-  static Map<String, String> _authHeaders() {
-    final String? cookieHeader = RuntimeStore.getCookieHeader();
-    return <String, String>{
-      'Content-Type': 'application/json',
-      if (cookieHeader != null) 'Cookie': cookieHeader,
-    };
-  }
-
   static Future<int?> resolveFirstAvailableVehicleId() async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/account');
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -61,6 +54,34 @@ class VehicleService {
     return null;
   }
 
+  static Future<int?> resolvePreferredCurrentOrFirstAvailableVehicleId({
+    int preferredVehicleId = 0,
+  }) async {
+    List<Vehicle> vehicles = RuntimeStore.vehicles;
+    if (vehicles.isEmpty) {
+      vehicles = await fetchVehicles();
+    }
+
+    if (preferredVehicleId > 0) {
+      for (final Vehicle vehicle in vehicles) {
+        if (vehicle.id == preferredVehicleId) {
+          return vehicle.id;
+        }
+      }
+    }
+
+    final int currentVehicleId = RuntimeStore.getCurrentVehicleId();
+    for (final Vehicle vehicle in vehicles) {
+      if (vehicle.id == currentVehicleId && vehicle.id > 0) {
+        return vehicle.id;
+      }
+    }
+
+    return vehicles.isNotEmpty && vehicles.first.id > 0
+        ? vehicles.first.id
+        : null;
+  }
+
   static Future<int?> createDefaultVehicle(int profileId) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
 
@@ -68,7 +89,7 @@ class VehicleService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(<String, dynamic>{
               'model': 'L17 Fahrzeug',
               'licensePlate': 'L17-$profileId',
@@ -126,7 +147,7 @@ class VehicleService {
 
     try {
       final http.Response response = await http
-          .get(uri, headers: _authHeaders())
+          .get(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -138,10 +159,12 @@ class VehicleService {
 
       // Jeden JSON-Eintrag in ein Vehicle-Objekt umwandeln,
       // fehlerhafte Einträge werden übersprungen (whereType filtert null raus)
-      return decoded
+      final List<Vehicle> vehicles = decoded
           .whereType<Map<String, dynamic>>()
           .map((json) => Vehicle.fromJson(json))
           .toList();
+      RuntimeStore.setVehicles(vehicles);
+      return vehicles;
     } catch (e) {
       debugPrint('FetchVehicles failed at $uri: $e');
       return [];
@@ -157,7 +180,7 @@ class VehicleService {
       final http.Response response = await http
           .put(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(vehicle.toJson()),
           )
           .timeout(const Duration(seconds: 10));
@@ -175,7 +198,7 @@ class VehicleService {
 
     try {
       final http.Response response = await http
-          .delete(uri, headers: _authHeaders())
+          .delete(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode >= 200 && response.statusCode < 300;
@@ -199,7 +222,7 @@ class VehicleService {
       final http.Response response = await http
           .post(
             uri,
-            headers: _authHeaders(),
+            headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode({
               'model': model,
               'licensePlate': licensePlate,
@@ -209,11 +232,11 @@ class VehicleService {
           .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        'CreateVehicle <- status=\${response.statusCode}, body=\${response.body}',
+        'CreateVehicle <- status=${response.statusCode}, body=${response.body}',
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        debugPrint('CreateVehicle failed: HTTP \${response.statusCode}');
+        debugPrint('CreateVehicle failed: HTTP ${response.statusCode}');
         return null;
       }
 
@@ -237,4 +260,5 @@ class VehicleService {
       return null;
     }
   }
+
 }

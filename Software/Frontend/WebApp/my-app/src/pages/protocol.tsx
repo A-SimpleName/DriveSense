@@ -16,6 +16,7 @@ export default function ProtocolPage() {
         getAllProtocols()
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
+
                     // Erst: null usergroup_id zuerst
                     if (a.usergroupId === null && b.usergroupId !== null) return -1;
                     if (a.usergroupId !== null && b.usergroupId === null) return 1;
