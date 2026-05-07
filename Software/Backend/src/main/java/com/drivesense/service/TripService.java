@@ -44,6 +44,7 @@ public class TripService {
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
         validateTripSummary(tripSummary);
 
+        System.out.println(tripSummary);
         TripSummary createdTrip = insertTripSummary(tripSummary);
         return addTrackingpointsToTrip(createdTrip.getId(), trackingpoints, createdTrip.getProfileId());
     }

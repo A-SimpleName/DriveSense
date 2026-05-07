@@ -18,6 +18,11 @@ class Trip {
   DateTime? endTime;
   late double distanceKm;
   late String roadSurfaceConditions;
+
+  String? startPoint;
+  String? endPoint;
+  String? furthestPoint;
+
   String? type;
 
   late DateTime createdAt;
