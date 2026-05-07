@@ -134,6 +134,7 @@ class TripSessionService extends ChangeNotifier {
   ActiveTrip? _activeDraft;
   List<Trackingpoint> _trackingPositions = <Trackingpoint>[];
   Future<void> _pendingTrackingUpdate = Future<void>.value();
+  Future<TripSessionStopResult>? _pendingStopTrip;
   Timer? _uiTimer;
 
   TripSessionService({
@@ -188,7 +189,11 @@ class TripSessionService extends ChangeNotifier {
 
     trackingService.seedLastAcceptedPoint(lastPoint);
     _setupTrackingCallbacks();
-    trackingService.startTracking();
+    try {
+      await trackingService.startTracking();
+    } catch (e) {
+      debugPrint('Tracking restart failed: $e');
+    }
     _startUiTicker();
   }
 
@@ -269,20 +274,48 @@ class TripSessionService extends ChangeNotifier {
     notifyListeners();
 
     _setupTrackingCallbacks();
-    trackingService.startTracking();
+    try {
+      await trackingService.startTracking();
+    } catch (_) {
+      await activeTripRepository.clear();
+      _clearActiveState(lastTrip: _state.lastTrip);
+      rethrow;
+    }
     _startUiTicker();
   }
 
   Future<TripSessionStopResult> stopTrip() async {
-    final ActiveTrip? activeDraft = _activeDraft;
-    if (activeDraft == null) {
+    final Future<TripSessionStopResult>? pendingStopTrip = _pendingStopTrip;
+    if (pendingStopTrip != null) {
+      return pendingStopTrip;
+    }
+
+    final Future<TripSessionStopResult> stopFuture = _stopTripInternal();
+    _pendingStopTrip = stopFuture;
+
+    try {
+      return await stopFuture;
+    } finally {
+      _pendingStopTrip = null;
+    }
+  }
+
+  Future<TripSessionStopResult> _stopTripInternal() async {
+    if (_activeDraft == null) {
       throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
     }
 
     await trackingService.emitCurrentPoint();
     await _waitForPendingTrackingUpdate();
     await trackingService.stopTracking();
+    await _waitForPendingTrackingUpdate();
+    await _refreshActiveDraftFromRepository();
     _stopUiTicker();
+
+    final ActiveTrip? activeDraft = _activeDraft;
+    if (activeDraft == null) {
+      throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
+    }
 
     if (_trackingPositions.isEmpty) {
       await activeTripRepository.clear();
@@ -358,13 +391,21 @@ class TripSessionService extends ChangeNotifier {
 
   void _setupTrackingCallbacks() {
     trackingService.onTrackingUpdate =
-        (Trackingpoint point, double distanceAdded) {
+        (
+          Trackingpoint point,
+          double distanceAdded,
+          bool alreadyPersisted,
+        ) {
           _pendingTrackingUpdate = _pendingTrackingUpdate
               .catchError((Object e) {
                 debugPrint('Previous tracking update failed: $e');
               })
               .then((_) {
-                return _acceptTrackingUpdate(point, distanceAdded);
+                return _acceptTrackingUpdate(
+                  point,
+                  distanceAdded,
+                  alreadyPersisted,
+                );
               });
           unawaited(_pendingTrackingUpdate);
         };
@@ -377,9 +418,41 @@ class TripSessionService extends ChangeNotifier {
   Future<void> _acceptTrackingUpdate(
     Trackingpoint point,
     double distanceAdded,
+    bool alreadyPersisted,
   ) async {
     final ActiveTrip? activeDraft = _activeDraft;
     if (activeDraft == null || !_state.hasActiveTrip) {
+      return;
+    }
+
+    if (alreadyPersisted) {
+      final ActiveTrip? persistedDraft = await activeTripRepository.getActive();
+      if (persistedDraft == null) {
+        return;
+      }
+
+      _activeDraft = persistedDraft;
+      _trackingPositions = _decodeTrackingPoints(
+        persistedDraft.trackingPointsJson,
+      );
+      final Trackingpoint lastPoint =
+          _decodeTrackingPoint(persistedDraft.lastAcceptedPointJson) ??
+          (_trackingPositions.isNotEmpty ? _trackingPositions.last : point);
+
+      _state = _state.copyWith(
+        totalDistanceMeters: persistedDraft.distanceMeters,
+        currentTripDuration: DateTime.now().difference(
+          persistedDraft.startTime,
+        ),
+        eventCount: _trackingPositions.length,
+        lastAddedMeters: distanceAdded,
+        lastAccuracy: lastPoint.accuracy,
+        lastSpeed: lastPoint.speed,
+        currentLatitude: lastPoint.latitude,
+        currentLongitude: lastPoint.longitude,
+        activeTrip: _summaryFromActiveTrip(persistedDraft),
+      );
+      notifyListeners();
       return;
     }
 
@@ -432,6 +505,18 @@ class TripSessionService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Tracking update flush failed: $e');
     }
+  }
+
+  Future<void> _refreshActiveDraftFromRepository() async {
+    final ActiveTrip? persistedDraft = await activeTripRepository.getActive();
+    if (persistedDraft == null) {
+      return;
+    }
+
+    _activeDraft = persistedDraft;
+    _trackingPositions = _decodeTrackingPoints(
+      persistedDraft.trackingPointsJson,
+    );
   }
 
   void _clearActiveState({TripSummary? lastTrip}) {
