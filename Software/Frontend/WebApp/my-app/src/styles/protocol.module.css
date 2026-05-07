@@ -91,13 +91,13 @@
     padding-bottom: 3px;
 }
 
-table {
+.pdfContainer table {
     width: 100%;
     border-collapse: collapse;
     font-size: 8pt;
 }
 
-thead th {
+.pdfContainer thead th {
     background: #1A3C6E;
     color: white;
     padding: 5px 6px;
@@ -106,21 +106,21 @@ thead th {
     font-weight: bold;
 }
 
-tbody tr:nth-child(odd) td {
+.pdfContainer tbody tr:nth-child(odd) td {
     background: #ffffff;
 }
 
-tbody tr:nth-child(even) td {
+.pdfContainer tbody tr:nth-child(even) td {
     background: #F0F5FF;
 }
 
-tbody td {
+.pdfContainer tbody td {
     padding: 5px 6px;
     border: 1px solid #C0CFDF;
     text-align: center;
 }
 
-tbody td.left {
+.pdfContainer tbody td.left {
     text-align: left;
 }
 

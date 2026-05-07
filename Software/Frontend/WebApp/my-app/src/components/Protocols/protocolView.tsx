@@ -1,5 +1,5 @@
 import type { ProtocolDetail } from "../../model/protocol";
-import type { TripSummary } from "../../model/trip";
+import type { TripSummaryDto } from "../../model/trip";
 import styles from "../../styles/protocol.module.css";
 
 type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
@@ -59,7 +59,7 @@ export default function ProtocolView({
         }
     };
 
-    const renderRow = (trip: TripSummary, i: number) => {
+    const renderRow = (trip: TripSummaryDto, i: number) => {
         return (
             <tr key={i}>
                 {isGroup && (
@@ -162,10 +162,7 @@ export default function ProtocolView({
                         </div>
 
                         <div className={styles.userInfo}>
-                            geb.{" "}
-                            {new Date(
-                                protocol.created_by_account.birthdate
-                            ).toLocaleDateString("de-AT")}
+                            geb. {birthdate}
                         </div>
                     </div>
                 )}

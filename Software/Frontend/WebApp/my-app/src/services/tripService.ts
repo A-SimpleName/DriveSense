@@ -1,5 +1,5 @@
 import http from "../api/httpService"
-import type { Tripdetailed, TripSummary } from "../model/trip"
+import type { Tripdetailed, TripSummary, TripSummaryDto } from "../model/trip"
 import { getErrorMessage } from "../errorHandling/getErrorMessage"
 
 // auslagern in die HTTP methdode am besten
@@ -15,7 +15,7 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
 }
 
 export const getAllTrips = () =>
-    handleRequest<TripSummary[]>(http.get<TripSummary[]>("/trips"));
+    handleRequest<TripSummaryDto[]>(http.get<TripSummaryDto[]>("/trips"));
 
 export const getTripById = (id: number) =>
     handleRequest<Tripdetailed>(http.get<Tripdetailed>(`/trips/${id}`));
