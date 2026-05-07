@@ -1,5 +1,4 @@
-/* CONTAINER */
-.pdf-container {
+.pdfContainer {
     font-family: Arial, sans-serif;
     font-size: 8pt;
     color: #1a1a2e;
@@ -24,6 +23,10 @@
     text-align: right;
 }
 
+.center {
+    text-align: center;
+}
+
 .brand {
   color: #ffffff;
   font-size: 1.35rem;
@@ -31,19 +34,19 @@
   letter-spacing: -0.01em;
 }
 
-.proto-name {
+.protoName {
     color: white;
     font-size: 12pt;
     font-weight: bold;
     margin-top: 2px;
 }
 
-.proto-sub {
+.protoSub {
     color: #BBCDE8;
     font-size: 7.5pt;
 }
 
-.user-info {
+.userInfo {
     color: #BBCDE8;
     font-size: 7pt;
     margin-top: 2px;
@@ -56,14 +59,13 @@
   border-radius: 2px;
 }
 
-/* SUMMARY */
 .summary {
     display: flex;
     gap: 8px;
     margin-bottom: 10px;
 }
 
-.sum-cell {
+.sumCell {
     flex: 1;
     border: 1px solid #2E7DCC;
     border-radius: 4px;
@@ -71,19 +73,18 @@
     text-align: center;
 }
 
-.sum-val {
+.sumVal {
     font-size: 13pt;
     font-weight: bold;
     color: #1A3C6E;
 }
 
-.sum-lbl {
+.sumLbl {
     font-size: 7pt;
     color: #6878A0;
 }
 
-/* SECTION */
-.section-title {
+.sectionTitle {
     font-size: 9pt;
     font-weight: bold;
     color: #1A3C6E;
@@ -92,7 +93,6 @@
     padding-bottom: 3px;
 }
 
-/* TABLE */
 table {
     width: 100%;
     border-collapse: collapse;
