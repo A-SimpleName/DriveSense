@@ -113,9 +113,9 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
-                    t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
+                    pr.name AS protocol_name,
                     t.starttime,
                     t.endtime,
                     t.distance,
@@ -170,16 +170,13 @@ public class TripDao {
         }
     }
 
-    /***
-     * Für Admin Zwecke, keine Zugriffsrechtprüfung vorhanden!
-     ***/
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
         String sql = """
                     SELECT
                                 t.id,
-                                t.profile_id,
                                 t.vehicle_id,
                                 t.protocol_id,
+                                pr.name AS protocol_name,
                                 t.starttime,
                                 t.endtime,
                                 t.distance,
@@ -223,9 +220,9 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
-                    t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
+                    pr.name AS protocol_name,
                     t.starttime,
                     t.endtime,
                     t.distance,
@@ -343,9 +340,9 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
-        dto.setProfileId(rs.getInt("profile_id"));
         dto.setVehicleId(rs.getInt("vehicle_id"));
         dto.setProtocolId(rs.getInt("protocol_id"));
+        dto.setProtocolName(rs.getString("protocol_name"));
         dto.setStartTime(rs.getTimestamp("starttime").toLocalDateTime());
         Timestamp endTimeTimestamp = rs.getTimestamp("endtime");
         if (endTimeTimestamp != null) {

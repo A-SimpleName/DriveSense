@@ -1,21 +1,43 @@
 import type { Trackingpoint } from "./trackingpoint";
 
-export interface TripSummary {
+export interface TripSummaryDto {
     id: number;
+    profileId: number;
+    vehicleId: number;
+    protocolId: number;
+    protocolName: string;
     startTime: string; 
     endTime: string;
-    distance: number;
-    startMileage: number;
-    endMileage: number;
     accountFname: string;
     accountLname: string;
     vehicleModel: string;
     licensePlate: string;
+    distance: number;
     roadSurfaceConditions: string;
-    type?: string | null;
+    type: string;
     startPoint: string;
-    furthestPoint?: string | null;
     endPoint: string;
+    furthestPoint: string;
+    startMileage: number;
+    endMileage: number;
+}
+
+
+export interface TripSummary {
+    id: number;
+    profileId: number;
+    vehicleId: number;
+    protocolId: number;
+    startTime: string; 
+    endTime: string;
+    distance: number;
+    roadSurfaceConditions: string;
+    type: string;
+    startPoint: string;
+    endPoint: string;
+    furthestPoint: string;
+    startMileage: number;
+    endMileage: number;
 }
 
 export interface Tripdetailed {
