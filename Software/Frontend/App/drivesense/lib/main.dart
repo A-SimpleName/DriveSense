@@ -4,6 +4,7 @@ import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
+import 'package:drivesense/services/trip_tracking_service.dart';
 import 'package:drivesense/config/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
@@ -13,6 +14,7 @@ import 'package:drivesense/pages/account_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  TripTrackingService.initializeForegroundTask();
   await dotenv.load(fileName: '.env');
   await IsarService.getInstance();
   String token = ""; // TODO: get token from secure storage
