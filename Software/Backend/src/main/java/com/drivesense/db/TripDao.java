@@ -23,27 +23,73 @@ public class TripDao {
     }
 
     public int insert(TripSummary tripSummary) {
-        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, starttime, endtime, distance, road_surface_conditions, type) VALUES (?,?,?,?,?,?,?,?)";
+        System.out.println(tripSummary);
+
+        String sql = """
+        INSERT INTO trip (
+            profile_id,
+            vehicle_id,
+            protocol_id,
+            starttime,
+            endtime,
+            distance,
+            road_surface_conditions,
+            type,
+            start_point,
+            end_point,
+            furthest_point,
+            start_mileage,
+            end_mileage
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """;
+
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, tripSummary.getProfileId());
             ps.setInt(2, tripSummary.getVehicleId());
             ps.setInt(3, tripSummary.getProtocolId());
+
             ps.setObject(4, tripSummary.getStartTime());
             ps.setObject(5, tripSummary.getEndTime());
+
             ps.setDouble(6, tripSummary.getDistance());
+
             ps.setString(7, tripSummary.getRoadSurfaceConditions());
             ps.setString(8, tripSummary.getType());
+
+            // Falls Geocoding fehlschlägt → Defaultwert
+            ps.setString(9,
+                    tripSummary.getStartPoint() != null
+                            ? tripSummary.getStartPoint()
+                            : "Unbekannt");
+
+            ps.setString(10,
+                    tripSummary.getEndPoint() != null
+                            ? tripSummary.getEndPoint()
+                            : "Unbekannt");
+
+            ps.setString(11,
+                    tripSummary.getFurthestPoint() != null
+                            ? tripSummary.getFurthestPoint()
+                            : "Unbekannt");
+
+            ps.setInt(12, tripSummary.getStartMileage());
+            ps.setInt(13, tripSummary.getEndMileage());
+
             ps.executeUpdate();
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);
                 } else {
-                    throw new DatabaseException("Keine Trip ID zurückgegeben", new SQLException());
+                    throw new DatabaseException(
+                            "Keine Trip ID zurückgegeben",
+                            new SQLException()
+                    );
                 }
             }
+
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim Speichern der Fahrt", e);
         }
