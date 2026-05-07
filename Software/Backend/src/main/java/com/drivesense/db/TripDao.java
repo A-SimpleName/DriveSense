@@ -113,6 +113,7 @@ public class TripDao {
                     v.mileage,
                     v.licenseplate,
                     t.start_point,
+                    t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     a.fname,
@@ -171,6 +172,7 @@ public class TripDao {
                                 v.licenseplate,
                                 v.model AS vehicle_model,
                                 t.start_point,
+                                t.furthest_point,
                                 t.end_point,
                                 t.road_surface_conditions,
                                 t.type,
@@ -209,6 +211,7 @@ public class TripDao {
                     v.mileage,
                     v.licenseplate,
                     t.start_point,
+                    t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     a.fname,
@@ -311,9 +314,10 @@ public class TripDao {
         dto.setEndMileage(rs.getInt("end_mileage"));
         dto.setDistance(rs.getInt("distance"));
         dto.setType(rs.getString("type"));
-        dto.setLicenseplate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("licenseplate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
         dto.setStartPoint(rs.getString("start_point"));
+        dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));
         dto.setAccountFname(rs.getString("fname"));
         dto.setAccountLname(rs.getString("lname"));

@@ -16,6 +16,7 @@ export default function ProtocolPage() {
         getAllProtocols()
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
+
                     // Erst: null usergroup_id zuerst
                     if (a.usergroupId === null && b.usergroupId !== null) return -1;
                     if (a.usergroupId !== null && b.usergroupId === null) return 1;
@@ -28,6 +29,8 @@ export default function ProtocolPage() {
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, [reloadKey]);
+
+    console.log("Protocols:", protocols);
 
     const groupProtocols = protocols.filter(p => p.usergroupId != null);
     const ownProtocols = protocols.filter(p => p.usergroupId == null);
