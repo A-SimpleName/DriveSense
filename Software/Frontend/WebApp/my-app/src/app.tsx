@@ -8,8 +8,7 @@ import { getProfilesByAccount } from "./services/profileService";
 import { getCurrentAccount } from "./services/accountService";
 
 import { AuthProvider, useAuth } from "./context/authContext";
-
-import TopBar from "./components/Layout/topbar";
+import AuthLayout from "./components/Layout/AuthLayout";
 import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
@@ -81,10 +80,6 @@ function AppContent() {
 
   return (
     <BrowserRouter>
-
-      {/* Topbar nur wenn komplett eingeloggt */}
-      {isAuth && profileSelected && <TopBar />}
-
       <Routes>
 
         {/* NICHT EINGELOGGT */}
@@ -122,19 +117,19 @@ function AppContent() {
 
         {/* VOLLSTÄNDIG EINGELOGGT */}
         {isAuth && profileSelected && (
-          <>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/trips" element={<TripsPage />} />
-            <Route path="/trips/:id" element={<TripDetailPage />} />
-            <Route path="/protocols/:id" element={<ProtocolDetail />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings/>}/>
-            <Route path="/protocols" element={<ProtocolPage />} />
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/groups/:id" element={<GroupDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/invite" element={<InviteAcceptPage />} />
-          </>
+          <Route path="/*" element={<AuthLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="trips" element={<TripsPage />} />
+            <Route path="trips/:id" element={<TripDetailPage />} />
+            <Route path="protocols/:id" element={<ProtocolDetail />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="protocols" element={<ProtocolPage />} />
+            <Route path="groups" element={<GroupPage />} />
+            <Route path="groups/:id" element={<GroupDetailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="invite" element={<InviteAcceptPage />} />
+          </Route>
         )}
         
       </Routes>

@@ -9,18 +9,19 @@ button {
   border: 1px solid transparent;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1rem;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
   box-shadow: var(--shadow-sm);
   text-decoration: none;
 }
 
 button:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--primary-dark) 0%, #1a3a8a 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(37,99,235,0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(37,99,235,0.18);
 }
 
 button:active:not(:disabled) {
