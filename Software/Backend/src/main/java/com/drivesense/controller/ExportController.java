@@ -39,8 +39,8 @@ public class ExportController {
                 protocol, isGroup);
 
         String filename = isGroup
-                ? "gruppenprotokoll_" + protocolId + ".pdf"
-                : "einzelprotokoll_"  + protocolId + ".pdf";
+                ? "gruppenprotokoll_" + protocolId
+                : "einzelprotokoll_"  + protocolId;
 
         return buildResponse(pdf, filename + ".pdf");
     }
