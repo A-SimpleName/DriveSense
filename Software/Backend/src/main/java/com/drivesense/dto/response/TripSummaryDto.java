@@ -14,12 +14,30 @@ public class TripSummaryDto {
     private String startPoint;
     private String furthestPoint;
     private String endPoint;
+    private String protocolName;
+    private int protocolId;
     private int distance;
     private String roadSurfaceConditions;
     private String type;
 
     public TripSummaryDto () {
 
+    }
+
+    public String getProtocolName() {
+        return protocolName;
+    }
+
+    public void setProtocolName(String protocolName) {
+        this.protocolName = protocolName;
+    }
+
+    public int getProtocolId() {
+        return protocolId;
+    }
+
+    public void setProtocolId(int protocolId) {
+        this.protocolId = protocolId;
     }
 
     public String getFurthestPoint() {
