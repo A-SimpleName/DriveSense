@@ -29,8 +29,6 @@ export default function ProtocolPage() {
             .finally(() => setLoading(false));
     }, [reloadKey]);
 
-    console.log("Protocols:", protocols);
-
     const groupProtocols = protocols.filter(p => p.usergroupId != null);
     const ownProtocols = protocols.filter(p => p.usergroupId == null);
 
