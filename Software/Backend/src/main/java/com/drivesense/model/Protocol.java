@@ -18,7 +18,7 @@ public class Protocol {
 
     public Protocol(){}
 
-    public Protocol(int createdByProfileId, int usergroupId, String name,LocalDateTime created_at) {
+    public Protocol(int createdByProfileId, Integer usergroupId, String name, LocalDateTime created_at) {
         this.createdByProfileId = createdByProfileId;
         this.usergroupId = usergroupId;
         this.name = name;

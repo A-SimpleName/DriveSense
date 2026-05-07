@@ -28,14 +28,15 @@ class Account {
     };
   }
 
-  factory Account.fromJson(Map<String, dynamic> json) {
+    factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      fName: json["fname"],
-      lName: json["lname"],
-      email: json["email"],
-      password: json["password"],
-      birthdate: json["birthdate"] != null ? DateTime.parse(json["birthdate"]) : null,
-
+      fName: json["fname"] ?? '',
+      lName: json["lname"] ?? '',
+      email: json["email"] ?? '',
+      password: json["password"] ?? '',
+      birthdate: json["birthdate"] != null
+          ? DateTime.parse(json["birthdate"])
+          : null,
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:drivesense/model/vehicle.dart';
+import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,6 +54,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
 
     setState(() {
       _vehicles = vehicles;
+      RuntimeStore.setVehicles(vehicles);
       _isLoading = false;
     });
   }

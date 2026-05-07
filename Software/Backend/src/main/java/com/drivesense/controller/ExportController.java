@@ -32,11 +32,8 @@ public class ExportController {
             @PathVariable int protocolId) {
 
         ProtocolDto protocol = protocolService.getProtocolWithTrips(protocolId);
-        boolean isGroup = false;
-
-        if (protocol.getUsergroup().getId() > 0) {
-            isGroup = true;
-        }
+        boolean isGroup = protocol.getUsergroup() != null
+                && protocol.getUsergroup().getId() > 0;
 
         byte[] pdf = pdfExportService.generateProtocolPdf(
                 protocol, isGroup);
@@ -45,7 +42,7 @@ public class ExportController {
                 ? "gruppenprotokoll_" + protocolId
                 : "einzelprotokoll_"  + protocolId;
 
-        return buildResponse(pdf, filename + ".pdf");
+        return buildResponse(pdf, filename);
     }
 
     private ResponseEntity<byte[]> buildResponse(byte[] pdf, String filename) {

@@ -1,24 +1,25 @@
 import 'dart:async';
 import 'package:drivesense/model/trackingpoint.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
-/// Service für GPS-Tracking während einer Fahrt
-/// Verwaltet den GPS-Stream und validiert Tracking-Points
+/// GPS tracking service while a trip is active.
 class TripTrackingService {
   StreamSubscription<Position>? _positionSubscription;
   Trackingpoint? _lastAcceptedPoint;
-  
-  // Callbacks für UI-Updates
+
   Function(Trackingpoint point, double distanceAdded)? onTrackingUpdate;
   Function(String error)? onError;
 
   bool get isTracking => _positionSubscription != null;
 
-  /// Startet GPS-Tracking
+  void seedLastAcceptedPoint(Trackingpoint? point) {
+    _lastAcceptedPoint = point;
+  }
+
   void startTracking() {
     if (_positionSubscription != null) {
-      debugPrint('Tracking läuft bereits');
+      debugPrint('Tracking is already running');
       return;
     }
 
@@ -27,108 +28,102 @@ class TripTrackingService {
       distanceFilter: 0,
     );
 
-    _positionSubscription = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      _handlePositionUpdate,
-      onError: (e) {
-        debugPrint('GPS STREAM ERROR: $e');
-        onError?.call(e.toString());
-      },
-      onDone: () {
-        debugPrint('GPS STREAM DONE');
-      },
-    );
+    _positionSubscription =
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+          _handlePositionUpdate,
+          onError: (e) {
+            debugPrint('GPS STREAM ERROR: $e');
+            onError?.call(e.toString());
+          },
+          onDone: () {
+            debugPrint('GPS STREAM DONE');
+          },
+        );
 
-    // Emit one initial point right after start so a standing start is captured.
-    unawaited(_emitInitialPoint());
+    unawaited(emitCurrentPoint());
   }
 
-  /// Stoppt GPS-Tracking
   Future<void> stopTracking() async {
     await _positionSubscription?.cancel();
     _positionSubscription = null;
     _lastAcceptedPoint = null;
   }
 
-  /// Verarbeitet Position-Updates vom GPS-Stream
-  void _handlePositionUpdate(Position position) {
-    final tp = _positionToTrackingPoint(position);
+  Future<void> emitCurrentPoint() async {
+    try {
+      final Position currentPosition = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      ).timeout(const Duration(seconds: 5));
+      _handlePositionUpdate(currentPosition);
+    } catch (e) {
+      debugPrint('Current GPS point failed: $e');
+    }
+  }
 
-    // Validierung: Punkt akzeptieren?
-    if (!_shouldAcceptPoint(tp)) {
-      debugPrint('Point rejected: acc=${tp.accuracy}, spd=${tp.speed}');
+  void _handlePositionUpdate(Position position) {
+    final Trackingpoint trackingpoint = _positionToTrackingPoint(position);
+
+    if (!_shouldAcceptPoint(trackingpoint)) {
+      debugPrint(
+        'Point rejected: acc=${trackingpoint.accuracy}, spd=${trackingpoint.speed}',
+      );
       return;
     }
 
-    // Distanz zum letzten Punkt berechnen
     double distanceAdded = 0;
     if (_lastAcceptedPoint != null) {
       distanceAdded = Geolocator.distanceBetween(
         _lastAcceptedPoint!.latitude,
         _lastAcceptedPoint!.longitude,
-        tp.latitude,
-        tp.longitude,
+        trackingpoint.latitude,
+        trackingpoint.longitude,
       );
     }
 
-    _lastAcceptedPoint = tp;
-
-    // UI benachrichtigen
-    onTrackingUpdate?.call(tp, distanceAdded);
+    _lastAcceptedPoint = trackingpoint;
+    onTrackingUpdate?.call(trackingpoint, distanceAdded);
   }
 
-  /// Validiert ob ein Tracking-Point akzeptiert werden soll
-  bool _shouldAcceptPoint(Trackingpoint tp) {
-    // Unzuverlässig -> skip
-    final acc = tp.accuracy;
-    if (acc > 25) return false;
+  bool _shouldAcceptPoint(Trackingpoint trackingpoint) {
+    final double accuracy = trackingpoint.accuracy;
+    if (accuracy > 25) {
+      return false;
+    }
 
-    // Always accept the very first point, even with 0 speed/low movement.
-    if (_lastAcceptedPoint == null) return true;
+    if (_lastAcceptedPoint == null) {
+      return true;
+    }
 
-    // Stehst (oder GPS spinnt) -> skip (0.5 m/s ~ 1.8 km/h)
-    final spd = tp.speed;
-    if (spd < 0.5) return false;
+    final double speed = trackingpoint.speed;
+    if (speed < 0.5) {
+      return false;
+    }
 
-    final d = Geolocator.distanceBetween(
+    final double distance = Geolocator.distanceBetween(
       _lastAcceptedPoint!.latitude,
       _lastAcceptedPoint!.longitude,
-      tp.latitude,
-      tp.longitude,
+      trackingpoint.latitude,
+      trackingpoint.longitude,
     );
 
-    return d > 10; // Auto: 10m = weniger Müll, weniger Daten
+    return distance >= 5;
   }
 
-  /// Konvertiert Position zu Trackingpoint
-  Trackingpoint _positionToTrackingPoint(Position p) {
+  Trackingpoint _positionToTrackingPoint(Position position) {
     return Trackingpoint(
-      id: 0, // TODO backend
-      tripId: 0, // TODO backend tripId
-      latitude: p.latitude,
-      longitude: p.longitude,
-      accuracy: p.accuracy,
-      speed: p.speed,
-      bearing: p.heading,
-      timestamp: p.timestamp,
+      id: 0,
+      tripId: 0,
+      latitude: position.latitude,
+      longitude: position.longitude,
+      accuracy: position.accuracy,
+      speed: position.speed,
+      bearing: position.heading,
+      timestamp: position.timestamp,
     );
   }
 
-  Future<void> _emitInitialPoint() async {
-    try {
-      final Position initialPosition = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      ).timeout(const Duration(seconds: 5));
-      _handlePositionUpdate(initialPosition);
-    } catch (e) {
-      debugPrint('Initial GPS point failed: $e');
-    }
-  }
-
-  /// Cleanup
   void dispose() {
     _positionSubscription?.cancel();
   }

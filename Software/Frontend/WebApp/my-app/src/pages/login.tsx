@@ -13,6 +13,7 @@ export default function Login({ onLoginSuccess }: { onLoginSuccess: () => void }
     try {
       await login(email, password);
 
+      sessionStorage.removeItem("profileSelected");
       onLoginSuccess();
       navigate("/select-profile");
     } catch (err) {
