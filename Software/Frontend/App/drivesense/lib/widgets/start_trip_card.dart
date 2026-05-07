@@ -9,12 +9,14 @@ class StartTripCard extends StatefulWidget {
     required this.vehicles,
     required this.selectedVehicleId,
     required this.onVehicleChanged,
+    required this.isStartingTrip,
   });
 
   final VoidCallback onStart;
   final List<Vehicle> vehicles;
   final int selectedVehicleId;
   final ValueChanged<int> onVehicleChanged;
+  final bool isStartingTrip;
 
   @override
   State<StartTripCard> createState() => _StartTripCardState();
@@ -81,11 +83,19 @@ class _StartTripCardState extends State<StartTripCard> {
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: widget.vehicles.isEmpty ? null : widget.onStart,
+                onPressed: widget.vehicles.isEmpty || widget.isStartingTrip
+                    ? null
+                    : widget.onStart,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: Text('Fahrt Starten'),
+                child: widget.isStartingTrip
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Fahrt Starten'),
               ),
             ),
           ],

@@ -23,6 +23,8 @@ class HomePageBody extends StatefulWidget {
 
 class _HomePageBodyState extends State<HomePageBody> {
   late final TripSessionService _tripSessionService;
+  bool _isStartingTrip = false;
+  bool _isStoppingTrip = false;
 
   @override
   void initState() {
@@ -63,6 +65,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                       currentVehicle: _tripSessionService.formatVehicleName(
                         currentVehicle,
                       ),
+                      isStoppingTrip: _isStoppingTrip,
                     ),
                     const SizedBox(height: 12),
                     Text('Lat: ${state.currentLatitude}'),
@@ -90,6 +93,7 @@ class _HomePageBodyState extends State<HomePageBody> {
                     vehicles: RuntimeStore.vehicles,
                     selectedVehicleId: RuntimeStore.getCurrentVehicleId(),
                     onVehicleChanged: _onVehicleChanged,
+                    isStartingTrip: _isStartingTrip,
                   ),
                   const SizedBox(height: 24),
                   LastTripCard(lastTrip: _resolveLastTrip(state.lastTrip)),
@@ -118,6 +122,13 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   void _onStartTrip() {
+    if (_isStartingTrip) {
+      return;
+    }
+
+    setState(() {
+      _isStartingTrip = true;
+    });
     unawaited(_startTrip());
   }
 
@@ -126,10 +137,22 @@ class _HomePageBodyState extends State<HomePageBody> {
       await _tripSessionService.startTrip();
     } catch (e) {
       _showSnackBar(e.toString());
+    } finally {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isStartingTrip = false;
+      });
     }
   }
 
   void _onAbortTrip() {
+    if (_isStoppingTrip) {
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -143,14 +166,14 @@ class _HomePageBodyState extends State<HomePageBody> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Abbrechen'),
+              child: const Text('Nein'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 unawaited(_tripSessionService.abortTrip());
               },
-              child: const Text('Fahrt abbrechen'),
+              child: const Text('Ja'),
             ),
           ],
         );
@@ -159,6 +182,14 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _onStopTrip() async {
+    if (_isStoppingTrip) {
+      return;
+    }
+
+    setState(() {
+      _isStoppingTrip = true;
+    });
+
     try {
       final TripSessionStopResult result = await _tripSessionService.stopTrip();
 
@@ -176,6 +207,14 @@ class _HomePageBodyState extends State<HomePageBody> {
       _showSnackBar(e.message);
     } catch (e) {
       _showSnackBar(e.toString());
+    } finally {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isStoppingTrip = false;
+      });
     }
   }
 
