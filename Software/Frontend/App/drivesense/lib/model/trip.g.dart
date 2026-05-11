@@ -32,83 +32,68 @@ const TripSchema = CollectionSchema(
       name: r'endMileage',
       type: IsarType.long,
     ),
-    r'endPoint': PropertySchema(
-      id: 3,
-      name: r'endPoint',
-      type: IsarType.string,
-    ),
     r'endTime': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'endTime',
       type: IsarType.dateTime,
     ),
-    r'furthestPoint': PropertySchema(
-      id: 5,
-      name: r'furthestPoint',
-      type: IsarType.string,
-    ),
     r'isSynced': PropertySchema(
-      id: 6,
+      id: 4,
       name: r'isSynced',
       type: IsarType.bool,
     ),
     r'lastError': PropertySchema(
-      id: 7,
+      id: 5,
       name: r'lastError',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 8,
+      id: 6,
       name: r'localId',
       type: IsarType.string,
     ),
     r'profileId': PropertySchema(
-      id: 9,
+      id: 7,
       name: r'profileId',
       type: IsarType.long,
     ),
     r'protocolId': PropertySchema(
-      id: 10,
+      id: 8,
       name: r'protocolId',
       type: IsarType.long,
     ),
     r'retryCount': PropertySchema(
-      id: 11,
+      id: 9,
       name: r'retryCount',
       type: IsarType.long,
     ),
     r'roadSurfaceConditions': PropertySchema(
-      id: 12,
+      id: 10,
       name: r'roadSurfaceConditions',
       type: IsarType.string,
     ),
     r'startMileage': PropertySchema(
-      id: 13,
+      id: 11,
       name: r'startMileage',
       type: IsarType.long,
     ),
-    r'startPoint': PropertySchema(
-      id: 14,
-      name: r'startPoint',
-      type: IsarType.string,
-    ),
     r'startTime': PropertySchema(
-      id: 15,
+      id: 12,
       name: r'startTime',
       type: IsarType.dateTime,
     ),
     r'trackingPointsJson': PropertySchema(
-      id: 16,
+      id: 13,
       name: r'trackingPointsJson',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 17,
+      id: 14,
       name: r'type',
       type: IsarType.string,
     ),
     r'vehicleId': PropertySchema(
-      id: 18,
+      id: 15,
       name: r'vehicleId',
       type: IsarType.long,
     )
@@ -148,18 +133,6 @@ int _tripEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.endPoint;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
-    final value = object.furthestPoint;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
     final value = object.lastError;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -167,12 +140,6 @@ int _tripEstimateSize(
   }
   bytesCount += 3 + object.localId.length * 3;
   bytesCount += 3 + object.roadSurfaceConditions.length * 3;
-  {
-    final value = object.startPoint;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   bytesCount += 3 + object.trackingPointsJson.length * 3;
   {
     final value = object.type;
@@ -192,22 +159,19 @@ void _tripSerialize(
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeDouble(offsets[1], object.distanceKm);
   writer.writeLong(offsets[2], object.endMileage);
-  writer.writeString(offsets[3], object.endPoint);
-  writer.writeDateTime(offsets[4], object.endTime);
-  writer.writeString(offsets[5], object.furthestPoint);
-  writer.writeBool(offsets[6], object.isSynced);
-  writer.writeString(offsets[7], object.lastError);
-  writer.writeString(offsets[8], object.localId);
-  writer.writeLong(offsets[9], object.profileId);
-  writer.writeLong(offsets[10], object.protocolId);
-  writer.writeLong(offsets[11], object.retryCount);
-  writer.writeString(offsets[12], object.roadSurfaceConditions);
-  writer.writeLong(offsets[13], object.startMileage);
-  writer.writeString(offsets[14], object.startPoint);
-  writer.writeDateTime(offsets[15], object.startTime);
-  writer.writeString(offsets[16], object.trackingPointsJson);
-  writer.writeString(offsets[17], object.type);
-  writer.writeLong(offsets[18], object.vehicleId);
+  writer.writeDateTime(offsets[3], object.endTime);
+  writer.writeBool(offsets[4], object.isSynced);
+  writer.writeString(offsets[5], object.lastError);
+  writer.writeString(offsets[6], object.localId);
+  writer.writeLong(offsets[7], object.profileId);
+  writer.writeLong(offsets[8], object.protocolId);
+  writer.writeLong(offsets[9], object.retryCount);
+  writer.writeString(offsets[10], object.roadSurfaceConditions);
+  writer.writeLong(offsets[11], object.startMileage);
+  writer.writeDateTime(offsets[12], object.startTime);
+  writer.writeString(offsets[13], object.trackingPointsJson);
+  writer.writeString(offsets[14], object.type);
+  writer.writeLong(offsets[15], object.vehicleId);
 }
 
 Trip _tripDeserialize(
@@ -220,23 +184,20 @@ Trip _tripDeserialize(
   object.createdAt = reader.readDateTime(offsets[0]);
   object.distanceKm = reader.readDouble(offsets[1]);
   object.endMileage = reader.readLong(offsets[2]);
-  object.endPoint = reader.readStringOrNull(offsets[3]);
-  object.endTime = reader.readDateTimeOrNull(offsets[4]);
-  object.furthestPoint = reader.readStringOrNull(offsets[5]);
+  object.endTime = reader.readDateTimeOrNull(offsets[3]);
   object.id = id;
-  object.isSynced = reader.readBool(offsets[6]);
-  object.lastError = reader.readStringOrNull(offsets[7]);
-  object.localId = reader.readString(offsets[8]);
-  object.profileId = reader.readLong(offsets[9]);
-  object.protocolId = reader.readLong(offsets[10]);
-  object.retryCount = reader.readLong(offsets[11]);
-  object.roadSurfaceConditions = reader.readString(offsets[12]);
-  object.startMileage = reader.readLong(offsets[13]);
-  object.startPoint = reader.readStringOrNull(offsets[14]);
-  object.startTime = reader.readDateTime(offsets[15]);
-  object.trackingPointsJson = reader.readString(offsets[16]);
-  object.type = reader.readStringOrNull(offsets[17]);
-  object.vehicleId = reader.readLong(offsets[18]);
+  object.isSynced = reader.readBool(offsets[4]);
+  object.lastError = reader.readStringOrNull(offsets[5]);
+  object.localId = reader.readString(offsets[6]);
+  object.profileId = reader.readLong(offsets[7]);
+  object.protocolId = reader.readLong(offsets[8]);
+  object.retryCount = reader.readLong(offsets[9]);
+  object.roadSurfaceConditions = reader.readString(offsets[10]);
+  object.startMileage = reader.readLong(offsets[11]);
+  object.startTime = reader.readDateTime(offsets[12]);
+  object.trackingPointsJson = reader.readString(offsets[13]);
+  object.type = reader.readStringOrNull(offsets[14]);
+  object.vehicleId = reader.readLong(offsets[15]);
   return object;
 }
 
@@ -254,36 +215,30 @@ P _tripDeserializeProp<P>(
     case 2:
       return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
       return (reader.readDateTimeOrNull(offset)) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readBool(offset)) as P;
-    case 7:
-      return (reader.readStringOrNull(offset)) as P;
-    case 8:
       return (reader.readString(offset)) as P;
+    case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
+      return (reader.readLong(offset)) as P;
     case 9:
       return (reader.readLong(offset)) as P;
     case 10:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 11:
       return (reader.readLong(offset)) as P;
     case 12:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 13:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
-      return (reader.readDateTime(offset)) as P;
-    case 16:
-      return (reader.readString(offset)) as P;
-    case 17:
-      return (reader.readStringOrNull(offset)) as P;
-    case 18:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -643,151 +598,6 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'endPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'endPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'endPoint',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointContains(String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'endPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'endPoint',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'endPoint',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> endPointIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'endPoint',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterFilterCondition> endTimeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -853,152 +663,6 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'furthestPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'furthestPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'furthestPoint',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'furthestPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'furthestPoint',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'furthestPoint',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> furthestPointIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'furthestPoint',
-        value: '',
       ));
     });
   }
@@ -1681,152 +1345,6 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'startPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'startPoint',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'startPoint',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'startPoint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'startPoint',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startPoint',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterFilterCondition> startPointIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'startPoint',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterFilterCondition> startTimeEqualTo(
       DateTime value) {
     return QueryBuilder.apply(this, (query) {
@@ -2249,18 +1767,6 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endPoint', Sort.desc);
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.asc);
@@ -2270,18 +1776,6 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByFurthestPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'furthestPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByFurthestPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'furthestPoint', Sort.desc);
     });
   }
 
@@ -2381,18 +1875,6 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startPoint', Sort.desc);
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.asc);
@@ -2479,18 +1961,6 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'endPoint', Sort.desc);
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.asc);
@@ -2500,18 +1970,6 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByFurthestPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'furthestPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByFurthestPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'furthestPoint', Sort.desc);
     });
   }
 
@@ -2623,18 +2081,6 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartPoint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startPoint', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartPointDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'startPoint', Sort.desc);
-    });
-  }
-
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.asc);
@@ -2703,24 +2149,9 @@ extension TripQueryWhereDistinct on QueryBuilder<Trip, Trip, QDistinct> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QDistinct> distinctByEndPoint(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'endPoint', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Trip, Trip, QDistinct> distinctByEndTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'endTime');
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QDistinct> distinctByFurthestPoint(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'furthestPoint',
-          caseSensitive: caseSensitive);
     });
   }
 
@@ -2773,13 +2204,6 @@ extension TripQueryWhereDistinct on QueryBuilder<Trip, Trip, QDistinct> {
   QueryBuilder<Trip, Trip, QDistinct> distinctByStartMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startMileage');
-    });
-  }
-
-  QueryBuilder<Trip, Trip, QDistinct> distinctByStartPoint(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'startPoint', caseSensitive: caseSensitive);
     });
   }
 
@@ -2836,21 +2260,9 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Trip, String?, QQueryOperations> endPointProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'endPoint');
-    });
-  }
-
   QueryBuilder<Trip, DateTime?, QQueryOperations> endTimeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'endTime');
-    });
-  }
-
-  QueryBuilder<Trip, String?, QQueryOperations> furthestPointProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'furthestPoint');
     });
   }
 
@@ -2899,12 +2311,6 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
   QueryBuilder<Trip, int, QQueryOperations> startMileageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'startMileage');
-    });
-  }
-
-  QueryBuilder<Trip, String?, QQueryOperations> startPointProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'startPoint');
     });
   }
 

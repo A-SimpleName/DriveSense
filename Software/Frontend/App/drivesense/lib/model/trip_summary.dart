@@ -74,8 +74,8 @@ class TripSummary {
       id: asInt(json["id"]),
       profileId: asInt(json["profileId"] ?? json["profile_id"]),
       vehicleId: asInt(json["vehicleId"] ?? json["vehicle_id"]),
-      vehicleLicensePlate: (json["licenseplate"] ?? json["licensePlate"])
-          ?.toString(),
+      vehicleLicensePlate:
+          (json["licenseplate"] ?? json["licensePlate"])?.toString(),
       protocolId: asInt(json["protocolId"] ?? json["protocol_id"]),
       startTime: DateTime.parse(json["startTime"].toString()),
       endTime: json["endTime"] != null
@@ -87,19 +87,20 @@ class TripSummary {
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] != false,
-      startMileage: asInt(json["startMileage"] ?? json["start_mileage"]),
-      endMileage: asInt(json["endMileage"] ?? json["end_mileage"]),
+      startMileage: asInt(
+        json["startMileage"] ?? json["start_mileage"],
+      ),
+      endMileage: asInt(
+        json["endMileage"] ?? json["end_mileage"],
+      ),
     );
   }
 
   factory TripSummary.fromTrip(Trip trip) {
     int mappedId = trip.id;
-
     if (trip.localId.startsWith('server:')) {
       final String remoteIdValue = trip.localId.substring('server:'.length);
-
       final int? remoteId = int.tryParse(remoteIdValue);
-
       if (remoteId != null && remoteId > 0) {
         mappedId = remoteId;
       }
@@ -115,12 +116,8 @@ class TripSummary {
       endTime: trip.endTime,
       distanceKm: trip.distanceKm,
       roadSurfaceConditions: trip.roadSurfaceConditions,
-
-      startPoint: trip.startPoint,
-      endPoint: trip.endPoint,
-
-      // optional:
-      // furthestPoint: trip.furthestPoint,
+      startPoint: null,
+      endPoint: null,
       type: trip.type,
       isSynced: trip.isSynced,
       startMileage: trip.startMileage,

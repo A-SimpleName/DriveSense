@@ -1,7 +1,5 @@
 package com.drivesense.service;
 
-
-import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.exceptions.PdfExportException;

@@ -8,12 +8,12 @@ function SignUpPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [fName, setFname] = useState("");
-    const [lName, setLName] = useState("");
+    const [fname, setFname] = useState("");
+    const [lname, setLname] = useState("");
     const [birthdate, setBirthdate] = useState("");
 
     const handleSignUp = () => {
-        signUp(fName, lName, email, password, birthdate);
+        signUp(fname, lname, email, password, birthdate);
         navigate("/login");
     };
 
@@ -24,8 +24,8 @@ function SignUpPage() {
                 e.preventDefault();
                  handleSignUp();
                 }}>
-                <Label type="text" name="fName" text="Vorname" value={fName} onchange={(e) => setFname(e.target.value)} />
-                <Label type="text" name="lName" text="Nachname" value={lName} onchange={(e) => setLName(e.target.value)} />
+                <Label type="text" name="fname" text="Vorname" value={fname} onchange={(e) => setFname(e.target.value)} />
+                <Label type="text" name="lname" text="Nachname" value={lname} onchange={(e) => setLname(e.target.value)} />
                 <Label type="email" name="email" text="Email" value={email} onchange={(e) => setEmail(e.target.value)} />
                 <Label type="password" name="password" text="Password" value={password} onchange={(e) => setPassword(e.target.value)} />
                 <Label type="date" name="birthdate" text="Geburtsdatum" value={birthdate} onchange={(e) => setBirthdate(e.target.value)} />

@@ -151,7 +151,7 @@ export default function ProtocolView({
                 {!isGroup && (
                     <div className="right">
                         <div className="proto-sub">
-                            {protocol.created_by_account?.fName} {protocol.created_by_account?.lName}
+                            {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
                         </div>
                         <div className="user-info">
                             geb. {birthdate}

@@ -328,21 +328,9 @@ class TripSessionService extends ChangeNotifier {
     final DateTime end = DateTime.now();
     final double distanceKm = activeDraft.distanceMeters / 1000;
     final int endMileage = activeDraft.startMileage + distanceKm.round();
-    final Trackingpoint firstPoint = _trackingPositions.first;
-    final Trackingpoint lastPoint = _trackingPositions.last;
-
-    final String startPoint = '${firstPoint.latitude}, ${firstPoint.longitude}';
-
-    final String endPoint = '${lastPoint.latitude}, ${lastPoint.longitude}';
-
-    final TripSummary finishedTrip = _summaryFromActiveTrip(activeDraft)
-        .copyWith(
-          endTime: end,
-          distanceKm: distanceKm,
-          endMileage: endMileage,
-          startPoint: startPoint,
-          endPoint: endPoint,
-        );
+    final TripSummary finishedTrip = _summaryFromActiveTrip(
+      activeDraft,
+    ).copyWith(endTime: end, distanceKm: distanceKm, endMileage: endMileage);
     final TripDetailed finishedTripDetail = TripDetailed(
       summary: finishedTrip,
       trackingpoints: List<Trackingpoint>.from(_trackingPositions),
