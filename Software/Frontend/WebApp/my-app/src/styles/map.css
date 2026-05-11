@@ -1,8 +1,4 @@
 .googleMap {
-  width: 100%;
-  height: 60vh;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
+    width: 100%;
+    height: 50vh;
 }

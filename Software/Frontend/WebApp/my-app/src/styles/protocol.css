@@ -7,6 +7,7 @@
     background: white;
 }
 
+/* HEADER */
 .header {
     background: #1A3C6E;
     padding: 10px 14px;
@@ -25,10 +26,9 @@
 }
 
 .brand {
-  color: #ffffff;
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+    color: white;
+    font-size: 15pt;
+    font-weight: bold;
 }
 
 .proto-name {
@@ -50,10 +50,9 @@
 }
 
 .accent {
-  height: 4px;
-  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
-  margin-bottom: 20px;
-  border-radius: 2px;
+    height: 3px;
+    background: #2E7DCC;
+    margin-bottom: 8px;
 }
 
 /* SUMMARY */
@@ -126,6 +125,7 @@ tbody td.left {
     text-align: left;
 }
 
+/* FOOTER */
 .footer {
     display: flex;
     justify-content: space-between;
@@ -137,6 +137,5 @@ tbody td.left {
 }
 
 .footer strong {
-  color: var(--primary-dark);
-  font-weight: 700;
+    color: #1A3C6E;
 }

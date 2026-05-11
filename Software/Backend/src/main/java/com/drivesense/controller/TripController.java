@@ -29,7 +29,6 @@ public class TripController {
     public ResponseEntity<TripDetailedDto> saveTrip(@Valid @RequestBody SaveTripRequest saveTripRequest, HttpServletRequest request) {
         int profileId = (int) request.getAttribute("profileId");
         TripSummary tripSummary = saveTripRequest.getTripSummary();
-
         tripSummary.setProfileId(profileId);
         if (saveTripRequest.getStartMileage() != null) {
             tripSummary.setStartMileage(saveTripRequest.getStartMileage());
