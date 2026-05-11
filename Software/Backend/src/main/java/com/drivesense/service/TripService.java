@@ -154,6 +154,10 @@ public class TripService {
         return trips;
     }
 
+    public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
+        return tripDao.getLatestTrackedByProfileId(profileId);
+    }
+
     public double getTotalKm(int profileId) {
         List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
         if (tripSummaries == null) {
