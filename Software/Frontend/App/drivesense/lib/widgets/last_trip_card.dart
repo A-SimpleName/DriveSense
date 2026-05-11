@@ -42,7 +42,7 @@ class _LastTripCardState extends State<LastTripCard> {
                 Text('Distanz: '),
                 Text(
                   widget.lastTrip != null
-                      ? '${(widget.lastTrip!.distanceKm / 1000).toStringAsFixed(2)} km'
+                      ? '${widget.lastTrip!.distanceKm.toStringAsFixed(2)} km'
                       : '--',
                 ),
                 Text('Zeit: '),
