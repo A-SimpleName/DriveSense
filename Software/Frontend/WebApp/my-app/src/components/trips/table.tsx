@@ -42,22 +42,22 @@ function TripsTable() {
     }, [])
 
     const handleEditStart = (trip: TripSummaryDto) => {
-        setEditingTripId(trip.id)
-        setEditValues({
-            startTime: trip.startTime,
-            endTime: trip.endTime,
-            vehicleId: trip.vehicleId,
-            protocolId: trip.protocolId,
-            roadSurfaceConditions: trip.roadSurfaceConditions,
-            type: trip.type,
-        })
-        Promise.all([getAllVehicles(), getAllProtocols()])
-            .then(([v, p]) => {
-                setVehicles(v)
-                setProtocols(p)
+    Promise.all([getAllVehicles(), getAllProtocols()])
+        .then(([v, p]) => {
+            setVehicles(v)
+            setProtocols(p)
+            setEditingTripId(trip.id)
+            setEditValues({
+                startTime: trip.startTime,
+                endTime: trip.endTime,
+                vehicleId: trip.vehicleId,
+                protocolId: trip.protocolId,
+                roadSurfaceConditions: trip.roadSurfaceConditions,
+                type: trip.type,
             })
-            .catch(err => setError(err.message))
-    }
+        })
+        .catch(err => setError(err.message))
+}
 
     const handleEditSave = (trip: TripSummaryDto) => {
         if (!editValues) return
@@ -216,11 +216,11 @@ function TripsTable() {
                         <td onClick={e => e.stopPropagation()}>
                             {isEditing(trip.id) ? (
                                 <select
-                                    value={editValues!.vehicleId}
+                                    value={editValues!.vehicleId.toString()}
                                     onChange={e => setEditValues(prev => ({ ...prev!, vehicleId: Number(e.target.value) }))}
                                 >
                                     {vehicles.map(v => (
-                                        <option key={v.id} value={v.id}>{v.model}</option>
+                                        <option key={v.id} value={v.id.toString()}>{v.model}</option>
                                     ))}
                                 </select>
                             ) : trip.vehicleModel}
@@ -234,11 +234,11 @@ function TripsTable() {
                         <td onClick={e => e.stopPropagation()}>
                             {isEditing(trip.id) ? (
                                 <select
-                                    value={editValues!.protocolId}
+                                    value={editValues!.protocolId.toString()}
                                     onChange={e => setEditValues(prev => ({ ...prev!, protocolId: Number(e.target.value) }))}
                                 >
                                     {protocols.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                        <option key={p.id} value={p.id.toString()}>{p.name}</option>
                                     ))}
                                 </select>
                             ) : (

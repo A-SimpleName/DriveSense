@@ -7,15 +7,22 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; font-size: 8pt; color: #1a1a2e; }
 
-  .meta-bar { background: #E8F0FB; border-bottom: 1px solid #B4C8E8; padding: 4px 10px; display: table; width: 100%; }
-  .meta-bar .left  { display: table-cell; text-align: left; }
-  .meta-bar .right { display: table-cell; text-align: right; }
+  .meta-bar { background: #E8F0FB; border-bottom: 1px solid #B4C8E8; padding: 4px 10px; display: block; width: 100%; }
+  .meta-bar .left  { float: left; }
+  .meta-bar .right { float: right; }
   .meta-label { color: #6878A0; font-size: 7pt; }
   .meta-value { color: #1A3C6E; font-weight: bold; }
 
-  .header { background: #1A3C6E; padding: 7px 12px; display: table; width: 100%; }
-  .header .left  { display: table-cell; vertical-align: middle; }
-  .header .right { display: table-cell; vertical-align: middle; text-align: right; }
+  .meta-bar::after,
+  .header::after {
+      content: "";
+      display: block;
+      clear: both;
+  }
+
+  .header { background: #1A3C6E; padding: 7px 12px; display: block; width: 100%; }
+  .header .left  { float: left; }
+  .header .right { float: right; }
   .brand       { color: white; font-size: 15pt; font-weight: bold; }
   .proto-title { color: white; font-size: 11pt; font-weight: bold; }
   .proto-sub   { color: #BBCDE8; font-size: 7pt; }

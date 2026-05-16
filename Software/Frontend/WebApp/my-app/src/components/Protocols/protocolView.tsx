@@ -102,8 +102,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className={styles.left}>{trip.startPoint}</td>
-                        <td className={styles.left}>{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
                         <td>{trip.distance} km</td>
@@ -118,8 +118,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className={styles.left}>{trip.startPoint}</td>
-                        <td className={styles.left}>{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.type}</td>
                         <td>{trip.licensePlate}</td>
