@@ -282,7 +282,7 @@ public class TripDao {
     }
 
     public void update(TripSummary tripSummary) {
-        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ? WHERE id = ?";
+        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ?, vehicle_id = ?, protocol_id = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -296,7 +296,9 @@ public class TripDao {
             ps.setString(8, tripSummary.getFurthestPoint());
             ps.setInt(9, tripSummary.getStartMileage());
             ps.setInt(10, tripSummary.getEndMileage());
-            ps.setInt(11, tripSummary.getId());
+            ps.setInt(11, tripSummary.getVehicleId());
+            ps.setInt(12, tripSummary.getProtocolId());
+            ps.setInt(13, tripSummary.getId());
             ps.executeUpdate();
 
         } catch (SQLException e) {
