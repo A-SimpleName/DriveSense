@@ -11,6 +11,7 @@ import com.drivesense.model.Account;
 import com.drivesense.service.AccountService;
 import com.drivesense.service.EmailVerificationService;
 import com.drivesense.service.JwtService;
+import com.drivesense.service.PasswortResetService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,8 +27,8 @@ public class AccountController {
     private AccountService accountService;
     @Autowired
     private EmailVerificationService emailVerificationService;
-
-
+    @Autowired
+    private PasswortResetService passwordResetService;
 
     @PostMapping("/signUp")
     public ResponseEntity<AccountResponse> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -199,6 +200,26 @@ public class AccountController {
         AccountResponse account = accountService.getById(accountId);
         if (account == null) throw new NotFoundException("Account nicht gefunden");
         emailVerificationService.sendVerificationCode(accountId, account.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    // Schritt 1 – Code anfordern
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request) {
+        passwordResetService.sendResetCode(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    // Schritt 2 – Code + neues Passwort
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request) {
+        passwordResetService.resetPassword(
+                request.getEmail(),
+                request.getCode(),
+                request.getNewPassword()
+        );
         return ResponseEntity.ok().build();
     }
 
