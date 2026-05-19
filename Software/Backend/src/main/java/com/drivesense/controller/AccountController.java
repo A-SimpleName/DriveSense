@@ -1,5 +1,6 @@
 package com.drivesense.controller;
 
+import com.drivesense.db.AccountDao;
 import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.LoginResponse;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private AccountDao accountDao;
     @Autowired
     private EmailVerificationService emailVerificationService;
     @Autowired
@@ -185,21 +188,19 @@ public class AccountController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(
-            @RequestBody @Valid VerifyEmailRequest request,
-            HttpServletRequest httpRequest) {
+            @RequestBody @Valid VerifyEmailRequest request) {
 
-        int accountId = (int) httpRequest.getAttribute("accountId");
-        emailVerificationService.verifyCode(accountId, request.getCode());
+        emailVerificationService.verifyCode(request.getEmail(), request.getCode());
         return ResponseEntity.ok().build();
     }
 
     // Falls User neuen Code anfordert
     @PostMapping("/resend-verification")
-    public ResponseEntity<Void> resendVerification(HttpServletRequest httpRequest) {
-        int accountId = (int) httpRequest.getAttribute("accountId");
-        AccountResponse account = accountService.getById(accountId);
+    public ResponseEntity<Void> resendVerification(
+            @RequestBody @Valid ResendVerificationRequest request) {
+        Account account = accountDao.getByEmail(request.getEmail());
         if (account == null) throw new NotFoundException("Account nicht gefunden");
-        emailVerificationService.sendVerificationCode(accountId, account.getEmail());
+        emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
         return ResponseEntity.ok().build();
     }
 
