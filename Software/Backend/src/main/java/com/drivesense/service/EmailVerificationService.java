@@ -3,6 +3,7 @@ import com.drivesense.db.AccountDao;
 import com.drivesense.db.EmailVerificationDao;
 import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.NotFoundException;
+import com.drivesense.model.Account;
 import com.drivesense.model.EmailVerification;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,11 @@ public class EmailVerificationService {
     // CODE PRÜFEN → ACCOUNT VERIFIZIEREN
     // ──────────────────────────────────────────
 
-    public void verifyCode(int accountId, String code) {
-        List<EmailVerification> codes = emailVerificationDao.getAllByAccountId(accountId);
+    public void verifyCode(String email, String code) {
+        Account account = accountDao.getByEmail(email);
+        if (account == null) throw new BadRequestException("Ungültiger Code");
+
+        List<EmailVerification> codes = emailVerificationDao.getAllByAccountId(account.getId());
 
         if (codes == null || codes.isEmpty()) {
             throw new BadRequestException("Kein Verifizierungscode gefunden");
@@ -62,10 +66,10 @@ public class EmailVerificationService {
         }
 
         // Account als verifiziert markieren
-        accountDao.setEmailVerified(accountId);
+        accountDao.setEmailVerified(account.getId());
 
         // Codes löschen
-        emailVerificationDao.deleteByAccountId(accountId);
+        emailVerificationDao.deleteByAccountId(account.getId());
     }
 
     // ──────────────────────────────────────────

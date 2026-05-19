@@ -22,6 +22,9 @@ import GroupPage from "./pages/group";
 import GroupDetailPage from "./pages/groupDetail";
 import ProfilePage from "./pages/profile";
 import InviteAcceptPage from "./pages/inviteAccept";
+import VerifyEmailPage from "./pages/verifyEmail";
+import ForgotPasswordPage from "./pages/forgotPassword";
+import ResetPasswordPage from "./pages/resetPassword";
 
 export default function App() {
   return (
@@ -43,6 +46,7 @@ function AppContent() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [reloadAuth, setReloadAuth] = useState(0);
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   useEffect(() => {
     async function initAuth() {
@@ -86,22 +90,21 @@ function AppContent() {
       <Routes>
 
         {/* NICHT EINGELOGGT */}
-        {!isAuth && (
-          <>
-            <Route
-              path="/login"
-              element={
-                <LoginPage
-                  onLoginSuccess={() => {
-                    setIsAuth(true);
-                    setReloadAuth(prev => prev + 1);
-                  }}
-                />
-              }
-            />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </>
+        {!isAuth && !needsVerification && (
+            <>
+                <Route path="/login" element={
+                    <LoginPage
+                        onLoginSuccess={() => { setIsAuth(true); setReloadAuth(prev => prev + 1); }}
+                        onNeedsVerification={() => setNeedsVerification(true)}
+                    />
+                } />
+                <Route path="/signup" element={
+                    <SignUpPage onNeedsVerification={() => setNeedsVerification(true)} />
+                } />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="*" element={<Navigate to="/login" />} />
+            </>
         )}
 
         {/* EINGELOGGT, ABER KEIN PROFIL */}
@@ -116,6 +119,16 @@ function AppContent() {
               />
             }
           />
+        )}
+
+        {!isAuth && needsVerification && (
+            <Route path="*" element={
+                <VerifyEmailPage onVerified={() => {
+                    setNeedsVerification(false);
+                    setIsAuth(true);
+                    setReloadAuth(prev => prev + 1);
+                }} />
+            } />
         )}
 
         {/* VOLLSTÄNDIG EINGELOGGT */}
