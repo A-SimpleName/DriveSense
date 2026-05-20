@@ -158,6 +158,7 @@ class ProfileService {
       RuntimeStore.setActiveProfile(
         profileId: profile?.id ?? profileId,
         profileToken: profileToken,
+        profileRole: profile?.role,
       );
       final int activeProfileId = profile?.id ?? profileId;
       await ProtocolService.ensureDefaultProtocolForActiveProfile();

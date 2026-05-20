@@ -11,6 +11,7 @@ class TripSummary {
   final double distanceKm;
   final String roadSurfaceConditions;
   final String? startPoint;
+  final String? furthestPoint;
   final String? endPoint;
   final String? type;
   final int startMileage;
@@ -28,6 +29,7 @@ class TripSummary {
     required this.distanceKm,
     required this.roadSurfaceConditions,
     this.startPoint,
+    this.furthestPoint,
     this.endPoint,
     required this.type,
     required this.isSynced,
@@ -47,6 +49,7 @@ class TripSummary {
       "distance": distanceKm,
       "roadSurfaceConditions": roadSurfaceConditions,
       "startPoint": startPoint,
+      "furthestPoint": furthestPoint,
       "endPoint": endPoint,
       "type": type,
       "isSynced": isSynced,
@@ -84,6 +87,8 @@ class TripSummary {
       distanceKm: asDouble(json["distance"] ?? json["distanceKm"]),
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
       startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
+      furthestPoint:
+          (json["furthestPoint"] ?? json["furthest_point"])?.toString(),
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] != false,
@@ -117,6 +122,7 @@ class TripSummary {
       distanceKm: trip.distanceKm,
       roadSurfaceConditions: trip.roadSurfaceConditions,
       startPoint: null,
+      furthestPoint: null,
       endPoint: null,
       type: trip.type,
       isSynced: trip.isSynced,
@@ -136,6 +142,7 @@ class TripSummary {
     double? distanceKm,
     String? roadSurfaceConditions,
     String? startPoint,
+    String? furthestPoint,
     String? endPoint,
     String? type,
     bool? isSynced,
@@ -154,6 +161,7 @@ class TripSummary {
       roadSurfaceConditions:
           roadSurfaceConditions ?? this.roadSurfaceConditions,
       startPoint: startPoint ?? this.startPoint,
+      furthestPoint: furthestPoint ?? this.furthestPoint,
       endPoint: endPoint ?? this.endPoint,
       type: type ?? this.type,
       isSynced: isSynced ?? this.isSynced,

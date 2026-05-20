@@ -19,6 +19,10 @@ public class VehicleService {
         return vehicleDao.getAllVehiclesByAccount(accountId);
     }
 
+    public List<VehicleDto> getAllVehiclesByProfile(int profileId) {
+        return vehicleDao.getAllVehiclesByProfile(profileId);
+    }
+
     public VehicleDto getVehicleById(int id, int accountId) {
         VehicleDto vehicle = vehicleDao.getById(id, accountId);
 

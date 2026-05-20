@@ -20,6 +20,16 @@ public class VehicleController {
     @Autowired
     private VehicleService vehicleService;
 
+    @GetMapping
+    public ResponseEntity<List<VehicleDto>> getAllVehiclesByProfile(HttpServletRequest request) {
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewÃ¤hlt");
+        }
+
+        return ResponseEntity.ok(vehicleService.getAllVehiclesByProfile(profileId));
+    }
+
     @GetMapping("/account")
     public ResponseEntity<List<VehicleDto>> getAllVehiclesByAccount(HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");

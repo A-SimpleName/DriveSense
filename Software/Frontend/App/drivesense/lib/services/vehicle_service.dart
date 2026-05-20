@@ -12,7 +12,7 @@ class VehicleService {
   VehicleService._();
 
   static Future<int?> resolveFirstAvailableVehicleId() async {
-    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/account');
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
 
     try {
       final http.Response response = await http
@@ -143,7 +143,7 @@ class VehicleService {
   // ─── Alle Fahrzeuge des aktuellen Profils vom Server laden ───────────────
   // Gibt eine leere Liste zurück wenn etwas schiefgeht (kein Crash).
   static Future<List<Vehicle>> fetchVehicles() async {
-    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/account');
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
 
     try {
       final http.Response response = await http
@@ -174,7 +174,9 @@ class VehicleService {
   // ─── Ein bestehendes Fahrzeug am Server aktualisieren ────────────────────
   // Gibt true zurück wenn erfolgreich, false wenn nicht.
   static Future<bool> updateVehicle(Vehicle vehicle) async {
-    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}');
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}',
+    );
 
     try {
       final http.Response response = await http
@@ -260,5 +262,4 @@ class VehicleService {
       return null;
     }
   }
-
 }
