@@ -119,13 +119,29 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
   }
 
   Future<void> _createProfile() async {
+    final _ProfileCreationData? creationData =
+        await showDialog<_ProfileCreationData>(
+          context: context,
+          builder: (BuildContext context) => const _CreateProfileDialog(),
+        );
+
+    if (creationData == null) {
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _isCreatingProfile = true;
     });
 
     try {
-      final Profile? createdProfile =
-          await ProfileService.createDefaultStudentProfile();
+      final Profile? createdProfile = await ProfileService.createProfile(
+        name: creationData.name,
+        role: creationData.role,
+      );
 
       if (!mounted) {
         return;
@@ -170,6 +186,136 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
     if (result.isSuccess) {
       Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
     }
+  }
+}
+
+const List<_ProfileRoleOption> _profileRoleOptions = <_ProfileRoleOption>[
+  _ProfileRoleOption(value: 'PRIVAT', label: 'Privat'),
+  _ProfileRoleOption(value: 'FAHRSCHUELER', label: 'Fahrschueler'),
+  _ProfileRoleOption(value: 'BERUFSFAHRER', label: 'Berufsfahrer'),
+];
+
+class _ProfileRoleOption {
+  final String value;
+  final String label;
+
+  const _ProfileRoleOption({required this.value, required this.label});
+}
+
+class _ProfileCreationData {
+  final String name;
+  final String role;
+
+  const _ProfileCreationData({required this.name, required this.role});
+}
+
+String _profileRoleLabel(String role) {
+  final String normalizedRole = role.trim().toUpperCase();
+  for (final _ProfileRoleOption option in _profileRoleOptions) {
+    if (option.value == normalizedRole) {
+      return option.label;
+    }
+  }
+  return role;
+}
+
+class _CreateProfileDialog extends StatefulWidget {
+  const _CreateProfileDialog();
+
+  @override
+  State<_CreateProfileDialog> createState() => _CreateProfileDialogState();
+}
+
+class _CreateProfileDialogState extends State<_CreateProfileDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  String _selectedRole = _profileRoleOptions.first.value;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _ProfileCreationData(
+        name: _nameController.text.trim(),
+        role: _selectedRole,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Profil erstellen'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextFormField(
+              controller: _nameController,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+              validator: (String? value) {
+                final String name = value?.trim() ?? '';
+                if (name.isEmpty) {
+                  return 'Name darf nicht leer sein.';
+                }
+                if (name.length > 100) {
+                  return 'Name darf maximal 100 Zeichen haben.';
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) => _submit(),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedRole,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Profiltyp',
+                border: OutlineInputBorder(),
+              ),
+              items: _profileRoleOptions
+                  .map(
+                    (_ProfileRoleOption option) => DropdownMenuItem<String>(
+                      value: option.value,
+                      child: Text(option.label),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (String? value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() {
+                  _selectedRole = value;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Erstellen')),
+      ],
+    );
   }
 }
 
@@ -235,7 +381,9 @@ class _ProfileList extends StatelessWidget {
               profile.name,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
-            subtitle: profile.role == null ? null : Text(profile.role!),
+            subtitle: profile.role == null
+                ? null
+                : Text(_profileRoleLabel(profile.role!)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => onProfileSelected(profile),
           ),

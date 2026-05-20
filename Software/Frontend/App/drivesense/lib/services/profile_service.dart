@@ -58,7 +58,10 @@ class ProfileService {
     }
   }
 
-  static Future<Profile?> createDefaultStudentProfile() async {
+  static Future<Profile?> createProfile({
+    required String name,
+    required String role,
+  }) async {
     final Map<String, String> headers = RequestHeaders.authenticatedJson(
       clientType: 'mobile',
       includeProfileToken: false,
@@ -75,14 +78,14 @@ class ProfileService {
             uri,
             headers: headers,
             body: jsonEncode(<String, dynamic>{
-              'name': 'Fahrschüler',
-              'role': 'FAHRSCHÜLER',
+              'name': name.trim(),
+              'role': role,
             }),
           )
           .timeout(const Duration(seconds: 10));
 
       debugPrint(
-        'CreateDefaultProfile <- status=${response.statusCode}, uri=$uri, body=${response.body}',
+        'CreateProfile <- status=${response.statusCode}, uri=$uri, body=${response.body}',
       );
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -95,10 +98,14 @@ class ProfileService {
         return profiles.first;
       }
     } catch (e) {
-      debugPrint('CreateDefaultProfile failed at $uri: $e');
+      debugPrint('CreateProfile failed at $uri: $e');
     }
 
     return null;
+  }
+
+  static Future<Profile?> createDefaultStudentProfile() {
+    return createProfile(name: 'Fahrschueler', role: 'FAHRSCHUELER');
   }
 
   static Future<SelectProfileResponse> selectProfile(int profileId) async {
