@@ -221,6 +221,7 @@ class TripService {
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
       'startPoint': tripSummary.startPoint,
+      'furthestPoint': tripSummary.furthestPoint,
       'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
       'startMileage': tripSummary.startMileage,

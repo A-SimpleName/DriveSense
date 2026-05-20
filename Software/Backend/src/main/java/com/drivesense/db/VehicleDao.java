@@ -50,6 +50,38 @@ public class VehicleDao {
         }
     }
 
+    public List<VehicleDto> getAllVehiclesByProfile(int profileId) {
+        String sql =
+                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
+                        "       acc.fname AS owner_account_name, " +
+                        "       p_owner.name AS owner_profile_name, " +
+                        "       pv.role AS my_role " +
+                        "FROM profile_vehicle pv " +
+                        "JOIN vehicle v ON v.id = pv.vehicle_id " +
+                        "JOIN profile_vehicle pv_owner ON pv_owner.vehicle_id = v.id AND pv_owner.role = 'OWNER' " +
+                        "JOIN profile p_owner ON p_owner.id = pv_owner.profile_id " +
+                        "JOIN account acc ON acc.id = p_owner.account_id " +
+                        "WHERE pv.profile_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+
+            ResultSet rs = ps.executeQuery();
+            List<VehicleDto> list = new ArrayList<>();
+
+            while (rs.next()) {
+                list.add(mapDetail(rs));
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der Vehicles", e);
+        }
+    }
+
     public VehicleDto getById(int vehicleId, int accountId) {
         String sql =
                 "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
