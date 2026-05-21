@@ -10,7 +10,7 @@
     <application
         android:label="DriveSense"
         android:name="${applicationName}"
-        android:icon="@mipmap/ds_logo">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"

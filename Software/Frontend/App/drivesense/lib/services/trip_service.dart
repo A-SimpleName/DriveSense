@@ -221,6 +221,7 @@ class TripService {
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
       'startPoint': tripSummary.startPoint,
+      'furthestPoint': tripSummary.furthestPoint,
       'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
       'startMileage': tripSummary.startMileage,
@@ -305,6 +306,49 @@ class TripService {
     }
 
     return VehicleService.createDefaultVehicle(profileId);
+  }
+
+  Future<TripSummary?> fetchLatestTrip() async {
+    try {
+      final http.Response response = await http.get(
+        Uri.parse('$_baseUrl/api/trips/latest'),
+        headers: RequestHeaders.authenticated(),
+      );
+
+      if (response.statusCode == 204 || response.body.trim().isEmpty) {
+        return null;
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        debugPrint(
+          'fetchLatestTrip skipped: ${response.statusCode} ${response.body}',
+        );
+        return null;
+      }
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+
+      final TripSummary summary = TripSummary.fromJson(decoded);
+      if (summary.id <= 0) {
+        return null;
+      }
+
+      if (summary.profileId > 0 && summary.protocolId > 0) {
+        await _upsertServerTrip(
+          profileId: summary.profileId,
+          protocolId: summary.protocolId,
+          summary: summary,
+        );
+      }
+
+      return summary;
+    } catch (e, st) {
+      debugPrint('fetchLatestTrip failed, using local data only: $e\n$st');
+      return null;
+    }
   }
 
   Future<List<TripSummary>> fetchTrips(int profileId, int protocolId) async {

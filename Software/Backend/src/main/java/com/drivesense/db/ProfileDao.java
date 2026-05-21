@@ -112,18 +112,42 @@ public class ProfileDao {
     }
 
     public void deleteById(int id) {
-        String sql = "DELETE FROM profile WHERE id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1,id);
-            ps.executeUpdate();
+        String deleteVehicles = "DELETE FROM profile_vehicle WHERE profile_id = ?";
+        String deleteGroups = "DELETE FROM profile_usergroup WHERE profile_id = ?";
+        String anonymizeProfile = "UPDATE profile SET name = ? WHERE id = ?";
+
+        try (Connection conn = dbConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement ps = conn.prepareStatement(deleteVehicles)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = conn.prepareStatement(deleteGroups)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = conn.prepareStatement(anonymizeProfile)) {
+                    ps.setString(1, "__deleted_profile_" + id + "_" + System.currentTimeMillis());
+                    ps.setInt(2, id);
+                    ps.executeUpdate();
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim löschen des Profils", e);
+            throw new DatabaseException("Fehler beim Loeschen des Profils", e);
         }
     }
 
     public List<Profile> getAllProfilesByAccountId(int id) {
-        String sql = "SELECT * FROM profile WHERE account_id = ?";
+        String sql = "SELECT * FROM profile WHERE account_id = ? AND name NOT LIKE '__deleted_profile_%'";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 

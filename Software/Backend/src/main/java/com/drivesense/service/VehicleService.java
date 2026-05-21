@@ -19,6 +19,10 @@ public class VehicleService {
         return vehicleDao.getAllVehiclesByAccount(accountId);
     }
 
+    public List<VehicleDto> getAllVehiclesByProfile(int profileId) {
+        return vehicleDao.getAllVehiclesByProfile(profileId);
+    }
+
     public VehicleDto getVehicleById(int id, int accountId) {
         VehicleDto vehicle = vehicleDao.getById(id, accountId);
 
@@ -36,8 +40,11 @@ public class VehicleService {
         vehicleDao.update(vehicle, accountId);
     }
 
-    public void deleteVehicle(int id, int accountId) {
-        vehicleDao.deleteById(id, accountId);
+    public void deleteVehicle(int id, int accountId, int profileId) {
+        boolean removed = vehicleDao.deleteProfileAssociation(id, profileId, accountId);
+        if (!removed) {
+            throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
+        }
     }
 
     public List<VehicleDto> getAllVehicles() {

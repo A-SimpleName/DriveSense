@@ -2,12 +2,12 @@ import StatCard from "../components/statCard";
 import { Button } from "../components/button";
 import { Link } from "react-router-dom";
 import MapView from "../components/MapView";
-import { getAllTrips, getTotalKm, getTripById } from "../services/tripService";
+import { getLatestTrip, getTotalKm, getTripById } from "../services/tripService";
 import { useEffect, useState } from "react";
 import type { Tripdetailed, TripSummary } from "../model/trip";
 
 function Dashboard() {
-    const [trips, setTrips] = useState<TripSummary[]>([]);
+    const [lastTrip, setLastTrip] = useState<TripSummary | null>(null);
     const [lastTripDetailed, setLastTripDetailed] = useState<Tripdetailed | null>(null);
     const [totalKm, setTotalKm] = useState<string>("0 km");
     const [loading, setLoading] = useState(false);
@@ -15,8 +15,8 @@ function Dashboard() {
 
     useEffect(() => {
         setLoading(true);
-        getAllTrips()
-            .then(data => setTrips(data))
+        getLatestTrip()
+            .then(data => setLastTrip(data ?? null))
             .catch(err => setError(err.message))
             .finally(() => setLoading(false));
     }, []);
@@ -28,20 +28,19 @@ function Dashboard() {
     }, []);
 
     useEffect(() => {
-        if (trips.length === 0) return;
-        const lastTrip = trips[trips.length - 1];
+        if (!lastTrip) return;
         getTripById(lastTrip.id)
             .then(data => setLastTripDetailed(data))
             .catch(err => setError(err.message));
-    }, [trips]);
+    }, [lastTrip]);
 
     if (loading) return <p>Laden...</p>;
     if (error) return <p>Fehler: {error}</p>;
 
     const lastTripText =
-    trips.length > 0
-        ? `${trips[trips.length - 1].distance} km | ${
-            new Date(trips[trips.length - 1].startTime).toLocaleDateString()
+    lastTrip
+        ? `${lastTrip.distance} km | ${
+            new Date(lastTrip.startTime).toLocaleDateString()
         }`
         : "Keine Fahrten";
 
