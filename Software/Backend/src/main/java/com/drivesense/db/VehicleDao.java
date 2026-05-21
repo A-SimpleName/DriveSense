@@ -209,6 +209,27 @@ public class VehicleDao {
         }
     }
 
+    public boolean deleteProfileAssociation(int vehicleId, int profileId, int accountId) {
+        String sql =
+                "DELETE pv FROM profile_vehicle pv " +
+                        "JOIN profile p ON p.id = pv.profile_id " +
+                        "WHERE pv.vehicle_id = ? " +
+                        "AND pv.profile_id = ? " +
+                        "AND p.account_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, vehicleId);
+            ps.setInt(2, profileId);
+            ps.setInt(3, accountId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Entfernen der Fahrzeug-Verknuepfung", e);
+        }
+    }
+
     public List<VehicleDto> getAllVehicles() {
         String sql =
                 "SELECT v.id, v.model, v.licenseplate, v.mileage, " +

@@ -164,6 +164,10 @@ class RuntimeStore {
   static void clearSession() {
     authToken = '';
     refreshToken = '';
+    clearActiveProfile();
+  }
+
+  static void clearActiveProfile() {
     activeProfileToken = null;
     activeProfileRole = null;
     currentProfileId = null;

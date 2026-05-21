@@ -76,14 +76,14 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     }
   }
 
-  // Zeigt einen Bestätigungs-Dialog und löscht dann das Fahrzeug.
+  // Zeigt einen Bestätigungs-Dialog und entfernt die Fahrzeug-Verknuepfung.
   Future<void> _deleteVehicle(Vehicle vehicle) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Fahrzeug löschen'),
+        title: const Text('Fahrzeug entfernen'),
         content: Text(
-          'Möchtest du "${vehicle.model}" (${vehicle.licensePlate}) wirklich löschen?',
+          'Moechtest du "${vehicle.model}" (${vehicle.licensePlate}) aus diesem Profil entfernen?',
         ),
         actions: [
           TextButton(
@@ -93,7 +93,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Löschen'),
+            child: const Text('Entfernen'),
           ),
         ],
       ),
@@ -101,18 +101,19 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
 
     if (confirmed != true) return;
 
-    final bool success = await VehicleService.deleteVehicle(vehicle.id);
+    final VehicleActionResult result =
+        await VehicleService.deleteVehicleWithResult(vehicle.id);
     if (!mounted) return;
 
     // ScaffoldMessenger zeigt kurze Info-Meldungen unten am Bildschirm (SnackBar)
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Fahrzeug gelöscht.' : 'Löschen fehlgeschlagen.'),
-        backgroundColor: success ? Colors.green : Colors.red,
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
       ),
     );
 
-    if (success) await _loadVehicles();
+    if (result.isSuccess) await _loadVehicles();
   }
 
   @override
@@ -181,7 +182,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
                       _DataCell(vehicle.model),
                       _DataCell(vehicle.licensePlate),
                       _DataCell('${vehicle.mileage} km'),
-                      // Aktionen: Bearbeiten + Löschen Icons
+                      // Aktionen: Bearbeiten + Entfernen Icons
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Row(
@@ -190,11 +191,16 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
                             IconButton(
                               icon: const Icon(Icons.edit, size: 18),
                               tooltip: 'Bearbeiten',
-                              onPressed: () => _openVehicleDialog(vehicle: vehicle),
+                              onPressed: () =>
+                                  _openVehicleDialog(vehicle: vehicle),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              tooltip: 'Löschen',
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 18,
+                                color: Colors.red,
+                              ),
+                              tooltip: 'Entfernen',
                               onPressed: () => _deleteVehicle(vehicle),
                             ),
                           ],
@@ -274,7 +280,9 @@ class _VehicleDialogState extends State<_VehicleDialog> {
     super.initState();
     // Felder vorausfüllen wenn wir ein bestehendes Fahrzeug bearbeiten
     _modelCtrl = TextEditingController(text: widget.vehicle?.model ?? '');
-    _plateCtrl = TextEditingController(text: widget.vehicle?.licensePlate ?? '');
+    _plateCtrl = TextEditingController(
+      text: widget.vehicle?.licensePlate ?? '',
+    );
     _mileageCtrl = TextEditingController(
       text: widget.vehicle != null ? widget.vehicle!.mileage.toString() : '',
     );
@@ -370,7 +378,9 @@ class _VehicleDialogState extends State<_VehicleDialog> {
             controller: _mileageCtrl,
             decoration: const InputDecoration(labelText: 'Kilometerstand'),
             keyboardType: TextInputType.number, // zeigt Zahlentastatur
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly], // nur Ziffern
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ], // nur Ziffern
           ),
         ],
       ),

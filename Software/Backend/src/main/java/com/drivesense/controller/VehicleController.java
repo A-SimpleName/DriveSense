@@ -75,8 +75,12 @@ public class VehicleController {
                                        HttpServletRequest request) {
 
         int accountId = (int) request.getAttribute("accountId");
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewaehlt");
+        }
 
-        vehicleService.deleteVehicle(id, accountId);
+        vehicleService.deleteVehicle(id, accountId, profileId);
         return ResponseEntity.noContent().build();
     }
 }
