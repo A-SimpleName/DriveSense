@@ -25,6 +25,7 @@ import InviteAcceptPage from "./pages/inviteAccept";
 import VerifyEmailPage from "./pages/verifyEmail";
 import ForgotPasswordPage from "./pages/forgotPassword";
 import ResetPasswordPage from "./pages/resetPassword";
+import AdminPage from "./pages/admin";
 
 export default function App() {
   return (
@@ -145,6 +146,7 @@ function AppContent() {
             <Route path="/groups/:id" element={<GroupDetailPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/invite" element={<InviteAcceptPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </>
         )}
         
