@@ -28,9 +28,10 @@
 }
 
 .brand {
-    color: white;
-    font-size: 15pt;
-    font-weight: bold;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .protoName {
@@ -52,9 +53,10 @@
 }
 
 .accent {
-    height: 3px;
-    background: #2E7DCC;
-    margin-bottom: 8px;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+  margin-bottom: 20px;
+  border-radius: 2px;
 }
 
 .summary {
@@ -135,5 +137,6 @@
 }
 
 .footer strong {
-    color: #1A3C6E;
+  color: var(--primary-dark);
+  font-weight: 700;
 }

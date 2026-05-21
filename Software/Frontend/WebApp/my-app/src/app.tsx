@@ -1,3 +1,5 @@
+import "./styles/app.css";
+import "./styles/utilities.css";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -6,8 +8,7 @@ import { getProfilesByAccount } from "./services/profileService";
 import { getCurrentAccount } from "./services/accountService";
 
 import { AuthProvider, useAuth } from "./context/authContext";
-
-import TopBar from "./components/Layout/topbar";
+import AuthLayout from "./components/Layout/AuthLayout";
 import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
@@ -80,14 +81,27 @@ function AppContent() {
     initAuth();
   }, [reloadAuth]);
 
+  useEffect(() => {
+    if (!isAuth || profileSelected) {
+      return;
+    }
+
+    async function refreshProfiles() {
+      try {
+        const profilesData = await getProfilesByAccount();
+        setProfiles(profilesData);
+      } catch (err) {
+        console.error("refreshProfiles ERROR:", err);
+      }
+    }
+
+    refreshProfiles();
+  }, [isAuth, profileSelected]);
+
   if (loading) return <div>Loading...</div>;
 
   return (
     <BrowserRouter>
-
-      {/* Topbar nur wenn komplett eingeloggt */}
-      {isAuth && profileSelected && <TopBar />}
-
       <Routes>
 
         {/* NICHT EINGELOGGT */}
@@ -135,18 +149,20 @@ function AppContent() {
         {/* VOLLSTÄNDIG EINGELOGGT */}
         {isAuth && profileSelected && (
           <>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/trips" element={<TripsPage />} />
-            <Route path="/trips/:id" element={<TripDetailPage />} />
-            <Route path="/protocols/:id" element={<ProtocolDetail />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings/>}/>
-            <Route path="/protocols" element={<ProtocolPage />} />
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/groups/:id" element={<GroupDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/invite" element={<InviteAcceptPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/*" element={<AuthLayout />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/trips" element={<TripsPage />} />
+              <Route path="/trips/:id" element={<TripDetailPage />} />
+              <Route path="/protocols/:id" element={<ProtocolDetail />} />
+              <Route path="/vehicles" element={<Vehicles />} />
+              <Route path="/settings" element={<Settings/>}/>
+              <Route path="/protocols" element={<ProtocolPage />} />
+              <Route path="/groups" element={<GroupPage />} />
+              <Route path="/groups/:id" element={<GroupDetailPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/invite" element={<InviteAcceptPage />} />
+              <Route path="/admin" element={<AdminPage />} />
+            </Route>
           </>
         )}
         
