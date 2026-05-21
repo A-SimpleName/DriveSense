@@ -9,6 +9,7 @@ import type { Protocol } from "../../model/protocol"
 import "../../styles/table.css"
 import { Button } from "../button"
 import { useAuth } from "../../context/authContext"
+import { ConfirmationDialog } from "../ConfirmationDialog"
 
 interface EditValues {
     startTime: string;
@@ -30,6 +31,7 @@ function TripsTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
     const [protocols, setProtocols] = useState<Protocol[]>([])
     const [saving, setSaving] = useState(false)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
     const role = profile?.role
 
@@ -125,6 +127,14 @@ function TripsTable() {
         return `${trip.startPoint} - ${trip.endPoint}`
     }
 
+    const confirmDelete = () => {
+        if (confirmDeleteId === null) return
+        handleDelete(confirmDeleteId)
+        setConfirmDeleteId(null)
+    }
+
+    const closeConfirm = () => setConfirmDeleteId(null)
+
     if (loading) return <p>Laden...</p>
     if (error) return <p>Fehler: {error}</p>
 
@@ -133,189 +143,193 @@ function TripsTable() {
     const roadConditions = ["Trocken", "Nass", "Schnee", "Eis"]
 
     return (
-        <table className="ridesTable">
-            <thead>
-                <tr>
-                    <th>Datum</th>
-                    <th>Startzeit</th>
-                    <th>Endzeit</th>
-                    <th>Fahrer</th>
-                    <th>Fahrzeug</th>
-                    <th>Kennzeichen</th>
-                    <th>Distanz</th>
-                    <th>Strecke</th>
-                    <th>Protokoll</th>
+        <>
+            <table className="ridesTable">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Startzeit</th>
+                        <th>Endzeit</th>
+                        <th>Fahrer</th>
+                        <th>Fahrzeug</th>
+                        <th>Kennzeichen</th>
+                        <th>Distanz</th>
+                        <th>Strecke</th>
+                        <th>Protokoll</th>
 
-                    {role === "PRIVAT" && (
-                        <>
-                            <th colSpan={2}>Kilometerstand</th>
-                            <th>Fahrbahnzustand</th>
-                        </>
-                    )}
-                    {role === "FAHRSCHÜLER" && (
-                        <>
-                            <th colSpan={2}>Kilometerstand</th>
-                            <th>Fahrbahnzustand</th>
-                        </>
-                    )}
-                    {role === "BERUFSFAHRER" && (
-                        <>
-                            <th colSpan={2}>Kilometerstand</th>
-                            <th>Tätigkeit</th>
-                            <th>Fahrbahnzustand</th>
-                        </>
-                    )}
-
-                    <th>Aktionen</th>
-                </tr>
-
-                <tr>
-                    <th></th><th></th><th></th><th></th><th></th>
-                    <th></th><th></th><th></th><th></th>
-                    <th>Von</th><th>Bis</th>
-                    {(role === "BERUFSFAHRER") && <th></th>}
-                    <th></th>
-                    <th></th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {trips.map(trip => (
-                    <tr
-                        key={trip.id}
-                        onClick={() => !isEditing(trip.id) && navigate(`/trips/${trip.id}`)}
-                        style={{ cursor: isEditing(trip.id) ? "default" : "pointer" }}
-                    >
-                        <td>{new Date(trip.startTime).toLocaleDateString()}</td>
-
-                        {/* Startzeit */}
-                        <td onClick={e => e.stopPropagation()}>
-                            {isEditing(trip.id) ? (
-                                <input
-                                    type="datetime-local"
-                                    value={editValues!.startTime.slice(0, 16)}
-                                    onChange={e => setEditValues(prev => ({ ...prev!, startTime: e.target.value }))}
-                                />
-                            ) : new Date(trip.startTime).toLocaleTimeString()}
-                        </td>
-
-                        {/* Endzeit */}
-                        <td onClick={e => e.stopPropagation()}>
-                            {isEditing(trip.id) ? (
-                                <input
-                                    type="datetime-local"
-                                    value={editValues!.endTime.slice(0, 16)}
-                                    onChange={e => setEditValues(prev => ({ ...prev!, endTime: e.target.value }))}
-                                />
-                            ) : new Date(trip.endTime).toLocaleTimeString()}
-                        </td>
-
-                        <td>{trip.accountFname} {trip.accountLname}</td>
-
-                        {/* Fahrzeug Dropdown */}
-                        <td onClick={e => e.stopPropagation()}>
-                            {isEditing(trip.id) ? (
-                                <select
-                                    value={editValues!.vehicleId.toString()}
-                                    onChange={e => setEditValues(prev => ({ ...prev!, vehicleId: Number(e.target.value) }))}
-                                >
-                                    {vehicles.map(v => (
-                                        <option key={v.id} value={v.id.toString()}>{v.model}</option>
-                                    ))}
-                                </select>
-                            ) : trip.vehicleModel}
-                        </td>
-
-                        <td>{trip.licensePlate}</td>
-                        <td>{trip.distance} km</td>
-                        <td>{formatStrecke(trip)}</td>
-
-                        {/* Protokoll Dropdown */}
-                        <td onClick={e => e.stopPropagation()}>
-                            {isEditing(trip.id) ? (
-                                <select
-                                    value={editValues!.protocolId.toString()}
-                                    onChange={e => setEditValues(prev => ({ ...prev!, protocolId: Number(e.target.value) }))}
-                                >
-                                    {protocols.map(p => (
-                                        <option key={p.id} value={p.id.toString()}>{p.name}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <span
-                                    onClick={e => { e.stopPropagation(); navigate(`/protocols/${trip.protocolId}`) }}
-                                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                                >
-                                    {trip.protocolName}
-                                </span>
-                            )}
-                        </td>
-
-                        {/* Kilometerstand — alle Rollen */}
-                        <td>{trip.startMileage} km</td>
-                        <td>{trip.endMileage} km</td>
-
-                        {/* Berufsfahrer: Tätigkeit */}
+                        {role === "PRIVAT" && (
+                            <>
+                                <th colSpan={2}>Kilometerstand</th>
+                                <th>Fahrbahnzustand</th>
+                            </>
+                        )}
+                        {role === "FAHRSCHÜLER" && (
+                            <>
+                                <th colSpan={2}>Kilometerstand</th>
+                                <th>Fahrbahnzustand</th>
+                            </>
+                        )}
                         {role === "BERUFSFAHRER" && (
+                            <>
+                                <th colSpan={2}>Kilometerstand</th>
+                                <th>Tätigkeit</th>
+                                <th>Fahrbahnzustand</th>
+                            </>
+                        )}
+
+                        <th>Aktionen</th>
+                    </tr>
+
+                    <tr>
+                        <th></th><th></th><th></th><th></th><th></th>
+                        <th></th><th></th><th></th><th></th>
+                        <th>Von</th><th>Bis</th>
+                        {(role === "BERUFSFAHRER") && <th></th>}
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {trips.map(trip => (
+                        <tr
+                            key={trip.id}
+                            onClick={() => !isEditing(trip.id) && navigate(`/trips/${trip.id}`)}
+                            style={{ cursor: isEditing(trip.id) ? "default" : "pointer" }}
+                        >
+                            <td>{new Date(trip.startTime).toLocaleDateString()}</td>
+
                             <td onClick={e => e.stopPropagation()}>
                                 {isEditing(trip.id) ? (
                                     <input
-                                        type="text"
-                                        value={editValues!.type}
-                                        onChange={e => setEditValues(prev => ({ ...prev!, type: e.target.value }))}
+                                        type="datetime-local"
+                                        value={editValues!.startTime.slice(0, 16)}
+                                        onChange={e => setEditValues(prev => ({ ...prev!, startTime: e.target.value }))}
                                     />
-                                ) : trip.type}
+                                ) : new Date(trip.startTime).toLocaleTimeString()}
                             </td>
-                        )}
 
-                        {/* Fahrbahnzustand — alle Rollen */}
-                        <td onClick={e => e.stopPropagation()}>
-                            {isEditing(trip.id) ? (
-                                <select
-                                    value={editValues!.roadSurfaceConditions}
-                                    onChange={e => setEditValues(prev => ({ ...prev!, roadSurfaceConditions: e.target.value }))}
-                                >
-                                    {roadConditions.map(c => (
-                                        <option key={c} value={c}>{c}</option>
-                                    ))}
-                                </select>
-                            ) : trip.roadSurfaceConditions}
-                        </td>
+                            <td onClick={e => e.stopPropagation()}>
+                                {isEditing(trip.id) ? (
+                                    <input
+                                        type="datetime-local"
+                                        value={editValues!.endTime.slice(0, 16)}
+                                        onChange={e => setEditValues(prev => ({ ...prev!, endTime: e.target.value }))}
+                                    />
+                                ) : new Date(trip.endTime).toLocaleTimeString()}
+                            </td>
 
-                        {/* Aktionen */}
-                        <td onClick={e => e.stopPropagation()} style={{ display: "flex", gap: "8px" }}>
-                            {isEditing(trip.id) ? (
-                                <>
-                                    <Button
-                                        label={saving ? "Speichern..." : "Speichern"}
-                                        onClick={() => handleEditSave(trip)}
-                                        stopPropagation
-                                    />
-                                    <Button
-                                        label="Abbrechen"
-                                        onClick={handleEditCancel}
-                                        stopPropagation
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <Button
-                                        label="Bearbeiten"
-                                        onClick={() => handleEditStart( trip)}
-                                        stopPropagation
-                                    />
-                                    <Button
-                                        label="Löschen"
-                                        onClick={() => handleDelete(trip.id)}
-                                        stopPropagation
-                                    />
-                                </>
+                            <td>{trip.accountFname} {trip.accountLname}</td>
+
+                            <td onClick={e => e.stopPropagation()}>
+                                {isEditing(trip.id) ? (
+                                    <select
+                                        value={editValues!.vehicleId.toString()}
+                                        onChange={e => setEditValues(prev => ({ ...prev!, vehicleId: Number(e.target.value) }))}
+                                    >
+                                        {vehicles.map(v => (
+                                            <option key={v.id} value={v.id.toString()}>{v.model}</option>
+                                        ))}
+                                    </select>
+                                ) : trip.vehicleModel}
+                            </td>
+
+                            <td>{trip.licensePlate}</td>
+                            <td>{trip.distance} km</td>
+                            <td>{formatStrecke(trip)}</td>
+
+                            <td onClick={e => e.stopPropagation()}>
+                                {isEditing(trip.id) ? (
+                                    <select
+                                        value={editValues!.protocolId.toString()}
+                                        onChange={e => setEditValues(prev => ({ ...prev!, protocolId: Number(e.target.value) }))}
+                                    >
+                                        {protocols.map(p => (
+                                            <option key={p.id} value={p.id.toString()}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <span
+                                        onClick={e => { e.stopPropagation(); navigate(`/protocols/${trip.protocolId}`) }}
+                                        style={{ cursor: "pointer", textDecoration: "underline" }}
+                                    >
+                                        {trip.protocolName}
+                                    </span>
+                                )}
+                            </td>
+
+                            <td>{trip.startMileage} km</td>
+                            <td>{trip.endMileage} km</td>
+
+                            {role === "BERUFSFAHRER" && (
+                                <td onClick={e => e.stopPropagation()}>
+                                    {isEditing(trip.id) ? (
+                                        <input
+                                            type="text"
+                                            value={editValues!.type}
+                                            onChange={e => setEditValues(prev => ({ ...prev!, type: e.target.value }))}
+                                        />
+                                    ) : trip.type}
+                                </td>
                             )}
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+
+                            <td onClick={e => e.stopPropagation()}>
+                                {isEditing(trip.id) ? (
+                                    <select
+                                        value={editValues!.roadSurfaceConditions}
+                                        onChange={e => setEditValues(prev => ({ ...prev!, roadSurfaceConditions: e.target.value }))}
+                                    >
+                                        {roadConditions.map(c => (
+                                            <option key={c} value={c}>{c}</option>
+                                        ))}
+                                    </select>
+                                ) : trip.roadSurfaceConditions}
+                            </td>
+
+                            <td onClick={e => e.stopPropagation()} style={{ display: "flex", gap: "8px" }}>
+                                {isEditing(trip.id) ? (
+                                    <>
+                                        <Button
+                                            label={saving ? "Speichern..." : "Speichern"}
+                                            onClick={() => handleEditSave(trip)}
+                                            stopPropagation
+                                        />
+                                        <Button
+                                            label="Abbrechen"
+                                            onClick={handleEditCancel}
+                                            stopPropagation
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            label="Bearbeiten"
+                                            onClick={() => handleEditStart(trip)}
+                                            stopPropagation
+                                        />
+                                        <Button
+                                            label="Löschen"
+                                            onClick={() => handleDelete(trip.id)}
+                                            stopPropagation
+                                        />
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            <ConfirmationDialog
+                open={confirmDeleteId !== null}
+                title="Fahrt löschen"
+                message="Möchtest du diese Fahrt wirklich unwiderruflich löschen?"
+                confirmLabel="Ja, löschen"
+                cancelLabel="Abbrechen"
+                onConfirm={confirmDelete}
+                onCancel={closeConfirm}
+            />
+        </>
     )
 }
 

@@ -1,19 +1,17 @@
+import { Outlet } from "react-router-dom";
 import Footer from "./footer";
 import Topbar from "./topbar";
 
-type AuthLayoutProps = {
-    children: React.ReactNode;
-};
 
-export function AuthLayout({ children }: AuthLayoutProps) {
-    return ( 
+export function AuthLayout() {
+    return (
         <div className="app-container">
             <Topbar />
             <main className="main-content">
-                {children}
+                <Outlet />
             </main>
             <Footer />
-        </div> 
+        </div>
     );
 }
 
