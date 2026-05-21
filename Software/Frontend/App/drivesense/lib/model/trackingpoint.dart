@@ -49,7 +49,7 @@ class Trackingpoint {
 
     return Trackingpoint(
       id: asInt(json["id"]),
-      tripId: asInt(json["tripId"]),
+      tripId: asInt(json["tripId"] ?? json["trip_id"]),
       latitude: asDouble(json["lat"]),
       longitude: asDouble(json["lng"]),
       accuracy: asDouble(json["accuracy"]),

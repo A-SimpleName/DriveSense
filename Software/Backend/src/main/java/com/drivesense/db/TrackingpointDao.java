@@ -67,7 +67,7 @@ public class TrackingpointDao {
     }
 
     public List<Trackingpoint> getByTripId(int tripId) {
-        String sql = "SELECT * FROM trackingpoint WHERE trip_id = ?";
+        String sql = "SELECT * FROM trackingpoint WHERE trip_id = ? ORDER BY timestamp ASC, id ASC";
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

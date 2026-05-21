@@ -5,10 +5,7 @@ class TripDetailed {
   final TripSummary summary;
   final List<Trackingpoint> trackingpoints;
 
-  TripDetailed({
-    required this.summary,
-    required this.trackingpoints,
-  });
+  TripDetailed({required this.summary, required this.trackingpoints});
 
   Map<String, dynamic> toJson() {
     return {
@@ -18,18 +15,29 @@ class TripDetailed {
   }
 
   factory TripDetailed.fromJson(Map<String, dynamic> json) {
+    final dynamic summaryJson =
+        json["tripSummary"] ?? json["trip"] ?? json["summary"];
+    final dynamic trackingpointsJson =
+        json["trackingpoints"] ?? json["trackingPoints"];
+
     return TripDetailed(
-      summary: TripSummary.fromJson(json["trip"]),
-      trackingpoints: json["trackingpoints"] != null
-          ? (json["trackingpoints"] as List).map((p) => Trackingpoint.fromJson(p)).toList()
-          : [],
+      summary: TripSummary.fromJson(summaryJson as Map<String, dynamic>),
+      trackingpoints: trackingpointsJson is List
+          ? trackingpointsJson
+                .whereType<Map<String, dynamic>>()
+                .map(Trackingpoint.fromJson)
+                .toList()
+          : <Trackingpoint>[],
     );
   }
 
-  TripDetailed copyWith({required TripSummary summary, required List<Trackingpoint> trackingpoints}) {
+  TripDetailed copyWith({
+    TripSummary? summary,
+    List<Trackingpoint>? trackingpoints,
+  }) {
     return TripDetailed(
-      summary: summary,
-      trackingpoints: trackingpoints,
+      summary: summary ?? this.summary,
+      trackingpoints: trackingpoints ?? this.trackingpoints,
     );
   }
 }
