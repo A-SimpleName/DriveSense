@@ -1,6 +1,7 @@
 import 'package:drivesense/model/trip_summary.dart';
-import 'package:flutter/material.dart';
 import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/widgets/trip_detail_dialog.dart';
+import 'package:flutter/material.dart';
 
 class LastTripCard extends StatefulWidget {
   final TripSummary? lastTrip;
@@ -12,8 +13,8 @@ class LastTripCard extends StatefulWidget {
 }
 
 class _LastTripCardState extends State<LastTripCard> {
-  Duration? get lastTripDuration => widget.lastTrip?.endTime?.difference(widget.lastTrip!.startTime);
-  
+  Duration? get lastTripDuration =>
+      widget.lastTrip?.endTime?.difference(widget.lastTrip!.startTime);
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +56,15 @@ class _LastTripCardState extends State<LastTripCard> {
             ),
             Align(
               alignment: Alignment.center,
-              child: ElevatedButton(
-                onPressed: () => {
-                  // Todo: navigate to trip details page for last Trip
-                },
+              child: ElevatedButton.icon(
+                onPressed: widget.lastTrip == null
+                    ? null
+                    : () => showTripDetailDialog(context, widget.lastTrip!),
+                icon: const Icon(Icons.info_outline),
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: Text('Details'),
+                label: const Text('Details'),
               ),
             ),
           ],
