@@ -25,6 +25,18 @@ class SelectProfileResponse {
   });
 }
 
+class ProfileMutationResponse {
+  final bool isSuccess;
+  final String message;
+  final Profile? profile;
+
+  const ProfileMutationResponse({
+    required this.isSuccess,
+    required this.message,
+    this.profile,
+  });
+}
+
 class ProfileService {
   ProfileService._();
 
@@ -108,6 +120,123 @@ class ProfileService {
     return createProfile(name: 'Fahrschueler', role: 'FAHRSCHUELER');
   }
 
+  static Future<ProfileMutationResponse> updateProfileName({
+    required Profile profile,
+    required String name,
+  }) async {
+    final Map<String, String> headers = RequestHeaders.authenticatedJson(
+      clientType: 'mobile',
+    );
+    if (!headers.containsKey('Cookie')) {
+      return const ProfileMutationResponse(
+        isSuccess: false,
+        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswaehlen.',
+      );
+    }
+
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/profiles/${profile.id}',
+    );
+    final String? role = profile.role ?? RuntimeStore.activeProfileRole;
+    if (role == null || role.trim().isEmpty) {
+      return const ProfileMutationResponse(
+        isSuccess: false,
+        message: 'Profiltyp konnte nicht ermittelt werden.',
+      );
+    }
+
+    try {
+      final http.Response response = await http
+          .put(
+            uri,
+            headers: headers,
+            body: jsonEncode(<String, dynamic>{
+              'name': name.trim(),
+              'role': role,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint(
+        'UpdateProfileName <- status=${response.statusCode}, uri=$uri, body=${response.body}',
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return ProfileMutationResponse(
+          isSuccess: false,
+          message:
+              _extractServerMessage(response.body) ??
+              'Profilname konnte nicht gespeichert werden.',
+        );
+      }
+
+      final dynamic decoded = _decodeJson(response.body);
+      final List<Profile> profiles = _extractProfiles(decoded);
+      return ProfileMutationResponse(
+        isSuccess: true,
+        message: 'Profilname wurde gespeichert.',
+        profile: profiles.isNotEmpty
+            ? profiles.first
+            : Profile(
+                id: profile.id,
+                name: name.trim(),
+                role: role,
+                accountId: profile.accountId,
+              ),
+      );
+    } catch (e) {
+      debugPrint('UpdateProfileName failed at $uri: $e');
+      return const ProfileMutationResponse(
+        isSuccess: false,
+        message: 'Profilname konnte nicht gespeichert werden.',
+      );
+    }
+  }
+
+  static Future<ProfileMutationResponse> deleteProfile(int profileId) async {
+    final Map<String, String> headers = RequestHeaders.authenticated(
+      clientType: 'mobile',
+    );
+    if (!headers.containsKey('Cookie')) {
+      return const ProfileMutationResponse(
+        isSuccess: false,
+        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswaehlen.',
+      );
+    }
+
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/profiles/$profileId');
+
+    try {
+      final http.Response response = await http
+          .delete(uri, headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint(
+        'DeleteProfile <- status=${response.statusCode}, uri=$uri, body=${response.body}',
+      );
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return ProfileMutationResponse(
+          isSuccess: false,
+          message:
+              _extractServerMessage(response.body) ??
+              'Profil konnte nicht geloescht werden.',
+        );
+      }
+
+      return const ProfileMutationResponse(
+        isSuccess: true,
+        message: 'Profil wurde entfernt.',
+      );
+    } catch (e) {
+      debugPrint('DeleteProfile failed at $uri: $e');
+      return const ProfileMutationResponse(
+        isSuccess: false,
+        message: 'Profil konnte nicht geloescht werden.',
+      );
+    }
+  }
+
   static Future<SelectProfileResponse> selectProfile(int profileId) async {
     final Map<String, String> headers = RequestHeaders.authenticatedJson(
       clientType: 'mobile',
@@ -128,11 +257,7 @@ class ProfileService {
       debugPrint('SelectProfile request -> uri=$uri, id=$profileId');
 
       final http.Response response = await http
-          .post(
-            uri,
-            headers: headers,
-            body: jsonEncode(<String, dynamic>{}),
-          )
+          .post(uri, headers: headers, body: jsonEncode(<String, dynamic>{}))
           .timeout(const Duration(seconds: 10));
 
       debugPrint(
@@ -169,7 +294,9 @@ class ProfileService {
       );
       final int activeProfileId = profile?.id ?? profileId;
       await ProtocolService.ensureDefaultProtocolForActiveProfile();
-      await VehicleService.ensureDefaultVehicleForActiveProfile(activeProfileId);
+      await VehicleService.ensureDefaultVehicleForActiveProfile(
+        activeProfileId,
+      );
       await RuntimeStore.refreshTrips();
 
       return SelectProfileResponse(
@@ -310,5 +437,4 @@ class ProfileService {
 
     return null;
   }
-
 }

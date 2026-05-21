@@ -8,6 +8,13 @@ import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+class VehicleActionResult {
+  final bool isSuccess;
+  final String message;
+
+  const VehicleActionResult({required this.isSuccess, required this.message});
+}
+
 class VehicleService {
   VehicleService._();
 
@@ -196,6 +203,13 @@ class VehicleService {
 
   // ─── Ein Fahrzeug am Server löschen ──────────────────────────────────────
   static Future<bool> deleteVehicle(int vehicleId) async {
+    final VehicleActionResult result = await deleteVehicleWithResult(vehicleId);
+    return result.isSuccess;
+  }
+
+  static Future<VehicleActionResult> deleteVehicleWithResult(
+    int vehicleId,
+  ) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles/$vehicleId');
 
     try {
@@ -203,10 +217,25 @@ class VehicleService {
           .delete(uri, headers: RequestHeaders.authenticated())
           .timeout(const Duration(seconds: 10));
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Fahrzeug wurde aus diesem Profil entfernt.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message:
+            _extractServerMessage(response.body) ??
+            'Fahrzeug konnte nicht geloescht werden.',
+      );
     } catch (e) {
       debugPrint('DeleteVehicle failed at $uri: $e');
-      return false;
+      return const VehicleActionResult(
+        isSuccess: false,
+        message: 'Fahrzeug konnte nicht geloescht werden.',
+      );
     }
   }
 
@@ -261,5 +290,16 @@ class VehicleService {
     } catch (_) {
       return null;
     }
+  }
+
+  static String? _extractServerMessage(String rawBody) {
+    final dynamic decoded = _decodeJson(rawBody);
+    if (decoded is Map<String, dynamic>) {
+      final dynamic message = decoded['message'] ?? decoded['error'];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+    }
+    return null;
   }
 }
