@@ -4,12 +4,14 @@ import { deleteTrip, getAllTrips } from "../../services/tripService"
 import type { TripSummary } from "../../model/trip"
 import "../../styles/table.css"
 import { Button } from "../button"
+import { ConfirmationDialog } from "../ConfirmationDialog"
 
 function TripsTable() {
     const navigate = useNavigate()
     const [trips, setTrips] = useState<TripSummary[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
     useEffect(() => {
         setLoading(true)
@@ -25,13 +27,22 @@ function TripsTable() {
             .catch(err => setError(err.message))
     }
 
+    const confirmDelete = () => {
+        if (confirmDeleteId === null) return
+        handleDelete(confirmDeleteId)
+        setConfirmDeleteId(null)
+    }
+
+    const closeConfirm = () => setConfirmDeleteId(null)
+
     if (loading) return <p>Laden...</p>
     if (error) return <p>Fehler: {error}</p>
 
     return (
-        <table className="ridesTable">
+        <>
+            <table className="ridesTable">
 
-            <thead>
+                <thead>
                 <tr>
                     <th>Startzeit</th>
                     <th>Endzeit</th>
@@ -84,7 +95,7 @@ function TripsTable() {
                         </td>
                         <td>
                             <Button label="Bearbeiten" stopPropagation={true} />
-                            <Button label="Löschen" stopPropagation={true} onClick={() => handleDelete(trip.id)} />
+                            <Button label="Löschen" stopPropagation={true} onClick={() => setConfirmDeleteId(trip.id)} />
                         </td>
 
                     </tr>
@@ -94,6 +105,17 @@ function TripsTable() {
             </tbody>
 
         </table>
+
+        <ConfirmationDialog
+            open={confirmDeleteId !== null}
+            title="Fahrt löschen"
+            message="Möchtest du diese Fahrt wirklich unwiderruflich löschen?"
+            confirmLabel="Ja, löschen"
+            cancelLabel="Abbrechen"
+            onConfirm={confirmDelete}
+            onCancel={closeConfirm}
+        />
+        </>
     )
 }
 

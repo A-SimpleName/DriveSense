@@ -76,6 +76,23 @@ function AppContent() {
     initAuth();
   }, [reloadAuth]);
 
+  useEffect(() => {
+    if (!isAuth || profileSelected) {
+      return;
+    }
+
+    async function refreshProfiles() {
+      try {
+        const profilesData = await getProfilesByAccount();
+        setProfiles(profilesData);
+      } catch (err) {
+        console.error("refreshProfiles ERROR:", err);
+      }
+    }
+
+    refreshProfiles();
+  }, [isAuth, profileSelected]);
+
   if (loading) return <div>Loading...</div>;
 
   return (

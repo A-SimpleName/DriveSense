@@ -6,6 +6,7 @@ import { getCurrentProfile } from "../services/profileService";
 import { Button } from "../components/button";
 import { InviteMemberForm } from "../components/group/InviteMemberForm";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 
 // wer darf wen entfernen
 const canRemove = (myRole: string, targetRole: string): boolean => {
@@ -32,6 +33,7 @@ function GroupDetailPage() {
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
     const [showInviteForm, setShowInviteForm] = useState(false);
     const [showProtocolForm, setShowProtocolForm] = useState(false);
+    const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ profileId: number; message: string } | null>(null);
     
 
     useEffect(() => {
@@ -60,6 +62,18 @@ function GroupDetailPage() {
             .then(() => setMembers(prev => prev.filter(m => m.profileId !== profileId)))
             .catch(err => setError(err.message));
     };
+
+    const requestRemove = (profileId: number, message: string) => {
+        setConfirmRemoveMember({ profileId, message });
+    };
+
+    const confirmRemove = () => {
+        if (!confirmRemoveMember) return;
+        handleRemove(confirmRemoveMember.profileId);
+        setConfirmRemoveMember(null);
+    };
+
+    const closeConfirm = () => setConfirmRemoveMember(null);
 
     const handleUpdateRole = (profileId: number, currentRole: string) => {
         const groupRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
@@ -139,7 +153,7 @@ function GroupDetailPage() {
                                         {canRemove(myRole, member.groupRole) && (
                                             <Button
                                                 label="Entfernen"
-                                                onClick={() => handleRemove(member.profileId)}
+                                                onClick={() => requestRemove(member.profileId, `Mitglied ${member.name} wirklich entfernen?`)}
                                                 stopPropagation
                                             />
                                         )}
@@ -155,7 +169,7 @@ function GroupDetailPage() {
                                 {member.profileId === currentProfileId && myRole !== "OWNER" && (
                                     <Button
                                         label="Gruppe verlassen"
-                                        onClick={() => handleRemove(member.profileId)}
+                                        onClick={() => requestRemove(member.profileId, "Gruppe wirklich verlassen?")}
                                         stopPropagation
                                     />
                                 )}
@@ -164,6 +178,16 @@ function GroupDetailPage() {
                     ))}
                 </tbody>
             </table>
+
+            <ConfirmationDialog
+                open={confirmRemoveMember !== null}
+                title="Löschen bestätigen"
+                message={confirmRemoveMember?.message ?? "Soll die Aktion wirklich ausgeführt werden?"}
+                confirmLabel="Ja, löschen"
+                cancelLabel="Abbrechen"
+                onConfirm={confirmRemove}
+                onCancel={closeConfirm}
+            />
         </div>
     );
 }
