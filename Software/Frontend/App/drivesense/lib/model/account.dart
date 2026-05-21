@@ -20,8 +20,8 @@ class Account {
         : '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
     return {
-      "fname": fName,
-      "lname": lName,
+      "fName": fName,
+      "lName": lName,
       "email": email,
       "password": password,
       "birthdate": formattedBirthdate,
@@ -30,8 +30,8 @@ class Account {
 
     factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      fName: json["fname"] ?? '',
-      lName: json["lname"] ?? '',
+      fName: json["fName"] ?? '',
+      lName: json["lName"] ?? '',
       email: json["email"] ?? '',
       password: json["password"] ?? '',
       birthdate: json["birthdate"] != null

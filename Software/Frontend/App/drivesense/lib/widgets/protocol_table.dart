@@ -3,6 +3,7 @@ import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 class ProtocolTable extends StatelessWidget {
   final Future<void> Function()? onChanged;
@@ -62,8 +63,7 @@ class ProtocolTable extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.grey.shade200),
                     children: <Widget>[
                       ...columns.map(
-                        (_ProtocolColumn column) =>
-                            _headerCell(column.header),
+                        (_ProtocolColumn column) => _headerCell(column.header),
                       ),
                       _headerCell('Aktionen'),
                     ],
@@ -291,10 +291,7 @@ class ProtocolTable extends StatelessWidget {
   Widget _headerCell(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 
@@ -336,7 +333,9 @@ class ProtocolTable extends StatelessWidget {
   Future<void> _openTripDialog(BuildContext context, TripSummary trip) async {
     if (trip.endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Offene Fahrt kann nicht bearbeitet werden.')),
+        const SnackBar(
+          content: Text('Offene Fahrt kann nicht bearbeitet werden.'),
+        ),
       );
       return;
     }
@@ -358,39 +357,32 @@ class ProtocolTable extends StatelessWidget {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fahrt aktualisiert.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Fahrt aktualisiert.')));
     } catch (e) {
       if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Speichern fehlgeschlagen: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Speichern fehlgeschlagen: $e')));
     }
   }
 
   Future<void> _deleteTrip(BuildContext context, TripSummary trip) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: const Text('Fahrt loeschen'),
-        content: Text(
-          'Moechtest du die Fahrt vom ${_formatDate(trip.startTime)} wirklich loeschen?',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Loeschen'),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Fahrt löschen',
+        content:
+            'Fahrt am "${_formatDate(trip.startTime)}" wirklich löschen?\n\n'
+            'Diese Aktion kann nicht rückgängig gemacht werden.',
+        confirmText: 'Endgültig löschen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
       ),
     );
 
@@ -407,7 +399,9 @@ class ProtocolTable extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Fahrt geloescht.' : 'Loeschen fehlgeschlagen.'),
+        content: Text(
+          success ? 'Fahrt geloescht.' : 'Loeschen fehlgeschlagen.',
+        ),
         backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
@@ -435,13 +429,14 @@ class ProtocolTable extends StatelessWidget {
   }
 
   String _formatRoute(TripSummary trip) {
-    final List<String> routePoints = <String>[
-      trip.startPoint ?? '',
-      trip.furthestPoint ?? '',
-      trip.endPoint ?? '',
-    ].map((String value) => value.trim()).where((String value) {
-      return value.isNotEmpty;
-    }).toList();
+    final List<String> routePoints =
+        <String>[
+          trip.startPoint ?? '',
+          trip.furthestPoint ?? '',
+          trip.endPoint ?? '',
+        ].map((String value) => value.trim()).where((String value) {
+          return value.isNotEmpty;
+        }).toList();
 
     if (routePoints.isNotEmpty) {
       return routePoints.join(' -> ');
@@ -637,10 +632,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Abbrechen'),
         ),
-        ElevatedButton(
-          onPressed: _save,
-          child: const Text('Speichern'),
-        ),
+        ElevatedButton(onPressed: _save, child: const Text('Speichern')),
       ],
     );
   }
