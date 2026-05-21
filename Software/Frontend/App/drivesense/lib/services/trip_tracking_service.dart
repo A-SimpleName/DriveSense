@@ -594,7 +594,7 @@ bool _shouldAcceptTrackingPoint(
     lastAcceptedPoint.timestamp,
   );
 
-  return distance >= _minPointDistanceMeters || elapsed >= _minPointInterval;
+  return distance >= _minPointDistanceMeters && elapsed >= _minPointInterval;
 }
 
 Trackingpoint _positionToTrackingPoint(Position position) {

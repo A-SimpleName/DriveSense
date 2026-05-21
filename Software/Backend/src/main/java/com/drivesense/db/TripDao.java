@@ -266,6 +266,56 @@ public class TripDao {
         }
     }
 
+    public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
+        String sql = """
+                SELECT
+                    t.id,
+                    t.profile_id,
+                    t.vehicle_id,
+                    t.protocol_id,
+                    t.starttime,
+                    t.endtime,
+                    t.distance,
+                    t.start_mileage,
+                    t.end_mileage,
+                    v.licenseplate,
+                    v.model AS vehicle_model,
+                    t.start_point,
+                    t.furthest_point,
+                    t.end_point,
+                    t.road_surface_conditions,
+                    t.type,
+                    a.fname,
+                    a.lname
+                FROM trip t
+                JOIN vehicle v ON t.vehicle_id = v.id
+                JOIN profile prf ON t.profile_id = prf.id
+                JOIN account a ON prf.account_id = a.id
+                WHERE t.profile_id = ?
+                  AND t.endtime IS NOT NULL
+                  AND EXISTS (
+                      SELECT 1
+                      FROM trackingpoint tp
+                      WHERE tp.trip_id = t.id
+                  )
+                ORDER BY t.endtime DESC, t.starttime DESC, t.id DESC
+                LIMIT 1
+                """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) return mapToDto(rs);
+            return null;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der letzten Fahrt", e);
+        }
+    }
+
     public List<TripSummary> getAll() {
         String sql = "SELECT * FROM trip";
 

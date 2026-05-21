@@ -9,20 +9,8 @@ class ProtocolTable extends StatelessWidget {
 
   const ProtocolTable({super.key, this.onChanged});
 
-  static const double _tableWidth = 1064;
+  static const double _actionColumnWidth = 104;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
-  static const Map<int, TableColumnWidth> _columnWidths =
-      <int, TableColumnWidth>{
-        0: FixedColumnWidth(100),
-        1: FixedColumnWidth(100),
-        2: FixedColumnWidth(90),
-        3: FixedColumnWidth(130),
-        4: FixedColumnWidth(120),
-        5: FixedColumnWidth(100),
-        6: FixedColumnWidth(150),
-        7: FixedColumnWidth(170),
-        8: FixedColumnWidth(104),
-      };
 
   static final TableBorder _headerTableBorder = TableBorder(
     top: _tableBorderSide,
@@ -51,23 +39,34 @@ class ProtocolTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<TripSummary> trips = RuntimeStore.trips;
+    final List<_ProtocolColumn> columns = _columnsForRole(
+      RuntimeStore.getActiveProfileRole(),
+    );
+    final Map<int, TableColumnWidth> columnWidths = _columnWidthsFor(columns);
+    final double tableWidth = _tableWidthFor(columns);
 
     return SizedBox(
       width: double.infinity,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: SizedBox(
-          width: _tableWidth,
+          width: tableWidth,
           child: Column(
             children: <Widget>[
               Table(
                 border: _headerTableBorder,
-                columnWidths: _columnWidths,
+                columnWidths: columnWidths,
                 children: <TableRow>[
                   TableRow(
                     key: const ValueKey('headerRow'),
                     decoration: BoxDecoration(color: Colors.grey.shade200),
-                    children: _headerCells,
+                    children: <Widget>[
+                      ...columns.map(
+                        (_ProtocolColumn column) =>
+                            _headerCell(column.header),
+                      ),
+                      _headerCell('Aktionen'),
+                    ],
                   ),
                 ],
               ),
@@ -77,23 +76,15 @@ class ProtocolTable extends StatelessWidget {
                     : SingleChildScrollView(
                         child: Table(
                           border: _bodyTableBorder,
-                          columnWidths: _columnWidths,
+                          columnWidths: columnWidths,
                           children: trips
                               .map(
                                 (TripSummary trip) => TableRow(
                                   children: <Widget>[
-                                    _cell(_formatDate(trip.startTime)),
-                                    _cell(
-                                      trip.endTime != null
-                                          ? _formatDate(trip.endTime!)
-                                          : '-',
+                                    ...columns.map(
+                                      (_ProtocolColumn column) =>
+                                          _cell(column.value(trip)),
                                     ),
-                                    _cell(trip.distanceKm.toStringAsFixed(2)),
-                                    _cell(_formatMileageRange(trip)),
-                                    _cell(_formatVehicleLicensePlate(trip)),
-                                    _cell(_formatTimeOfDay(trip.startTime)),
-                                    _cell(_formatRoute(trip)),
-                                    _cell(trip.roadSurfaceConditions),
                                     _actionCell(context, trip),
                                   ],
                                 ),
@@ -109,18 +100,192 @@ class ProtocolTable extends StatelessWidget {
     );
   }
 
-  List<Widget> get _headerCells {
-    return <Widget>[
-      _headerCell('Startzeit'),
-      _headerCell('Endzeit'),
-      _headerCell('gefahrene\nkm'),
-      _headerCell('Kilometerstand\n(von/bis)'),
-      _headerCell('Kfz-Kennzeichen'),
-      _headerCell('Tageszeit'),
-      _headerCell('Fahrstrecke/-\nziel'),
-      _headerCell('Strassenzustand,\nWitterung'),
-      _headerCell('Aktionen'),
-    ];
+  List<_ProtocolColumn> _columnsForRole(String role) {
+    switch (_normalizeRole(role)) {
+      case 'FAHRSCHUELER':
+        return <_ProtocolColumn>[
+          _ProtocolColumn(
+            header: 'Datum',
+            width: 100,
+            value: (TripSummary trip) => _formatDate(trip.startTime),
+          ),
+          _ProtocolColumn(
+            header: 'gefahrene\nkm',
+            width: 100,
+            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
+          ),
+          _ProtocolColumn(
+            header: 'km-Stand\nvon',
+            width: 105,
+            value: (TripSummary trip) => _formatMileage(trip.startMileage),
+          ),
+          _ProtocolColumn(
+            header: 'km-Stand\nbis',
+            width: 105,
+            value: (TripSummary trip) => _formatMileage(trip.endMileage),
+          ),
+          _ProtocolColumn(
+            header: 'KFZ-\nKennzeichen',
+            width: 125,
+            value: _formatVehicleLicensePlate,
+          ),
+          _ProtocolColumn(
+            header: 'Tageszeit',
+            width: 90,
+            value: (TripSummary trip) => _formatClockTime(trip.startTime),
+          ),
+          _ProtocolColumn(
+            header: 'Fahrstrecke /\nZiel',
+            width: 190,
+            value: _formatRoute,
+          ),
+          _ProtocolColumn(
+            header: 'Strassenzustand /\nWitterung',
+            width: 165,
+            value: (TripSummary trip) =>
+                _formatText(trip.roadSurfaceConditions),
+          ),
+          _ProtocolColumn(
+            header: 'Unterschrift\nBegleiter',
+            width: 130,
+            value: (_) => '-',
+          ),
+          _ProtocolColumn(
+            header: 'Unterschrift\nBewerber',
+            width: 130,
+            value: (_) => '-',
+          ),
+        ];
+      case 'BERUFSFAHRER':
+        return <_ProtocolColumn>[
+          _ProtocolColumn(
+            header: 'Datum',
+            width: 100,
+            value: (TripSummary trip) => _formatDate(trip.startTime),
+          ),
+          _ProtocolColumn(
+            header: 'Uhrzeit',
+            width: 90,
+            value: (TripSummary trip) => _formatClockTime(trip.startTime),
+          ),
+          _ProtocolColumn(
+            header: 'Start',
+            width: 145,
+            value: (TripSummary trip) => _formatText(trip.startPoint),
+          ),
+          _ProtocolColumn(
+            header: 'Wendepunkt',
+            width: 145,
+            value: (TripSummary trip) => _formatText(trip.furthestPoint),
+          ),
+          _ProtocolColumn(
+            header: 'Ziel',
+            width: 145,
+            value: (TripSummary trip) => _formatText(trip.endPoint),
+          ),
+          _ProtocolColumn(
+            header: 'km-Start',
+            width: 100,
+            value: (TripSummary trip) => _formatMileage(trip.startMileage),
+          ),
+          _ProtocolColumn(
+            header: 'km-Ende',
+            width: 100,
+            value: (TripSummary trip) => _formatMileage(trip.endMileage),
+          ),
+          _ProtocolColumn(
+            header: 'Strecke',
+            width: 100,
+            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
+          ),
+          _ProtocolColumn(
+            header: 'KFZ Kennzeichen',
+            width: 130,
+            value: _formatVehicleLicensePlate,
+          ),
+          _ProtocolColumn(
+            header: 'Typ / Zweck',
+            width: 150,
+            value: (TripSummary trip) => _formatText(trip.type),
+          ),
+        ];
+      case 'PRIVAT':
+      default:
+        return <_ProtocolColumn>[
+          _ProtocolColumn(
+            header: 'Datum',
+            width: 100,
+            value: (TripSummary trip) => _formatDate(trip.startTime),
+          ),
+          _ProtocolColumn(
+            header: 'Start',
+            width: 150,
+            value: (TripSummary trip) => _formatText(trip.startPoint),
+          ),
+          _ProtocolColumn(
+            header: 'Wendepunkt',
+            width: 150,
+            value: (TripSummary trip) => _formatText(trip.furthestPoint),
+          ),
+          _ProtocolColumn(
+            header: 'Ziel',
+            width: 150,
+            value: (TripSummary trip) => _formatText(trip.endPoint),
+          ),
+          _ProtocolColumn(
+            header: 'km-Start',
+            width: 100,
+            value: (TripSummary trip) => _formatMileage(trip.startMileage),
+          ),
+          _ProtocolColumn(
+            header: 'km-Ende',
+            width: 100,
+            value: (TripSummary trip) => _formatMileage(trip.endMileage),
+          ),
+          _ProtocolColumn(
+            header: 'Strecke',
+            width: 100,
+            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
+          ),
+          _ProtocolColumn(
+            header: 'KFZ Kennzeichen',
+            width: 130,
+            value: _formatVehicleLicensePlate,
+          ),
+        ];
+    }
+  }
+
+  Map<int, TableColumnWidth> _columnWidthsFor(List<_ProtocolColumn> columns) {
+    return <int, TableColumnWidth>{
+      for (int i = 0; i < columns.length; i++)
+        i: FixedColumnWidth(columns[i].width),
+      columns.length: const FixedColumnWidth(_actionColumnWidth),
+    };
+  }
+
+  double _tableWidthFor(List<_ProtocolColumn> columns) {
+    return columns.fold<double>(
+          0,
+          (double width, _ProtocolColumn column) => width + column.width,
+        ) +
+        _actionColumnWidth;
+  }
+
+  String _normalizeRole(String role) {
+    final String normalized = role.trim().toUpperCase();
+
+    switch (normalized) {
+      case 'FAHRSCHÜLER':
+      case 'FAHRSCHUELER':
+      case 'FAHRSCHULER':
+        return 'FAHRSCHUELER';
+      case 'BERUFSFAHRER':
+        return 'BERUFSFAHRER';
+      case 'PRIVAT':
+      default:
+        return 'PRIVAT';
+    }
   }
 
   Widget _headerCell(String text) {
@@ -252,36 +417,37 @@ class ProtocolTable extends StatelessWidget {
     return '${dt.day}.${dt.month}.${dt.year}';
   }
 
-  String _formatTimeOfDay(DateTime dt) {
-    final int hour = dt.hour;
-    if (hour < 6) return 'Nacht';
-    if (hour < 12) return 'Vormittag';
-    if (hour < 18) return 'Nachmittag';
-    return 'Abend';
+  String _formatClockTime(DateTime dt) {
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-  String _formatMileageRange(TripSummary trip) {
-    if (trip.startMileage <= 0 && trip.endMileage <= 0) {
-      return '-';
-    }
+  String _formatDistance(double distanceKm) {
+    return '${distanceKm.toStringAsFixed(2)} km';
+  }
 
-    return '${trip.startMileage} - ${trip.endMileage} km';
+  String _formatMileage(int mileage) {
+    return mileage > 0 ? mileage.toString() : '-';
+  }
+
+  String _formatText(String? value) {
+    final String text = (value ?? '').trim();
+    return text.isNotEmpty ? text : '-';
   }
 
   String _formatRoute(TripSummary trip) {
-    final String start = (trip.startPoint ?? '').trim();
-    final String end = (trip.endPoint ?? '').trim();
-    final String type = (trip.type ?? '').trim();
+    final List<String> routePoints = <String>[
+      trip.startPoint ?? '',
+      trip.furthestPoint ?? '',
+      trip.endPoint ?? '',
+    ].map((String value) => value.trim()).where((String value) {
+      return value.isNotEmpty;
+    }).toList();
 
-    if (start.isNotEmpty && end.isNotEmpty) {
-      return '$start -> $end';
+    if (routePoints.isNotEmpty) {
+      return routePoints.join(' -> ');
     }
-    if (start.isNotEmpty) {
-      return start;
-    }
-    if (end.isNotEmpty) {
-      return end;
-    }
+
+    final String type = (trip.type ?? '').trim();
     return type.isNotEmpty ? type : '-';
   }
 
@@ -301,6 +467,18 @@ class ProtocolTable extends StatelessWidget {
   }
 }
 
+class _ProtocolColumn {
+  final String header;
+  final double width;
+  final String Function(TripSummary trip) value;
+
+  const _ProtocolColumn({
+    required this.header,
+    required this.width,
+    required this.value,
+  });
+}
+
 class _TripEditDialog extends StatefulWidget {
   final TripSummary trip;
 
@@ -315,6 +493,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
   late final TextEditingController _startMileageCtrl;
   late final TextEditingController _endMileageCtrl;
   late final TextEditingController _startPointCtrl;
+  late final TextEditingController _furthestPointCtrl;
   late final TextEditingController _endPointCtrl;
   late final TextEditingController _roadSurfaceCtrl;
   late final TextEditingController _typeCtrl;
@@ -332,6 +511,9 @@ class _TripEditDialogState extends State<_TripEditDialog> {
       text: widget.trip.endMileage.toString(),
     );
     _startPointCtrl = TextEditingController(text: widget.trip.startPoint ?? '');
+    _furthestPointCtrl = TextEditingController(
+      text: widget.trip.furthestPoint ?? '',
+    );
     _endPointCtrl = TextEditingController(text: widget.trip.endPoint ?? '');
     _roadSurfaceCtrl = TextEditingController(
       text: widget.trip.roadSurfaceConditions,
@@ -345,6 +527,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
     _startMileageCtrl.dispose();
     _endMileageCtrl.dispose();
     _startPointCtrl.dispose();
+    _furthestPointCtrl.dispose();
     _endPointCtrl.dispose();
     _roadSurfaceCtrl.dispose();
     _typeCtrl.dispose();
@@ -378,6 +561,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
         startMileage: startMileage,
         endMileage: endMileage,
         startPoint: _startPointCtrl.text.trim(),
+        furthestPoint: _furthestPointCtrl.text.trim(),
         endPoint: _endPointCtrl.text.trim(),
         roadSurfaceConditions: _roadSurfaceCtrl.text.trim(),
         type: _typeCtrl.text.trim(),
@@ -422,6 +606,11 @@ class _TripEditDialogState extends State<_TripEditDialog> {
             TextField(
               controller: _startPointCtrl,
               decoration: const InputDecoration(labelText: 'Startpunkt'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _furthestPointCtrl,
+              decoration: const InputDecoration(labelText: 'Wendepunkt'),
             ),
             const SizedBox(height: 8),
             TextField(

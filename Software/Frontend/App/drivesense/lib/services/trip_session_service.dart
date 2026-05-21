@@ -591,13 +591,18 @@ class TripSessionService extends ChangeNotifier {
     try {
       final Trip? latestTrip = await tripRepository.getLatestCompleted(
         profileId: RuntimeStore.currentProfileId,
-        protocolId: RuntimeStore.getCurrentProtocolId(),
       );
       if (latestTrip != null) {
         return TripSummary.fromTrip(latestTrip);
       }
     } catch (e) {
       debugPrint('Latest trip lookup failed: $e');
+    }
+
+    final TripSummary? serverLatestTrip =
+        await RuntimeStore.tripService.fetchLatestTrip();
+    if (serverLatestTrip != null) {
+      return serverLatestTrip;
     }
 
     if (RuntimeStore.trips.isEmpty) {

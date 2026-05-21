@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class ProfileService {
@@ -18,6 +19,7 @@ public class ProfileService {
     }
 
     public Profile insert(Profile profile) {
+        profile.setRole(normalizeRole(profile.getRole()));
         return profileDao.insert(profile);
     }
 
@@ -38,6 +40,7 @@ public class ProfileService {
         if (existing == null) {
             throw new NotFoundException("Profil nicht gefunden");
         }
+        profile.setRole(normalizeRole(profile.getRole()));
         profileDao.update(profile);
     }
 
@@ -51,5 +54,18 @@ public class ProfileService {
 
     public List<Profile> getAllProfilesByAccountId(int id) {
         return profileDao.getAllProfilesByAccountId(id);
+    }
+
+    private String normalizeRole(String role) {
+        if (role == null) {
+            return null;
+        }
+
+        return switch (role.trim().toUpperCase(Locale.ROOT)) {
+            case "FAHRSCHÜLER", "FAHRSCHULER", "FAHRSCHUELER" -> "FAHRSCHUELER";
+            case "BERUFSFAHRER" -> "BERUFSFAHRER";
+            case "PRIVAT" -> "PRIVAT";
+            default -> throw new BadRequestException("Ungueltige Profilrolle");
+        };
     }
 }
