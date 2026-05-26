@@ -177,6 +177,10 @@ public class UsergroupService {
         return profileUserGroupDao.getMembersByGroupId(groupId);
     }
 
+    public List<GroupMemberResponse> adminGetMembersByGroup(int groupId) {
+        return profileUserGroupDao.getMembersByGroupId(groupId);
+    }
+
     public List<GroupResponse> getAll () {
         return mapToGroupResponse(userGroupDao.getAll());
     }

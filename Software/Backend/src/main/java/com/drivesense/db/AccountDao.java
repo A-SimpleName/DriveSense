@@ -148,6 +148,31 @@ public class AccountDao {
         }
     }
 
+    public void setEmailVerified(int accountId) {
+        String sql = "UPDATE account SET email_verified = true WHERE id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Verifizieren des Accounts", e);
+        }
+    }
+
+    public void deleteUnverifiedOlderThan24Hours() {
+        String sql = """
+        DELETE FROM account
+        WHERE email_verified = false
+        AND created_at < NOW() - INTERVAL 24 HOUR
+        """;
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Löschen nicht verifizierter Accounts", e);
+        }
+    }
+
     private Account map(ResultSet rs) throws SQLException {
         Account acc = new Account();
         acc.setId(rs.getInt("id"));
@@ -156,6 +181,7 @@ public class AccountDao {
         acc.setEmail(rs.getString("email"));
         acc.setPassword(rs.getString("pwd"));
         Date date = rs.getDate("birthdate");
+        acc.setEmailVerified(rs.getBoolean("email_verified"));
         if (date != null) {
             acc.setBirthdate(date.toLocalDate());
         }
