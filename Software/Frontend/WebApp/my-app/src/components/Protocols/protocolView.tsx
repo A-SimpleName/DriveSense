@@ -1,6 +1,6 @@
 import type { ProtocolDetail } from "../../model/protocol";
-import type { TripSummary } from "../../model/trip";
-import "../../styles/protocol.css"
+import type { TripSummaryDto } from "../../model/trip";
+import styles from "../../styles/protocol.module.css";
 
 type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
 
@@ -59,11 +59,11 @@ export default function ProtocolView({
         }
     };
 
-    const renderRow = (trip: TripSummary, i: number) => {
+    const renderRow = (trip: TripSummaryDto, i: number) => {
         return (
             <tr key={i}>
                 {isGroup && (
-                    <td className="left">
+                    <td className={styles.left}>
                         {trip.accountFname} {trip.accountLname}
                     </td>
                 )}
@@ -102,8 +102,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className="left">{trip.startPoint}</td>
-                        <td className="left">{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
                         <td>{trip.distance} km</td>
@@ -118,8 +118,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className="left">{trip.startPoint}</td>
-                        <td className="left">{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.type}</td>
                         <td>{trip.licensePlate}</td>
@@ -132,49 +132,76 @@ export default function ProtocolView({
     const columns = getColumns();
 
     return (
-        <div className="pdf-container">
+        <div className={styles.pdfContainer}>
             {/* HEADER */}
-            <div className="header">
-                <div className="left">
-                    <span className="brand">DRIVESENSE</span>
+            <div className={styles.header}>
+                <div className={styles.left}>
+                    <span className={styles.brand}>
+                        DRIVESENSE
+                    </span>
 
-                    <div className="proto-name">
-                        {isGroup ? protocol.usergroup?.name : protocol.name}
+                    <div className={styles.protoName}>
+                        {isGroup
+                            ? protocol.usergroup?.name
+                            : protocol.name}
                     </div>
 
-                    <div className="proto-sub">
-                        {isGroup ? "Gruppenprotokoll" : "Einzelprotokoll"} ·{" "}
-                        {type.toUpperCase()}
+                    <div className={styles.protoSub}>
+                        {isGroup
+                            ? "Gruppenprotokoll"
+                            : "Einzelprotokoll"}{" "}
+                        · {type.toUpperCase()}
                     </div>
                 </div>
 
                 {!isGroup && (
+<<<<<<< HEAD
                     <div className="right">
                         <div className="proto-sub">
                             {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
+=======
+                    <div className={styles.right}>
+                        <div className={styles.protoSub}>
+                            {protocol.created_by_account.fname}{" "}
+                            {protocol.created_by_account.lname}
+>>>>>>> Niklas
                         </div>
-                        <div className="user-info">
+
+                        <div className={styles.userInfo}>
                             geb. {birthdate}
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="accent"></div>
+            <div className={styles.accent}></div>
 
             {/* SUMMARY */}
-            <div className="summary">
-                <div className="sum-cell">
-                    <div className="sum-val">{totalKm} km</div>
-                    <div className="sum-lbl">Gesamtstrecke</div>
+            <div className={styles.summary}>
+                <div className={styles.sumCell}>
+                    <div className={styles.sumVal}>
+                        {totalKm} km
+                    </div>
+
+                    <div className={styles.sumLbl}>
+                        Gesamtstrecke
+                    </div>
                 </div>
-                <div className="sum-cell">
-                    <div className="sum-val">{trips.length}</div>
-                    <div className="sum-lbl">Fahrten</div>
+
+                <div className={styles.sumCell}>
+                    <div className={styles.sumVal}>
+                        {trips.length}
+                    </div>
+
+                    <div className={styles.sumLbl}>
+                        Fahrten
+                    </div>
                 </div>
             </div>
 
-            <div className="section-title">Fahrtenübersicht</div>
+            <div className={styles.sectionTitle}>
+                Fahrtenübersicht
+            </div>
 
             {/* TABLE */}
             <table>
@@ -187,19 +214,30 @@ export default function ProtocolView({
                 </thead>
 
                 <tbody>
-                    {trips.map((trip: TripSummary, i: number) =>
+                    {trips.map((trip, i) =>
                         renderRow(trip, i)
                     )}
                 </tbody>
             </table>
 
             {/* FOOTER */}
-            <div className="footer">
-                <div className="left">drivesense.app</div>
-                <div className="center">
-                    Erstellt am: <strong>{protocol.created_at}</strong>
+            <div className={styles.footer}>
+                <div className={styles.left}>
+                    drivesense.app
                 </div>
-                <div className="right">Seite 1</div>
+
+                <div className={styles.center}>
+                    Erstellt am:{" "}
+                    <strong>
+                        {new Date(
+                            protocol.created_at
+                        ).toLocaleString("de-AT")}
+                    </strong>
+                </div>
+
+                <div className={styles.right}>
+                    Seite 1
+                </div>
             </div>
         </div>
     );

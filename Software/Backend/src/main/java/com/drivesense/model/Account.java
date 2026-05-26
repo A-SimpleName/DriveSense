@@ -9,15 +9,7 @@ public class Account {
     private String password;
     private String email;
     private LocalDate birthdate;
-
-    public Account () {}
-    public Account(String fName, String lName, String password, String email, LocalDate birthdate) {
-        this.fName = fName;
-        this.lName = lName;
-        this.password = password;
-        this.email = email;
-        this.birthdate = birthdate;
-    }
+    private boolean emailVerified;
 
     public int getId() {
         return id;
@@ -66,6 +58,9 @@ public class Account {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
     @Override
     public String toString() {

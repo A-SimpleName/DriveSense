@@ -27,6 +27,8 @@ public class AccountService {
     private ProfileDao profileDao;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
     public AccountResponse signUp(SignUpRequest request) {
         Account existing = accountDao.getByEmail(request.getEmail());
@@ -44,6 +46,8 @@ public class AccountService {
         account.setBirthdate(request.getBirthdate());
         accountDao.insert(account);
 
+        // Nach dem Account anlegen:
+        emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
         return toResponse(account);
     }
 
@@ -52,6 +56,10 @@ public class AccountService {
         // bewusst gleiche Message für Email und Passwort – kein Hinweis welches falsch ist
         if (account == null || !BCrypt.checkpw(request.getPassword(), account.getPassword())) {
             throw new BadRequestException("Email oder Passwort falsch");
+        }
+
+        if (!account.isEmailVerified()) {
+            throw new UnauthorizedException("Bitte verifiziere zuerst deine E-Mail-Adresse");
         }
 
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(account.getId());

@@ -4,6 +4,7 @@ import { getCurrentProfile } from "../../services/profileService";
 import type { UserGroup } from "../../model/usergroup";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../button";
+import { ConfirmationDialog } from "../ConfirmationDialog";
 
 interface Props {
     newGroup: UserGroup | null;
@@ -18,6 +19,7 @@ function GroupTable({ newGroup }: Props) {
     const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
     const [editName, setEditName] = useState("");
     const [saving, setSaving] = useState(false);
+    const [confirmDeleteGroupId, setConfirmDeleteGroupId] = useState<number | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -47,6 +49,14 @@ function GroupTable({ newGroup }: Props) {
             .then(() => setGroups(prev => prev.filter(g => g.id !== groupId)))
             .catch(err => setError(err.message));
     };
+
+    const confirmDelete = () => {
+        if (confirmDeleteGroupId === null) return;
+        handleDelete(confirmDeleteGroupId);
+        setConfirmDeleteGroupId(null);
+    };
+
+    const closeConfirm = () => setConfirmDeleteGroupId(null);
 
     const handleEditStart = (group: UserGroup) => {
         setEditingGroupId(group.id);
@@ -136,7 +146,7 @@ function GroupTable({ newGroup }: Props) {
                                                 />
                                                 <Button
                                                     label="Löschen"
-                                                    onClick={() => handleDelete(group.id)}
+                                                    onClick={() => setConfirmDeleteGroupId(group.id)}
                                                     stopPropagation
                                                 />
                                             </>
@@ -148,6 +158,16 @@ function GroupTable({ newGroup }: Props) {
                     ))}
                 </tbody>
             </table>
+
+            <ConfirmationDialog
+                open={confirmDeleteGroupId !== null}
+                title="Gruppe löschen"
+                message="Soll diese Gruppe wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden."
+                confirmLabel="Gruppe löschen"
+                cancelLabel="Abbrechen"
+                onConfirm={confirmDelete}
+                onCancel={closeConfirm}
+            />
         </div>
     );
 }

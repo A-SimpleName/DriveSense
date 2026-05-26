@@ -3,6 +3,7 @@ import { getAllVehicles, deleteVehicle, updateVehicle } from "../../services/veh
 import type { CreateVehicle, Vehicle } from "../../model/vehicle"
 import "../../styles/table.css"
 import { Button } from "../button"
+import { ConfirmationDialog } from "../ConfirmationDialog"
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -12,6 +13,7 @@ function VehiclesTable() {
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
     useEffect(() => {
         setLoading(true)
@@ -64,6 +66,14 @@ function VehiclesTable() {
             )
             .catch(err => setError(err.message))
     }
+
+    const confirmDelete = () => {
+        if (confirmDeleteId === null) return
+        handleDelete(confirmDeleteId)
+        setConfirmDeleteId(null)
+    }
+
+    const closeConfirm = () => setConfirmDeleteId(null)
 
     const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
         if (e.key === "Enter") {
@@ -222,7 +232,7 @@ function VehiclesTable() {
                                                     label="Löschen"
                                                     stopPropagation={true}
                                                     onClick={() =>
-                                                        handleDelete(vehicle.id)
+                                                        setConfirmDeleteId(vehicle.id)
                                                     }
                                                 />
                                             )}
@@ -234,6 +244,16 @@ function VehiclesTable() {
                     })}
                 </tbody>
             </table>
+
+            <ConfirmationDialog
+                open={confirmDeleteId !== null}
+                title="Fahrzeug löschen"
+                message="Möchtest du dieses Fahrzeug wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+                confirmLabel="Fahrzeug löschen"
+                cancelLabel="Abbrechen"
+                onConfirm={confirmDelete}
+                onCancel={closeConfirm}
+            />
         </div>
     )
 }

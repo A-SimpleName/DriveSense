@@ -123,7 +123,7 @@ public class EmailService {
 
                     <!-- Header -->
                     <tr>
-                       <td style="background:#1a1a2e;padding:28px 32px;text-align:center;">
+                       <td style="background:#e2e8f0;padding:28px 32px;text-align:center;">
                          %s
                        </td>
                      </tr>

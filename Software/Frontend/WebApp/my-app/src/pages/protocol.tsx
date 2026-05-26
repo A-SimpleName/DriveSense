@@ -3,7 +3,6 @@ import { getAllProtocols } from "../services/protocolService";
 import type { Protocol } from "../model/protocol";
 import ProtocolTable from "../components/Protocols/table";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
-import { Button } from "../components/button";
 
 export default function ProtocolPage() {
     const [protocols, setProtocols] = useState<Protocol[]>([]);
@@ -16,7 +15,6 @@ export default function ProtocolPage() {
         getAllProtocols()
             .then(data => {
                 const sorted = [...data].sort((a, b) => {
-
                     // Erst: null usergroup_id zuerst
                     if (a.usergroupId === null && b.usergroupId !== null) return -1;
                     if (a.usergroupId !== null && b.usergroupId === null) return 1;
@@ -30,8 +28,6 @@ export default function ProtocolPage() {
             .finally(() => setLoading(false));
     }, [reloadKey]);
 
-    console.log("Protocols:", protocols);
-
     const groupProtocols = protocols.filter(p => p.usergroupId != null);
     const ownProtocols = protocols.filter(p => p.usergroupId == null);
 
@@ -41,10 +37,7 @@ export default function ProtocolPage() {
 
     return (
         <div>
-            <Button
-                label="+ Protokoll hinzufügen"
-                onClick={() => setShowForm(true)}
-            />
+            <h1>Protokolle</h1>
 
             {
                 showForm && (
@@ -55,8 +48,7 @@ export default function ProtocolPage() {
                     />
                 )
             }
-            <h2> Protokolle</h2>
-            <ProtocolTable ownProtocols={ownProtocols} groupProtocols={groupProtocols} />
+            <ProtocolTable ownProtocols={ownProtocols} groupProtocols={groupProtocols} setShowForm={setShowForm} />
         </div>
     );
 }

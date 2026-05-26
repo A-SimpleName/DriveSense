@@ -113,9 +113,15 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
+<<<<<<< HEAD
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
+=======
+                    t.vehicle_id,
+                    t.protocol_id,
+                    pr.name AS protocol_name,
+>>>>>>> Niklas
                     t.starttime,
                     t.endtime,
                     t.distance,
@@ -170,16 +176,19 @@ public class TripDao {
         }
     }
 
-    /***
-     * Für Admin Zwecke, keine Zugriffsrechtprüfung vorhanden!
-     ***/
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
         String sql = """
                     SELECT
                                 t.id,
+<<<<<<< HEAD
                                 t.profile_id,
                                 t.vehicle_id,
                                 t.protocol_id,
+=======
+                                t.vehicle_id,
+                                t.protocol_id,
+                                pr.name AS protocol_name,
+>>>>>>> Niklas
                                 t.starttime,
                                 t.endtime,
                                 t.distance,
@@ -223,9 +232,15 @@ public class TripDao {
         String sql = """
                 SELECT
                     t.id,
+<<<<<<< HEAD
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
+=======
+                    t.vehicle_id,
+                    t.protocol_id,
+                    pr.name AS protocol_name,
+>>>>>>> Niklas
                     t.starttime,
                     t.endtime,
                     t.distance,
@@ -335,7 +350,11 @@ public class TripDao {
     }
 
     public void update(TripSummary tripSummary) {
+<<<<<<< HEAD
         String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ? WHERE id = ?";
+=======
+        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ?, vehicle_id = ?, protocol_id = ? WHERE id = ?";
+>>>>>>> Niklas
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -349,7 +368,13 @@ public class TripDao {
             ps.setString(8, tripSummary.getFurthestPoint());
             ps.setInt(9, tripSummary.getStartMileage());
             ps.setInt(10, tripSummary.getEndMileage());
+<<<<<<< HEAD
             ps.setInt(11, tripSummary.getId());
+=======
+            ps.setInt(11, tripSummary.getVehicleId());
+            ps.setInt(12, tripSummary.getProtocolId());
+            ps.setInt(13, tripSummary.getId());
+>>>>>>> Niklas
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -393,9 +418,15 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
+<<<<<<< HEAD
         dto.setProfileId(rs.getInt("profile_id"));
         dto.setVehicleId(rs.getInt("vehicle_id"));
         dto.setProtocolId(rs.getInt("protocol_id"));
+=======
+        dto.setVehicleId(rs.getInt("vehicle_id"));
+        dto.setProtocolId(rs.getInt("protocol_id"));
+        dto.setProtocolName(rs.getString("protocol_name"));
+>>>>>>> Niklas
         dto.setStartTime(rs.getTimestamp("starttime").toLocalDateTime());
         Timestamp endTimeTimestamp = rs.getTimestamp("endtime");
         if (endTimeTimestamp != null) {

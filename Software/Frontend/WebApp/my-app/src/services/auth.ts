@@ -48,3 +48,21 @@ export async function selectProfile(profileId: number) {
     {}
   );
 }
+
+// verify-email
+export async function verifyEmail(email: string, code: string) {
+    return api.post("/account/verify-email", { email, code });
+}
+
+// resend-verification
+export async function resendVerification(email: string) {
+    return api.post("/account/resend-verification", { email });
+}
+
+export async function forgotPassword(email: string) {
+    return api.post("/account/forgot-password", { email });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string) {
+    return api.post("/account/reset-password", { email, code, newPassword });
+}

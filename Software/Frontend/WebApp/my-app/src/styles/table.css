@@ -4,6 +4,17 @@
     cursor: pointer;
 }
 
+.ridesTable input,
+.ridesTable select {
+    width: 100%;
+    max-width: 120px;
+    box-sizing: border-box;
+}
+
+.ridesTable input[type="datetime-local"] {
+    max-width: 160px;
+}
+
 table {
     width: 100%;
     margin-bottom: 5%;

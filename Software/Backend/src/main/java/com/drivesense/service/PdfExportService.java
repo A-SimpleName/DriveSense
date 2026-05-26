@@ -121,9 +121,9 @@ public class PdfExportService {
     }
 
     private enum PdfLayout {
-        PRIVAT("pdf/privat", 26),
-        BERUFSFAHRER("pdf/berufsfahrer", 24),
-        FAHRSCHUELER("pdf/fahrsch\u00fcler", 22);
+        PRIVAT("pdf/privat", 32),
+        BERUFSFAHRER("pdf/berufsfahrer", 30),
+        FAHRSCHUELER("pdf/fahrsch\u00fcler", 28);
 
         private final String templateName;
         private final int rowsPerPage;
