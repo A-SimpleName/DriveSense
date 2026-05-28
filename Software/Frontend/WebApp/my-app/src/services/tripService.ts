@@ -1,16 +1,13 @@
 import http from "../api/httpService"
 import type { Tripdetailed, TripSummary, TripSummaryDto } from "../model/trip"
-import { getErrorMessage } from "../errorHandling/getErrorMessage"
+import { toAppError } from "../errorHandling/errorHandling";
 
 // auslagern in die HTTP methdode am besten
 async function handleRequest<T>(request: Promise<T>): Promise<T> {
     try {
         return await request;
     } catch (err: any) {
-        throw {
-            message: getErrorMessage(err),
-            fieldErrors: err?.errors || null
-        };
+        throw toAppError(err);
     }
 }
 

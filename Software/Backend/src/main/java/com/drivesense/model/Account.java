@@ -10,6 +10,10 @@ public class Account {
     private String email;
     private LocalDate birthdate;
     private boolean emailVerified;
+    private String pendingEmail;
+
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
 
     public int getId() {
         return id;

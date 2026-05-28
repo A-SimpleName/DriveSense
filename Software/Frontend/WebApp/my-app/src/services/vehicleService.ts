@@ -1,17 +1,13 @@
 import type { Vehicle } from "../model/vehicle";
 import http from "../api/httpService";  
 import type { CreateVehicle } from "../model/vehicle";
-import { getErrorMessage } from "../errorHandling/getErrorMessage";
+import { toAppError } from "../errorHandling/errorHandling";
 
 async function handleRequest<T>(request: Promise<T>): Promise<T> {
     try {
-        const res = await request;
-        return res; 
+        return await request;
     } catch (err: any) {
-        throw {
-            message: getErrorMessage(err),
-            fieldErrors: err?.errors || null
-        };
+        throw toAppError(err);
     }
 }
 

@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class ResetPasswordRequest {
-    @NotBlank
+    @NotBlank(message = "Code darf nicht leer sein")
     private String code;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email darf nicht leer sein")
+    @Email(message = "Email Format ungültig")
     private String email;
 
     @NotBlank(message = "Neues Passwort darf nicht leer sein")

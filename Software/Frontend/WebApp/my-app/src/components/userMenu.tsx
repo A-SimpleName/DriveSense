@@ -5,7 +5,7 @@ import { useAuth } from "../context/authContext";
 import { Button } from "./button";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 
-import "../styles/usermeu.css";
+import "../styles/usermenu.css";
 
 function UserMenu() {
     const [open, setOpen] = useState(false);
