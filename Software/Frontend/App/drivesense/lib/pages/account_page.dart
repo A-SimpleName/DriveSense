@@ -51,8 +51,8 @@ class _AccountPageState extends State<AccountPage> {
                 children: [
                   Text('Email: ${acc.email}'),
                   const SizedBox(height: 8),
-                  Text('Vorname: ${acc.fName}'),
-                  Text('Nachname: ${acc.lName}'),
+                  Text('Vorname: ${acc.firstName}'),
+                  Text('Nachname: ${acc.lastName}'),
 
                   const SizedBox(height: 30),
 

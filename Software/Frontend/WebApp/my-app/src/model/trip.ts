@@ -7,8 +7,8 @@ export interface TripSummary {
     distance: number;
     startMileage: number;
     endMileage: number;
-    accountFname: string;
-    accountLname: string;
+    accountFirstName: string;
+    accountLastName: string;
     vehicleModel: string;
     licensePlate: string;
     roadSurfaceConditions: string;

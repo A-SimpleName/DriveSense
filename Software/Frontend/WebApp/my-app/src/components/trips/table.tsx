@@ -70,7 +70,7 @@ function TripsTable() {
 
                         <td>{new Date(trip.startTime).toLocaleString()}</td>
                         <td>{new Date(trip.endTime).toLocaleString()}</td>
-                        <td>{trip.accountFname} {trip.accountLname}</td>
+                        <td>{trip.accountFirstName} {trip.accountLastName}</td>
                         <td>{trip.vehicleModel}</td>
                         <td>{trip.licensePlate}</td>
                         <td>{trip.startMileage} km</td>

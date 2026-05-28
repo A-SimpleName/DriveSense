@@ -3,6 +3,9 @@ import 'package:drivesense/runtime_store.dart';
 class RequestHeaders {
   RequestHeaders._();
 
+  static const String includeProfileTokenHeader =
+      'X-DriveSense-Include-Profile-Token';
+
   static Map<String, String> authenticated({
     String? clientType,
     bool includeProfileToken = true,
@@ -50,6 +53,7 @@ class RequestHeaders {
       if (contentType != null) 'Content-Type': contentType,
       if (clientType != null && clientType.isNotEmpty)
         'X-Client-Type': clientType,
+      includeProfileTokenHeader: includeProfileToken ? 'true' : 'false',
       ..._cookieHeaders(cookieHeader),
     };
   }

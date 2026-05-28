@@ -1,7 +1,7 @@
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/config/request_headers.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:drivesense/config/api_config.dart';
 
 class PdfService {

@@ -64,7 +64,7 @@ export default function ProtocolView({
             <tr key={i}>
                 {isGroup && (
                     <td className="left">
-                        {trip.accountFname} {trip.accountLname}
+                        {trip.accountFirstName} {trip.accountLastName}
                     </td>
                 )}
 
@@ -151,7 +151,7 @@ export default function ProtocolView({
                 {!isGroup && (
                     <div className="right">
                         <div className="proto-sub">
-                            {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
+                            {protocol.created_by_account?.firstName} {protocol.created_by_account?.lastName}
                         </div>
                         <div className="user-info">
                             geb. {birthdate}

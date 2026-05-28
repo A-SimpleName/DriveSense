@@ -11,20 +11,23 @@ import 'package:drivesense/services/isar_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:drivesense/pages/settings_page.dart';
 import 'package:drivesense/pages/account_page.dart';
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/auth_http_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   TripTrackingService.initializeForegroundTask();
   await dotenv.load(fileName: '.env');
   await IsarService.getInstance();
-  String token = ""; // TODO: get token from secure storage
+  await AuthHttpClient.restoreSession();
+  final String token = RuntimeStore.getAuthToken() ?? '';
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(MyApp(token: token,));
+  runApp(MyApp(token: token));
 }
 
 class MyApp extends StatelessWidget {

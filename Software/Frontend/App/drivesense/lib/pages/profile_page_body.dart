@@ -4,6 +4,7 @@ import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/profile_service.dart';
+import 'package:drivesense/services/token_storage.dart';
 import 'package:drivesense/widgets/vehicle_widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -124,7 +125,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     if (!mounted) return;
 
     if (result.isSuccess) {
-      RuntimeStore.clearActiveProfile();
+      await TokenStorage.instance.clearProfile();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), backgroundColor: Colors.green),
       );

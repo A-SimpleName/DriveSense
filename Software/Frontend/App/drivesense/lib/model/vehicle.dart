@@ -37,9 +37,7 @@ class Vehicle {
       // userId ist in der Vehicle-Entity nicht vorhanden → 0 als Fallback
       userId: asInt(json["userId"] ?? json["user_id"] ?? 0),
       model: json["model"] as String? ?? '',
-      // Backend-Entity hat "licenseplate" (lowercase), DTO hat "licensePlate"
-      // Wir probieren beide Varianten
-      licensePlate: (json["licensePlate"] ?? json["licenseplate"] ?? '') as String,
+      licensePlate: (json["licensePlate"] ?? '') as String,
       mileage: asInt(json["mileage"]),
     );
   }

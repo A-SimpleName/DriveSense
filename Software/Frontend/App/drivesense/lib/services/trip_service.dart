@@ -7,11 +7,11 @@ import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 
 final String _baseUrl = ApiConfig.baseUrl;
 
@@ -288,10 +288,10 @@ class TripService {
         vehicleLicensePlate:
             detail.summary.vehicleLicensePlate ??
             fallbackSummary.vehicleLicensePlate,
-        accountFname:
-            detail.summary.accountFname ?? fallbackSummary.accountFname,
-        accountLname:
-            detail.summary.accountLname ?? fallbackSummary.accountLname,
+        accountFirstName:
+            detail.summary.accountFirstName ?? fallbackSummary.accountFirstName,
+        accountLastName:
+            detail.summary.accountLastName ?? fallbackSummary.accountLastName,
         vehicleModel:
             detail.summary.vehicleModel ?? fallbackSummary.vehicleModel,
         startPoint: detail.summary.startPoint ?? fallbackSummary.startPoint,
