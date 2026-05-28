@@ -1,9 +1,9 @@
 CREATE TABLE `account` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
 
-  `fname` VARCHAR(100) NOT NULL,
+  `first_name` VARCHAR(100) NOT NULL,
 
-  `lname` VARCHAR(100) NOT NULL,
+  `last_name` VARCHAR(100) NOT NULL,
 
   `email` VARCHAR(255) NOT NULL,
 
@@ -81,7 +81,7 @@ CREATE TABLE `vehicle` (
 
   `model` VARCHAR(150) NOT NULL,
 
-  `licenseplate` VARCHAR(20) NOT NULL,
+  `license_plate` VARCHAR(20) NOT NULL,
 
   `mileage` INT DEFAULT 0,
 
@@ -91,8 +91,8 @@ CREATE TABLE `vehicle` (
 
   PRIMARY KEY (`id`),
 
-  UNIQUE KEY `uq_vehicle_licenseplate`
-    (`licenseplate`)
+  UNIQUE KEY `uq_vehicle_license_plate`
+    (`license_plate`)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -164,9 +164,9 @@ CREATE TABLE `trip` (
 
   `protocol_id` BIGINT DEFAULT NULL,
 
-  `starttime` DATETIME NOT NULL,
+  `start_time` DATETIME NOT NULL,
 
-  `endtime` DATETIME DEFAULT NULL,
+  `endt_ime` DATETIME DEFAULT NULL,
 
   `distance` DECIMAL(10,2),
 
