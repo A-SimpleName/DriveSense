@@ -23,7 +23,7 @@ public class TripDao {
     }
 
     public int insert(TripSummary tripSummary) {
-        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, starttime, endtime, distance, road_surface_conditions, type, start_point, end_point, furthest_point, start_mileage, end_mileage) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, start_time, end_time, distance, road_surface_conditions, type, start_point, end_point, furthest_point, start_mileage, end_mileage) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -116,20 +116,20 @@ public class TripDao {
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
-                    t.starttime,
-                    t.endtime,
+                    t.start_time,
+                    t.end_time,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.licenseplate,
+                    v.license_plate,
                     v.model AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     t.type,
-                    a.fname,
-                    a.lname
+                    a.first_name,
+                    a.last_name
                 FROM trip t
                 JOIN protocol pr ON t.protocol_id = pr.id
                 JOIN vehicle v ON t.vehicle_id = v.id
@@ -173,20 +173,20 @@ public class TripDao {
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
-                    t.starttime,
-                    t.endtime,
+                    t.start_time,
+                    t.end_time,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.licenseplate,
+                    v.license_plate,
                     v.model AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     t.type,
-                    a.fname,
-                    a.lname
+                    a.first_name,
+                    a.last_name
                 FROM trip t
                 JOIN protocol pr ON t.protocol_id = pr.id
                 JOIN vehicle v ON t.vehicle_id = v.id
@@ -237,20 +237,20 @@ public class TripDao {
                                 t.profile_id,
                                 t.vehicle_id,
                                 t.protocol_id,
-                                t.starttime,
-                                t.endtime,
+                                t.start_time,
+                                t.end_time,
                                 t.distance,
                                 t.start_mileage,
                                 t.end_mileage,
-                                v.licenseplate,
+                                v.license_plate,
                                 v.model AS vehicle_model,
                                 t.start_point,
                                 t.furthest_point,
                                 t.end_point,
                                 t.road_surface_conditions,
                                 t.type,
-                                a.fname,
-                                a.lname
+                                a.first_name,
+                                a.last_name
                             FROM trip t
                             JOIN protocol pr ON t.protocol_id = pr.id
                             JOIN vehicle v ON t.vehicle_id = v.id
@@ -283,20 +283,20 @@ public class TripDao {
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
-                    t.starttime,
-                    t.endtime,
+                    t.start_time,
+                    t.end_time,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.licenseplate,
+                    v.license_plate,
                     v.model AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     t.type,
-                    a.fname,
-                    a.lname
+                    a.first_name,
+                    a.last_name
                 FROM trip t
                 JOIN protocol pr ON t.protocol_id = pr.id
                 JOIN vehicle v ON t.vehicle_id = v.id
@@ -330,32 +330,32 @@ public class TripDao {
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
-                    t.starttime,
-                    t.endtime,
+                    t.start_time,
+                    t.end_time,
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.licenseplate,
+                    v.license_plate,
                     v.model AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
                     t.road_surface_conditions,
                     t.type,
-                    a.fname,
-                    a.lname
+                    a.first_name,
+                    a.last_name
                 FROM trip t
                 JOIN vehicle v ON t.vehicle_id = v.id
                 JOIN profile prf ON t.profile_id = prf.id
                 JOIN account a ON prf.account_id = a.id
                 WHERE t.profile_id = ?
-                  AND t.endtime IS NOT NULL
+                  AND t.end_time IS NOT NULL
                   AND EXISTS (
                       SELECT 1
                       FROM trackingpoint tp
                       WHERE tp.trip_id = t.id
                   )
-                ORDER BY t.endtime DESC, t.starttime DESC, t.id DESC
+                ORDER BY t.end_time DESC, t.start_time DESC, t.id DESC
                 LIMIT 1
                 """;
 
@@ -392,7 +392,7 @@ public class TripDao {
     }
 
     public void update(TripSummary tripSummary) {
-        String sql = "UPDATE trip SET starttime = ?, endtime = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ? WHERE id = ?";
+        String sql = "UPDATE trip SET start_time = ?, end_time = ?, distance = ?, road_surface_conditions = ?, type = ?, start_point = ?, end_point = ?, furthest_point = ?, start_mileage = ?, end_mileage = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -433,8 +433,8 @@ public class TripDao {
         tripSummary.setProfileId(rs.getInt("profile_id"));
         tripSummary.setVehicleId(rs.getInt("vehicle_id"));
         tripSummary.setProtocolId(rs.getInt("protocol_id"));
-        tripSummary.setStartTime((LocalDateTime) rs.getObject("starttime"));
-        tripSummary.setEndTime((LocalDateTime) rs.getObject("endtime"));
+        tripSummary.setStartTime((LocalDateTime) rs.getObject("start_time"));
+        tripSummary.setEndTime((LocalDateTime) rs.getObject("end_time"));
         tripSummary.setDistance(rs.getDouble("distance"));
         tripSummary.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
         tripSummary.setType(rs.getString("type"));
@@ -453,8 +453,8 @@ public class TripDao {
         dto.setProfileId(rs.getInt("profile_id"));
         dto.setVehicleId(rs.getInt("vehicle_id"));
         dto.setProtocolId(rs.getInt("protocol_id"));
-        dto.setStartTime(rs.getTimestamp("starttime").toLocalDateTime());
-        Timestamp endTimeTimestamp = rs.getTimestamp("endtime");
+        dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
+        Timestamp endTimeTimestamp = rs.getTimestamp("end_time");
         if (endTimeTimestamp != null) {
             dto.setEndTime(endTimeTimestamp.toLocalDateTime());
         }
@@ -462,13 +462,13 @@ public class TripDao {
         dto.setEndMileage(rs.getInt("end_mileage"));
         dto.setDistance(rs.getDouble("distance"));
         dto.setType(rs.getString("type"));
-        dto.setLicensePlate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("license_plate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
         dto.setStartPoint(rs.getString("start_point"));
         dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));
-        dto.setAccountFname(rs.getString("fname"));
-        dto.setAccountLname(rs.getString("lname"));
+        dto.setAccountFirstName(rs.getString("first_name"));
+        dto.setAccountLastName(rs.getString("last_name"));
         dto.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
 
         return dto;

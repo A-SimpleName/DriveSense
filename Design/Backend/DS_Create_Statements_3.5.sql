@@ -166,7 +166,7 @@ CREATE TABLE `trip` (
 
   `start_time` DATETIME NOT NULL,
 
-  `endt_ime` DATETIME DEFAULT NULL,
+  `end_time` DATETIME DEFAULT NULL,
 
   `distance` DECIMAL(10,2),
 

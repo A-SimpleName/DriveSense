@@ -37,8 +37,8 @@ public class AccountService {
         String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
 
         Account account = new Account();
-        account.setfName(request.getFname());
-        account.setlName(request.getLname());
+        account.setFirstName(request.getFirstName());
+        account.setLastName(request.getLastName());
         account.setEmail(request.getEmail());
         account.setPassword(hashedPassword);
         account.setBirthdate(request.getBirthdate());
@@ -110,8 +110,8 @@ public class AccountService {
             throw new NotFoundException("Account nicht gefunden");
         }
 
-        account.setfName(request.getFname());
-        account.setlName(request.getLname());
+        account.setFirstName(request.getFirstName());
+        account.setLastName(request.getLastName());
         account.setEmail(request.getEmail());
         accountDao.update(account);
 
@@ -148,8 +148,8 @@ public class AccountService {
     private AccountResponse toResponse(Account account) {
         AccountResponse res = new AccountResponse();
         res.setId(account.getId());
-        res.setfName(account.getfName());
-        res.setlName(account.getlName());
+        res.setFirstName(account.getFirstName());
+        res.setLastName(account.getLastName());
         res.setEmail(account.getEmail());
         return res;
     }

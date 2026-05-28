@@ -60,7 +60,7 @@ public class Vehicle {
         return "Vehicle: " +
                 "id: " + id +
                 ", model: '" + model + '\'' +
-                ", licenseplate: '" + licensePlate + '\'' +
+                ", licensePlate: '" + licensePlate + '\'' +
                 ", mileage: " + mileage;
     }
 }
