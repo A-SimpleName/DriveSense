@@ -2,10 +2,7 @@ package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
 import com.drivesense.db.ProfileDao;
-import com.drivesense.dto.request.LoginRequest;
-import com.drivesense.dto.request.SignUpRequest;
-import com.drivesense.dto.request.UpdateAccountRequest;
-import com.drivesense.dto.request.UpdatePasswordRequest;
+import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.LoginResponse;
 import com.drivesense.dto.response.RefreshResponse;
@@ -21,49 +18,40 @@ import java.util.List;
 
 @Service
 public class AccountService {
-    @Autowired
-    private AccountDao accountDao;
-    @Autowired
-    private ProfileDao profileDao;
-    @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private EmailVerificationService emailVerificationService;
+
+    @Autowired private AccountDao accountDao;
+    @Autowired private ProfileDao profileDao;
+    @Autowired private JwtService jwtService;
+    @Autowired private EmailVerificationService emailVerificationService;
+    @Autowired private EmailService emailService;
+
+    // ── Auth ────────────────────────────────────────────────────────────────
 
     public AccountResponse signUp(SignUpRequest request) {
-        Account existing = accountDao.getByEmail(request.getEmail());
-        if (existing != null) {
+        if (accountDao.getByEmail(request.getEmail()) != null) {
             throw new BadRequestException("Email bereits vergeben");
         }
-
-        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-
+        String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         Account account = new Account();
         account.setfName(request.getFname());
         account.setlName(request.getLname());
         account.setEmail(request.getEmail());
-        account.setPassword(hashedPassword);
+        account.setPassword(hashedPwd);
         account.setBirthdate(request.getBirthdate());
         accountDao.insert(account);
-
-        // Nach dem Account anlegen:
         emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
         return toResponse(account);
     }
 
     public LoginResponse login(LoginRequest request) {
         Account account = accountDao.getByEmail(request.getEmail());
-        // bewusst gleiche Message für Email und Passwort – kein Hinweis welches falsch ist
         if (account == null || !BCrypt.checkpw(request.getPassword(), account.getPassword())) {
             throw new BadRequestException("Email oder Passwort falsch");
         }
-
         if (!account.isEmailVerified()) {
             throw new UnauthorizedException("Bitte verifiziere zuerst deine E-Mail-Adresse");
         }
-
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(account.getId());
-
         LoginResponse res = new LoginResponse();
         res.setAccountToken(jwtService.generateAccountToken(account.getId()));
         res.setRefreshToken(jwtService.generateRefreshToken(account.getId()));
@@ -75,14 +63,11 @@ public class AccountService {
         if (!jwtService.isValid(accountToken) || !jwtService.extractType(accountToken).equals("ACCOUNT")) {
             throw new UnauthorizedException("Ungültiger Account Token");
         }
-
         int accountId = jwtService.extractAccountId(accountToken);
         Profile profile = profileDao.getById(profileId);
-
         if (profile == null || profile.getAccount_id() != accountId) {
             throw new NotFoundException("Profil nicht gefunden");
         }
-
         SelectProfileResponse res = new SelectProfileResponse();
         res.setProfileToken(jwtService.generateProfileToken(accountId, profileId, profile.getRole()));
         res.setProfile(profile);
@@ -93,65 +78,119 @@ public class AccountService {
         if (!jwtService.isValid(refreshToken) || !jwtService.extractType(refreshToken).equals("REFRESH")) {
             throw new UnauthorizedException("Ungültiger Refresh Token");
         }
-
         int accountId = jwtService.extractAccountId(refreshToken);
         RefreshResponse res = new RefreshResponse();
         res.setAccountToken(jwtService.generateAccountToken(accountId));
         return res;
     }
 
+    // ── Lesen ───────────────────────────────────────────────────────────────
+
     public AccountResponse getById(int id) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
         return toResponse(account);
     }
 
-    public List<Account> getAll () {
+    public List<Account> getAll() {
         return accountDao.getAll();
     }
 
+    // ── Aktualisieren ───────────────────────────────────────────────────────
+
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
-
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
         account.setfName(request.getFname());
         account.setlName(request.getLname());
-        account.setEmail(request.getEmail());
+        // E-Mail wird NICHT mehr direkt hier geändert – dafür gibt es den Change-Email-Flow
         accountDao.update(account);
-
         return toResponse(account);
     }
 
     public void updatePassword(int id, UpdatePasswordRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
-
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
         if (!BCrypt.checkpw(request.getOldPassword(), account.getPassword())) {
             throw new BadRequestException("Altes Passwort falsch");
         }
-
-        // neues Passwort darf nicht gleich wie altes sein
         if (BCrypt.checkpw(request.getNewPassword(), account.getPassword())) {
             throw new BadRequestException("Neues Passwort darf nicht gleich wie das alte sein");
         }
-
-        String hashedPassword = BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt());
-        accountDao.updatePassword(id, hashedPassword);
+        accountDao.updatePassword(id, BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
     }
 
+    // ── Change-Email-Flow ───────────────────────────────────────────────────
+
+    /**
+     * Schritt 1: User gibt neue E-Mail an.
+     * Prüft auf Duplikate (primary + pending), setzt pending_email und
+     * schickt einen Verifikations-Code an die neue Adresse.
+     */
+    public void requestEmailChange(int accountId, String newEmail) {
+        Account account = accountDao.getById(accountId);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        // Neue E-Mail darf nicht identisch mit der aktuellen sein
+        if (newEmail.equalsIgnoreCase(account.getEmail())) {
+            throw new BadRequestException("Die neue E-Mail ist identisch mit der aktuellen");
+        }
+
+        // Prüfen ob bereits ein anderer aktiver Account diese E-Mail als primäre Adresse hat
+        if (accountDao.getByEmail(newEmail) != null) {
+            throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben");
+        }
+
+        // Prüfen ob die E-Mail schon als pending_email bei einem anderen Account liegt
+        if (accountDao.existsByPendingEmail(newEmail)) {
+            throw new BadRequestException("Diese E-Mail-Adresse wird bereits von einem anderen Account beansprucht");
+        }
+
+        // pending_email setzen (DB-seitig UNIQUE → kein Race-Condition-Problem)
+        accountDao.setPendingEmail(accountId, newEmail);
+
+        // Verifikations-Code an neue Adresse senden
+        emailVerificationService.sendVerificationCode(accountId, newEmail);
+    }
+
+    /**
+     * Schritt 2: User gibt den Code ein, der an die neue E-Mail gesendet wurde.
+     * Nach erfolgreicher Verifikation: email = pending_email, pending_email = NULL.
+     */
+    public void confirmEmailChange(int accountId, String code) {
+        Account account = accountDao.getById(accountId);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+        if (account.getPendingEmail() == null) {
+            throw new BadRequestException("Keine ausstehende E-Mail-Änderung vorhanden");
+        }
+
+        // Code gegen die pending_email verifizieren
+        emailVerificationService.verifyCode(account.getPendingEmail(), code);
+
+        // Atomares Übertragen: email ← pending_email, pending_email ← NULL
+        accountDao.confirmPendingEmail(accountId);
+    }
+
+    /**
+     * Bricht eine laufende E-Mail-Änderung ab.
+     */
+    public void cancelEmailChange(int accountId) {
+        accountDao.clearPendingEmail(accountId);
+    }
+
+    // ── Soft Delete ─────────────────────────────────────────────────────────
+
+    /**
+     * Soft-löscht den Account. Historische Trips, Protocols und Vehicles
+     * bleiben durch RESTRICT / SET NULL auf den FK erhalten.
+     */
     public void delete(int id) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
-        accountDao.deleteById(id);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+        accountDao.softDelete(id);
     }
+
+    // ── Mapper ──────────────────────────────────────────────────────────────
 
     private AccountResponse toResponse(Account account) {
         AccountResponse res = new AccountResponse();
@@ -159,6 +198,7 @@ public class AccountService {
         res.setfName(account.getfName());
         res.setlName(account.getlName());
         res.setEmail(account.getEmail());
+        res.setPendingEmail(account.getPendingEmail());
         return res;
     }
 }

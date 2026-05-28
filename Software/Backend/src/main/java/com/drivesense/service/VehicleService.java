@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.exceptions.NotFoundException;
+import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Vehicle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,7 @@ public class VehicleService {
 
     public VehicleDto getVehicleById(int id, int accountId) {
         VehicleDto vehicle = vehicleDao.getById(id, accountId);
-
-        if (vehicle == null) {
-            throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
-        }
+        if (vehicle == null) throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
         return vehicle;
     }
 
@@ -40,10 +38,24 @@ public class VehicleService {
         vehicleDao.update(vehicle, accountId);
     }
 
-    public void deleteVehicle(int id, int accountId, int profileId) {
-        boolean removed = vehicleDao.deleteProfileAssociation(id, profileId, accountId);
-        if (!removed) {
-            throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
+    /**
+     * Löscht ein Vehicle oder entfernt eine Profilverknüpfung, je nach Rolle:
+     * - OWNER: Soft-Delete des gesamten Vehicles (deleted_at setzen).
+     *   Existierende Trips bleiben durch Snapshots erhalten.
+     * - CO_OWNER / DRIVER: Nur die profile_vehicle-Verknüpfung wird entfernt.
+     *
+     * Die Unterscheidung passiert im DAO: softDelete prüft per JOIN ob der
+     * Account OWNER ist; removeProfileAssociation entfernt nur den Eintrag.
+     */
+    public void deleteVehicle(int vehicleId, int accountId, int profileId) {
+        // Zuerst versuchen, als OWNER soft zu löschen
+        boolean softDeleted = vehicleDao.softDelete(vehicleId, accountId);
+        if (!softDeleted) {
+            // Kein OWNER → Verknüpfung als CO_OWNER / DRIVER entfernen
+            boolean removed = vehicleDao.removeProfileAssociation(vehicleId, profileId, accountId);
+            if (!removed) {
+                throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
+            }
         }
     }
 
