@@ -3,7 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ApiConfig {
   static final String ip = _requiredEnv('API_IP');
   static final String port = _requiredEnv('API_PORT');
-  static final String baseUrl = 'http://$ip:$port';
+  static final String protocol = _requiredEnv('API_PROTOCOL');
+  static final String baseUrl = '$protocol://$ip:$port';
 
   static String _requiredEnv(String key) {
     final String? value = dotenv.env[key]?.trim();

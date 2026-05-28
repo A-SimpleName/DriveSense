@@ -5,6 +5,9 @@ class TripSummary {
   final int profileId;
   final int vehicleId;
   final String? vehicleLicensePlate;
+  final String? accountFname;
+  final String? accountLname;
+  final String? vehicleModel;
   final int protocolId;
   final DateTime startTime;
   final DateTime? endTime;
@@ -23,6 +26,9 @@ class TripSummary {
     required this.profileId,
     required this.vehicleId,
     this.vehicleLicensePlate,
+    this.accountFname,
+    this.accountLname,
+    this.vehicleModel,
     required this.protocolId,
     required this.startTime,
     this.endTime,
@@ -43,6 +49,10 @@ class TripSummary {
       "profileId": profileId,
       "vehicleId": vehicleId,
       "vehicleLicensePlate": vehicleLicensePlate,
+      "licensePlate": vehicleLicensePlate,
+      "accountFname": accountFname,
+      "accountLname": accountLname,
+      "vehicleModel": vehicleModel,
       "protocolId": protocolId,
       "startTime": startTime.toIso8601String(),
       "endTime": endTime?.toIso8601String(),
@@ -78,7 +88,13 @@ class TripSummary {
       profileId: asInt(json["profileId"] ?? json["profile_id"]),
       vehicleId: asInt(json["vehicleId"] ?? json["vehicle_id"]),
       vehicleLicensePlate:
-          (json["licenseplate"] ?? json["licensePlate"])?.toString(),
+          (json["licensePlate"] ??
+                  json["licenseplate"] ??
+                  json["vehicleLicensePlate"])
+              ?.toString(),
+      accountFname: json["accountFname"]?.toString(),
+      accountLname: json["accountLname"]?.toString(),
+      vehicleModel: json["vehicleModel"]?.toString(),
       protocolId: asInt(json["protocolId"] ?? json["protocol_id"]),
       startTime: DateTime.parse(json["startTime"].toString()),
       endTime: json["endTime"] != null
@@ -116,6 +132,9 @@ class TripSummary {
       profileId: trip.profileId,
       vehicleId: trip.vehicleId,
       vehicleLicensePlate: null,
+      accountFname: null,
+      accountLname: null,
+      vehicleModel: null,
       protocolId: trip.protocolId,
       startTime: trip.startTime,
       endTime: trip.endTime,
@@ -136,6 +155,9 @@ class TripSummary {
     int? profileId,
     int? vehicleId,
     String? vehicleLicensePlate,
+    String? accountFname,
+    String? accountLname,
+    String? vehicleModel,
     int? protocolId,
     DateTime? startTime,
     DateTime? endTime,
@@ -154,6 +176,9 @@ class TripSummary {
       profileId: profileId ?? this.profileId,
       vehicleId: vehicleId ?? this.vehicleId,
       vehicleLicensePlate: vehicleLicensePlate ?? this.vehicleLicensePlate,
+      accountFname: accountFname ?? this.accountFname,
+      accountLname: accountLname ?? this.accountLname,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
       protocolId: protocolId ?? this.protocolId,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,

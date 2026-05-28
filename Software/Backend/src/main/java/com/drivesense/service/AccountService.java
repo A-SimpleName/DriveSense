@@ -33,8 +33,8 @@ public class AccountService {
         }
         String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         Account account = new Account();
-        account.setfName(request.getFname());
-        account.setlName(request.getLname());
+        account.setFirstName(request.getFirstName());
+        account.setLastName(request.getLastName());
         account.setEmail(request.getEmail());
         account.setPassword(hashedPwd);
         account.setBirthdate(request.getBirthdate());
@@ -100,10 +100,13 @@ public class AccountService {
 
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) throw new NotFoundException("Account nicht gefunden");
-        account.setfName(request.getFname());
-        account.setlName(request.getLname());
-        // E-Mail wird NICHT mehr direkt hier geändert – dafür gibt es den Change-Email-Flow
+        if (account == null) {
+            throw new NotFoundException("Account nicht gefunden");
+        }
+
+        account.setFirstName(request.getFirstName());
+        account.setLastName(request.getLastName());
+        account.setEmail(request.getEmail());
         accountDao.update(account);
         return toResponse(account);
     }
@@ -195,8 +198,8 @@ public class AccountService {
     private AccountResponse toResponse(Account account) {
         AccountResponse res = new AccountResponse();
         res.setId(account.getId());
-        res.setfName(account.getfName());
-        res.setlName(account.getlName());
+        res.setFirstName(account.getFirstName());
+        res.setLastName(account.getLastName());
         res.setEmail(account.getEmail());
         res.setPendingEmail(account.getPendingEmail());
         return res;

@@ -40,4 +40,14 @@ public class Vehicle {
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     public boolean isDeleted() { return deletedAt != null; }
+
+
+    @Override
+    public String toString() {
+        return "Vehicle: " +
+                "id: " + id +
+                ", model: '" + model + '\'' +
+                ", licensePlate: '" + licensePlate + '\'' +
+                ", mileage: " + mileage;
+    }
 }
