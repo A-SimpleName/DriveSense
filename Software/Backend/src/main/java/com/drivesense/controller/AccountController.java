@@ -224,6 +224,16 @@ public class AccountController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/confirm-email-change")
+    public ResponseEntity<Void> confirmEmailChange(
+            @RequestBody @Valid ConfirmEmailChangeRequest request,
+            HttpServletRequest httpRequest) {
+
+        int accountId = (int) httpRequest.getAttribute("accountId");
+        emailVerificationService.confirmEmailChange(accountId, request.getCode());
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping
     public ResponseEntity<Void> delete(HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");

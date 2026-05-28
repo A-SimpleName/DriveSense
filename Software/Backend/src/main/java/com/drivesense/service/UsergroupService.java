@@ -23,7 +23,7 @@ public class UsergroupService {
     @Autowired
     private ProfileService profileService;
 
-    public GroupResponse insertGroup(String name, int profileId) {
+    public GroupResponse insertGroup(String name,int profileId) {
 
         UserGroup group = new UserGroup();
         group.setName(name);
@@ -156,11 +156,18 @@ public class UsergroupService {
     }
 
     public void adminDeleteGroup (int groupId) {
+        UserGroup group = userGroupDao.getById(groupId);
+
+        if (group == null) throw new NotFoundException("Gruppe nicht gefunden");
         profileUserGroupDao.deleteAllByGroupId(groupId);
         userGroupDao.deleteById(groupId);
     }
 
     public void adminRemoveMember(int groupId, int profileId) {
+        ProfileUsergroup member = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
+        if (member == null || member.getProfileId() == 0) {
+            throw new NotFoundException("Mitglied nicht in dieser Gruppe gefunden");
+        }
         profileUserGroupDao.delete(profileId, groupId);
     }
 

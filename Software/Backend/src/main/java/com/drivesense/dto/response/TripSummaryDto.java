@@ -169,4 +169,12 @@ public class TripSummaryDto {
     public void setDistance(double distance) {
         this.distance = distance;
     }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
 }

@@ -33,7 +33,7 @@ public class AccountService {
     public AccountResponse signUp(SignUpRequest request) {
         Account existing = accountDao.getByEmail(request.getEmail());
         if (existing != null) {
-            throw new BadRequestException("Email bereits vergeben");
+            throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
 
         String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
@@ -114,14 +114,32 @@ public class AccountService {
 
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        boolean emailChanged = !account.getEmail().equals(request.getEmail());
+
+        if (emailChanged) {
+            Account emailTaken = accountDao.getByEmail(request.getEmail());
+            if (emailTaken != null) {
+                throw new FieldValidationException("email", "Email ist bereits vergeben");
+            }
         }
 
+        // Name sofort ändern
         account.setfName(request.getFname());
         account.setlName(request.getLname());
-        account.setEmail(request.getEmail());
+
+        // Email nur in pending_email speichern
+        if (emailChanged) {
+            account.setPendingEmail(request.getEmail());
+        }
+
         accountDao.update(account);
+
+        // Code an neue Email schicken
+        if (emailChanged) {
+            emailVerificationService.sendVerificationCode(id, request.getEmail());
+        }
 
         return toResponse(account);
     }
