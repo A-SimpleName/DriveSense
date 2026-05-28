@@ -288,6 +288,12 @@ class TripService {
         vehicleLicensePlate:
             detail.summary.vehicleLicensePlate ??
             fallbackSummary.vehicleLicensePlate,
+        accountFname:
+            detail.summary.accountFname ?? fallbackSummary.accountFname,
+        accountLname:
+            detail.summary.accountLname ?? fallbackSummary.accountLname,
+        vehicleModel:
+            detail.summary.vehicleModel ?? fallbackSummary.vehicleModel,
         startPoint: detail.summary.startPoint ?? fallbackSummary.startPoint,
         furthestPoint:
             detail.summary.furthestPoint ?? fallbackSummary.furthestPoint,

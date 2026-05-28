@@ -315,7 +315,7 @@ class _TripMapPreviewState extends State<_TripMapPreview> {
 
       try {
         final http.Response response = await http
-            .get(uri)
+            .get(uri, headers: _roadsApiHeaders())
             .timeout(const Duration(seconds: 8));
         if (response.statusCode < 200 || response.statusCode >= 300) {
           return snappedPoints;
@@ -412,6 +412,52 @@ class _TripMapPreviewState extends State<_TripMapPreview> {
 
   String _trackingpointLatLng(Trackingpoint point) {
     return '${point.latitude.toStringAsFixed(6)},${point.longitude.toStringAsFixed(6)}';
+  }
+
+  Map<String, String> _roadsApiHeaders() {
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return const <String, String>{};
+    }
+
+    final String packageName = _androidPackageName();
+    final String certSha1 = _androidCertSha1();
+    if (packageName.isEmpty || certSha1.isEmpty) {
+      return const <String, String>{};
+    }
+
+    return <String, String>{
+      'X-Android-Package': packageName,
+      'X-Android-Cert': certSha1,
+    };
+  }
+
+  String _androidPackageName() {
+    const String dartDefineValue = String.fromEnvironment(
+      'GOOGLE_MAPS_ANDROID_PACKAGE',
+    );
+    final String dotenvValue =
+        dotenv.env['GOOGLE_MAPS_ANDROID_PACKAGE']?.trim() ?? '';
+    if (dotenvValue.isNotEmpty) {
+      return dotenvValue;
+    }
+    if (dartDefineValue.trim().isNotEmpty) {
+      return dartDefineValue.trim();
+    }
+    return 'at.ac.htlperg.drivesense';
+  }
+
+  String _androidCertSha1() {
+    const String dartDefineValue = String.fromEnvironment(
+      'GOOGLE_MAPS_ANDROID_CERT_SHA1',
+    );
+    final String dotenvValue =
+        dotenv.env['GOOGLE_MAPS_ANDROID_CERT_SHA1']?.trim() ?? '';
+    final String value = dotenvValue.isNotEmpty
+        ? dotenvValue
+        : dartDefineValue.trim().isNotEmpty
+        ? dartDefineValue
+        : 'A3:E2:13:93:75:8C:32:E2:F6:D9:D1:D7:16:F3:53:2D:18:DD:ED:25';
+    return value.replaceAll(':', '').trim().toUpperCase();
   }
 
   String _googleMapsApiKey() {

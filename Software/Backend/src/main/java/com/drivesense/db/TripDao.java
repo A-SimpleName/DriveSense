@@ -109,6 +109,63 @@ public class TripDao {
         }
     }
 
+    public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
+        String sql = """
+                SELECT
+                    t.id,
+                    t.profile_id,
+                    t.vehicle_id,
+                    t.protocol_id,
+                    t.starttime,
+                    t.endtime,
+                    t.distance,
+                    t.start_mileage,
+                    t.end_mileage,
+                    v.licenseplate,
+                    v.model AS vehicle_model,
+                    t.start_point,
+                    t.furthest_point,
+                    t.end_point,
+                    t.road_surface_conditions,
+                    t.type,
+                    a.fname,
+                    a.lname
+                FROM trip t
+                JOIN protocol pr ON t.protocol_id = pr.id
+                JOIN vehicle v ON t.vehicle_id = v.id
+                JOIN profile prf ON t.profile_id = prf.id
+                JOIN account a ON prf.account_id = a.id
+                WHERE t.id = ?
+                  AND (
+                        (pr.usergroup_id IS NULL
+                         AND pr.created_by_profile_id = ?)
+                     OR
+                        (pr.usergroup_id IS NOT NULL
+                         AND EXISTS (
+                             SELECT 1
+                             FROM profile_usergroup pug
+                             WHERE pug.usergroup_id = pr.usergroup_id
+                               AND pug.profile_id = ?
+                         ))
+                      )
+                """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.setInt(2, profileId);
+            ps.setInt(3, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) return mapToDto(rs);
+            return null;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der Fahrt", e);
+        }
+    }
+
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int protocolId, int profileId) {
         String sql = """
                 SELECT
