@@ -51,7 +51,7 @@
 <div class="meta-bar" th:if="${!isGroup}">
   <div class="left">
     <span class="meta-label">Name des Fahrschülers / der Fahrschülerin: </span>
-    <span class="meta-value" th:text="${account == null ? '' : pdf.name(account.fName, account.lName)}"></span>
+    <span class="meta-value" th:text="${account == null ? '' : pdf.name(account.firstName, account.lastName)}"></span>
   </div>
   <div class="right">
     <span class="meta-label">Geburtsdatum: </span>
@@ -133,7 +133,7 @@
   </tr>
   <!-- Gruppenprotokoll rows: mit Fahrer -->
   <tr th:if="${isGroup}" th:each="trip : ${trips}">
-    <td class="left" th:text="${pdf.name(trip.accountFname, trip.accountLname)}"></td>
+    <td class="left" th:text="${pdf.name(trip.accountFirstName, trip.accountLastName)}"></td>
     <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
     <td th:text="${pdf.distance(trip.distance)}"></td>
     <td th:text="${trip.startMileage}"></td>

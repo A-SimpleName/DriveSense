@@ -48,7 +48,7 @@
     <div class="proto-sub" th:text="${isGroup ? 'Gruppenprotokoll' : 'Einzelprotokoll'} + ' · BERUFSFAHRER'"></div>
   </div>
   <div class="right" th:if="${!isGroup}">
-    <div class="proto-sub" th:text="${account == null ? '' : pdf.name(account.fName, account.lName)}"></div>
+    <div class="proto-sub" th:text="${account == null ? '' : pdf.name(account.firstName, account.lastName)}"></div>
     <div class="user-info" th:text="${account == null || account.birthdate == null ? '' : 'geb. ' + pdf.date(account.birthdate, 'dd.MM.yyyy')}"></div>
   </div>
 </div>
@@ -114,7 +114,7 @@
     <td></td><td></td><td></td><td></td><td></td>
   </tr>
   <tr th:if="${isGroup}" th:each="trip : ${trips}">
-    <td class="left" th:text="${pdf.name(trip.accountFname, trip.accountLname)}"></td>
+    <td class="left" th:text="${pdf.name(trip.accountFirstName, trip.accountLastName)}"></td>
     <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
     <td th:text="${pdf.dateTime(trip.startTime, 'HH:mm')}"></td>
     <td class="left" th:text="${pdf.text(trip.startPoint)}"></td>

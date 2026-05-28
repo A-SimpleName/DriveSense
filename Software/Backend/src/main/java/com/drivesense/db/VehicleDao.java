@@ -20,8 +20,8 @@ public class VehicleDao {
 
     public List<VehicleDto> getAllVehiclesByAccount(int accountId) {
         String sql =
-                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
-                        "       acc.fname AS owner_account_name, " +
+                "SELECT v.id, v.model, v.license_plate, v.mileage, " +
+                        "       acc.first_name AS owner_account_name, " +
                         "       p.name AS owner_profile_name, " +
                         "       pv2.role AS my_role " +
                         "FROM vehicle v " +
@@ -52,8 +52,8 @@ public class VehicleDao {
 
     public List<VehicleDto> getAllVehiclesByProfile(int profileId) {
         String sql =
-                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
-                        "       acc.fname AS owner_account_name, " +
+                "SELECT v.id, v.model, v.license_plate, v.mileage, " +
+                        "       acc.first_name AS owner_account_name, " +
                         "       p_owner.name AS owner_profile_name, " +
                         "       pv.role AS my_role " +
                         "FROM profile_vehicle pv " +
@@ -84,8 +84,8 @@ public class VehicleDao {
 
     public VehicleDto getById(int vehicleId, int accountId) {
         String sql =
-                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
-                        "       acc.fname AS owner_account_name, " +
+                "SELECT v.id, v.model, v.license_plate, v.mileage, " +
+                        "       acc.first_name AS owner_account_name, " +
                         "       p.name AS owner_profile_name, " +
                         "       pv.role AS my_role " +
                         "FROM vehicle v " +
@@ -116,7 +116,7 @@ public class VehicleDao {
     }
 
     public Vehicle insert(Vehicle vehicle, int profileId) {
-        String sqlVehicle = "INSERT INTO vehicle (model, licenseplate, mileage) VALUES (?,?,?)";
+        String sqlVehicle = "INSERT INTO vehicle (model, license_plate, mileage) VALUES (?,?,?)";
         String sqlLink = "INSERT INTO profile_vehicle (profile_id, vehicle_id, role) VALUES (?,?,?)";
 
         try (Connection conn = dbConnection.getConnection()) {
@@ -156,7 +156,7 @@ public class VehicleDao {
 
         } catch (SQLException e) {
             if ("23000".equals(e.getSQLState()) && e.getMessage() != null
-                    && e.getMessage().contains("uq_vehicle_licenseplate")) {
+                    && e.getMessage().contains("uq_vehicle_license_plate")) {
                 throw new BadRequestException("Kennzeichen ist bereits vergeben");
             }
             throw new DatabaseException("Fehler beim Speichern des Vehicles", e);
@@ -168,7 +168,7 @@ public class VehicleDao {
                 "UPDATE vehicle v " +
                         "JOIN profile_vehicle pv ON pv.vehicle_id = v.id " +
                         "JOIN profile p ON p.id = pv.profile_id " +
-                        "SET v.model = ?, v.licenseplate = ?, v.mileage = ? " +
+                        "SET v.model = ?, v.license_plate = ?, v.mileage = ? " +
                         "WHERE v.id = ? AND p.account_id = ?";
 
         try (Connection conn = dbConnection.getConnection();
@@ -232,8 +232,8 @@ public class VehicleDao {
 
     public List<VehicleDto> getAllVehicles() {
         String sql =
-                "SELECT v.id, v.model, v.licenseplate, v.mileage, " +
-                        "       acc.fname AS owner_account_name, " +
+                "SELECT v.id, v.model, v.license_plate, v.mileage, " +
+                        "       acc.first_name AS owner_account_name, " +
                         "       p.name AS owner_profile_name, " +
                         "       pv_user.role AS my_role " +
                         "FROM vehicle v " +
@@ -264,7 +264,7 @@ public class VehicleDao {
 
         dto.setId(rs.getInt("id"));
         dto.setModel(rs.getString("model"));
-        dto.setLicensePlate(rs.getString("licenseplate"));
+        dto.setLicensePlate(rs.getString("license_plate"));
         dto.setMileage(rs.getInt("mileage"));
 
         dto.setOwnerAccountName(rs.getString("owner_account_name"));

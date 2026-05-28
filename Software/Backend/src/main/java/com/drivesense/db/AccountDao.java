@@ -18,12 +18,12 @@ public class AccountDao {
     private DbConnection dbConnection;
 
     public Account insert(Account acc) {
-        String sql = "INSERT INTO account (fname, lname, pwd, email, birthdate) VALUES (?,?,?,?, ?)";
+        String sql = "INSERT INTO account (first_name, last_name, pwd, email, birthdate) VALUES (?,?,?,?, ?)";
         try (Connection conn = dbConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1,acc.getfName());
-            ps.setString(2,acc.getlName());
+            ps.setString(1,acc.getFirstName());
+            ps.setString(2,acc.getLastName());
             ps.setString(3,acc.getPassword());
             ps.setString(4,acc.getEmail());
             if (acc.getBirthdate() != null) {
@@ -102,12 +102,12 @@ public class AccountDao {
     }
 
     public void update(Account acc) {
-        String sql = "UPDATE account SET fname = ?, lname = ?, email = ?, birthdate = ? WHERE id = ?";
+        String sql = "UPDATE account SET first_name = ?, last_name = ?, email = ?, birthdate = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, acc.getfName());
-            ps.setString(2, acc.getlName());
+            ps.setString(1, acc.getFirstName());
+            ps.setString(2, acc.getLastName());
             ps.setString(3, acc.getEmail());
             if (acc.getBirthdate() != null) {
                 ps.setDate(4, Date.valueOf(acc.getBirthdate()));
@@ -151,8 +151,8 @@ public class AccountDao {
     private Account map(ResultSet rs) throws SQLException {
         Account acc = new Account();
         acc.setId(rs.getInt("id"));
-        acc.setfName(rs.getString("fname"));
-        acc.setlName(rs.getString("lname"));
+        acc.setFirstName(rs.getString("first_name"));
+        acc.setLastName(rs.getString("last_name"));
         acc.setEmail(rs.getString("email"));
         acc.setPassword(rs.getString("pwd"));
         Date date = rs.getDate("birthdate");

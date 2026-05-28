@@ -4,16 +4,16 @@ import java.time.LocalDate;
 
 public class Account {
     private int id;
-    private String fName;
-    private String lName;
+    private String firstName;
+    private String lastName;
     private String password;
     private String email;
     private LocalDate birthdate;
 
     public Account () {}
-    public Account(String fName, String lName, String password, String email, LocalDate birthdate) {
-        this.fName = fName;
-        this.lName = lName;
+    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.birthdate = birthdate;
@@ -27,20 +27,20 @@ public class Account {
         this.id = id;
     }
 
-    public String getfName() {
-        return fName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setfName(String fName) {
-        this.fName = fName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getlName() {
-        return lName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setlName(String lName) {
-        this.lName = lName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPassword() {
@@ -71,8 +71,8 @@ public class Account {
     public String toString() {
         return "Account: " +
                 "id: " + id +
-                ", fName: '" + fName + '\'' +
-                ", lName: '" + lName + '\'' +
+                ", firstName: '" + firstName + '\'' +
+                ", lastName: '" + lastName + '\'' +
                 ", password: '" + password + '\'' +
                 ", email: '" + email + '\'';
     }
