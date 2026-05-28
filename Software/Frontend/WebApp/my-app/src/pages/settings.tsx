@@ -8,6 +8,7 @@ import { Button } from "../components/button";
 import { AddForm } from "../components/addForm";
 
 import { updateAccount } from "../services/accountService";
+import { changePassword } from "../services/auth";
 
 export default function Settings() {
     const { account } = useAuth();
@@ -15,6 +16,7 @@ export default function Settings() {
     const [error, setError] =useState<string | null>(null);
 
     const [editOpen, setEditOpen] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     async function handleUpdateAccount(values: Record<string, string | number>) {
         await updateAccount(
@@ -39,6 +41,20 @@ export default function Settings() {
         })
     }
 
+    async function handleChangePassword(values: Record<string, string | number>) {
+        const oldPassword = String(values.oldPassword);
+        const newPassword = String(values.newPassword);
+        const repeatPassword = String(values.repeatPassword);
+
+        if (newPassword !== repeatPassword) {
+            throw new Error("Passwörter stimmen nicht überein");
+        }
+
+        await changePassword(oldPassword, newPassword);
+
+        setShowPasswordForm(false);
+    }
+
     if (error) return <p style={{ color: "#dc2626" }}>Fehler: {error}</p>
     
     return (
@@ -56,6 +72,7 @@ export default function Settings() {
             <Button
                 label="Passwort ändern"
                 type="button"
+                onClick={() => setShowPasswordForm(true)}
             />
 
             <Button
@@ -93,6 +110,31 @@ export default function Settings() {
                             key: "email",
                             label: "Email",
                             defaultValue: account?.email
+                        }
+                    ]}
+                />
+            )}
+            {showPasswordForm && (
+                <AddForm
+                    title="Passwort ändern"
+                    submitLabel="Speichern"
+                    onClose={() => setShowPasswordForm(false)}
+                    onSubmit={handleChangePassword}
+                    fields={[
+                        {
+                            type: "text",
+                            key: "oldPassword",
+                            label: "Altes Passwort"
+                        },
+                        {
+                            type: "text",
+                            key: "newPassword",
+                            label: "Neues Passwort"
+                        },
+                        {
+                            type: "text",
+                            key: "repeatPassword",
+                            label: "Neues Passwort wiederholen"
                         }
                     ]}
                 />

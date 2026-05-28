@@ -15,14 +15,28 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [show, setShow] = useState(false);
+    const [repeatPassword, setRepeatPassword] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!email.trim() || !code.trim() || !newPassword.trim()) return;
+
+        if (newPassword !== repeatPassword) {
+            setError("Passwörter stimmen nicht überein");
+            return;
+        }
+
         setLoading(true);
         setError(null);
+
         try {
-            await resetPassword(email.trim(), code.trim(), newPassword);
+            await resetPassword(
+                email.trim(),
+                code.trim(),
+                newPassword
+            );
+
             navigate("/login");
         } catch (err: any) {
             setError(err?.message || "Fehler beim Zurücksetzen");
@@ -53,6 +67,13 @@ export default function ResetPasswordPage() {
                     placeholder="Neues Passwort"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
+                />
+
+                <input
+                    type="password"
+                    placeholder="Neues Passwort wiederholen"
+                    value={repeatPassword}
+                    onChange={e => setRepeatPassword(e.target.value)}
                 />
                 <Button
                     label={show ? "Verbergen" : "Anzeigen"}
