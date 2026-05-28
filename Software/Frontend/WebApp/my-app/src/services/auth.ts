@@ -68,6 +68,10 @@ export async function resendVerification(email: string) {
     return handleRequest(api.post("/account/resend-verification", { email }));
 }
 
+export async function changePassword(oldPassword: string, newPassword: string) {
+    return handleRequest(api.post("/account/password", {oldPassword, newPassword}));
+}
+
 export async function forgotPassword(email: string) {
     return handleRequest(api.post("/account/forgot-password", { email }));
 }
