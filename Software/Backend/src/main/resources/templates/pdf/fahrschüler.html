@@ -7,15 +7,22 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; font-size: 8pt; color: #1a1a2e; }
 
-  .meta-bar { background: #E8F0FB; border-bottom: 1px solid #B4C8E8; padding: 4px 10px; display: table; width: 100%; }
-  .meta-bar .left  { display: table-cell; text-align: left; }
-  .meta-bar .right { display: table-cell; text-align: right; }
+  .meta-bar { background: #E8F0FB; border-bottom: 1px solid #B4C8E8; padding: 4px 10px; display: block; width: 100%; }
+  .meta-bar .left  { float: left; }
+  .meta-bar .right { float: right; }
   .meta-label { color: #6878A0; font-size: 7pt; }
   .meta-value { color: #1A3C6E; font-weight: bold; }
 
-  .header { background: #1A3C6E; padding: 7px 12px; display: table; width: 100%; }
-  .header .left  { display: table-cell; vertical-align: middle; }
-  .header .right { display: table-cell; vertical-align: middle; text-align: right; }
+  .meta-bar::after,
+  .header::after {
+      content: "";
+      display: block;
+      clear: both;
+  }
+
+  .header { background: #1A3C6E; padding: 7px 12px; display: block; width: 100%; }
+  .header .left  { float: left; }
+  .header .right { float: right; }
   .brand       { color: white; font-size: 15pt; font-weight: bold; }
   .proto-title { color: white; font-size: 11pt; font-weight: bold; }
   .proto-sub   { color: #BBCDE8; font-size: 7pt; }
@@ -36,6 +43,7 @@
   tbody tr:nth-child(even) td { background: #F0F5FF; }
   tbody td { padding: 3px 4px; border: 1px solid #C0CFDF; text-align: center; height: 20px; }
   tbody td.left { text-align: left; }
+  tbody tr.filler-row td { height: 20px; }
 
   .footer { display: table; width: 100%; border-top: 1px solid #2E7DCC; padding-top: 4px; margin-top: 6px; font-size: 7pt; color: #9AAAC0; }
   .footer .left   { display: table-cell; text-align: left; }
@@ -50,11 +58,11 @@
 <div class="meta-bar" th:if="${!isGroup}">
   <div class="left">
     <span class="meta-label">Name des Fahrschülers / der Fahrschülerin: </span>
-    <span class="meta-value" th:text="${account.fName + ' ' + account.lName}"></span>
+    <span class="meta-value" th:text="${account == null ? '' : pdf.name(account.fName, account.lName)}"></span>
   </div>
   <div class="right">
     <span class="meta-label">Geburtsdatum: </span>
-    <span class="meta-value" th:text="${#temporals.format(account.birthdate, 'dd.MM.yyyy')}"></span>
+    <span class="meta-value" th:text="${account == null ? '' : pdf.date(account.birthdate, 'dd.MM.yyyy')}"></span>
   </div>
 </div>
 
@@ -62,7 +70,7 @@
 <div class="meta-bar" th:if="${isGroup}">
   <div class="left">
     <span class="meta-label">Gruppe: </span>
-    <span class="meta-value" th:text="${groupName}"></span>
+    <span class="meta-value" th:text="${pdf.text(groupName)}"></span>
   </div>
 </div>
 
@@ -115,34 +123,38 @@
   <tbody>
   <!-- Einzelprotokoll rows -->
   <tr th:if="${!isGroup}" th:each="trip : ${trips}">
-    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-    <td th:text="${trip.distance + ' km'}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.licensePlate}"></td>
-    <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
-    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
-    <td th:text="${trip.roadSurfaceConditions}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${pdf.route(trip.startPoint, trip.furthestPoint, trip.endPoint)}"></td>
+    <td th:text="${pdf.text(trip.roadSurfaceConditions)}"></td>
     <td></td>
     <td></td>
   </tr>
-  <tr th:if="${!isGroup}" th:each="i : ${fillerRows}">
-    <td></td><td></td><td></td><td></td><td></td>
+  <tr class="filler-row" th:if="${!isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td><td></td>
     <td></td><td></td><td></td><td></td><td></td>
   </tr>
   <!-- Gruppenprotokoll rows: mit Fahrer -->
   <tr th:if="${isGroup}" th:each="trip : ${trips}">
-    <td class="left" th:text="${trip.accountFname + ' ' + trip.accountLname}"></td>
-    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-    <td th:text="${trip.distance + ' km'}"></td>
+    <td class="left" th:text="${pdf.name(trip.accountFname, trip.accountLname)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.licensePlate}"></td>
-    <td th:text="${#temporals.format(trip.startTime, 'HH:mm')}"></td>
-    <td class="left" th:text="${trip.startPoint + ' → ' + trip.furthestPoint + ' → ' + trip.endPoint}"></td>
-    <td th:text="${trip.roadSurfaceConditions}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${pdf.route(trip.startPoint, trip.furthestPoint, trip.endPoint)}"></td>
+    <td th:text="${pdf.text(trip.roadSurfaceConditions)}"></td>
     <td></td>
     <td></td>
+  </tr>
+  <tr class="filler-row" th:if="${isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
   </tr>
   </tbody>
 </table>

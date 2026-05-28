@@ -2,8 +2,10 @@ import { Link, useLocation } from 'react-router-dom';
 import Logo from '/src/pics/DS_Logo.png';
 import '/src/styles/topbar.css';
 import UserMenu from '../userMenu';
+import { useAuth } from '../../context/authContext';
 
 function Topbar() {
+    const { profile } = useAuth();
     const location = useLocation();
 
     const isActive = (path: string) => {
@@ -20,6 +22,9 @@ function Topbar() {
             <Link to="/vehicles" className={isActive('/vehicles') ? 'nav-link active' : 'nav-link'}>Fahrzeuge</Link>
             <Link to="/protocols" className={isActive('/protocols') ? 'nav-link active' : 'nav-link'}>Protokolle</Link>
             <Link to="/groups" className={isActive('/groups') ? 'nav-link active' : 'nav-link'}>Gruppen</Link>
+            {profile?.role === "ADMIN" && (
+                <Link to="/admin" className={isActive('/admin') ? 'nav-link active' : 'nav-link'}>Admin</Link>
+            )}
 
             <UserMenu />
         </nav>

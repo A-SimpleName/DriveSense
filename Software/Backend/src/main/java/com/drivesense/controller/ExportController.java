@@ -42,7 +42,7 @@ public class ExportController {
                 ? "gruppenprotokoll_" + protocolId
                 : "einzelprotokoll_"  + protocolId;
 
-        return buildResponse(pdf, filename + ".pdf");
+        return buildResponse(pdf, filename);
     }
 
     private ResponseEntity<byte[]> buildResponse(byte[] pdf, String filename) {

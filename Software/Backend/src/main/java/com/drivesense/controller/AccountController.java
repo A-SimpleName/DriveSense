@@ -1,12 +1,18 @@
 package com.drivesense.controller;
 
+import com.drivesense.db.AccountDao;
 import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.LoginResponse;
 import com.drivesense.dto.response.RefreshResponse;
 import com.drivesense.dto.response.SelectProfileResponse;
+import com.drivesense.exceptions.NotFoundException;
 import com.drivesense.exceptions.UnauthorizedException;
+import com.drivesense.model.Account;
 import com.drivesense.service.AccountService;
+import com.drivesense.service.EmailVerificationService;
+import com.drivesense.service.JwtService;
+import com.drivesense.service.PasswortResetService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +26,12 @@ import org.springframework.web.bind.annotation.*;
 public class AccountController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private AccountDao accountDao;
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+    @Autowired
+    private PasswortResetService passwordResetService;
 
     @PostMapping("/signUp")
     public ResponseEntity<AccountResponse> signUp(@Valid @RequestBody SignUpRequest request) {
@@ -171,6 +183,44 @@ public class AccountController {
     public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest request, HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
         accountService.updatePassword(accountId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(
+            @RequestBody @Valid VerifyEmailRequest request) {
+
+        emailVerificationService.verifyCode(request.getEmail(), request.getCode());
+        return ResponseEntity.ok().build();
+    }
+
+    // Falls User neuen Code anfordert
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(
+            @RequestBody @Valid ResendVerificationRequest request) {
+        Account account = accountDao.getByEmail(request.getEmail());
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+        emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    // Schritt 1 – Code anfordern
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request) {
+        passwordResetService.sendResetCode(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    // Schritt 2 – Code + neues Passwort
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request) {
+        passwordResetService.resetPassword(
+                request.getEmail(),
+                request.getCode(),
+                request.getNewPassword()
+        );
         return ResponseEntity.ok().build();
     }
 

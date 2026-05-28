@@ -32,6 +32,7 @@ async function request<T>(
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}));
     const err: any = new Error(errorBody?.message || "HTTP error");
+    err.status = response.status; 
     err.errors = errorBody?.errors || null;
     throw err;
   }

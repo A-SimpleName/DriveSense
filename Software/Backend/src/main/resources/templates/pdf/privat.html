@@ -7,9 +7,10 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #1a1a2e; }
 
-  .header { background: #1A3C6E; padding: 10px 14px; display: table; width: 100%; }
-  .header .left  { display: table-cell; vertical-align: middle; width: 50%; }
-  .header .right { display: table-cell; vertical-align: middle; text-align: right; }
+  .header { background: #1A3C6E; padding: 10px 14px; display: block; width: 100%; }
+  .header::after { content: ""; display: block; clear: both; }
+  .header .left  { float: left; width: 50%; }
+  .header .right { float: right; text-align: right; }
   .brand      { color: white; font-size: 15pt; font-weight: bold; }
   .proto-name { color: white; font-size: 12pt; font-weight: bold; }
   .proto-sub  { color: #BBCDE8; font-size: 7.5pt; }
@@ -29,6 +30,7 @@
   tbody tr:nth-child(even) td { background: #F0F5FF; }
   tbody td { padding: 5px 6px; border: 1px solid #C0CFDF; text-align: center; }
   tbody td.left { text-align: left; }
+  tbody tr.filler-row td { height: 18px; }
 
   .footer { display: table; width: 100%; border-top: 1px solid #2E7DCC; padding-top: 4px; margin-top: 8px; font-size: 7pt; color: #9AAAC0; }
   .footer .left   { display: table-cell; text-align: left; }
@@ -43,12 +45,12 @@
   <div class="left">
     <img src="logo.png" alt="Drivesense Logo" style="height: 24pt; vertical-align: middle;"/>
     <span class="brand">DRIVESENSE</span>
-    <div class="proto-name" th:text="${isGroup ? groupName : protocol.name}"></div>
+    <div class="proto-name" th:text="${pdf.text(isGroup ? groupName : protocol.name)}"></div>
     <div class="proto-sub" th:text="${isGroup ? 'Gruppenprotokoll' : 'Einzelprotokoll'} + ' · PRIVAT'"></div>
   </div>
   <div class="right" th:if="${!isGroup}">
-    <div class="proto-sub" th:text="${account.fName + ' ' + account.lName}"></div>
-    <div class="user-info" th:text="'geb. ' + ${#temporals.format(account.birthdate, 'dd.MM.yyyy')}"></div>
+    <div class="proto-sub" th:text="${account == null ? '' : pdf.name(account.fName, account.lName)}"></div>
+    <div class="user-info" th:text="${account == null || account.birthdate == null ? '' : 'geb. ' + pdf.date(account.birthdate, 'dd.MM.yyyy')}"></div>
   </div>
 </div>
 <div class="accent"></div>
@@ -71,6 +73,7 @@
   <tr th:if="${!isGroup}">
     <th>Datum</th>
     <th>Start</th>
+    <th>Wendepunkt</th>
     <th>Ziel</th>
     <th>km-Start</th>
     <th>km-Ende</th>
@@ -81,6 +84,7 @@
     <th>Fahrer</th>
     <th>Datum</th>
     <th>Start</th>
+    <th>Wendepunkt</th>
     <th>Ziel</th>
     <th>km-Start</th>
     <th>km-Ende</th>
@@ -90,32 +94,40 @@
   </thead>
   <tbody>
   <tr th:if="${!isGroup}" th:each="trip : ${trips}">
-    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-    <td class="left" th:text="${trip.startPoint}"></td>
-    <td class="left" th:text="${trip.furthestPoint}"></td>
-    <td class="left" th:text="${trip.endPoint}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td class="left" th:text="${pdf.text(trip.startPoint)}"></td>
+    <td class="left" th:text="${pdf.text(trip.furthestPoint)}"></td>
+    <td class="left" th:text="${pdf.text(trip.endPoint)}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.distance + ' km'}"></td>
-    <td th:text="${trip.licensePlate}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+  </tr>
+  <tr class="filler-row" th:if="${!isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td>
   </tr>
   <tr th:if="${isGroup}" th:each="trip : ${trips}">
-    <td class="left" th:text="${trip.accountFname + ' ' + trip.accountLname}"></td>
-    <td th:text="${#temporals.format(trip.startTime, 'dd.MM.yyyy')}"></td>
-    <td class="left" th:text="${trip.startPoint}"></td>
-    <td class="left" th:text="${trip.furthestPoint}"></td>
-    <td class="left" th:text="${trip.endPoint}"></td>
+    <td class="left" th:text="${pdf.name(trip.accountFname, trip.accountLname)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td class="left" th:text="${pdf.text(trip.startPoint)}"></td>
+    <td class="left" th:text="${pdf.text(trip.furthestPoint)}"></td>
+    <td class="left" th:text="${pdf.text(trip.endPoint)}"></td>
     <td th:text="${trip.startMileage}"></td>
     <td th:text="${trip.endMileage}"></td>
-    <td th:text="${trip.distance + ' km'}"></td>
-    <td th:text="${trip.licensePlate}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+  </tr>
+  <tr class="filler-row" th:if="${isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td>
   </tr>
   </tbody>
 </table>
 
 <div class="footer">
   <div class="left">drivesense.app</div>
-  <div class="center">Erstellt am: <strong th:text="${#temporals.format(protocol.created_at, 'dd.MM.yyyy HH:mm')}"></strong></div>
+  <div class="center">Erstellt am: <strong th:text="${pdf.dateTime(protocol.created_at, 'dd.MM.yyyy HH:mm')}"></strong></div>
   <div class="right">Seite <strong>1</strong></div>
 </div>
 

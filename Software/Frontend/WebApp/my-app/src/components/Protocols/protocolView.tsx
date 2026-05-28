@@ -1,5 +1,5 @@
 import type { ProtocolDetail } from "../../model/protocol";
-import type { TripSummary } from "../../model/trip";
+import type { TripSummaryDto } from "../../model/trip";
 import styles from "../../styles/protocol.module.css";
 
 type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
@@ -59,7 +59,7 @@ export default function ProtocolView({
         }
     };
 
-    const renderRow = (trip: TripSummary, i: number) => {
+    const renderRow = (trip: TripSummaryDto, i: number) => {
         return (
             <tr key={i}>
                 {isGroup && (
@@ -102,8 +102,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className={styles.left}>{trip.startPoint}</td>
-                        <td className={styles.left}>{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
                         <td>{trip.distance} km</td>
@@ -118,8 +118,8 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td className={styles.left}>{trip.startPoint}</td>
-                        <td className={styles.left}>{trip.endPoint}</td>
+                        <td>{trip.startPoint}</td>
+                        <td>{trip.endPoint}</td>
                         <td>{trip.distance} km</td>
                         <td>{trip.type}</td>
                         <td>{trip.licensePlate}</td>
@@ -162,10 +162,7 @@ export default function ProtocolView({
                         </div>
 
                         <div className={styles.userInfo}>
-                            geb.{" "}
-                            {new Date(
-                                protocol.created_by_account.birthdate
-                            ).toLocaleDateString("de-AT")}
+                            geb. {birthdate}
                         </div>
                     </div>
                 )}

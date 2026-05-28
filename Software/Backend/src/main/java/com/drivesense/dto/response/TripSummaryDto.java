@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 public class TripSummaryDto {
     private int id;
-    private int profileId;
     private int vehicleId;
     private int protocolId;
     private LocalDateTime startTime;
@@ -33,14 +32,6 @@ public class TripSummaryDto {
 
     public void setProtocolName(String protocolName) {
         this.protocolName = protocolName;
-    }
-
-    public int getProtocolId() {
-        return protocolId;
-    }
-
-    public void setProtocolId(int protocolId) {
-        this.protocolId = protocolId;
     }
 
     public String getFurthestPoint() {
@@ -115,6 +106,22 @@ public class TripSummaryDto {
         this.id = id;
     }
 
+    public int getVehicleId() {
+        return vehicleId;
+    }
+
+    public void setVehicleId(int vehicleId) {
+        this.vehicleId = vehicleId;
+    }
+
+    public int getProtocolId() {
+        return protocolId;
+    }
+
+    public void setProtocolId(int protocolId) {
+        this.protocolId = protocolId;
+    }
+
     public String getAccountFname() {
         return accountFname;
     }
@@ -145,6 +152,14 @@ public class TripSummaryDto {
 
     public void setLicenseplate(String licenseplate) {
         this.licenseplate = licenseplate;
+    }
+
+    public String getLicensePlate() {
+        return licenseplate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licenseplate = licensePlate;
     }
 
     public double getDistance() {

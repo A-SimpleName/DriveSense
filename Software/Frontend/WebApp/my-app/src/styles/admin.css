@@ -1,0 +1,105 @@
+/* styles/admin.css */
+
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.admin-tab-btn {
+    color: white;
+    border-radius: 12px;
+    height: 2em;
+    width: 8em;
+    background-color: dodgerblue;
+    border: none;
+    font-weight: bold;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.admin-tab-btn:hover {
+    background-color: deepskyblue;
+}
+
+.admin-tab-btn.active {
+    background-color: royalblue;
+    text-decoration: underline;
+}
+
+.admin-delete-btn {
+    color: white;
+    border-radius: 12px;
+    height: 2em;
+    width: 8em;
+    background-color: crimson;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.admin-delete-btn:hover {
+    background-color: red;
+}
+
+.admin-action-btn {
+    color: white;
+    border-radius: 12px;
+    height: 2em;
+    width: 8em;
+    background-color: dodgerblue;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.admin-action-btn:hover {
+    background-color: deepskyblue;
+}
+
+.admin-table {
+    width: 100%;
+    margin-bottom: 5%;
+    border-collapse: collapse;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.admin-table thead {
+    color: white;
+    vertical-align: top;
+    background-color: rgb(126, 132, 218);
+}
+
+.admin-table th {
+    font-size: 1.5vh;
+    height: 2vh;
+    padding-top: 1%;
+}
+
+.admin-table tbody tr:nth-child(odd) {
+    background-color: rgb(231, 231, 231);
+}
+
+.admin-table tbody {
+    text-align: center;
+}
+
+.admin-table td {
+    height: 3vh;
+}
+
+.admin-table tbody tr:hover {
+    color: white;
+    background-color: rgb(102, 141, 199);
+    cursor: pointer;
+}
+
+.admin-member-row {
+    background-color: #f0f0f0 !important;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
