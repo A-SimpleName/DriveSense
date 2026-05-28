@@ -123,8 +123,11 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
       children: [
         // ── Kopfzeile: Titel + "Hinzufügen"-Button nebeneinander ──────────
         // Row: ordnet Kinder horizontal nebeneinander an
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             const Text(
               'Fahrzeuge',
@@ -148,63 +151,82 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
         else
           // SingleChildScrollView macht die Tabelle horizontal scrollbar
           // falls der Bildschirm zu schmal ist
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Table(
-              defaultColumnWidth: const IntrinsicColumnWidth(),
-              border: TableBorder.all(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              children: [
-                // ── Kopfzeile der Tabelle ──────────────────────────────
-                TableRow(
-                  decoration: BoxDecoration(color: Colors.grey.shade200),
-                  children: const [
-                    _HeaderCell('Modell'),
-                    _HeaderCell('Kennzeichen'),
-                    _HeaderCell('Kilometerstand'),
-                    _HeaderCell('Aktionen'),
-                  ],
-                ),
-
-                // ── Eine Zeile pro Fahrzeug ────────────────────────────
-                // .map() verwandelt jedes Vehicle-Objekt in eine TableRow
-                ..._vehicles.map(
-                  (vehicle) => TableRow(
-                    children: [
-                      _DataCell(vehicle.model),
-                      _DataCell(vehicle.licensePlate),
-                      _DataCell('${vehicle.mileage} km'),
-                      // Aktionen: Bearbeiten + Entfernen Icons
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              tooltip: 'Bearbeiten',
-                              onPressed: () =>
-                                  _openVehicleDialog(vehicle: vehicle),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                size: 18,
-                                color: Colors.red,
-                              ),
-                              tooltip: 'Entfernen',
-                              onPressed: () => _deleteVehicle(vehicle),
-                            ),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return ClipRect(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: constraints.maxWidth.isFinite
+                          ? (constraints.maxWidth > 1
+                                ? constraints.maxWidth - 1
+                                : 0)
+                          : 0,
+                    ),
+                    child: Table(
+                      defaultColumnWidth: const IntrinsicColumnWidth(),
+                      border: TableBorder.all(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      children: [
+                        // ── Kopfzeile der Tabelle ──────────────────────────────
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          children: const [
+                            _HeaderCell('Modell'),
+                            _HeaderCell('Kennzeichen'),
+                            _HeaderCell('Kilometerstand'),
+                            _HeaderCell('Aktionen'),
                           ],
                         ),
-                      ),
-                    ],
+
+                        // ── Eine Zeile pro Fahrzeug ────────────────────────────
+                        // .map() verwandelt jedes Vehicle-Objekt in eine TableRow
+                        ..._vehicles.map(
+                          (vehicle) => TableRow(
+                            children: [
+                              _DataCell(vehicle.model),
+                              _DataCell(vehicle.licensePlate),
+                              _DataCell('${vehicle.mileage} km'),
+                              // Aktionen: Bearbeiten + Entfernen Icons
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, size: 18),
+                                      tooltip: 'Bearbeiten',
+                                      onPressed: () =>
+                                          _openVehicleDialog(vehicle: vehicle),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        size: 18,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Entfernen',
+                                      onPressed: () => _deleteVehicle(vehicle),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
       ],
     );
@@ -239,7 +261,7 @@ class _DataCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Text(text),
+      child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
 }

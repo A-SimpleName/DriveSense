@@ -67,6 +67,11 @@ class TripRepository {
     return isar.trips.filter().localIdEqualTo(localId).findFirst();
   }
 
+  Future<Trip?> getById(Id id) async {
+    final isar = await IsarService.getInstance();
+    return isar.trips.get(id);
+  }
+
   Future<void> deleteById(Id id) async {
     final isar = await IsarService.getInstance();
     await isar.writeTxn(() async {

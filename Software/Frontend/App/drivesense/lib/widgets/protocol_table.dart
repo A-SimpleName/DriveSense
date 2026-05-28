@@ -1,16 +1,17 @@
-﻿import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
+import 'package:drivesense/widgets/protocol_trip_fields.dart';
+import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 class ProtocolTable extends StatelessWidget {
   final Future<void> Function()? onChanged;
 
   const ProtocolTable({super.key, this.onChanged});
 
-  static const double _actionColumnWidth = 104;
+  static const double _actionColumnWidth = 140;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
 
   static final TableBorder _headerTableBorder = TableBorder(
@@ -40,223 +41,86 @@ class ProtocolTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<TripSummary> trips = RuntimeStore.trips;
-    final List<_ProtocolColumn> columns = _columnsForRole(
+    final List<ProtocolTripField> columns = protocolTripFieldsForRole(
       RuntimeStore.getActiveProfileRole(),
     );
     final Map<int, TableColumnWidth> columnWidths = _columnWidthsFor(columns);
     final double tableWidth = _tableWidthFor(columns);
 
-    return SizedBox(
-      width: double.infinity,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: tableWidth,
-          child: Column(
-            children: <Widget>[
-              Table(
-                border: _headerTableBorder,
-                columnWidths: columnWidths,
-                children: <TableRow>[
-                  TableRow(
-                    key: const ValueKey('headerRow'),
-                    decoration: BoxDecoration(color: Colors.grey.shade200),
-                    children: <Widget>[
-                      ...columns.map(
-                        (_ProtocolColumn column) => _headerCell(column.header),
-                      ),
-                      _headerCell('Aktionen'),
-                    ],
-                  ),
-                ],
-              ),
-              Expanded(
-                child: trips.isEmpty
-                    ? const Center(child: Text('Keine Fahrten vorhanden.'))
-                    : SingleChildScrollView(
-                        child: Table(
-                          border: _bodyTableBorder,
-                          columnWidths: columnWidths,
-                          children: trips
-                              .map(
-                                (TripSummary trip) => TableRow(
-                                  children: <Widget>[
-                                    ...columns.map(
-                                      (_ProtocolColumn column) =>
-                                          _cell(column.value(trip)),
-                                    ),
-                                    _actionCell(context, trip),
-                                  ],
-                                ),
-                              )
-                              .toList(),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double viewportWidth =
+            constraints.maxWidth.isFinite && constraints.maxWidth > 1
+            ? constraints.maxWidth - 1
+            : tableWidth;
+        final double effectiveTableWidth = tableWidth > viewportWidth
+            ? tableWidth
+            : viewportWidth;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ClipRect(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: effectiveTableWidth,
+                child: Column(
+                  children: <Widget>[
+                    Table(
+                      border: _headerTableBorder,
+                      columnWidths: columnWidths,
+                      children: <TableRow>[
+                        TableRow(
+                          key: const ValueKey('headerRow'),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          children: <Widget>[
+                            ...columns.map(
+                              (ProtocolTripField column) =>
+                                  _headerCell(column.header),
+                            ),
+                            _headerCell('Aktionen'),
+                          ],
                         ),
-                      ),
+                      ],
+                    ),
+                    Expanded(
+                      child: trips.isEmpty
+                          ? const Center(
+                              child: Text('Keine Fahrten vorhanden.'),
+                            )
+                          : SingleChildScrollView(
+                              child: Table(
+                                border: _bodyTableBorder,
+                                columnWidths: columnWidths,
+                                children: trips
+                                    .map(
+                                      (TripSummary trip) => TableRow(
+                                        children: <Widget>[
+                                          ...columns.map(
+                                            (ProtocolTripField column) =>
+                                                _cell(column.value(trip)),
+                                          ),
+                                          _actionCell(context, trip),
+                                        ],
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  List<_ProtocolColumn> _columnsForRole(String role) {
-    switch (_normalizeRole(role)) {
-      case 'FAHRSCHUELER':
-        return <_ProtocolColumn>[
-          _ProtocolColumn(
-            header: 'Datum',
-            width: 100,
-            value: (TripSummary trip) => _formatDate(trip.startTime),
-          ),
-          _ProtocolColumn(
-            header: 'gefahrene\nkm',
-            width: 100,
-            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
-          ),
-          _ProtocolColumn(
-            header: 'km-Stand\nvon',
-            width: 105,
-            value: (TripSummary trip) => _formatMileage(trip.startMileage),
-          ),
-          _ProtocolColumn(
-            header: 'km-Stand\nbis',
-            width: 105,
-            value: (TripSummary trip) => _formatMileage(trip.endMileage),
-          ),
-          _ProtocolColumn(
-            header: 'KFZ-\nKennzeichen',
-            width: 125,
-            value: _formatVehicleLicensePlate,
-          ),
-          _ProtocolColumn(
-            header: 'Tageszeit',
-            width: 90,
-            value: (TripSummary trip) => _formatClockTime(trip.startTime),
-          ),
-          _ProtocolColumn(
-            header: 'Fahrstrecke /\nZiel',
-            width: 190,
-            value: _formatRoute,
-          ),
-          _ProtocolColumn(
-            header: 'Strassenzustand /\nWitterung',
-            width: 165,
-            value: (TripSummary trip) =>
-                _formatText(trip.roadSurfaceConditions),
-          ),
-          _ProtocolColumn(
-            header: 'Unterschrift\nBegleiter',
-            width: 130,
-            value: (_) => '-',
-          ),
-          _ProtocolColumn(
-            header: 'Unterschrift\nBewerber',
-            width: 130,
-            value: (_) => '-',
-          ),
-        ];
-      case 'BERUFSFAHRER':
-        return <_ProtocolColumn>[
-          _ProtocolColumn(
-            header: 'Datum',
-            width: 100,
-            value: (TripSummary trip) => _formatDate(trip.startTime),
-          ),
-          _ProtocolColumn(
-            header: 'Uhrzeit',
-            width: 90,
-            value: (TripSummary trip) => _formatClockTime(trip.startTime),
-          ),
-          _ProtocolColumn(
-            header: 'Start',
-            width: 145,
-            value: (TripSummary trip) => _formatText(trip.startPoint),
-          ),
-          _ProtocolColumn(
-            header: 'Wendepunkt',
-            width: 145,
-            value: (TripSummary trip) => _formatText(trip.furthestPoint),
-          ),
-          _ProtocolColumn(
-            header: 'Ziel',
-            width: 145,
-            value: (TripSummary trip) => _formatText(trip.endPoint),
-          ),
-          _ProtocolColumn(
-            header: 'km-Start',
-            width: 100,
-            value: (TripSummary trip) => _formatMileage(trip.startMileage),
-          ),
-          _ProtocolColumn(
-            header: 'km-Ende',
-            width: 100,
-            value: (TripSummary trip) => _formatMileage(trip.endMileage),
-          ),
-          _ProtocolColumn(
-            header: 'Strecke',
-            width: 100,
-            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
-          ),
-          _ProtocolColumn(
-            header: 'KFZ Kennzeichen',
-            width: 130,
-            value: _formatVehicleLicensePlate,
-          ),
-          _ProtocolColumn(
-            header: 'Typ / Zweck',
-            width: 150,
-            value: (TripSummary trip) => _formatText(trip.type),
-          ),
-        ];
-      case 'PRIVAT':
-      default:
-        return <_ProtocolColumn>[
-          _ProtocolColumn(
-            header: 'Datum',
-            width: 100,
-            value: (TripSummary trip) => _formatDate(trip.startTime),
-          ),
-          _ProtocolColumn(
-            header: 'Start',
-            width: 150,
-            value: (TripSummary trip) => _formatText(trip.startPoint),
-          ),
-          _ProtocolColumn(
-            header: 'Wendepunkt',
-            width: 150,
-            value: (TripSummary trip) => _formatText(trip.furthestPoint),
-          ),
-          _ProtocolColumn(
-            header: 'Ziel',
-            width: 150,
-            value: (TripSummary trip) => _formatText(trip.endPoint),
-          ),
-          _ProtocolColumn(
-            header: 'km-Start',
-            width: 100,
-            value: (TripSummary trip) => _formatMileage(trip.startMileage),
-          ),
-          _ProtocolColumn(
-            header: 'km-Ende',
-            width: 100,
-            value: (TripSummary trip) => _formatMileage(trip.endMileage),
-          ),
-          _ProtocolColumn(
-            header: 'Strecke',
-            width: 100,
-            value: (TripSummary trip) => _formatDistance(trip.distanceKm),
-          ),
-          _ProtocolColumn(
-            header: 'KFZ Kennzeichen',
-            width: 130,
-            value: _formatVehicleLicensePlate,
-          ),
-        ];
-    }
-  }
-
-  Map<int, TableColumnWidth> _columnWidthsFor(List<_ProtocolColumn> columns) {
+  Map<int, TableColumnWidth> _columnWidthsFor(List<ProtocolTripField> columns) {
     return <int, TableColumnWidth>{
       for (int i = 0; i < columns.length; i++)
         i: FixedColumnWidth(columns[i].width),
@@ -264,28 +128,12 @@ class ProtocolTable extends StatelessWidget {
     };
   }
 
-  double _tableWidthFor(List<_ProtocolColumn> columns) {
+  double _tableWidthFor(List<ProtocolTripField> columns) {
     return columns.fold<double>(
           0,
-          (double width, _ProtocolColumn column) => width + column.width,
+          (double width, ProtocolTripField column) => width + column.width,
         ) +
         _actionColumnWidth;
-  }
-
-  String _normalizeRole(String role) {
-    final String normalized = role.trim().toUpperCase();
-
-    switch (normalized) {
-      case 'FAHRSCHÜLER':
-      case 'FAHRSCHUELER':
-      case 'FAHRSCHULER':
-        return 'FAHRSCHUELER';
-      case 'BERUFSFAHRER':
-        return 'BERUFSFAHRER';
-      case 'PRIVAT':
-      default:
-        return 'PRIVAT';
-    }
   }
 
   Widget _headerCell(String text) {
@@ -310,6 +158,13 @@ class ProtocolTable extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             IconButton(
+              icon: const Icon(Icons.info_outline, size: 18),
+              tooltip: 'Details',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+              onPressed: () => showTripDetailDialog(context, trip),
+            ),
+            IconButton(
               icon: const Icon(Icons.edit, size: 18),
               tooltip: 'Bearbeiten',
               padding: EdgeInsets.zero,
@@ -333,9 +188,7 @@ class ProtocolTable extends StatelessWidget {
   Future<void> _openTripDialog(BuildContext context, TripSummary trip) async {
     if (trip.endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offene Fahrt kann nicht bearbeitet werden.'),
-        ),
+        const SnackBar(content: Text('Offene Fahrt kann nicht bearbeitet werden.')),
       );
       return;
     }
@@ -357,32 +210,39 @@ class ProtocolTable extends StatelessWidget {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Fahrt aktualisiert.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Fahrt aktualisiert.')),
+      );
     } catch (e) {
       if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Speichern fehlgeschlagen: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Speichern fehlgeschlagen: $e')),
+      );
     }
   }
 
   Future<void> _deleteTrip(BuildContext context, TripSummary trip) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Fahrt löschen',
-        content:
-            'Fahrt am "${_formatDate(trip.startTime)}" wirklich löschen?\n\n'
-            'Diese Aktion kann nicht rückgängig gemacht werden.',
-        confirmText: 'Endgültig löschen',
-        delaySeconds: 0,
-        confirmButtonColor: Colors.red,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: const Text('Fahrt loeschen'),
+        content: Text(
+          'Moechtest du die Fahrt vom ${formatProtocolTripDate(trip.startTime)} wirklich loeschen?',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Loeschen'),
+          ),
+        ],
       ),
     );
 
@@ -406,72 +266,6 @@ class ProtocolTable extends StatelessWidget {
       ),
     );
   }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day}.${dt.month}.${dt.year}';
-  }
-
-  String _formatClockTime(DateTime dt) {
-    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-
-  String _formatDistance(double distanceKm) {
-    return '${distanceKm.toStringAsFixed(2)} km';
-  }
-
-  String _formatMileage(int mileage) {
-    return mileage > 0 ? mileage.toString() : '-';
-  }
-
-  String _formatText(String? value) {
-    final String text = (value ?? '').trim();
-    return text.isNotEmpty ? text : '-';
-  }
-
-  String _formatRoute(TripSummary trip) {
-    final List<String> routePoints =
-        <String>[
-          trip.startPoint ?? '',
-          trip.furthestPoint ?? '',
-          trip.endPoint ?? '',
-        ].map((String value) => value.trim()).where((String value) {
-          return value.isNotEmpty;
-        }).toList();
-
-    if (routePoints.isNotEmpty) {
-      return routePoints.join(' -> ');
-    }
-
-    final String type = (trip.type ?? '').trim();
-    return type.isNotEmpty ? type : '-';
-  }
-
-  String _formatVehicleLicensePlate(TripSummary trip) {
-    final String licensePlate = (trip.vehicleLicensePlate ?? '').trim();
-    if (licensePlate.isNotEmpty) {
-      return licensePlate;
-    }
-
-    for (final vehicle in RuntimeStore.vehicles) {
-      if (vehicle.id == trip.vehicleId) {
-        return vehicle.licensePlate;
-      }
-    }
-
-    return '-';
-  }
-}
-
-class _ProtocolColumn {
-  final String header;
-  final double width;
-  final String Function(TripSummary trip) value;
-
-  const _ProtocolColumn({
-    required this.header,
-    required this.width,
-    required this.value,
-  });
 }
 
 class _TripEditDialog extends StatefulWidget {

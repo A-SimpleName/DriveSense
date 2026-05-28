@@ -4,34 +4,34 @@ import jakarta.validation.constraints.*;
 
 public class UpdateAccountRequest {
     @NotBlank(message = "Vorname darf nicht leer sein")
-    private String fname;
+    private String firstName;
     @NotBlank(message = "Nachname darf nicht leer sein")
-    private String lname;
+    private String lastName;
     @NotBlank(message = "Email darf nicht leer sein")
     @Email(message = "Email Format ungültig")
     private String email;
 
-    public UpdateAccountRequest(String fname, String lname, String email) {
-        this.fname = fname;
-        this.lname = lname;
+    public UpdateAccountRequest(String firstName, String lastName, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
     }
     public UpdateAccountRequest(){}
 
-    public String getFname() {
-        return fname;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFname(String fname) {
-        this.fname = fname;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getLname() {
-        return lname;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLname(String lname) {
-        this.lname = lname;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
