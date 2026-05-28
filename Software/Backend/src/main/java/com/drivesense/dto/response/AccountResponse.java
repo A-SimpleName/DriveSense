@@ -1,51 +1,24 @@
 package com.drivesense.dto.response;
 
-import java.time.LocalDate;
-
 public class AccountResponse {
     private int id;
     private String fName;
     private String lName;
     private String email;
-    private LocalDate birthdate;
+    private String pendingEmail;
 
-    public LocalDate getBirthdate() {
-        return birthdate;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setBirthdate(LocalDate birthdate) {
-        this.birthdate = birthdate;
-    }
+    public String getfName() { return fName; }
+    public void setfName(String fName) { this.fName = fName; }
 
-    public int getId() {
-        return id;
-    }
+    public String getlName() { return lName; }
+    public void setlName(String lName) { this.lName = lName; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getfName() {
-        return fName;
-    }
-
-    public void setfName(String fName) {
-        this.fName = fName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getlName() {
-        return lName;
-    }
-
-    public void setlName(String lName) {
-        this.lName = lName;
-    }
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
 }

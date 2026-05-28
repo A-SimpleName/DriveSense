@@ -66,6 +66,14 @@ public class TripSummaryDto {
         this.startTime = startTime;
     }
 
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
     public int getStartMileage() {
         return startMileage;
     }

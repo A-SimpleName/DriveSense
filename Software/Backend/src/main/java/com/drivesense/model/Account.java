@@ -1,6 +1,7 @@
 package com.drivesense.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Account {
     private int id;
@@ -8,67 +9,37 @@ public class Account {
     private String lName;
     private String password;
     private String email;
+    private String pendingEmail;
     private LocalDate birthdate;
     private boolean emailVerified;
+    private LocalDateTime deletedAt;
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getfName() { return fName; }
+    public void setfName(String fName) { this.fName = fName; }
 
-    public String getfName() {
-        return fName;
-    }
+    public String getlName() { return lName; }
+    public void setlName(String lName) { this.lName = lName; }
 
-    public void setfName(String fName) {
-        this.fName = fName;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getlName() {
-        return lName;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setlName(String lName) {
-        this.lName = lName;
-    }
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public LocalDate getBirthdate() {
-        return birthdate;
-    }
-
-    public void setBirthdate(LocalDate birthdate) {
-        this.birthdate = birthdate;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public LocalDate getBirthdate() { return birthdate; }
+    public void setBirthdate(LocalDate birthdate) { this.birthdate = birthdate; }
 
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
-    @Override
-    public String toString() {
-        return "Account: " +
-                "id: " + id +
-                ", fName: '" + fName + '\'' +
-                ", lName: '" + lName + '\'' +
-                ", password: '" + password + '\'' +
-                ", email: '" + email + '\'';
-    }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public boolean isDeleted() { return deletedAt != null; }
 }
