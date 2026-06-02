@@ -185,9 +185,14 @@ class TripService {
     }
   }
 
-  Future<bool> deleteTripSummary(int tripId) async {
+  Future<bool> deleteTripSummary(TripSummary tripSummary) async {
+    final int tripId = tripSummary.id;
     if (tripId <= 0) {
       return false;
+    }
+
+    if (!tripSummary.isSynced) {
+      return _deleteLocalTripSummary(tripId);
     }
 
     try {
@@ -196,9 +201,33 @@ class TripService {
         headers: RequestHeaders.authenticated(),
       );
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      final bool success =
+          response.statusCode >= 200 && response.statusCode < 300;
+      if (success) {
+        await _deleteCachedServerTrip(tripId);
+      }
+      return success;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<bool> _deleteLocalTripSummary(int tripId) async {
+    final Trip? localTrip = await _tripRepository.getById(tripId);
+    if (localTrip == null || localTrip.isSynced) {
+      return false;
+    }
+
+    await _tripRepository.deleteById(localTrip.id);
+    return true;
+  }
+
+  Future<void> _deleteCachedServerTrip(int tripId) async {
+    final Trip? cachedTrip = await _tripRepository.getByLocalId(
+      'server:$tripId',
+    );
+    if (cachedTrip != null) {
+      await _tripRepository.deleteById(cachedTrip.id);
     }
   }
 

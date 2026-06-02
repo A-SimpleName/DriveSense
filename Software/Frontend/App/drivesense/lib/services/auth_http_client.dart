@@ -14,11 +14,16 @@ Future<Response> get(Uri url, {Map<String, String>? headers}) {
   return _AuthHttpClient.instance.request('GET', url, headers: headers);
 }
 
-Future<Response> post(
-  Uri url, {
-  Map<String, String>? headers,
-  Object? body,
-}) {
+Future<Response> getBytes(Uri url, {Map<String, String>? headers}) {
+  return _AuthHttpClient.instance.request(
+    'GET',
+    url,
+    headers: headers,
+    responseBodyType: _ResponseBodyType.bytes,
+  );
+}
+
+Future<Response> post(Uri url, {Map<String, String>? headers, Object? body}) {
   return _AuthHttpClient.instance.request(
     'POST',
     url,
@@ -27,11 +32,7 @@ Future<Response> post(
   );
 }
 
-Future<Response> put(
-  Uri url, {
-  Map<String, String>? headers,
-  Object? body,
-}) {
+Future<Response> put(Uri url, {Map<String, String>? headers, Object? body}) {
   return _AuthHttpClient.instance.request(
     'PUT',
     url,
@@ -86,6 +87,7 @@ class _AuthHttpClient {
     Uri url, {
     Map<String, String>? headers,
     Object? body,
+    _ResponseBodyType responseBodyType = _ResponseBodyType.plain,
   }) async {
     final Map<String, String> requestHeaders = <String, String>{
       ...?headers,
@@ -107,6 +109,7 @@ class _AuthHttpClient {
       url,
       headers: requestHeaders,
       body: body,
+      responseBodyType: responseBodyType,
     );
 
     if (authRequested && response.statusCode == 401) {
@@ -121,6 +124,7 @@ class _AuthHttpClient {
           url,
           headers: requestHeaders,
           body: body,
+          responseBodyType: responseBodyType,
         );
       } else {
         await TokenStorage.instance.clearSession();
@@ -135,19 +139,35 @@ class _AuthHttpClient {
     Uri url, {
     required Map<String, String> headers,
     Object? body,
+    required _ResponseBodyType responseBodyType,
   }) async {
     try {
-      final dioResponse = await _dio.requestUri<String>(
+      final dioResponse = await _dio.requestUri<dynamic>(
         url,
         data: body,
-        options: Options(method: method, headers: headers),
-      );
-      return package_http.Response(
-        dioResponse.data ?? '',
-        dioResponse.statusCode ?? 0,
-        headers: dioResponse.headers.map.map(
-          (key, value) => MapEntry(key, value.join(',')),
+        options: Options(
+          method: method,
+          headers: headers,
+          responseType: responseBodyType.dioResponseType,
         ),
+      );
+      final Map<String, String> responseHeaders = dioResponse.headers.map.map(
+        (key, value) => MapEntry(key, value.join(',')),
+      );
+
+      if (responseBodyType == _ResponseBodyType.bytes) {
+        return package_http.Response.bytes(
+          _asBytes(dioResponse.data),
+          dioResponse.statusCode ?? 0,
+          headers: responseHeaders,
+          request: package_http.Request(method, url),
+        );
+      }
+
+      return package_http.Response(
+        dioResponse.data?.toString() ?? '',
+        dioResponse.statusCode ?? 0,
+        headers: responseHeaders,
         request: package_http.Request(method, url),
       );
     } on DioException catch (e) {
@@ -186,11 +206,11 @@ class _AuthHttpClient {
   }
 
   Future<bool> _doRefreshAccountToken() async {
-    final String refreshToken =
-        RuntimeStore.refreshToken.isNotEmpty
-            ? RuntimeStore.refreshToken
-            : (await TokenStorage.instance.readRefreshToken()) ?? '';
-    if (refreshToken.isEmpty || _expiresSoon(refreshToken, allowWindow: false)) {
+    final String refreshToken = RuntimeStore.refreshToken.isNotEmpty
+        ? RuntimeStore.refreshToken
+        : (await TokenStorage.instance.readRefreshToken()) ?? '';
+    if (refreshToken.isEmpty ||
+        _expiresSoon(refreshToken, allowWindow: false)) {
       return false;
     }
 
@@ -284,7 +304,8 @@ class _AuthHttpClient {
   }
 
   bool _authRequested(Map<String, String> headers) {
-    return (headers['Cookie'] ?? '').trim().isNotEmpty;
+    return (headers['Cookie'] ?? '').trim().isNotEmpty ||
+        headers.containsKey(RequestHeaders.includeProfileTokenHeader);
   }
 
   bool _includeProfileTokenRequested(Map<String, String> headers) {
@@ -363,4 +384,32 @@ class _AuthHttpClient {
       return null;
     }
   }
+}
+
+enum _ResponseBodyType {
+  plain,
+  bytes;
+
+  ResponseType get dioResponseType {
+    return switch (this) {
+      _ResponseBodyType.plain => ResponseType.plain,
+      _ResponseBodyType.bytes => ResponseType.bytes,
+    };
+  }
+}
+
+List<int> _asBytes(dynamic data) {
+  if (data == null) {
+    return <int>[];
+  }
+  if (data is List<int>) {
+    return data;
+  }
+  if (data is List) {
+    return data.whereType<int>().toList();
+  }
+  if (data is String) {
+    return utf8.encode(data);
+  }
+  return utf8.encode(data.toString());
 }

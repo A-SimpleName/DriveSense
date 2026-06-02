@@ -23,7 +23,48 @@ public class TripDao {
     }
 
     public int insert(TripSummary tripSummary) {
-        String sql = "INSERT INTO trip (profile_id, vehicle_id, protocol_id, start_time, end_time, distance, road_surface_conditions, type, start_point, end_point, furthest_point, start_mileage, end_mileage) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        String sql = """
+                INSERT INTO trip (
+                    profile_id,
+                    vehicle_id,
+                    protocol_id,
+                    start_time,
+                    end_time,
+                    distance,
+                    road_surface_conditions,
+                    type,
+                    start_point,
+                    end_point,
+                    furthest_point,
+                    start_mileage,
+                    end_mileage,
+                    vehicle_model_snapshot,
+                    licenseplate_snapshot,
+                    profile_name_snapshot
+                )
+                SELECT
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    v.model,
+                    v.license_plate,
+                    p.name
+                FROM vehicle v
+                JOIN profile_vehicle pv ON pv.vehicle_id = v.id
+                JOIN profile p ON p.id = pv.profile_id
+                WHERE v.id = ?
+                  AND pv.profile_id = ?
+                """;
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -40,7 +81,13 @@ public class TripDao {
             ps.setString(11, tripSummary.getFurthestPoint());
             ps.setInt(12, tripSummary.getStartMileage());
             ps.setInt(13, tripSummary.getEndMileage());
-            ps.executeUpdate();
+            ps.setInt(14, tripSummary.getVehicleId());
+            ps.setInt(15, tripSummary.getProfileId());
+
+            int insertedRows = ps.executeUpdate();
+            if (insertedRows == 0) {
+                throw new BadRequestException("Fahrzeug ist fuer dieses Profil nicht verfuegbar");
+            }
 
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -121,8 +168,8 @@ public class TripDao {
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.license_plate,
-                    v.model AS vehicle_model,
+                    t.licenseplate_snapshot AS license_plate,
+                    t.vehicle_model_snapshot AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
@@ -178,8 +225,8 @@ public class TripDao {
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.license_plate,
-                    v.model AS vehicle_model,
+                    t.licenseplate_snapshot AS license_plate,
+                    t.vehicle_model_snapshot AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
@@ -242,8 +289,8 @@ public class TripDao {
                                 t.distance,
                                 t.start_mileage,
                                 t.end_mileage,
-                                v.license_plate,
-                                v.model AS vehicle_model,
+                                t.licenseplate_snapshot AS license_plate,
+                                t.vehicle_model_snapshot AS vehicle_model,
                                 t.start_point,
                                 t.furthest_point,
                                 t.end_point,
@@ -288,8 +335,8 @@ public class TripDao {
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.license_plate,
-                    v.model AS vehicle_model,
+                    t.licenseplate_snapshot AS license_plate,
+                    t.vehicle_model_snapshot AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,
@@ -335,8 +382,8 @@ public class TripDao {
                     t.distance,
                     t.start_mileage,
                     t.end_mileage,
-                    v.license_plate,
-                    v.model AS vehicle_model,
+                    t.licenseplate_snapshot AS license_plate,
+                    t.vehicle_model_snapshot AS vehicle_model,
                     t.start_point,
                     t.furthest_point,
                     t.end_point,

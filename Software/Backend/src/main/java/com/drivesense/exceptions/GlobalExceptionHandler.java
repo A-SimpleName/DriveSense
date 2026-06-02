@@ -33,6 +33,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handlePdfExport(PdfExportException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            error.put("detail", ex.getCause().getMessage());
+        }
         return ResponseEntity.status(500).body(error);
     }
 
