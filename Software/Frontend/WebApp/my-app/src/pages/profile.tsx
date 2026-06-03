@@ -114,8 +114,8 @@ export default function ProfilePage() {
             <div style={{ marginBottom: "2rem" }}>
                 <h2>Konto-Informationen</h2>
                 <div style={{ display: "grid", gap: "0.5rem", maxWidth: "400px" }}>
-                    <p><strong>Vorname:</strong> {account?.fName || "Nicht verfügbar"}</p>
-                    <p><strong>Nachname:</strong> {account?.lName || "Nicht verfügbar"}</p>
+                    <p><strong>Vorname:</strong> {account?.firstName || "Nicht verfügbar"}</p>
+                    <p><strong>Nachname:</strong> {account?.lastName || "Nicht verfügbar"}</p>
                     <p><strong>E-Mail:</strong> {account?.email || "Nicht verfügbar"}</p>
                 </div>
             </div>

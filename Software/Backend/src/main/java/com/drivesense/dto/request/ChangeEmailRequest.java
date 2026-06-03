@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class ChangeEmailRequest {
 
-    @NotBlank(message = "E-Mail darf nicht leer sein")
+    @NotBlank(message = "Neue E-Mail darf nicht leer sein")
     @Email(message = "Ungültige E-Mail-Adresse")
     private String newEmail;
 

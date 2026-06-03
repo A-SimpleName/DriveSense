@@ -14,6 +14,9 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
 export const getAllTrips = () =>
     handleRequest<TripSummaryDto[]>(http.get<TripSummaryDto[]>("/trips"));
 
+export const getLatestTrip = () =>
+    handleRequest<TripSummary | undefined>(http.get<TripSummary | undefined>("/trips/latest"));
+
 export const getTripById = (id: number) =>
     handleRequest<Tripdetailed>(http.get<Tripdetailed>(`/trips/${id}`));
 

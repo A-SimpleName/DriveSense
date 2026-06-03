@@ -3,6 +3,8 @@ package com.drivesense.service;
 import com.drivesense.dto.response.ProtocolDto;
 import com.drivesense.dto.response.TripSummaryDto;
 import com.drivesense.exceptions.PdfExportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -10,6 +12,7 @@ import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +23,8 @@ import java.util.stream.IntStream;
 
 @Service
 public class PdfExportService {
+
+    private static final Logger log = LoggerFactory.getLogger(PdfExportService.class);
 
     private final TemplateEngine templateEngine;
 
@@ -60,7 +65,8 @@ public class PdfExportService {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ITextRenderer renderer = new ITextRenderer();
-            String baseUrl = getClass().getResource("/static/").toURI().toString();
+            URL staticUrl = getClass().getResource("/static/");
+            String baseUrl = staticUrl == null ? null : staticUrl.toURI().toString();
             renderer.setDocumentFromString(html, baseUrl);
             renderer.layout();
             renderer.createPDF(baos);
@@ -68,6 +74,8 @@ public class PdfExportService {
             return baos.toByteArray();
 
         } catch (Exception e) {
+            log.error("Failed to generate PDF for protocolId={}",
+                    protocol == null ? null : protocol.getId(), e);
             throw new PdfExportException("PDF konnte nicht generiert werden", e);
         }
     }

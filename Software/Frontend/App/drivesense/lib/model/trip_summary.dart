@@ -5,12 +5,16 @@ class TripSummary {
   final int profileId;
   final int vehicleId;
   final String? vehicleLicensePlate;
+  final String? accountFirstName;
+  final String? accountLastName;
+  final String? vehicleModel;
   final int protocolId;
   final DateTime startTime;
   final DateTime? endTime;
   final double distanceKm;
   final String roadSurfaceConditions;
   final String? startPoint;
+  final String? furthestPoint;
   final String? endPoint;
   final String? type;
   final int startMileage;
@@ -22,12 +26,16 @@ class TripSummary {
     required this.profileId,
     required this.vehicleId,
     this.vehicleLicensePlate,
+    this.accountFirstName,
+    this.accountLastName,
+    this.vehicleModel,
     required this.protocolId,
     required this.startTime,
     this.endTime,
     required this.distanceKm,
     required this.roadSurfaceConditions,
     this.startPoint,
+    this.furthestPoint,
     this.endPoint,
     required this.type,
     required this.isSynced,
@@ -41,12 +49,17 @@ class TripSummary {
       "profileId": profileId,
       "vehicleId": vehicleId,
       "vehicleLicensePlate": vehicleLicensePlate,
+      "licensePlate": vehicleLicensePlate,
+      "accountFirstName": accountFirstName,
+      "accountLastName": accountLastName,
+      "vehicleModel": vehicleModel,
       "protocolId": protocolId,
       "startTime": startTime.toIso8601String(),
       "endTime": endTime?.toIso8601String(),
       "distance": distanceKm,
       "roadSurfaceConditions": roadSurfaceConditions,
       "startPoint": startPoint,
+      "furthestPoint": furthestPoint,
       "endPoint": endPoint,
       "type": type,
       "isSynced": isSynced,
@@ -75,7 +88,12 @@ class TripSummary {
       profileId: asInt(json["profileId"] ?? json["profile_id"]),
       vehicleId: asInt(json["vehicleId"] ?? json["vehicle_id"]),
       vehicleLicensePlate:
-          (json["licenseplate"] ?? json["licensePlate"])?.toString(),
+          (json["licensePlate"] ??
+                  json["vehicleLicensePlate"])
+              ?.toString(),
+      accountFirstName: json["accountFirstName"]?.toString(),
+      accountLastName: json["accountLastName"]?.toString(),
+      vehicleModel: json["vehicleModel"]?.toString(),
       protocolId: asInt(json["protocolId"] ?? json["protocol_id"]),
       startTime: DateTime.parse(json["startTime"].toString()),
       endTime: json["endTime"] != null
@@ -84,6 +102,8 @@ class TripSummary {
       distanceKm: asDouble(json["distance"] ?? json["distanceKm"]),
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
       startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
+      furthestPoint:
+          (json["furthestPoint"] ?? json["furthest_point"])?.toString(),
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] != false,
@@ -111,12 +131,16 @@ class TripSummary {
       profileId: trip.profileId,
       vehicleId: trip.vehicleId,
       vehicleLicensePlate: null,
+      accountFirstName: null,
+      accountLastName: null,
+      vehicleModel: null,
       protocolId: trip.protocolId,
       startTime: trip.startTime,
       endTime: trip.endTime,
       distanceKm: trip.distanceKm,
       roadSurfaceConditions: trip.roadSurfaceConditions,
       startPoint: null,
+      furthestPoint: null,
       endPoint: null,
       type: trip.type,
       isSynced: trip.isSynced,
@@ -130,12 +154,16 @@ class TripSummary {
     int? profileId,
     int? vehicleId,
     String? vehicleLicensePlate,
+    String? accountFirstName,
+    String? accountLastName,
+    String? vehicleModel,
     int? protocolId,
     DateTime? startTime,
     DateTime? endTime,
     double? distanceKm,
     String? roadSurfaceConditions,
     String? startPoint,
+    String? furthestPoint,
     String? endPoint,
     String? type,
     bool? isSynced,
@@ -147,6 +175,9 @@ class TripSummary {
       profileId: profileId ?? this.profileId,
       vehicleId: vehicleId ?? this.vehicleId,
       vehicleLicensePlate: vehicleLicensePlate ?? this.vehicleLicensePlate,
+      accountFirstName: accountFirstName ?? this.accountFirstName,
+      accountLastName: accountLastName ?? this.accountLastName,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
       protocolId: protocolId ?? this.protocolId,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
@@ -154,6 +185,7 @@ class TripSummary {
       roadSurfaceConditions:
           roadSurfaceConditions ?? this.roadSurfaceConditions,
       startPoint: startPoint ?? this.startPoint,
+      furthestPoint: furthestPoint ?? this.furthestPoint,
       endPoint: endPoint ?? this.endPoint,
       type: type ?? this.type,
       isSynced: isSynced ?? this.isSynced,

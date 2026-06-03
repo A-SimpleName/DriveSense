@@ -1,6 +1,7 @@
-.ridesTable {
-  overflow-x: auto;
-  border-radius: var(--radius);
+.ridesTable tbody tr:hover {
+    color: white;
+    background-color: rgb(102, 141, 199);
+    cursor: pointer;
 }
 
 .ridesTable input,
@@ -15,55 +16,36 @@
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--surface);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
+    width: 100%;
+    margin-bottom: 5%;
+    border-collapse: collapse;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 table thead {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: #ffffff;
-  font-weight: 700;
-}
-
-table th,
-table td {
-  padding: 16px 18px;
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--border-light);
+    color: white;
+    vertical-align: top;
+    background-color: rgb(126, 132, 218);
 }
 
 table th {
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #ffffff;
+    font-size: 1.5vh;
+    height: 2vh;
+    padding-top: 1%;
 }
 
 table tbody tr:nth-child(odd) {
-  background: rgba(255,255,255,0.98);
+    background-color: rgb(231, 231, 231);
 }
 
-table tbody tr:nth-child(even) {
-  background: #f9fafd;
+table thead tr:nth-child(2) {
+    border-bottom: 2px solid black;
 }
 
-table tbody tr:hover {
-  background: rgba(37,99,235,0.04);
-  cursor: pointer;
-  transition: background 0.2s ease;
+table tbody {
+    text-align: center;
 }
 
 table td {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-table tbody tr:last-child td {
-  border-bottom: none;
+    height: 3vh;
 }

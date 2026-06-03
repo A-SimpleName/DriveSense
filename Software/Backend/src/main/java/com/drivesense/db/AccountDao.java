@@ -82,6 +82,19 @@ public class AccountDao {
         }
     }
 
+    public boolean existsByPendingEmail(String email, int excludedAccountId) {
+        String sql = "SELECT 1 FROM account WHERE pending_email = ? AND id <> ? AND deleted_at IS NULL LIMIT 1";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setInt(2, excludedAccountId);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Prüfen der pending_email", e);
+        }
+    }
+
     public List<Account> getAll() {
         String sql = "SELECT * FROM account WHERE deleted_at IS NULL";
         try (Connection conn = dbConnection.getConnection();
@@ -98,19 +111,31 @@ public class AccountDao {
     // ── Schreiben ───────────────────────────────────────────────────────────
 
     public void update(Account acc) {
-        String sql = "UPDATE account SET first_name = ?, last_name = ?, email = ?, birthdate = ? WHERE id = ?";
+        String sql = """
+            UPDATE account
+            SET first_name = ?,
+                last_name = ?,
+                email = ?,
+                pending_email = ?,
+                email_verified = ?,
+                birthdate = ?
+            WHERE id = ?
+              AND deleted_at IS NULL
+            """;
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, acc.getFirstName());
             ps.setString(2, acc.getLastName());
             ps.setString(3, acc.getEmail());
+            ps.setString(4, acc.getPendingEmail());
+            ps.setBoolean(5, acc.isEmailVerified());
             if (acc.getBirthdate() != null) {
-                ps.setDate(3, Date.valueOf(acc.getBirthdate()));
+                ps.setDate(6, Date.valueOf(acc.getBirthdate()));
             } else {
-                ps.setNull(3, Types.DATE);
+                ps.setNull(6, Types.DATE);
             }
-            ps.setInt(4, acc.getId());
+            ps.setInt(7, acc.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim Aktualisieren des Accounts", e);
@@ -159,7 +184,8 @@ public class AccountDao {
         String sql = """
             UPDATE account
             SET email = pending_email,
-                pending_email = NULL
+                pending_email = NULL,
+                email_verified = true
             WHERE id = ?
               AND pending_email IS NOT NULL
               AND deleted_at IS NULL

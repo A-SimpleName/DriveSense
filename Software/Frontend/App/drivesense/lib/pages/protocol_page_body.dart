@@ -8,6 +8,8 @@ import 'package:drivesense/services/trip_sync_service.dart';
 import 'package:drivesense/widgets/ds_snyc_trips_button.dart';
 import 'package:drivesense/widgets/protocol_table.dart';
 import 'package:flutter/material.dart';
+import 'package:drivesense/services/pdf_service.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 class ProtocolPageBody extends StatefulWidget {
   final TripSyncService tripSyncService;
@@ -22,6 +24,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
   List<Protocol> _protocols = <Protocol>[];
   bool _isLoading = true;
   bool _isCreating = false;
+  bool _isExportingPdf = false;
   String? _loadError;
   int? _lastProfileId;
 
@@ -88,9 +91,22 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   children: <Widget>[
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: _handlePdfExportPressed,
-                        icon: const Icon(Icons.picture_as_pdf),
-                        label: const Text('PDF exportieren'),
+                        onPressed:
+                            _isLoading || _protocols.isEmpty || _isExportingPdf
+                            ? null
+                            : _handlePdfExportPressed,
+                        icon: _isExportingPdf
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.picture_as_pdf),
+                        label: Text(
+                          _isExportingPdf ? 'Exportiere...' : 'PDF exportieren',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -149,29 +165,29 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       return;
     }
 
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          title: const Text('Protokoll löschen'),
-          content: const Text(
-            'möchten Sie das Protokoll wirklich Löschen, alle darin eingetragenen Fahrten werden dadurch gelöscht',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Abbrechen'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Löschen'),
-            ),
-          ],
-        );
-      },
+    final Protocol? selectedProtocol = _protocols.cast<Protocol?>().firstWhere(
+      (Protocol? protocol) => protocol?.id == selectedProtocolId,
+      orElse: () => null,
     );
 
-    if (confirm != true) return;
+    final String protocolName =
+        selectedProtocol?.name ?? 'Unbekanntes Protokoll';
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Protokoll löschen',
+        content:
+            'Protokoll "$protocolName" wirklich löschen?\n\n'
+            'Diese Aktion kann nicht rückgängig gemacht werden.',
+        confirmText: 'Endgültig löschen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
+      ),
+    );
+
+    if (confirmed != true) return;
 
     setState(() {
       _isLoading = true;
@@ -200,10 +216,26 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
     }
   }
 
-  void _handlePdfExportPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PDF Export ist noch nicht implementiert.')),
+  Future<void> _handlePdfExportPressed() async {
+    setState(() {
+      _isExportingPdf = true;
+    });
+
+    final PdfExportResult result = await PdfService.generatePdf(
+      protocolId: RuntimeStore.getCurrentProtocolId(),
     );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isExportingPdf = false;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(result.message)));
   }
 
   Future<void> _refreshVisibleTrips() async {

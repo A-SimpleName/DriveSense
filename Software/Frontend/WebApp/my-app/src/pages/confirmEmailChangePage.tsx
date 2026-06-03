@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { confirmEmailChange } from "../services/accountService";
-import { resendVerification } from "../services/auth";
+import { confirmEmailChange, requestEmailChange } from "../services/accountService";
 
 export default function ConfirmEmailChangePage() {
     const navigate = useNavigate();
@@ -44,7 +43,8 @@ export default function ConfirmEmailChangePage() {
         setResendSuccess(false);
 
         try {
-            await resendVerification(sessionStorage.getItem("pendingEmailChange") ?? "");
+            if (!pendingEmail) throw new Error("Keine ausstehende Email-Änderung gefunden");
+            await requestEmailChange(pendingEmail);
             setResendSuccess(true);
         } catch (err: any) {
             setError(err?.message || "Fehler beim erneuten Senden");

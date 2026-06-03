@@ -1,5 +1,3 @@
-import "./styles/app.css";
-import "./styles/utilities.css";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -163,7 +161,7 @@ function AppContent() {
               <Route path="profile" element={<ProfilePage />} />
               <Route path="invite" element={<InviteAcceptPage />} />
               <Route path="admin" element={<AdminPage />} />
-              <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
+              <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
             </Route>
           </>
         )}

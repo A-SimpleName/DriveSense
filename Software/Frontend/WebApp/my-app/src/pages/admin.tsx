@@ -123,8 +123,8 @@ function AdminPage() {
                         {accounts.map(account => (
                             <tr key={account.id}>
                                 <td>{account.id}</td>
-                                <td>{account.fName}</td>
-                                <td>{account.lName}</td>
+                                <td>{account.firstName}</td>
+                                <td>{account.lastName}</td>
                                 <td>{account.email}</td>
                                 <td className="admin-actions">
                                     <button className="admin-delete-btn" onClick={() => handleDeleteAccount(account.id)}>Löschen</button>
@@ -146,7 +146,7 @@ function AdminPage() {
                                 <>
                                     <tr key={`account-${account.id}`} style={{ background: "rgb(126, 132, 218)", color: "white" }}>
                                         <td colSpan={5} style={{ textAlign: "left", paddingLeft: "8px", fontWeight: "bold" }}>
-                                            {account.fName} {account.lName} — {account.email}
+                                            {account.firstName} {account.lastName} — {account.email}
                                         </td>
                                     </tr>
                                     {accountProfiles.map(p => (

@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createProfile } from "../services/profileService";
-import type { Profile } from "../model/profile";
-import { logout, selectProfile } from "../services/auth";
 import { Button } from "../components/button";
 import { useAuth } from "../context/authContext";
-import { useState } from "react";
+import type { Profile } from "../model/profile";
+import { logout, selectProfile } from "../services/auth";
+import { createProfile } from "../services/profileService";
 import "../styles/selectProfile.css";
 
 export default function SelectProfilePage({
@@ -17,7 +17,7 @@ export default function SelectProfilePage({
     onSelect: () => void;
 }) {
     const navigate = useNavigate();
-    const { setProfile, setIsAuth } = useAuth();
+    const { setProfile, setIsAuth, setProfileSelected } = useAuth();
     const [newName, setNewName] = useState("");
     const [newRole, setNewRole] = useState("PRIVAT");
     const [createError, setCreateError] = useState<string | null>(null);
@@ -31,8 +31,10 @@ export default function SelectProfilePage({
         setSelectError(null);
         try {
             const selectedProfile = profiles.find(p => p.id === id);
-            if (selectedProfile) setProfile(selectedProfile);
+            if (!selectedProfile) throw new Error("Profil nicht gefunden");
+            setProfile(selectedProfile);
             await selectProfile(id);
+            setProfileSelected(true);
             onSelect();
             navigate("/");
         } catch (err: any) {
@@ -45,13 +47,16 @@ export default function SelectProfilePage({
             setCreateError("Bitte einen Profilnamen eingeben");
             return;
         }
+
         setCreating(true);
         setCreateError(null);
+
         try {
             const profile = await createProfile({ name: newName, role: newRole });
             setProfiles([...profiles, profile]);
             setProfile(profile);
             await selectProfile(profile.id!);
+            setProfileSelected(true);
             onSelect();
             navigate("/");
         } catch (err: any) {
@@ -66,6 +71,7 @@ export default function SelectProfilePage({
         try {
             await logout();
             setIsAuth(false);
+            setProfileSelected(false);
             navigate("/login");
         } catch (err: any) {
             setLogoutError(err?.message || "Logout fehlgeschlagen");

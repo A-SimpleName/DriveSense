@@ -6,8 +6,9 @@ import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/token_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 class SignUpResult {
   final bool isSuccess;
@@ -150,6 +151,18 @@ class SignInAndSignUp {
         final String? refreshToken = _extractRefreshToken(body);
         final List<Profile> profiles = _extractProfiles(body);
 
+        if (accountToken != null && accountToken.isNotEmpty) {
+          if (refreshToken != null && refreshToken.isNotEmpty) {
+            await TokenStorage.instance.saveLoginTokens(
+              accountToken: accountToken,
+              refreshToken: refreshToken,
+            );
+          } else {
+            await TokenStorage.instance.clearProfile();
+            await TokenStorage.instance.saveAccountToken(accountToken);
+          }
+        }
+
         return SignInResult(
           isSuccess: true,
           accountToken: accountToken,
@@ -207,5 +220,24 @@ class SignInAndSignUp {
 
   static String redirectToProfileSelectPage({String? token}) {
     return token == null || token.isEmpty ? 'SignInPage' : 'ProfileSelectPage';
+  }
+
+  static Future<void> signOut() async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account/logout');
+    try {
+      await http
+          .post(
+            uri,
+            headers: RequestHeaders.authenticated(
+              clientType: 'mobile',
+              includeRefreshToken: true,
+            ),
+          )
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Logout is local-token authoritative for the mobile client.
+    } finally {
+      await TokenStorage.instance.clearSession();
+    }
   }
 }

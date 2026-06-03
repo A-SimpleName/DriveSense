@@ -13,8 +13,8 @@ public class Vehicle {
     @Size(max = 150, message = "Model darf maximal 150 Zeichen haben")
     private String model;
 
-    @NotBlank(message = "Licenseplate darf nicht leer sein")
-    @Size(max = 20, message = "Licenseplate darf maximal 20 Zeichen haben")
+    @NotBlank(message = "Kennzeichen darf nicht leer sein")
+    @Size(max = 20, message = "Kennzeichen darf maximal 20 Zeichen haben")
     private String licensePlate;
 
     @Min(value = 0, message = "Kilometerstand darf nicht negativ sein")

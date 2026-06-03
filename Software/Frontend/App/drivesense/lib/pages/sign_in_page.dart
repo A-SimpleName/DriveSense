@@ -1,5 +1,4 @@
 import 'package:drivesense/config/app_colors.dart';
-import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
@@ -134,14 +133,6 @@ class _SignInPageState extends State<SignInPage> {
       ).showSnackBar(SnackBar(content: Text(result.message)));
 
       if (result.isSuccess) {
-        if (result.accountToken != null && result.accountToken!.isNotEmpty) {
-          RuntimeStore.setAuthToken(result.accountToken!);
-        }
-
-        if (result.refreshToken != null && result.refreshToken!.isNotEmpty) {
-          RuntimeStore.setRefreshToken(result.refreshToken!);
-        }
-
         Navigator.pushNamedAndRemoveUntil(
           context,
           SignInAndSignUp.redirectToProfileSelectPage(

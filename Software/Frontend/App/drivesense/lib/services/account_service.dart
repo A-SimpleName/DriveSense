@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 class AccountService {
   AccountService._();

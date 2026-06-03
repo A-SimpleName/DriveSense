@@ -20,8 +20,8 @@ export default function Settings() {
 
     async function handleUpdateAccount(values: Record<string, string | number>) {
         await updateAccount(
-            String(values.fName),
-            String(values.lName),
+            String(values.firstName),
+            String(values.lastName),
             String(values.email)
         ).then(() => {
             // Email geändert
@@ -64,9 +64,8 @@ export default function Settings() {
             <h2>Account</h2>
 
             <p>
-                Angemeldeter Account: {account?.fName} {account?.lName}
+                Angemeldeter Account: {account?.firstName} {account?.lastName}
             </p>
-
             <p>Email: {account?.email}</p>
 
             <Button
@@ -95,15 +94,15 @@ export default function Settings() {
                     fields={[
                         {
                             type: "text",
-                            key: "fName",
+                            key: "firstName",
                             label: "Vorname",
-                            defaultValue: account?.fName
+                            defaultValue: account?.firstName
                         },
                         {
                             type: "text",
-                            key: "lName",
+                            key: "lastName",
                             label: "Nachname",
-                            defaultValue: account?.lName
+                            defaultValue: account?.lastName
                         },
                         {
                             type: "text",

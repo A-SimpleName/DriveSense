@@ -1,9 +1,11 @@
 package com.drivesense.service;
 
+import com.drivesense.exceptions.ExternalApiException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -84,8 +86,10 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(message);
+      } catch (MailException e) {
+        throw new ExternalApiException("E-Mail konnte nicht gesendet werden", e);
         } catch (MessagingException | java.io.UnsupportedEncodingException e) {
-            System.err.println("Email konnte nicht gesendet werden an " + to + ": " + e.getMessage());
+        throw new ExternalApiException("E-Mail konnte nicht vorbereitet werden", e);
         }
     }
 

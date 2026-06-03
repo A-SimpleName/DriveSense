@@ -1,6 +1,8 @@
-﻿import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
+import 'package:drivesense/widgets/protocol_trip_fields.dart';
+import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,20 +11,8 @@ class ProtocolTable extends StatelessWidget {
 
   const ProtocolTable({super.key, this.onChanged});
 
-  static const double _tableWidth = 1064;
+  static const double _actionColumnWidth = 140;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
-  static const Map<int, TableColumnWidth> _columnWidths =
-      <int, TableColumnWidth>{
-        0: FixedColumnWidth(100),
-        1: FixedColumnWidth(100),
-        2: FixedColumnWidth(90),
-        3: FixedColumnWidth(130),
-        4: FixedColumnWidth(120),
-        5: FixedColumnWidth(100),
-        6: FixedColumnWidth(150),
-        7: FixedColumnWidth(170),
-        8: FixedColumnWidth(104),
-      };
 
   static final TableBorder _headerTableBorder = TableBorder(
     top: _tableBorderSide,
@@ -51,85 +41,105 @@ class ProtocolTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<TripSummary> trips = RuntimeStore.trips;
+    final List<ProtocolTripField> columns = protocolTripFieldsForRole(
+      RuntimeStore.getActiveProfileRole(),
+    );
+    final Map<int, TableColumnWidth> columnWidths = _columnWidthsFor(columns);
+    final double tableWidth = _tableWidthFor(columns);
 
-    return SizedBox(
-      width: double.infinity,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: _tableWidth,
-          child: Column(
-            children: <Widget>[
-              Table(
-                border: _headerTableBorder,
-                columnWidths: _columnWidths,
-                children: <TableRow>[
-                  TableRow(
-                    key: const ValueKey('headerRow'),
-                    decoration: BoxDecoration(color: Colors.grey.shade200),
-                    children: _headerCells,
-                  ),
-                ],
-              ),
-              Expanded(
-                child: trips.isEmpty
-                    ? const Center(child: Text('Keine Fahrten vorhanden.'))
-                    : SingleChildScrollView(
-                        child: Table(
-                          border: _bodyTableBorder,
-                          columnWidths: _columnWidths,
-                          children: trips
-                              .map(
-                                (TripSummary trip) => TableRow(
-                                  children: <Widget>[
-                                    _cell(_formatDate(trip.startTime)),
-                                    _cell(
-                                      trip.endTime != null
-                                          ? _formatDate(trip.endTime!)
-                                          : '-',
-                                    ),
-                                    _cell(trip.distanceKm.toStringAsFixed(2)),
-                                    _cell(_formatMileageRange(trip)),
-                                    _cell(_formatVehicleLicensePlate(trip)),
-                                    _cell(_formatTimeOfDay(trip.startTime)),
-                                    _cell(_formatRoute(trip)),
-                                    _cell(trip.roadSurfaceConditions),
-                                    _actionCell(context, trip),
-                                  ],
-                                ),
-                              )
-                              .toList(),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double viewportWidth =
+            constraints.maxWidth.isFinite && constraints.maxWidth > 1
+            ? constraints.maxWidth - 1
+            : tableWidth;
+        final double effectiveTableWidth = tableWidth > viewportWidth
+            ? tableWidth
+            : viewportWidth;
+
+        return SizedBox(
+          width: double.infinity,
+          child: ClipRect(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: effectiveTableWidth,
+                child: Column(
+                  children: <Widget>[
+                    Table(
+                      border: _headerTableBorder,
+                      columnWidths: columnWidths,
+                      children: <TableRow>[
+                        TableRow(
+                          key: const ValueKey('headerRow'),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          children: <Widget>[
+                            ...columns.map(
+                              (ProtocolTripField column) =>
+                                  _headerCell(column.header),
+                            ),
+                            _headerCell('Aktionen'),
+                          ],
                         ),
-                      ),
+                      ],
+                    ),
+                    Expanded(
+                      child: trips.isEmpty
+                          ? const Center(
+                              child: Text('Keine Fahrten vorhanden.'),
+                            )
+                          : SingleChildScrollView(
+                              child: Table(
+                                border: _bodyTableBorder,
+                                columnWidths: columnWidths,
+                                children: trips
+                                    .map(
+                                      (TripSummary trip) => TableRow(
+                                        children: <Widget>[
+                                          ...columns.map(
+                                            (ProtocolTripField column) =>
+                                                _cell(column.value(trip)),
+                                          ),
+                                          _actionCell(context, trip),
+                                        ],
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  List<Widget> get _headerCells {
-    return <Widget>[
-      _headerCell('Startzeit'),
-      _headerCell('Endzeit'),
-      _headerCell('gefahrene\nkm'),
-      _headerCell('Kilometerstand\n(von/bis)'),
-      _headerCell('Kfz-Kennzeichen'),
-      _headerCell('Tageszeit'),
-      _headerCell('Fahrstrecke/-\nziel'),
-      _headerCell('Strassenzustand,\nWitterung'),
-      _headerCell('Aktionen'),
-    ];
+  Map<int, TableColumnWidth> _columnWidthsFor(List<ProtocolTripField> columns) {
+    return <int, TableColumnWidth>{
+      for (int i = 0; i < columns.length; i++)
+        i: FixedColumnWidth(columns[i].width),
+      columns.length: const FixedColumnWidth(_actionColumnWidth),
+    };
+  }
+
+  double _tableWidthFor(List<ProtocolTripField> columns) {
+    return columns.fold<double>(
+          0,
+          (double width, ProtocolTripField column) => width + column.width,
+        ) +
+        _actionColumnWidth;
   }
 
   Widget _headerCell(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Text(
-        text,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
+      child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
     );
   }
 
@@ -147,6 +157,13 @@ class ProtocolTable extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.info_outline, size: 18),
+              tooltip: 'Details',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+              onPressed: () => showTripDetailDialog(context, trip),
+            ),
             IconButton(
               icon: const Icon(Icons.edit, size: 18),
               tooltip: 'Bearbeiten',
@@ -213,7 +230,7 @@ class ProtocolTable extends StatelessWidget {
       builder: (BuildContext dialogContext) => AlertDialog(
         title: const Text('Fahrt loeschen'),
         content: Text(
-          'Moechtest du die Fahrt vom ${_formatDate(trip.startTime)} wirklich loeschen?',
+          'Moechtest du die Fahrt vom ${formatProtocolTripDate(trip.startTime)} wirklich loeschen?',
         ),
         actions: <Widget>[
           TextButton(
@@ -233,7 +250,7 @@ class ProtocolTable extends StatelessWidget {
       return;
     }
 
-    final bool success = await TripService().deleteTripSummary(trip.id);
+    final bool success = await TripService().deleteTripSummary(trip);
     await onChanged?.call();
 
     if (!context.mounted) {
@@ -242,62 +259,12 @@ class ProtocolTable extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Fahrt geloescht.' : 'Loeschen fehlgeschlagen.'),
+        content: Text(
+          success ? 'Fahrt geloescht.' : 'Loeschen fehlgeschlagen.',
+        ),
         backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
-  }
-
-  String _formatDate(DateTime dt) {
-    return '${dt.day}.${dt.month}.${dt.year}';
-  }
-
-  String _formatTimeOfDay(DateTime dt) {
-    final int hour = dt.hour;
-    if (hour < 6) return 'Nacht';
-    if (hour < 12) return 'Vormittag';
-    if (hour < 18) return 'Nachmittag';
-    return 'Abend';
-  }
-
-  String _formatMileageRange(TripSummary trip) {
-    if (trip.startMileage <= 0 && trip.endMileage <= 0) {
-      return '-';
-    }
-
-    return '${trip.startMileage} - ${trip.endMileage} km';
-  }
-
-  String _formatRoute(TripSummary trip) {
-    final String start = (trip.startPoint ?? '').trim();
-    final String end = (trip.endPoint ?? '').trim();
-    final String type = (trip.type ?? '').trim();
-
-    if (start.isNotEmpty && end.isNotEmpty) {
-      return '$start -> $end';
-    }
-    if (start.isNotEmpty) {
-      return start;
-    }
-    if (end.isNotEmpty) {
-      return end;
-    }
-    return type.isNotEmpty ? type : '-';
-  }
-
-  String _formatVehicleLicensePlate(TripSummary trip) {
-    final String licensePlate = (trip.vehicleLicensePlate ?? '').trim();
-    if (licensePlate.isNotEmpty) {
-      return licensePlate;
-    }
-
-    for (final vehicle in RuntimeStore.vehicles) {
-      if (vehicle.id == trip.vehicleId) {
-        return vehicle.licensePlate;
-      }
-    }
-
-    return '-';
   }
 }
 
@@ -315,6 +282,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
   late final TextEditingController _startMileageCtrl;
   late final TextEditingController _endMileageCtrl;
   late final TextEditingController _startPointCtrl;
+  late final TextEditingController _furthestPointCtrl;
   late final TextEditingController _endPointCtrl;
   late final TextEditingController _roadSurfaceCtrl;
   late final TextEditingController _typeCtrl;
@@ -332,6 +300,9 @@ class _TripEditDialogState extends State<_TripEditDialog> {
       text: widget.trip.endMileage.toString(),
     );
     _startPointCtrl = TextEditingController(text: widget.trip.startPoint ?? '');
+    _furthestPointCtrl = TextEditingController(
+      text: widget.trip.furthestPoint ?? '',
+    );
     _endPointCtrl = TextEditingController(text: widget.trip.endPoint ?? '');
     _roadSurfaceCtrl = TextEditingController(
       text: widget.trip.roadSurfaceConditions,
@@ -345,6 +316,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
     _startMileageCtrl.dispose();
     _endMileageCtrl.dispose();
     _startPointCtrl.dispose();
+    _furthestPointCtrl.dispose();
     _endPointCtrl.dispose();
     _roadSurfaceCtrl.dispose();
     _typeCtrl.dispose();
@@ -378,6 +350,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
         startMileage: startMileage,
         endMileage: endMileage,
         startPoint: _startPointCtrl.text.trim(),
+        furthestPoint: _furthestPointCtrl.text.trim(),
         endPoint: _endPointCtrl.text.trim(),
         roadSurfaceConditions: _roadSurfaceCtrl.text.trim(),
         type: _typeCtrl.text.trim(),
@@ -425,6 +398,11 @@ class _TripEditDialogState extends State<_TripEditDialog> {
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _furthestPointCtrl,
+              decoration: const InputDecoration(labelText: 'Wendepunkt'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
               controller: _endPointCtrl,
               decoration: const InputDecoration(labelText: 'Ziel'),
             ),
@@ -448,10 +426,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Abbrechen'),
         ),
-        ElevatedButton(
-          onPressed: _save,
-          child: const Text('Speichern'),
-        ),
+        ElevatedButton(onPressed: _save, child: const Text('Speichern')),
       ],
     );
   }

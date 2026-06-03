@@ -11,8 +11,11 @@ public class Account {
     private String email;
     private String pendingEmail;
     private LocalDate birthdate;
+    private boolean emailVerified;
+    private LocalDateTime deletedAt;
 
     public Account () {}
+
     public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -28,8 +31,6 @@ public class Account {
     public void setId(int id) {
         this.id = id;
     }
-    private boolean emailVerified;
-    private LocalDateTime deletedAt;
 
     public String getFirstName() {
         return firstName;
@@ -48,8 +49,14 @@ public class Account {
     }
 
 
-    public String getPendingEmail() { return pendingEmail; }
-    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
+    public Account () {}
+    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+        this.email = email;
+        this.birthdate = birthdate;
+    }
 
     public LocalDate getBirthdate() { return birthdate; }
     public void setBirthdate(LocalDate birthdate) { this.birthdate = birthdate; }

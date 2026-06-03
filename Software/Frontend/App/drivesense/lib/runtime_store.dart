@@ -12,6 +12,7 @@ class RuntimeStore {
   static String authToken = '';
   static String refreshToken = '';
   static String? activeProfileToken;
+  static String? activeProfileRole;
   static int? currentProfileId;
   static int currentVehicleId = 0;
   static int currentProtocolId = 0;
@@ -88,12 +89,17 @@ class RuntimeStore {
     return refreshToken;
   }
 
-  static void setActiveProfile({required int profileId, String? profileToken}) {
+  static void setActiveProfile({
+    required int profileId,
+    String? profileToken,
+    String? profileRole,
+  }) {
     final bool profileChanged =
         currentProfileId != null && currentProfileId != profileId;
 
     currentProfileId = profileId;
     activeProfileToken = profileToken;
+    activeProfileRole = profileRole;
 
     if (profileChanged) {
       currentVehicleId = 0;
@@ -106,6 +112,10 @@ class RuntimeStore {
 
   static String? getActiveProfileToken() {
     return activeProfileToken;
+  }
+
+  static String getActiveProfileRole() {
+    return activeProfileRole ?? 'PRIVAT';
   }
 
   static void setCurrentVehicleId(int vehicleId) {
@@ -154,7 +164,12 @@ class RuntimeStore {
   static void clearSession() {
     authToken = '';
     refreshToken = '';
+    clearActiveProfile();
+  }
+
+  static void clearActiveProfile() {
     activeProfileToken = null;
+    activeProfileRole = null;
     currentProfileId = null;
     currentVehicleId = 0;
     currentProtocolId = 0;

@@ -3,6 +3,7 @@ import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // VehicleTableWidget
@@ -76,43 +77,37 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     }
   }
 
-  // Zeigt einen Bestätigungs-Dialog und löscht dann das Fahrzeug.
+  // Zeigt einen Bestätigungs-Dialog und entfernt die Fahrzeug-Verknuepfung.
   Future<void> _deleteVehicle(Vehicle vehicle) async {
-    final bool? confirmed = await showDialog<bool>(
+     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Fahrzeug löschen'),
-        content: Text(
-          'Möchtest du "${vehicle.model}" (${vehicle.licensePlate}) wirklich löschen?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Löschen'),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Fahrzeug loeschen',
+        content:
+            'Fahrzeug mit Kennzeichen "${vehicle.licensePlate}" wirklich loeschen? '
+            'Diese Aktion kann nicht rueckgaengig gemacht werden.',
+        confirmText: 'Endgueltig loeschen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
       ),
     );
 
     if (confirmed != true) return;
 
-    final bool success = await VehicleService.deleteVehicle(vehicle.id);
+    final VehicleActionResult result =
+        await VehicleService.deleteVehicleWithResult(vehicle.id);
     if (!mounted) return;
 
     // ScaffoldMessenger zeigt kurze Info-Meldungen unten am Bildschirm (SnackBar)
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(success ? 'Fahrzeug gelöscht.' : 'Löschen fehlgeschlagen.'),
-        backgroundColor: success ? Colors.green : Colors.red,
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
       ),
     );
 
-    if (success) await _loadVehicles();
+    if (result.isSuccess) await _loadVehicles();
   }
 
   @override
@@ -128,8 +123,11 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
       children: [
         // ── Kopfzeile: Titel + "Hinzufügen"-Button nebeneinander ──────────
         // Row: ordnet Kinder horizontal nebeneinander an
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             const Text(
               'Fahrzeuge',
@@ -153,58 +151,82 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
         else
           // SingleChildScrollView macht die Tabelle horizontal scrollbar
           // falls der Bildschirm zu schmal ist
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Table(
-              defaultColumnWidth: const IntrinsicColumnWidth(),
-              border: TableBorder.all(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              children: [
-                // ── Kopfzeile der Tabelle ──────────────────────────────
-                TableRow(
-                  decoration: BoxDecoration(color: Colors.grey.shade200),
-                  children: const [
-                    _HeaderCell('Modell'),
-                    _HeaderCell('Kennzeichen'),
-                    _HeaderCell('Kilometerstand'),
-                    _HeaderCell('Aktionen'),
-                  ],
-                ),
-
-                // ── Eine Zeile pro Fahrzeug ────────────────────────────
-                // .map() verwandelt jedes Vehicle-Objekt in eine TableRow
-                ..._vehicles.map(
-                  (vehicle) => TableRow(
-                    children: [
-                      _DataCell(vehicle.model),
-                      _DataCell(vehicle.licensePlate),
-                      _DataCell('${vehicle.mileage} km'),
-                      // Aktionen: Bearbeiten + Löschen Icons
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, size: 18),
-                              tooltip: 'Bearbeiten',
-                              onPressed: () => _openVehicleDialog(vehicle: vehicle),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              tooltip: 'Löschen',
-                              onPressed: () => _deleteVehicle(vehicle),
-                            ),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return ClipRect(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: constraints.maxWidth.isFinite
+                          ? (constraints.maxWidth > 1
+                                ? constraints.maxWidth - 1
+                                : 0)
+                          : 0,
+                    ),
+                    child: Table(
+                      defaultColumnWidth: const IntrinsicColumnWidth(),
+                      border: TableBorder.all(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      children: [
+                        // ── Kopfzeile der Tabelle ──────────────────────────────
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                          ),
+                          children: const [
+                            _HeaderCell('Modell'),
+                            _HeaderCell('Kennzeichen'),
+                            _HeaderCell('Kilometerstand'),
+                            _HeaderCell('Aktionen'),
                           ],
                         ),
-                      ),
-                    ],
+
+                        // ── Eine Zeile pro Fahrzeug ────────────────────────────
+                        // .map() verwandelt jedes Vehicle-Objekt in eine TableRow
+                        ..._vehicles.map(
+                          (vehicle) => TableRow(
+                            children: [
+                              _DataCell(vehicle.model),
+                              _DataCell(vehicle.licensePlate),
+                              _DataCell('${vehicle.mileage} km'),
+                              // Aktionen: Bearbeiten + Entfernen Icons
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, size: 18),
+                                      tooltip: 'Bearbeiten',
+                                      onPressed: () =>
+                                          _openVehicleDialog(vehicle: vehicle),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        size: 18,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Entfernen',
+                                      onPressed: () => _deleteVehicle(vehicle),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
       ],
     );
@@ -239,7 +261,7 @@ class _DataCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Text(text),
+      child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
 }
@@ -274,7 +296,9 @@ class _VehicleDialogState extends State<_VehicleDialog> {
     super.initState();
     // Felder vorausfüllen wenn wir ein bestehendes Fahrzeug bearbeiten
     _modelCtrl = TextEditingController(text: widget.vehicle?.model ?? '');
-    _plateCtrl = TextEditingController(text: widget.vehicle?.licensePlate ?? '');
+    _plateCtrl = TextEditingController(
+      text: widget.vehicle?.licensePlate ?? '',
+    );
     _mileageCtrl = TextEditingController(
       text: widget.vehicle != null ? widget.vehicle!.mileage.toString() : '',
     );
@@ -370,7 +394,9 @@ class _VehicleDialogState extends State<_VehicleDialog> {
             controller: _mileageCtrl,
             decoration: const InputDecoration(labelText: 'Kilometerstand'),
             keyboardType: TextInputType.number, // zeigt Zahlentastatur
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly], // nur Ziffern
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ], // nur Ziffern
           ),
         ],
       ),
