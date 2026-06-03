@@ -72,6 +72,17 @@ public class TripController {
         return ResponseEntity.ok(tripService.getTotalKm(profileId));
     }
 
+    // GET /api/trips/latest
+    @GetMapping("/latest")
+    public ResponseEntity<TripSummaryDto> getLatestTrackedTrip(HttpServletRequest request) {
+        int profileId = (int) request.getAttribute("profileId");
+        TripSummaryDto trip = tripService.getLatestTrackedByProfileId(profileId);
+        if (trip == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(trip);
+    }
+
     // GET /api/trips/{id}
     @GetMapping("/{id}")
     public ResponseEntity<TripDetailedDto> getDetailedById(@PathVariable int id, HttpServletRequest request) {

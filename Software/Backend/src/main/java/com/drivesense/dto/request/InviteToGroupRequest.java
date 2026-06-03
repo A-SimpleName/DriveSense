@@ -4,8 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class InviteToGroupRequest {
-    @NotBlank(message = "Email darf nicht leer sein")
-    @Email(message = "Email Format ungültig")
+    @NotBlank
+    @Email
     private String email;
 
     public String getEmail() {

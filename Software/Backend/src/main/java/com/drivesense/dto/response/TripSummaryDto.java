@@ -10,10 +10,10 @@ public class TripSummaryDto {
     private LocalDateTime endTime;
     private int startMileage;
     private int endMileage;
-    private String accountFname;
-    private String accountLname;
+    private String accountFirstName;
+    private String accountLastName;
     private String vehicleModel;
-    private String licenseplate;
+    private String licensePlate;
     private String startPoint;
     private String furthestPoint;
     private String endPoint;
@@ -64,6 +64,14 @@ public class TripSummaryDto {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public int getStartMileage() {
@@ -122,20 +130,20 @@ public class TripSummaryDto {
         this.protocolId = protocolId;
     }
 
-    public String getAccountFname() {
-        return accountFname;
+    public String getAccountFirstName() {
+        return accountFirstName;
     }
 
-    public void setAccountFname(String accountFname) {
-        this.accountFname = accountFname;
+    public void setAccountFirstName(String accountFirstName) {
+        this.accountFirstName = accountFirstName;
     }
 
-    public String getAccountLname() {
-        return accountLname;
+    public String getAccountLastName() {
+        return accountLastName;
     }
 
-    public void setAccountLname(String accountLname) {
-        this.accountLname = accountLname;
+    public void setAccountLastName(String accountLastName) {
+        this.accountLastName = accountLastName;
     }
 
     public String getVehicleModel() {
@@ -146,20 +154,12 @@ public class TripSummaryDto {
         this.vehicleModel = vehicleModel;
     }
 
-    public String getLicenseplate() {
-        return licenseplate;
-    }
-
-    public void setLicenseplate(String licenseplate) {
-        this.licenseplate = licenseplate;
-    }
-
     public String getLicensePlate() {
-        return licenseplate;
+        return licensePlate;
     }
 
     public void setLicensePlate(String licensePlate) {
-        this.licenseplate = licensePlate;
+        this.licensePlate = licensePlate;
     }
 
     public double getDistance() {
@@ -168,13 +168,5 @@ public class TripSummaryDto {
 
     public void setDistance(double distance) {
         this.distance = distance;
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
     }
 }

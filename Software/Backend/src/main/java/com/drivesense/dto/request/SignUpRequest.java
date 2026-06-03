@@ -6,9 +6,9 @@ import java.time.LocalDate;
 
 public class SignUpRequest {
     @NotBlank(message = "Vorname darf nicht leer sein")
-    private String fname;
+    private String firstName;
     @NotBlank(message = "Nachname darf nicht leer sein")
-    private String lname;
+    private String lastName;
     @NotBlank(message = "Email darf nicht leer sein")
     @Email(message = "Email Format ungültig")
     private String email;
@@ -19,12 +19,12 @@ public class SignUpRequest {
             message = "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
     )
     private String password;
-    @Past(message = "Geburtsdatum muss in der Vergangenheit liegen")
+    @Past
     private LocalDate birthdate;
 
-    public SignUpRequest(String fname, String lname, String email, String password,LocalDate birthdate) {
-        this.fname = fname;
-        this.lname = lname;
+    public SignUpRequest(String firstName, String lastName, String email, String password,LocalDate birthdate) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.birthdate = birthdate;
@@ -40,20 +40,20 @@ public class SignUpRequest {
         this.birthdate = birthdate;
     }
 
-    public String getFname() {
-        return fname;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFname(String fname) {
-        this.fname = fname;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public String getLname() {
-        return lname;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setLname(String lname) {
-        this.lname = lname;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {

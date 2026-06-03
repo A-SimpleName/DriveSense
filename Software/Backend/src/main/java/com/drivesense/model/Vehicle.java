@@ -4,63 +4,50 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
+
 public class Vehicle {
     private int id;
+
     @NotBlank(message = "Model darf nicht leer sein")
     @Size(max = 150, message = "Model darf maximal 150 Zeichen haben")
     private String model;
+
     @NotBlank(message = "Licenseplate darf nicht leer sein")
-    @Size(max = 20,message = "Licenseplate darf maximal 20 Zeichen haben")
+    @Size(max = 20, message = "Licenseplate darf maximal 20 Zeichen haben")
     private String licensePlate;
+
     @Min(value = 0, message = "Kilometerstand darf nicht negativ sein")
     private int mileage;
 
+    private LocalDateTime deletedAt;
+
     public Vehicle() {}
 
-    public Vehicle(int profileId, String model, String licensePlate, int mileage) {
-        this.model = model;
-        this.licensePlate = licensePlate;
-        this.mileage = mileage;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getId() {
-        return id;
-    }
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getLicensePlate() { return licensePlate; }
+    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 
-    public String getModel() {
-        return model;
-    }
+    public int getMileage() { return mileage; }
+    public void setMileage(int mileage) { this.mileage = mileage; }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
-    public String getLicensePlate() {
-        return licensePlate;
-    }
+    public boolean isDeleted() { return deletedAt != null; }
 
-    public void setLicensePlate(String licensePlate) {
-        this.licensePlate = licensePlate;
-    }
-
-    public int getMileage() {
-        return mileage;
-    }
-
-    public void setMileage(int mileage) {
-        this.mileage = mileage;
-    }
 
     @Override
     public String toString() {
         return "Vehicle: " +
                 "id: " + id +
                 ", model: '" + model + '\'' +
-                ", licenseplate: '" + licensePlate + '\'' +
+                ", licensePlate: '" + licensePlate + '\'' +
                 ", mileage: " + mileage;
     }
 }

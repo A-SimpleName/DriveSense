@@ -4,17 +4,18 @@ import java.time.LocalDate;
 
 public class AccountResponse {
     private int id;
-    private String fName;
-    private String lName;
+    private String firstName;
+    private String lastName;
     private String email;
+    private String pendingEmail;
     private LocalDate birthdate;
-
-    public LocalDate getBirthdate() {
-        return birthdate;
-    }
 
     public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public LocalDate getBirthdate() {
+        return this.birthdate;
     }
 
     public int getId() {
@@ -25,12 +26,12 @@ public class AccountResponse {
         this.id = id;
     }
 
-    public String getfName() {
-        return fName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setfName(String fName) {
-        this.fName = fName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getEmail() {
@@ -41,11 +42,13 @@ public class AccountResponse {
         this.email = email;
     }
 
-    public String getlName() {
-        return lName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setlName(String lName) {
-        this.lName = lName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
 }

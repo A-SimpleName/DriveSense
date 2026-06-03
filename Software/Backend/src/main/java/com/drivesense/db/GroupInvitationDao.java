@@ -91,6 +91,24 @@ public class GroupInvitationDao {
         }
     }
 
+    /**
+     * Markiert alle abgelaufenen PENDING-Einladungen als EXPIRED (für den Scheduler).
+     * Wird stündlich vom CleanupScheduler aufgerufen.
+     */
+    public void expireOldInvitations() {
+        String sql = """
+            UPDATE group_invitation
+            SET status = 'EXPIRED'
+            WHERE status = 'PENDING' AND expires_at < NOW()
+            """;
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Ablaufen der Gruppen-Einladungen", e);
+        }
+    }
+
     private GroupInvitation map(ResultSet rs) throws SQLException {
         GroupInvitation inv = new GroupInvitation();
         inv.setId(rs.getInt("id"));

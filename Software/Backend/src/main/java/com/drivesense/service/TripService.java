@@ -124,13 +124,16 @@ public class TripService {
             createdTrackingpoints.add(trackingpointService.insert(trackingpoint, tripSummary));
         }
 
-        TripDetailedDto tripDetailedDto = new TripDetailedDto(tripSummary, createdTrackingpoints);
-        enrichWithTrackingPoints(tripDetailedDto);
+        enrichWithTrackingPoints(tripSummary);
 
         // Update trip with enriched location data
         tripDao.update(tripSummary);
 
-        return tripDetailedDto;
+        TripSummaryDto createdTripDto = tripDao.getDtoByIdAccessibleByProfile(tripSummary.getId(), profileId);
+        if (createdTripDto == null) {
+            throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
+        }
+        return new TripDetailedDto(createdTripDto, createdTrackingpoints);
     }
 
 
@@ -140,13 +143,22 @@ public class TripService {
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(protocolId, profileId);
-
-        return trips != null ? trips : List.of();
+        if (trips == null) {
+            throw new NotFoundException("Keine Fahrten gefunden");
+        }
+        return trips;
     }
 
     public List<TripSummaryDto> getAllByProfileId(int profileId) {
-        List<TripSummaryDto> trips = tripDao.getAllByProfileId(profileId);
-        return trips != null ? trips : List.of();
+        List<TripSummary> trips = tripDao.getByProfileId(profileId);
+        if (trips == null) return List.of();
+        return trips.stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
+        return tripDao.getLatestTrackedByProfileId(profileId);
     }
 
     public double getTotalKm(int profileId) {
@@ -160,7 +172,7 @@ public class TripService {
     }
 
     public TripDetailedDto getDetailedById(int id, int profileId) {
-        TripSummary trip = tripDao.getByIdAndProfileId(id, profileId);
+        TripSummaryDto trip = tripDao.getDtoByIdAccessibleByProfile(id, profileId);
         if (trip == null) {
             throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
@@ -220,8 +232,8 @@ public class TripService {
     }
 
 
-    private void enrichWithTrackingPoints(TripDetailedDto trip) {
-        List<Trackingpoint> points = trackingpointService.getByTripId(trip.getTripSummary().getId());
+    private void enrichWithTrackingPoints(TripSummary tripSummary) {
+        List<Trackingpoint> points = trackingpointService.getByTripId(tripSummary.getId());
 
         if (points == null || points.isEmpty()) return;
 
@@ -230,13 +242,13 @@ public class TripService {
         Trackingpoint furthest = getFurthestPoint(points, start);
 
         try {
-            trip.getTripSummary().setStartPoint(geocodingService.getCity(start.getLat(), start.getLng()));
-            trip.getTripSummary().setEndPoint(geocodingService.getCity(end.getLat(), end.getLng()));
-            trip.getTripSummary().setFurthestPoint(geocodingService.getCity(furthest.getLat(), furthest.getLng()));
+            tripSummary.setStartPoint(geocodingService.getCity(start.getLat(), start.getLng()));
+            tripSummary.setEndPoint(geocodingService.getCity(end.getLat(), end.getLng()));
+            tripSummary.setFurthestPoint(geocodingService.getCity(furthest.getLat(), furthest.getLng()));
         } catch (ExternalApiException e) {
-            trip.getTripSummary().setStartPoint("Unbekannt");
-            trip.getTripSummary().setEndPoint("Unbekannt");
-            trip.getTripSummary().setFurthestPoint("Unbekannt");
+            tripSummary.setStartPoint("Unbekannt");
+            tripSummary.setEndPoint("Unbekannt");
+            tripSummary.setFurthestPoint("Unbekannt");
         }
     }
 
@@ -267,5 +279,18 @@ public class TripService {
         if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
             throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
         }
+    }
+
+    private TripSummaryDto mapToDto(TripSummary t) {
+        TripSummaryDto dto = new TripSummaryDto();
+        dto.setId(t.getId());
+        dto.setVehicleId(t.getVehicleId());
+        dto.setProtocolId(t.getProtocolId());
+        dto.setStartTime(t.getStartTime());
+        dto.setEndTime(t.getEndTime());
+        dto.setDistance(t.getDistance());
+        dto.setRoadSurfaceConditions(t.getRoadSurfaceConditions());
+        dto.setType(t.getType());
+        return dto;
     }
 }

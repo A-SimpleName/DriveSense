@@ -35,7 +35,7 @@ public class ProtocolService {
 
         Protocol inserted = protocolDao.insert(protocol);
         if (inserted == null) {
-            throw new DatabaseException("Fehler beim Erstellen des Protokols",new Throwable());
+            throw new RuntimeException("Fehler beim Erstellen des Protokolls");
         }
         return inserted;
     }
