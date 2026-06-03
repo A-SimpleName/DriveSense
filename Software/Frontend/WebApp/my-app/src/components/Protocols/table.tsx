@@ -1,117 +1,87 @@
 import type { Protocol } from "../../model/protocol";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 
-export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm }: { ownProtocols: Protocol[], groupProtocols: Protocol[], setShowForm: (open: boolean) => void }) {
+export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm, onDeleted }: {
+    ownProtocols: Protocol[];
+    groupProtocols: Protocol[];
+    setShowForm: (open: boolean) => void;
+    onDeleted: () => void;
+}) {
     const navigate = useNavigate();
-    const [error, setError] = useState<string | null>(null)
-    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+    const [error, setError] = useState<string | null>(null);
+    const [exportError, setExportError] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const handleExport = async (id: number) => {
+        setExportError(null);
         try {
             const { blob, filename } = await exportProtocol(id);
-
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
-
             a.href = url;
             a.download = filename ?? `protocol_${id}.pdf`;
-
             document.body.appendChild(a);
             a.click();
-
             a.remove();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
-            setError(err.message);
+            setExportError(err?.message || "Export fehlgeschlagen");
         }
     };
 
     const handleDelete = (id: number) => {
+        setError(null);
         deleteProtocol(id)
-            .then(() => {
-                // Nach dem Löschen die Seite neu laden oder die Listen aktualisieren
-                window.location.reload();
-            })
-            .catch(err => setError(err.message))
-    }
+            .then(() => onDeleted())
+            .catch(err => setError(err?.message || "Löschen fehlgeschlagen"));
+    };
 
     const confirmDelete = () => {
-        if (confirmDeleteId === null) return
-        handleDelete(confirmDeleteId)
-        setConfirmDeleteId(null)
-    }
+        if (confirmDeleteId === null) return;
+        handleDelete(confirmDeleteId);
+        setConfirmDeleteId(null);
+    };
 
-    const closeConfirm = () => setConfirmDeleteId(null)
+    const renderTable = (protocols: Protocol[], title: string) => (
+        <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", marginTop: "24px" }}>
+                <h3 style={{ margin: 0 }}>{title}</h3>
+                <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
+            </div>
+            <table style={{ width: "100%" }}>
+                <thead>
+                    <tr>
+                        <th style={{ textAlign: "left", width: "40%" }}>Name</th>
+                        <th style={{ textAlign: "center", width: "60%" }}>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {protocols.map(protocol => (
+                        <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
+                            <td>{protocol.name}</td>
+                            <td style={{ textAlign: "center" }}>
+                                <Button label="Exportieren" stopPropagation onClick={() => handleExport(protocol.id)} />
+                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </>
+    );
 
-    if (error) return <div>Fehler: {error}</div>;
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h3 style={{ margin: 0 }}>Eigene Protokolle</h3>
-                <Button
-                    label="+"
-                    className="small icon"
-                    title="Protokoll hinzufügen"
-                    onClick={() => setShowForm(true)}
-                />
-            </div>
-            <table style={{ width: '100%' }}>
-                <thead>
-                    <tr>
-                        <th style={{ textAlign: 'left', width: '40%' }}>Name</th>
-                        <th style={{ textAlign: 'center', width: '60%' }}>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {ownProtocols.map(protocol => (
-                        <tr key={protocol.id}
-                            onClick={() => navigate(`/protocols/${protocol.id}`)}
-                            style={{ cursor: "pointer" }}
-                        >       
-                            <td>{protocol.name}</td>
-                            <td style={{ textAlign: 'center' }}>
-                                <Button label="Exportieren" stopPropagation={true} onClick={() => handleExport(protocol.id)} />
-                                <Button label="Löschen" stopPropagation={true} onClick={() => setConfirmDeleteId(protocol.id)} />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', marginTop: '24px' }}>
-                <h3 style={{ margin: 0 }}>Gruppenprotokolle</h3>
-                <Button
-                    label="+"
-                    className="small icon"
-                    title="Protokoll hinzufügen"
-                    onClick={() => setShowForm(true)}
-                />
-            </div>
-            <table style={{ width: '100%' }}>
-                <thead>
-                    <tr>
-                        <th style={{ textAlign: 'left', width: '40%' }}>Name</th>
-                        <th style={{ textAlign: 'center', width: '60%' }}>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {groupProtocols.map(protocol => (
-                        <tr key={protocol.id}
-                            onClick={() => navigate(`/protocols/${protocol.id}`)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <td>{protocol.name}</td>
-                            <td style={{ textAlign: 'center' }}>
-                                <Button label="Exportieren" stopPropagation={true} onClick={() => handleExport(protocol.id)} />
-                                <Button label="Löschen" stopPropagation={true} onClick={() => setConfirmDeleteId(protocol.id)} />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            {/* Getrennte Fehlermeldungen für Export und Löschen */}
+            {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
+            {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
+
+            {renderTable(ownProtocols, "Eigene Protokolle")}
+            {renderTable(groupProtocols, "Gruppenprotokolle")}
 
             <ConfirmationDialog
                 open={confirmDeleteId !== null}
@@ -120,7 +90,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                 confirmLabel="Ja, löschen"
                 cancelLabel="Abbrechen"
                 onConfirm={confirmDelete}
-                onCancel={closeConfirm}
+                onCancel={() => setConfirmDeleteId(null)}
             />
         </div>
     );

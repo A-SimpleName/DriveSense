@@ -143,22 +143,13 @@ public class TripService {
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int profileId, int protocolId) {
         List<TripSummaryDto> trips = tripDao.getAllByProfileAndProtocolId(protocolId, profileId);
-        if (trips == null) {
-            throw new NotFoundException("Keine Fahrten gefunden");
-        }
-        return trips;
+
+        return trips != null ? trips : List.of();
     }
 
     public List<TripSummaryDto> getAllByProfileId(int profileId) {
-        List<TripSummary> trips = tripDao.getByProfileId(profileId);
-
-        if (trips == null || trips.isEmpty()) {
-            throw new NotFoundException("Keine Fahrten gefunden");
-        }
-
-        return trips.stream()
-                .map(this::mapToDto)
-                .toList();
+        List<TripSummaryDto> trips = tripDao.getAllByProfileId(profileId);
+        return trips != null ? trips : List.of();
     }
 
     public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
@@ -283,18 +274,5 @@ public class TripService {
         if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
             throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
         }
-    }
-
-    private TripSummaryDto mapToDto(TripSummary t) {
-        TripSummaryDto dto = new TripSummaryDto();
-        dto.setId(t.getId());
-        dto.setVehicleId(t.getVehicleId());
-        dto.setProtocolId(t.getProtocolId());
-        dto.setStartTime(t.getStartTime());
-        dto.setEndTime(t.getEndTime());
-        dto.setDistance(t.getDistance());
-        dto.setRoadSurfaceConditions(t.getRoadSurfaceConditions());
-        dto.setType(t.getType());
-        return dto;
     }
 }

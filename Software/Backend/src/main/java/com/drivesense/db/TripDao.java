@@ -118,6 +118,7 @@ public class TripDao {
                     t.profile_id,
                     t.vehicle_id,
                     t.protocol_id,
+                    pr.name AS protocol_name,
                     t.start_time,
                     t.end_time,
                     t.distance,
@@ -133,6 +134,7 @@ public class TripDao {
                     a.first_name,
                     a.last_name
                 FROM trip t
+                JOIN protocol pr ON t.protocol_id = pr.id
                 JOIN vehicle v ON t.vehicle_id = v.id
                 JOIN profile prf ON t.profile_id = prf.id
                 JOIN account a ON prf.account_id = a.id
@@ -169,6 +171,7 @@ public class TripDao {
             t.profile_id,
             t.vehicle_id,
             t.protocol_id,
+            pr.name AS protocol_name,
             t.start_time,
             t.end_time,
             t.distance,
@@ -184,6 +187,7 @@ public class TripDao {
             a.first_name,
             a.last_name
         FROM trip t
+        JOIN protocol pr ON t.protocol_id = pr.id
         JOIN vehicle v ON t.vehicle_id = v.id
         JOIN profile prf ON t.profile_id = prf.id
         JOIN account a ON prf.account_id = a.id
@@ -228,6 +232,51 @@ public class TripDao {
         }
     }
 
+    public List<TripSummaryDto> getAllByProfileId(int profileId) {
+        String sql = """
+            SELECT
+                t.id,
+                t.profile_id,
+                t.vehicle_id,
+                t.protocol_id,
+                pr.name AS protocol_name,
+                t.start_time,
+                t.end_time,
+                t.distance,
+                t.start_mileage,
+                t.end_mileage,
+                v.license_plate,
+                v.model AS vehicle_model,
+                t.start_point,
+                t.furthest_point,
+                t.end_point,
+                t.road_surface_conditions,
+                t.type,
+                a.first_name,
+                a.last_name
+            FROM trip t
+            JOIN protocol pr ON t.protocol_id = pr.id
+            JOIN vehicle v ON t.vehicle_id = v.id
+            JOIN profile prf ON t.profile_id = prf.id
+            JOIN account a ON prf.account_id = a.id
+            WHERE t.profile_id = ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<TripSummaryDto> list = new ArrayList<>();
+            while (rs.next()) list.add(mapToDto(rs));
+            return list;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der Fahrten", e);
+        }
+    }
+
     public List<TripSummary> getAll() {
         String sql = "SELECT * FROM trip";
 
@@ -256,6 +305,7 @@ public class TripDao {
                 t.profile_id,
                 t.vehicle_id,
                 t.protocol_id,
+                pr.name AS protocol_name,
                 t.start_time,
                 t.end_time,
                 t.distance,
@@ -310,6 +360,7 @@ public class TripDao {
                 t.profile_id,
                 t.vehicle_id,
                 t.protocol_id,
+                pr.name AS protocol_name,
                 t.start_time,
                 t.end_time,
                 t.distance,
@@ -374,7 +425,9 @@ public class TripDao {
                 end_point = ?,
                 furthest_point = ?,
                 start_mileage = ?,
-                end_mileage = ?
+                end_mileage = ?,
+                vehicle_id = ?,
+                protocol_id = ?
             WHERE id = ?
         """;
 
@@ -391,7 +444,9 @@ public class TripDao {
             ps.setString(8, tripSummary.getFurthestPoint());
             ps.setInt(9, tripSummary.getStartMileage());
             ps.setInt(10, tripSummary.getEndMileage());
-            ps.setInt(11, tripSummary.getId());
+            ps.setInt(11, tripSummary.getVehicleId());
+            ps.setInt(12, tripSummary.getProtocolId());
+            ps.setInt(13, tripSummary.getId());
 
             ps.executeUpdate();
 
@@ -443,9 +498,10 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
-        // dto.setProfileId(rs.getInt("profile_id"));
+        dto.setProfileId(rs.getInt("profile_id"));
         dto.setVehicleId(rs.getInt("vehicle_id"));
         dto.setProtocolId(rs.getInt("protocol_id"));
+        dto.setProtocolName(rs.getString("protocol_name"));
 
         dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
 

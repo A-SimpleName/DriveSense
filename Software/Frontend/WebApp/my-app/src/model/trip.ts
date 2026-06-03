@@ -8,8 +8,8 @@ export interface TripSummaryDto {
     protocolName: string;
     startTime: string; 
     endTime: string;
-    accountFname: string;
-    accountLname: string;
+    accountFirstName: string;
+    accountLastName: string;
     vehicleModel: string;
     licensePlate: string;
     distance: number;
