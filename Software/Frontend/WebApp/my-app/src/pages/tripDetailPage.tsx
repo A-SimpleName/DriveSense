@@ -30,7 +30,7 @@ function TripDetailPage() {
         <div>
             <h1>Fahrt Details</h1>
 
-            <p><strong>Fahrer:</strong> {tripSummaryDto.accountFname} {tripSummaryDto.accountLname}</p>
+            <p><strong>Fahrer:</strong> {tripSummaryDto.accountFirstName} {tripSummaryDto.accountLastName}</p>
             <p><strong>Fahrzeug:</strong> {tripSummaryDto.vehicleModel} ({tripSummaryDto.licensePlate})</p>
             <p><strong>Start:</strong> {new Date(tripSummaryDto.startTime).toLocaleString()}</p>
             <p><strong>Ende:</strong> {tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "—"}</p>

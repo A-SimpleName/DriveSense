@@ -28,8 +28,9 @@ public class AccountService {
     // ── Auth ────────────────────────────────────────────────────────────────
 
     public AccountResponse signUp(SignUpRequest request) {
-        if (accountDao.getByEmail(request.getEmail()) != null) {
-            throw new BadRequestException("Email bereits vergeben");
+        Account existing = accountDao.getByEmail(request.getEmail());
+        if (existing != null) {
+            throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
         String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         Account account = new Account();
@@ -100,14 +101,33 @@ public class AccountService {
 
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        boolean emailChanged = !account.getEmail().equalsIgnoreCase(request.getEmail());
+
+        if (emailChanged) {
+            Account emailTaken = accountDao.getByEmail(request.getEmail());
+            if (emailTaken != null) {
+                throw new FieldValidationException("email", "Email ist bereits vergeben");
+            }
+            if (accountDao.existsByPendingEmail(request.getEmail(), id)) {
+                throw new FieldValidationException("email", "Email wird bereits von einem anderen Account beansprucht");
+            }
         }
 
         account.setFirstName(request.getFirstName());
         account.setLastName(request.getLastName());
-        account.setEmail(request.getEmail());
+
+        if (emailChanged) {
+            account.setPendingEmail(request.getEmail());
+        }
+
         accountDao.update(account);
+
+        if (emailChanged) {
+            emailVerificationService.sendVerificationCode(id, request.getEmail());
+        }
+
         return toResponse(account);
     }
 
@@ -145,7 +165,7 @@ public class AccountService {
         }
 
         // Prüfen ob die E-Mail schon als pending_email bei einem anderen Account liegt
-        if (accountDao.existsByPendingEmail(newEmail)) {
+        if (accountDao.existsByPendingEmail(newEmail, accountId)) {
             throw new BadRequestException("Diese E-Mail-Adresse wird bereits von einem anderen Account beansprucht");
         }
 
@@ -167,11 +187,7 @@ public class AccountService {
             throw new BadRequestException("Keine ausstehende E-Mail-Änderung vorhanden");
         }
 
-        // Code gegen die pending_email verifizieren
-        emailVerificationService.verifyCode(account.getPendingEmail(), code);
-
-        // Atomares Übertragen: email ← pending_email, pending_email ← NULL
-        accountDao.confirmPendingEmail(accountId);
+        emailVerificationService.confirmEmailChange(accountId, code);
     }
 
     /**
@@ -202,6 +218,7 @@ public class AccountService {
         res.setLastName(account.getLastName());
         res.setEmail(account.getEmail());
         res.setPendingEmail(account.getPendingEmail());
+        res.setBirthdate(account.getBirthdate());
         return res;
     }
 }

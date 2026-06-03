@@ -150,7 +150,7 @@ public class AccountController {
      */
     @PostMapping("/confirm-email-change")
     public ResponseEntity<Void> confirmEmailChange(
-            @Valid @RequestBody VerifyEmailRequest request,
+            @Valid @RequestBody ConfirmEmailChangeRequest request,
             HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
         accountService.confirmEmailChange(accountId, request.getCode());
