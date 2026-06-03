@@ -161,7 +161,7 @@ function AppContent() {
               <Route path="profile" element={<ProfilePage />} />
               <Route path="invite" element={<InviteAcceptPage />} />
               <Route path="admin" element={<AdminPage />} />
-              <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
+              <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
             </Route>
           </>
         )}
