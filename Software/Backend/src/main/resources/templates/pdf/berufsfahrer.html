@@ -7,9 +7,10 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: Arial, sans-serif; font-size: 8.5pt; color: #1a1a2e; }
 
-  .header { background: #1A3C6E; padding: 10px 14px; display: table; width: 100%; }
-  .header .left  { display: table-cell; vertical-align: middle; width: 50%; }
-  .header .right { display: table-cell; vertical-align: middle; text-align: right; }
+  .header { background: #1A3C6E; padding: 10px 14px; display: block; width: 100%; }
+  .header::after { content: ""; display: block; clear: both; }
+  .header .left  { float: left; width: 50%; }
+  .header .right { float: right; text-align: right; }
   .brand         { color: white; font-size: 15pt; font-weight: bold; }
   .proto-name    { color: white; font-size: 12pt; font-weight: bold; }
   .proto-sub     { color: #BBCDE8; font-size: 7.5pt; }

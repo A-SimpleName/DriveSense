@@ -19,11 +19,20 @@ public class TripSummaryDto {
     private String furthestPoint;
     private String endPoint;
     private double distance;
+    private String protocolName;
     private String roadSurfaceConditions;
     private String type;
 
     public TripSummaryDto () {
 
+    }
+
+    public String getProtocolName() {
+        return protocolName;
+    }
+
+    public void setProtocolName(String protocolName) {
+        this.protocolName = protocolName;
     }
 
     public String getFurthestPoint() {

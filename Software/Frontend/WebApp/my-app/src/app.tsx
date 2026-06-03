@@ -6,8 +6,7 @@ import { getProfilesByAccount } from "./services/profileService";
 import { getCurrentAccount } from "./services/accountService";
 
 import { AuthProvider, useAuth } from "./context/authContext";
-
-import TopBar from "./components/Layout/topbar";
+import AuthLayout from "./components/Layout/AuthLayout";
 import LoginPage from "./pages/login";
 import SignUpPage from "./pages/signUp";
 import SelectProfilePage from "./pages/selectProfile";
@@ -22,6 +21,11 @@ import GroupPage from "./pages/group";
 import GroupDetailPage from "./pages/groupDetail";
 import ProfilePage from "./pages/profile";
 import InviteAcceptPage from "./pages/inviteAccept";
+import VerifyEmailPage from "./pages/verifyEmail";
+import ForgotPasswordPage from "./pages/forgotPassword";
+import ResetPasswordPage from "./pages/resetPassword";
+import AdminPage from "./pages/admin";
+import ConfirmEmailChangePage from "./pages/confirmEmailChangePage";
 
 export default function App() {
   return (
@@ -43,6 +47,7 @@ function AppContent() {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [reloadAuth, setReloadAuth] = useState(0);
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   useEffect(() => {
     async function initAuth() {
@@ -75,33 +80,45 @@ function AppContent() {
     initAuth();
   }, [reloadAuth]);
 
+  useEffect(() => {
+    if (!isAuth || profileSelected) {
+      return;
+    }
+
+    async function refreshProfiles() {
+      try {
+        const profilesData = await getProfilesByAccount();
+        setProfiles(profilesData);
+      } catch (err) {
+        console.error("refreshProfiles ERROR:", err);
+      }
+    }
+
+    refreshProfiles();
+  }, [isAuth, profileSelected]);
+
   if (loading) return <div>Loading...</div>;
 
   return (
     <BrowserRouter>
-
-      {/* Topbar nur wenn komplett eingeloggt */}
-      {isAuth && profileSelected && <TopBar />}
-
       <Routes>
 
         {/* NICHT EINGELOGGT */}
-        {!isAuth && (
-          <>
-            <Route
-              path="/login"
-              element={
-                <LoginPage
-                  onLoginSuccess={() => {
-                    setIsAuth(true);
-                    setReloadAuth(prev => prev + 1);
-                  }}
-                />
-              }
-            />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="*" element={<Navigate to="/login" />} />
-          </>
+        {!isAuth && !needsVerification && (
+            <>
+                <Route path="/login" element={
+                    <LoginPage
+                        onLoginSuccess={() => { setIsAuth(true); setReloadAuth(prev => prev + 1); }}
+                        onNeedsVerification={() => setNeedsVerification(true)}
+                    />
+                } />
+                <Route path="/signup" element={
+                    <SignUpPage onNeedsVerification={() => setNeedsVerification(true)} />
+                } />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="*" element={<Navigate to="/login" />} />
+            </>
         )}
 
         {/* EINGELOGGT, ABER KEIN PROFIL */}
@@ -118,20 +135,34 @@ function AppContent() {
           />
         )}
 
+        {!isAuth && needsVerification && (
+            <Route path="*" element={
+                <VerifyEmailPage onVerified={() => {
+                    setNeedsVerification(false);
+                    setIsAuth(true);
+                    setReloadAuth(prev => prev + 1);
+                }} />
+            } />
+        )}
+
         {/* VOLLSTÄNDIG EINGELOGGT */}
         {isAuth && profileSelected && (
           <>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/trips" element={<TripsPage />} />
-            <Route path="/trips/:id" element={<TripDetailPage />} />
-            <Route path="/protocols/:id" element={<ProtocolDetail />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings/>}/>
-            <Route path="/protocols" element={<ProtocolPage />} />
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/groups/:id" element={<GroupDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/invite" element={<InviteAcceptPage />} />
+            <Route path="/*" element={<AuthLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="trips" element={<TripsPage />} />
+              <Route path="trips/:id" element={<TripDetailPage />} />
+              <Route path="protocols/:id" element={<ProtocolDetail />} />
+              <Route path="vehicles" element={<Vehicles />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="protocols" element={<ProtocolPage />} />
+              <Route path="groups" element={<GroupPage />} />
+              <Route path="groups/:id" element={<GroupDetailPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="invite" element={<InviteAcceptPage />} />
+              <Route path="admin" element={<AdminPage />} />
+              <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
+            </Route>
           </>
         )}
         

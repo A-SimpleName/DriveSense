@@ -1,10 +1,9 @@
-import 'dart:async';
-
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/profile_service.dart';
 import 'package:drivesense/services/token_storage.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 import 'package:drivesense/widgets/vehicle_widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +16,7 @@ class ProfilePageBody extends StatefulWidget {
 
 class _ProfilePageBodyState extends State<ProfilePageBody> {
   Profile? _profile;
+
   bool _isLoading = true;
   bool _isSavingProfileName = false;
   bool _isDeletingProfile = false;
@@ -55,6 +55,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
 
   Future<void> _showEditProfileNameDialog() async {
     final Profile? profile = _profile;
+
     if (profile == null || _isSavingProfileName || _isDeletingProfile) {
       return;
     }
@@ -66,6 +67,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
 
     final String trimmedName = newName?.trim() ?? '';
+
     if (trimmedName.isEmpty || trimmedName == profile.name) {
       return;
     }
@@ -84,6 +86,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
 
     setState(() {
       _isSavingProfileName = false;
+
       if (result.isSuccess) {
         _profile = result.profile;
       }
@@ -99,6 +102,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
 
   Future<void> _deleteProfile() async {
     final Profile? profile = _profile;
+
     if (profile == null || _isDeletingProfile || _isSavingProfileName) {
       return;
     }
@@ -106,8 +110,16 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) =>
-          _DeleteProfileDialog(profileName: profile.name),
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Profil loeschen',
+        content:
+            'Profil "${profile.name}" wirklich loeschen? '
+            'Fahrzeuge und Gruppen werden getrennt. '
+            'Fahrten und Protokolle bleiben erhalten.',
+        confirmText: 'Endgueltig loeschen',
+        delaySeconds: 5,
+        confirmButtonColor: Colors.red,
+      ),
     );
 
     if (confirmed != true) {
@@ -126,18 +138,24 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
 
     if (result.isSuccess) {
       await TokenStorage.instance.clearProfile();
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message), backgroundColor: Colors.green),
       );
+
       Navigator.pushNamedAndRemoveUntil(
         context,
         'ProfileSelectPage',
         (Route<dynamic> route) => false,
       );
+
       return;
     }
 
     setState(() => _isDeletingProfile = false);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(result.message), backgroundColor: Colors.red),
     );
@@ -176,6 +194,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     }
 
     final Profile? profile = _profile;
+
     if (profile == null) {
       return const Card(
         child: Padding(
@@ -295,10 +314,13 @@ String _profileRoleLabel(String? role) {
     case 'FAHRSCHULER':
     case 'FAHRSCH\u00dcLER':
       return 'Fahrschueler';
+
     case 'BERUFSFAHRER':
       return 'Berufsfahrer';
+
     case 'PRIVAT':
       return 'Privat';
+
     default:
       return role?.trim().isNotEmpty == true ? role!.trim() : 'Unbekannt';
   }
@@ -315,11 +337,13 @@ class _ProfileNameDialog extends StatefulWidget {
 
 class _ProfileNameDialogState extends State<_ProfileNameDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   late final TextEditingController _nameController;
 
   @override
   void initState() {
     super.initState();
+
     _nameController = TextEditingController(text: widget.initialName);
   }
 
@@ -333,6 +357,7 @@ class _ProfileNameDialogState extends State<_ProfileNameDialog> {
     if (_formKey.currentState?.validate() != true) {
       return;
     }
+
     Navigator.of(context).pop(_nameController.text.trim());
   }
 
@@ -353,12 +378,15 @@ class _ProfileNameDialogState extends State<_ProfileNameDialog> {
           ),
           validator: (String? value) {
             final String name = value?.trim() ?? '';
+
             if (name.isEmpty) {
               return 'Name darf nicht leer sein.';
             }
+
             if (name.length > 100) {
               return 'Name darf maximal 100 Zeichen haben.';
             }
+
             return null;
           },
           onFieldSubmitted: (_) => _submit(),
@@ -370,72 +398,6 @@ class _ProfileNameDialogState extends State<_ProfileNameDialog> {
           child: const Text('Abbrechen'),
         ),
         ElevatedButton(onPressed: _submit, child: const Text('Speichern')),
-      ],
-    );
-  }
-}
-
-class _DeleteProfileDialog extends StatefulWidget {
-  final String profileName;
-
-  const _DeleteProfileDialog({required this.profileName});
-
-  @override
-  State<_DeleteProfileDialog> createState() => _DeleteProfileDialogState();
-}
-
-class _DeleteProfileDialogState extends State<_DeleteProfileDialog> {
-  static const int _deleteDelaySeconds = 5;
-
-  Timer? _timer;
-  int _secondsRemaining = _deleteDelaySeconds;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (_secondsRemaining <= 1) {
-        timer.cancel();
-        setState(() => _secondsRemaining = 0);
-        return;
-      }
-      setState(() => _secondsRemaining--);
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Profil loeschen'),
-      content: Text(
-        'Profil "${widget.profileName}" wirklich loeschen? '
-        'Fahrzeuge und Gruppen werden getrennt. Fahrten und Protokolle bleiben erhalten.',
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Abbrechen'),
-        ),
-        ElevatedButton(
-          onPressed: _secondsRemaining == 0
-              ? () => Navigator.of(context).pop(true)
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: Text(
-            _secondsRemaining == 0
-                ? 'Endgueltig loeschen'
-                : 'Loeschen ($_secondsRemaining)',
-          ),
-        ),
       ],
     );
   }

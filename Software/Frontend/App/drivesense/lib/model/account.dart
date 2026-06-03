@@ -20,22 +20,22 @@ class Account {
         : '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
     return {
-      "firstName": firstName,
-      "lastName": lastName,
-      "email": email,
-      "password": password,
-      "birthdate": formattedBirthdate,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+      'birthdate': formattedBirthdate,
     };
   }
 
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      firstName: json["firstName"] ?? '',
-      lastName: json["lastName"] ?? '',
-      email: json["email"] ?? '',
-      password: json["password"] ?? '',
-      birthdate: json["birthdate"] != null
-          ? DateTime.parse(json["birthdate"])
+      firstName: json['firstName'] ?? json['fName'] ?? '',
+      lastName: json['lastName'] ?? json['lName'] ?? '',
+      email: json['email'] ?? '',
+      password: json['password'] ?? '',
+      birthdate: json['birthdate'] != null
+          ? DateTime.parse(json['birthdate'])
           : null,
     );
   }

@@ -1,5 +1,5 @@
 import type { AccountResponse } from "./account";
-import type { TripSummary } from "./trip";
+import type { TripSummaryDto } from "./trip";
 import type { UserGroup } from "./usergroup";
 
 export interface ProtocolDetail {
@@ -9,7 +9,7 @@ export interface ProtocolDetail {
     created_at: string;
     name: string;
     protocolRole: string;
-    trips: TripSummary[];
+    trips: TripSummaryDto[];
 }
 
 export interface Protocol {

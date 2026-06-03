@@ -19,7 +19,7 @@ public class SignUpRequest {
             message = "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
     )
     private String password;
-    @Past
+    @Past(message = "Geburtsdatum muss in der Vergangenheit liegen")
     private LocalDate birthdate;
 
     public SignUpRequest(String firstName, String lastName, String email, String password,LocalDate birthdate) {

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { inviteMember } from "../../services/groupService";
 import "../../styles/addForms.css";
-import { Button } from "../button";
 
 interface Props {
     groupId: number;
@@ -17,13 +16,11 @@ export function InviteMemberForm({ groupId, onClose }: Props) {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!email.trim()) {
-            setError("Bitte eine Email-Adresse eingeben");
+            setError("Bitte eine E-Mail-Adresse eingeben");
             return;
         }
-
         setSaving(true);
         setError(null);
-
         try {
             await inviteMember(groupId, email.trim());
             setSuccess(true);
@@ -35,43 +32,49 @@ export function InviteMemberForm({ groupId, onClose }: Props) {
     }
 
     return (
-        <div className="vehicleAddForm">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="addForm">
+            <div className="addForm-header">
                 <h2>Mitglied einladen</h2>
-                <Button label="✕" type="button" onClick={onClose} />
+                <button type="button" className="addForm-close" onClick={onClose} aria-label="Schließen">✕</button>
             </div>
 
             {success ? (
-                <div>
-                    <p style={{ color: "green" }}>Einladung wurde an {email} gesendet!</p>
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <Button label="Schließen" type="button" onClick={onClose} />
+                <>
+                    <div className="addForm-body">
+                        <div className="addForm-field">
+                            <p style={{ color: "#16a34a", margin: 0 }}>
+                                Einladung wurde an <strong>{email}</strong> gesendet!
+                            </p>
+                        </div>
                     </div>
-                </div>
+                    <div className="addForm-footer">
+                        <button type="button" className="addForm-submit" onClick={onClose}>Schließen</button>
+                    </div>
+                </>
             ) : (
                 <form onSubmit={handleSubmit}>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td><label>Email</label></td>
-                                <td>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={e => setEmail(e.target.value)}
-                                        placeholder="beispiel@email.com"
-                                        autoFocus
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    {error && <p className="addForm-error">{error}</p>}
 
-                    {error && <p style={{ color: "red" }}>{error}</p>}
+                    <div className="addForm-body">
+                        <div className={`addForm-field ${error ? "addForm-field--error" : ""}`}>
+                            <label htmlFor="invite-email">E-Mail</label>
+                            <input
+                                id="invite-email"
+                                type="email"
+                                value={email}
+                                onChange={e => { setEmail(e.target.value); setError(null); }}
+                                placeholder="beispiel@email.com"
+                                autoFocus
+                            />
+                        </div>
+                    </div>
 
-                    <button type="submit" disabled={saving}>
-                        {saving ? "Wird gesendet..." : "Einladung senden"}
-                    </button>
+                    <div className="addForm-footer">
+                        <button type="button" className="addForm-cancel" onClick={onClose}>Abbrechen</button>
+                        <button type="submit" className="addForm-submit" disabled={saving}>
+                            {saving ? "Wird gesendet…" : "Einladung senden"}
+                        </button>
+                    </div>
                 </form>
             )}
         </div>

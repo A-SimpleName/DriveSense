@@ -48,6 +48,29 @@ public class EmailService {
         sendHtmlEmail(toEmail, subject, html);
     }
 
+    @Async
+    public void sendVehicleInvitation(String toEmail,
+                                      String inviterName,
+                                      String vehicleName,
+                                      String role,
+                                      String code) {
+
+        String subject = inviterName + " hat dich zu einem Fahrzeug eingeladen";
+
+        String html = baseTemplate(
+                "Fahrzeugeinladung",
+                "Du wurdest eingeladen!",
+                "<strong>" + escapeHtml(inviterName) + "</strong> hat dich zu dem Fahrzeug " +
+                        "<strong>" + escapeHtml(vehicleName) + "</strong> eingeladen.<br><br>" +
+                        "Rolle: <strong>" + escapeHtml(role) + "</strong><br><br>" +
+                        "Gib diesen Code in der App ein oder nutze die Einladung.",
+                code,
+                "Der Code ist 48 Stunden gültig."
+        );
+
+        sendHtmlEmail(toEmail, subject, html);
+    }
+
     // ──────────────────────────────────────────
     // INTERNER MAIL-VERSAND
     // ──────────────────────────────────────────
@@ -123,7 +146,7 @@ public class EmailService {
 
                     <!-- Header -->
                     <tr>
-                       <td style="background:#1a1a2e;padding:28px 32px;text-align:center;">
+                       <td style="background:#e2e8f0;padding:28px 32px;text-align:center;">
                          %s
                        </td>
                      </tr>

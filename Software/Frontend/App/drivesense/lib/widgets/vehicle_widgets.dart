@@ -3,6 +3,7 @@ import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // VehicleTableWidget
@@ -78,24 +79,17 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
 
   // Zeigt einen Bestätigungs-Dialog und entfernt die Fahrzeug-Verknuepfung.
   Future<void> _deleteVehicle(Vehicle vehicle) async {
-    final bool? confirmed = await showDialog<bool>(
+     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Fahrzeug entfernen'),
-        content: Text(
-          'Moechtest du "${vehicle.model}" (${vehicle.licensePlate}) aus diesem Profil entfernen?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Entfernen'),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Fahrzeug loeschen',
+        content:
+            'Fahrzeug mit Kennzeichen "${vehicle.licensePlate}" wirklich loeschen? '
+            'Diese Aktion kann nicht rueckgaengig gemacht werden.',
+        confirmText: 'Endgueltig loeschen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
       ),
     );
 

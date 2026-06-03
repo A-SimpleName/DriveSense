@@ -9,6 +9,7 @@ import 'package:drivesense/widgets/ds_snyc_trips_button.dart';
 import 'package:drivesense/widgets/protocol_table.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/pdf_service.dart';
+import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 class ProtocolPageBody extends StatefulWidget {
   final TripSyncService tripSyncService;
@@ -164,29 +165,29 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       return;
     }
 
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          title: const Text('Protokoll löschen'),
-          content: const Text(
-            'möchten Sie das Protokoll wirklich Löschen, alle darin eingetragenen Fahrten werden dadurch gelöscht',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Abbrechen'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Löschen'),
-            ),
-          ],
-        );
-      },
+    final Protocol? selectedProtocol = _protocols.cast<Protocol?>().firstWhere(
+      (Protocol? protocol) => protocol?.id == selectedProtocolId,
+      orElse: () => null,
     );
 
-    if (confirm != true) return;
+    final String protocolName =
+        selectedProtocol?.name ?? 'Unbekanntes Protokoll';
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: 'Protokoll löschen',
+        content:
+            'Protokoll "$protocolName" wirklich löschen?\n\n'
+            'Diese Aktion kann nicht rückgängig gemacht werden.',
+        confirmText: 'Endgültig löschen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
+      ),
+    );
+
+    if (confirmed != true) return;
 
     setState(() {
       _isLoading = true;

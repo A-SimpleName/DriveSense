@@ -1,5 +1,4 @@
-/* CONTAINER */
-.pdf-container {
+.pdfContainer {
     font-family: Arial, sans-serif;
     font-size: 8pt;
     color: #1a1a2e;
@@ -25,25 +24,29 @@
     text-align: right;
 }
 
+.center {
+    text-align: center;
+}
+
 .brand {
     color: white;
     font-size: 15pt;
     font-weight: bold;
 }
 
-.proto-name {
+.protoName {
     color: white;
     font-size: 12pt;
     font-weight: bold;
     margin-top: 2px;
 }
 
-.proto-sub {
+.protoSub {
     color: #BBCDE8;
     font-size: 7.5pt;
 }
 
-.user-info {
+.userInfo {
     color: #BBCDE8;
     font-size: 7pt;
     margin-top: 2px;
@@ -55,14 +58,13 @@
     margin-bottom: 8px;
 }
 
-/* SUMMARY */
 .summary {
     display: flex;
     gap: 8px;
     margin-bottom: 10px;
 }
 
-.sum-cell {
+.sumCell {
     flex: 1;
     border: 1px solid #2E7DCC;
     border-radius: 4px;
@@ -70,19 +72,18 @@
     text-align: center;
 }
 
-.sum-val {
+.sumVal {
     font-size: 13pt;
     font-weight: bold;
     color: #1A3C6E;
 }
 
-.sum-lbl {
+.sumLbl {
     font-size: 7pt;
     color: #6878A0;
 }
 
-/* SECTION */
-.section-title {
+.sectionTitle {
     font-size: 9pt;
     font-weight: bold;
     color: #1A3C6E;
@@ -91,14 +92,13 @@
     padding-bottom: 3px;
 }
 
-/* TABLE */
-table {
+.pdfContainer table {
     width: 100%;
     border-collapse: collapse;
     font-size: 8pt;
 }
 
-thead th {
+.pdfContainer thead th {
     background: #1A3C6E;
     color: white;
     padding: 5px 6px;
@@ -107,21 +107,21 @@ thead th {
     font-weight: bold;
 }
 
-tbody tr:nth-child(odd) td {
+.pdfContainer tbody tr:nth-child(odd) td {
     background: #ffffff;
 }
 
-tbody tr:nth-child(even) td {
+.pdfContainer tbody tr:nth-child(even) td {
     background: #F0F5FF;
 }
 
-tbody td {
+.pdfContainer tbody td {
     padding: 5px 6px;
     border: 1px solid #C0CFDF;
     text-align: center;
 }
 
-tbody td.left {
+.pdfContainer tbody td.left {
     text-align: left;
 }
 
