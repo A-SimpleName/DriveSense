@@ -1,4 +1,5 @@
 import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/pages/forgot_password_page.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
@@ -81,8 +82,14 @@ class _SignInPageState extends State<SignInPage> {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () => {
-                // TODO: implement forgot password
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        const ForgotPasswordPage(),
+                  ),
+                );
               },
               child: const Text('Passwort vergessen?'),
             ),

@@ -4,6 +4,7 @@ class Account {
   final String email;
   final String password;
   final DateTime? birthdate;
+  final String? pendingEmail;
 
   Account({
     required this.firstName,
@@ -11,6 +12,7 @@ class Account {
     required this.email,
     required this.password,
     this.birthdate,
+    this.pendingEmail,
   });
 
   Map<String, dynamic> toJson() {
@@ -37,6 +39,7 @@ class Account {
       birthdate: json['birthdate'] != null
           ? DateTime.parse(json['birthdate'])
           : null,
+      pendingEmail: json['pendingEmail'] ?? json['pending_email'],
     );
   }
 }
