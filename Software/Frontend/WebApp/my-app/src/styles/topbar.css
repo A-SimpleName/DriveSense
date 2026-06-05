@@ -17,7 +17,11 @@
 }
 
 .topbar .logo {
-  max-height: 48px;
+  display: block;
+  width: auto;
+  max-width: 200px;
+  height: 40px;
+  object-fit: contain;
   transition: transform 0.2s ease;
 }
 
