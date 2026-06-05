@@ -107,50 +107,11 @@ public class AccountService {
         Account account = accountDao.getById(id);
         if (account == null) throw new NotFoundException("Account nicht gefunden");
 
-        String originalFirstName = account.getFirstName();
-        String originalLastName = account.getLastName();
-        String originalEmail = account.getEmail();
-        String originalPendingEmail = account.getPendingEmail();
-        boolean originalEmailVerified = account.isEmailVerified();
-        LocalDate originalBirthdate = account.getBirthdate();
+        account.setFirstName(request.getFirstName());
+        account.setLastName(request.getLastName());
+        accountDao.update(account);
 
-        boolean emailChanged = !account.getEmail().equalsIgnoreCase(request.getEmail());
-
-        try {
-            if (emailChanged) {
-                Account emailTaken = accountDao.getByEmail(request.getEmail());
-                if (emailTaken != null) {
-                    throw new FieldValidationException("email", "Email ist bereits vergeben");
-                }
-                if (accountDao.existsByPendingEmail(request.getEmail(), id)) {
-                    throw new FieldValidationException("email", "Email wird bereits von einem anderen Account beansprucht");
-                }
-            }
-
-            account.setFirstName(request.getFirstName());
-            account.setLastName(request.getLastName());
-
-            if (emailChanged) {
-                account.setPendingEmail(request.getEmail());
-            }
-
-            accountDao.update(account);
-
-            if (emailChanged) {
-                emailVerificationService.sendVerificationCode(id, request.getEmail());
-            }
-
-            return toResponse(account);
-        } catch (ExternalApiException e) {
-            account.setFirstName(originalFirstName);
-            account.setLastName(originalLastName);
-            account.setEmail(originalEmail);
-            account.setPendingEmail(originalPendingEmail);
-            account.setEmailVerified(originalEmailVerified);
-            account.setBirthdate(originalBirthdate);
-            accountDao.update(account);
-            throw e;
-        }
+        return toResponse(account);
     }
 
     public void updatePassword(int id, UpdatePasswordRequest request) {

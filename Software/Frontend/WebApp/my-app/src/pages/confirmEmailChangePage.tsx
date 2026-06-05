@@ -1,9 +1,8 @@
-// ConfirmEmailChangePage.tsx
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components/button";
 
-import { confirmEmailChange, requestEmailChange } from "../services/accountService";
+import { confirmEmailChange, requestEmailChange, cancelEmailChange } from "../services/accountService";
 
 export default function ConfirmEmailChangePage() {
     const navigate = useNavigate();
@@ -13,12 +12,10 @@ export default function ConfirmEmailChangePage() {
     const [loading, setLoading] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);
 
-    const pendingEmail =
-        sessionStorage.getItem("pendingEmailChange") ?? "";
+    const pendingEmail = sessionStorage.getItem("pendingEmailChange") ?? "";
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-
         if (!code.trim()) return;
 
         setLoading(true);
@@ -26,9 +23,7 @@ export default function ConfirmEmailChangePage() {
 
         try {
             await confirmEmailChange(code.trim());
-
             sessionStorage.removeItem("pendingEmailChange");
-
             navigate("/settings");
             window.location.reload();
         } catch (err: any) {
@@ -51,13 +46,22 @@ export default function ConfirmEmailChangePage() {
         }
     }
 
+    async function handleCancel() {
+        setError(null);
+        try {
+            await cancelEmailChange();
+            sessionStorage.removeItem("pendingEmailChange");
+            navigate("/settings");
+        } catch (err: any) {
+            setError(err?.message || "Fehler beim Abbrechen");
+        }
+    }
+
     return (
         <div>
             <h1>Email Änderung bestätigen</h1>
 
-            <p>
-                Wir haben einen Code an {pendingEmail} gesendet.
-            </p>
+            <p>Wir haben einen Code an {pendingEmail} gesendet.</p>
 
             <form onSubmit={handleSubmit}>
                 <input
@@ -69,34 +73,18 @@ export default function ConfirmEmailChangePage() {
                     autoFocus
                 />
 
-                {error && (
-                    <p style={{ color: "red" }}>
-                        {error}
-                    </p>
-                )}
+                {error && <p style={{ color: "red" }}>{error}</p>}
 
-                {resendSuccess && (
-                    <p style={{ color: "green" }}>
-                        Code wurde erneut gesendet!
-                    </p>
-                )}
+                {resendSuccess && <p style={{ color: "green" }}>Code wurde erneut gesendet!</p>}
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-                    {loading
-                        ? "Wird überprüft..."
-                        : "Bestätigen"}
+                <button type="submit" disabled={loading}>
+                    {loading ? "Wird überprüft..." : "Bestätigen"}
                 </button>
             </form>
 
-            <button
-                type="button"
-                onClick={handleResend}
-            >
-                Code erneut senden
-            </button>
+            <Button label="Code erneut senden" onClick={handleResend} />
+
+            <Button label="Abbrechen" onClick={handleCancel} />
         </div>
     );
 }

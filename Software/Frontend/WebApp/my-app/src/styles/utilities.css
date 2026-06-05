@@ -244,10 +244,4 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: center;
-  margin: 24px 0;
-}
-
-.pagination button {
-  min-width: 40px;
 }
