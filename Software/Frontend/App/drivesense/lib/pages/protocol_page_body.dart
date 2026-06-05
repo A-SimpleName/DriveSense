@@ -136,7 +136,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
             ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _protocols.isEmpty
