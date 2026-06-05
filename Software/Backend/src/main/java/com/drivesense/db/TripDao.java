@@ -226,11 +226,7 @@ public class TripDao {
             ResultSet rs = ps.executeQuery();
 
             List<TripSummaryDto> list = new ArrayList<>();
-<<<<<<< HEAD
-            while (rs.next()) {
-                list.add(mapToDto(rs));
-            }
-=======
+
             while (rs.next()) list.add(mapToDto(rs));
             return list;
 
@@ -250,7 +246,7 @@ public class TripDao {
 
             List<TripSummary> list = new ArrayList<>();
             while (rs.next()) list.add(map(rs));
->>>>>>> eric
+            
             return list;
 
         } catch (SQLException e) {
@@ -258,13 +254,6 @@ public class TripDao {
         }
     }
 
-<<<<<<< HEAD
-    // ─────────────────────────────────────────────
-    // READ LISTS
-    // ─────────────────────────────────────────────
-    public List<TripSummary> getByProfileId(int profileId) {
-        String sql = "SELECT * FROM trip WHERE profile_id = ?";
-=======
     public List<TripSummaryDto> getAllByProfileId(int profileId) {
         String sql = """
             SELECT
@@ -293,7 +282,6 @@ public class TripDao {
             JOIN account a ON prf.account_id = a.id
             WHERE t.profile_id = ?
         """;
->>>>>>> eric
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -301,13 +289,8 @@ public class TripDao {
             ps.setInt(1, profileId);
             ResultSet rs = ps.executeQuery();
 
-<<<<<<< HEAD
-            List<TripSummary> list = new ArrayList<>();
-            while (rs.next()) list.add(map(rs));
-=======
             List<TripSummaryDto> list = new ArrayList<>();
             while (rs.next()) list.add(mapToDto(rs));
->>>>>>> eric
             return list;
 
         } catch (SQLException e) {
@@ -332,37 +315,21 @@ public class TripDao {
         }
     }
 
-<<<<<<< HEAD
-    // ─────────────────────────────────────────────
-    // DTO QUERIES (ACCESS CONTROL)
-    // ─────────────────────────────────────────────
     public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
-
-=======
-    public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
->>>>>>> eric
         String sql = """
             SELECT
                 t.id,
                 t.profile_id,
                 t.vehicle_id,
                 t.protocol_id,
-<<<<<<< HEAD
-=======
                 pr.name AS protocol_name,
->>>>>>> eric
                 t.start_time,
                 t.end_time,
                 t.distance,
                 t.start_mileage,
                 t.end_mileage,
-<<<<<<< HEAD
-                v.license_plate,
-                v.model AS vehicle_model,
-=======
                 t.licenseplate_snapshot AS license_plate,
                 t.vehicle_model_snapshot AS vehicle_model,
->>>>>>> eric
                 t.start_point,
                 t.furthest_point,
                 t.end_point,
@@ -372,10 +339,6 @@ public class TripDao {
                 a.last_name
             FROM trip t
             JOIN protocol pr ON t.protocol_id = pr.id
-<<<<<<< HEAD
-            JOIN vehicle v ON t.vehicle_id = v.id
-=======
->>>>>>> eric
             JOIN profile prf ON t.profile_id = prf.id
             JOIN account a ON prf.account_id = a.id
             WHERE t.id = ?
@@ -406,32 +369,20 @@ public class TripDao {
     }
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int protocolId, int profileId) {
-<<<<<<< HEAD
-
-=======
->>>>>>> eric
         String sql = """
             SELECT
                 t.id,
                 t.profile_id,
                 t.vehicle_id,
                 t.protocol_id,
-<<<<<<< HEAD
-=======
                 pr.name AS protocol_name,
->>>>>>> eric
                 t.start_time,
                 t.end_time,
                 t.distance,
                 t.start_mileage,
                 t.end_mileage,
-<<<<<<< HEAD
-                v.license_plate,
-                v.model AS vehicle_model,
-=======
                 t.licenseplate_snapshot AS license_plate,
                 t.vehicle_model_snapshot AS vehicle_model,
->>>>>>> eric
                 t.start_point,
                 t.furthest_point,
                 t.end_point,
@@ -441,10 +392,6 @@ public class TripDao {
                 a.last_name
             FROM trip t
             JOIN protocol pr ON t.protocol_id = pr.id
-<<<<<<< HEAD
-            JOIN vehicle v ON t.vehicle_id = v.id
-=======
->>>>>>> eric
             JOIN profile prf ON t.profile_id = prf.id
             JOIN account a ON prf.account_id = a.id
             WHERE t.protocol_id = ?
@@ -477,12 +424,6 @@ public class TripDao {
         }
     }
 
-<<<<<<< HEAD
-    // ─────────────────────────────────────────────
-    // UPDATE
-    // ─────────────────────────────────────────────
-=======
->>>>>>> eric
     public void update(TripSummary tripSummary) {
         String sql = """
             UPDATE trip SET
@@ -495,13 +436,9 @@ public class TripDao {
                 end_point = ?,
                 furthest_point = ?,
                 start_mileage = ?,
-<<<<<<< HEAD
-                end_mileage = ?
-=======
                 end_mileage = ?,
                 vehicle_id = ?,
                 protocol_id = ?
->>>>>>> eric
             WHERE id = ?
         """;
 
@@ -518,13 +455,9 @@ public class TripDao {
             ps.setString(8, tripSummary.getFurthestPoint());
             ps.setInt(9, tripSummary.getStartMileage());
             ps.setInt(10, tripSummary.getEndMileage());
-<<<<<<< HEAD
-            ps.setInt(11, tripSummary.getId());
-=======
             ps.setInt(11, tripSummary.getVehicleId());
             ps.setInt(12, tripSummary.getProtocolId());
             ps.setInt(13, tripSummary.getId());
->>>>>>> eric
 
             ps.executeUpdate();
 
@@ -576,13 +509,6 @@ public class TripDao {
         TripSummaryDto dto = new TripSummaryDto();
 
         dto.setId(rs.getInt("id"));
-<<<<<<< HEAD
-        // dto.setProfileId(rs.getInt("profile_id"));
-        dto.setVehicleId(rs.getInt("vehicle_id"));
-        dto.setProtocolId(rs.getInt("protocol_id"));
-
-        dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
-=======
         dto.setProfileId(rs.getInt("profile_id"));
         dto.setVehicleId(rs.getInt("vehicle_id"));
         dto.setProtocolId(rs.getInt("protocol_id"));
@@ -590,7 +516,6 @@ public class TripDao {
 
         Timestamp start = rs.getTimestamp("start_time");
         if (start != null) dto.setStartTime(start.toLocalDateTime());
->>>>>>> eric
 
         Timestamp end = rs.getTimestamp("end_time");
         if (end != null) dto.setEndTime(end.toLocalDateTime());
@@ -598,10 +523,6 @@ public class TripDao {
         dto.setDistance(rs.getDouble("distance"));
         dto.setStartMileage(rs.getInt("start_mileage"));
         dto.setEndMileage(rs.getInt("end_mileage"));
-<<<<<<< HEAD
-
-=======
->>>>>>> eric
         dto.setType(rs.getString("type"));
         dto.setLicensePlate(rs.getString("license_plate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
@@ -609,15 +530,8 @@ public class TripDao {
         dto.setStartPoint(rs.getString("start_point"));
         dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));
-<<<<<<< HEAD
-
         dto.setAccountFirstName(rs.getString("first_name"));
         dto.setAccountLastName(rs.getString("last_name"));
-
-=======
-        dto.setAccountFirstName(rs.getString("first_name"));
-        dto.setAccountLastName(rs.getString("last_name"));
->>>>>>> eric
         dto.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
 
         return dto;

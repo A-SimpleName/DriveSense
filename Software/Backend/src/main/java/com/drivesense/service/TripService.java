@@ -1,10 +1,8 @@
 package com.drivesense.service;
 
 
-import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
-import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
@@ -155,10 +153,6 @@ public class TripService {
         return trips.stream()
                 .map(this::mapToDto)
                 .toList();
-    }
-
-    public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
-        return tripDao.getLatestTrackedByProfileId(profileId);
     }
 
     public TripSummaryDto getLatestTrackedByProfileId(int profileId) {

@@ -72,7 +72,7 @@ public class AccountService {
             throw new UnauthorizedException("Profil nicht gefunden oder kein Zugriff");
         }
         SelectProfileResponse res = new SelectProfileResponse();
-        res.setProfileToken(profileToken);
+        res.setProfileToken(jwtService.generateProfileToken(accountId,profileId,profile.getRole()));
         res.setProfile(profile);
         return res;
     }

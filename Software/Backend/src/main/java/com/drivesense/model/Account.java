@@ -16,12 +16,13 @@ public class Account {
 
     public Account () {}
 
-    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
+    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate, String pendingEmail) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.birthdate = birthdate;
+        this.pendingEmail = pendingEmail;
     }
 
     public int getId() {
@@ -46,16 +47,6 @@ public class Account {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-
-    public Account () {}
-    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.password = password;
-        this.email = email;
-        this.birthdate = birthdate;
     }
 
     public LocalDate getBirthdate() { return birthdate; }
@@ -86,6 +77,14 @@ public class Account {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public String getPendingEmail() {
+        return pendingEmail;
+    }
+
+    public void setPendingEmail(String pendingEmail) {
+        this.pendingEmail = pendingEmail;
     }
 
     @Override
