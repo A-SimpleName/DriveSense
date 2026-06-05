@@ -3,6 +3,7 @@ import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/profile_service.dart';
 import 'package:drivesense/services/token_storage.dart';
+import 'package:drivesense/services/vehicle_service.dart';
 import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 import 'package:drivesense/widgets/vehicle_widgets.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
   bool _isLoading = true;
   bool _isSavingProfileName = false;
   bool _isDeletingProfile = false;
+  bool _isAcceptingVehicleInvite = false;
+  int _vehicleListVersion = 0;
 
   @override
   void initState() {
@@ -161,6 +164,51 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
   }
 
+  Future<void> _showAcceptVehicleInviteDialog() async {
+    final Profile? profile = _profile;
+    if (profile == null ||
+        _isAcceptingVehicleInvite ||
+        _isDeletingProfile ||
+        _isSavingProfileName) {
+      return;
+    }
+
+    final String? rawCode = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => const _VehicleInviteAcceptDialog(),
+    );
+
+    final String code = _extractInviteCode(rawCode ?? '');
+    if (code.isEmpty) {
+      return;
+    }
+
+    if (!mounted) return;
+
+    setState(() => _isAcceptingVehicleInvite = true);
+
+    final VehicleActionResult result = await VehicleService.acceptVehicleInvite(
+      code: code,
+      profileId: profile.id,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isAcceptingVehicleInvite = false;
+      if (result.isSuccess) {
+        _vehicleListVersion++;
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -171,7 +219,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
           children: <Widget>[
             _buildProfileOverview(),
             const SizedBox(height: 24),
-            const VehicleTableWidget(),
+            VehicleTableWidget(key: ValueKey<int>(_vehicleListVersion)),
           ],
         ),
       ),
@@ -285,6 +333,22 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
                   icon: const Icon(Icons.swap_horiz),
                   label: const Text('Profil wechseln'),
                 ),
+                OutlinedButton.icon(
+                  onPressed:
+                      _isAcceptingVehicleInvite ||
+                          _isDeletingProfile ||
+                          _isSavingProfileName
+                      ? null
+                      : _showAcceptVehicleInviteDialog,
+                  icon: _isAcceptingVehicleInvite
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.mark_email_read_outlined),
+                  label: const Text('Fahrzeugeinladung annehmen'),
+                ),
                 TextButton.icon(
                   onPressed: _isDeletingProfile || _isSavingProfileName
                       ? null
@@ -308,6 +372,21 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
   }
 }
 
+String _extractInviteCode(String input) {
+  final String trimmed = input.trim();
+  if (trimmed.isEmpty) {
+    return '';
+  }
+
+  final Uri? uri = Uri.tryParse(trimmed);
+  final String? codeFromUri = uri?.queryParameters['code'];
+  if (codeFromUri != null && codeFromUri.trim().isNotEmpty) {
+    return codeFromUri.trim();
+  }
+
+  return trimmed;
+}
+
 String _profileRoleLabel(String? role) {
   switch (role?.trim().toUpperCase()) {
     case 'FAHRSCHUELER':
@@ -323,6 +402,69 @@ String _profileRoleLabel(String? role) {
 
     default:
       return role?.trim().isNotEmpty == true ? role!.trim() : 'Unbekannt';
+  }
+}
+
+class _VehicleInviteAcceptDialog extends StatefulWidget {
+  const _VehicleInviteAcceptDialog();
+
+  @override
+  State<_VehicleInviteAcceptDialog> createState() =>
+      _VehicleInviteAcceptDialogState();
+}
+
+class _VehicleInviteAcceptDialogState
+    extends State<_VehicleInviteAcceptDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _codeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+
+    Navigator.of(context).pop(_codeController.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Fahrzeugeinladung annehmen'),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _codeController,
+          autofocus: true,
+          minLines: 1,
+          maxLines: 3,
+          textInputAction: TextInputAction.done,
+          decoration: const InputDecoration(
+            labelText: 'Link oder Code',
+            border: OutlineInputBorder(),
+          ),
+          validator: (String? value) {
+            if ((value ?? '').trim().isEmpty) {
+              return 'Bitte Link oder Code eingeben.';
+            }
+            return null;
+          },
+          onFieldSubmitted: (_) => _submit(),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Annehmen')),
+      ],
+    );
   }
 }
 

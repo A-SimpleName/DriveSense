@@ -79,7 +79,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
 
   // Zeigt einen Bestätigungs-Dialog und entfernt die Fahrzeug-Verknuepfung.
   Future<void> _deleteVehicle(Vehicle vehicle) async {
-     final bool? confirmed = await showDialog<bool>(
+    final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
@@ -108,6 +108,38 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     );
 
     if (result.isSuccess) await _loadVehicles();
+  }
+
+  Future<void> _shareVehicle(Vehicle vehicle) async {
+    final bool canInvite =
+        vehicle.myRole.toUpperCase() == 'OWNER' ||
+        vehicle.myRole.toUpperCase() == 'CO_OWNER';
+    if (!canInvite) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nur Owner und Co-Owner duerfen Fahrzeuge teilen.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final VehicleActionResult? result = await showDialog<VehicleActionResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => _VehicleInviteDialog(vehicle: vehicle),
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   @override
@@ -205,6 +237,20 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
                                       tooltip: 'Bearbeiten',
                                       onPressed: () =>
                                           _openVehicleDialog(vehicle: vehicle),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.person_add_alt_1,
+                                        size: 18,
+                                      ),
+                                      tooltip: 'Per E-Mail teilen',
+                                      onPressed:
+                                          vehicle.myRole.toUpperCase() ==
+                                                  'OWNER' ||
+                                              vehicle.myRole.toUpperCase() ==
+                                                  'CO_OWNER'
+                                          ? () => _shareVehicle(vehicle)
+                                          : null,
                                     ),
                                     IconButton(
                                       icon: const Icon(
@@ -348,6 +394,7 @@ class _VehicleDialogState extends State<_VehicleDialog> {
         model: model,
         licensePlate: plate,
         mileage: mileage,
+        myRole: widget.vehicle!.myRole,
       );
       success = await VehicleService.updateVehicle(updated);
     }
@@ -414,6 +461,136 @@ class _VehicleDialogState extends State<_VehicleDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Text('Speichern'),
+        ),
+      ],
+    );
+  }
+}
+
+class _VehicleInviteDialog extends StatefulWidget {
+  final Vehicle vehicle;
+
+  const _VehicleInviteDialog({required this.vehicle});
+
+  @override
+  State<_VehicleInviteDialog> createState() => _VehicleInviteDialogState();
+}
+
+class _VehicleInviteDialogState extends State<_VehicleInviteDialog> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+
+  bool _isSending = false;
+  String _role = 'DRIVER';
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendInvite() async {
+    if (_formKey.currentState?.validate() != true || _isSending) {
+      return;
+    }
+
+    setState(() => _isSending = true);
+
+    final VehicleActionResult result = await VehicleService.inviteVehicle(
+      vehicleId: widget.vehicle.id,
+      email: _emailController.text.trim(),
+      role: _role,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isSending = false);
+    Navigator.of(context).pop(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isOwner = widget.vehicle.myRole.toUpperCase() == 'OWNER';
+
+    return AlertDialog(
+      title: const Text('Fahrzeug teilen'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              '${widget.vehicle.model} (${widget.vehicle.licensePlate})',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _emailController,
+              autofocus: true,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(
+                labelText: 'E-Mail',
+                border: OutlineInputBorder(),
+              ),
+              validator: (String? value) {
+                final String email = value?.trim() ?? '';
+                if (email.isEmpty) {
+                  return 'E-Mail darf nicht leer sein.';
+                }
+                if (!email.contains('@') || !email.contains('.')) {
+                  return 'Bitte eine gueltige E-Mail eingeben.';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _role,
+              decoration: const InputDecoration(
+                labelText: 'Rolle',
+                border: OutlineInputBorder(),
+              ),
+              items: <DropdownMenuItem<String>>[
+                const DropdownMenuItem<String>(
+                  value: 'DRIVER',
+                  child: Text('Fahrer'),
+                ),
+                if (isOwner)
+                  const DropdownMenuItem<String>(
+                    value: 'CO_OWNER',
+                    child: Text('Co-Owner'),
+                  ),
+              ],
+              onChanged: _isSending
+                  ? null
+                  : (String? value) {
+                      if (value == null) {
+                        return;
+                      }
+                      setState(() => _role = value);
+                    },
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: _isSending ? null : () => Navigator.of(context).pop(),
+          child: const Text('Abbrechen'),
+        ),
+        ElevatedButton(
+          onPressed: _isSending ? null : _sendInvite,
+          child: _isSending
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Senden'),
         ),
       ],
     );

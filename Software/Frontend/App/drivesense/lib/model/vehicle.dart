@@ -4,6 +4,7 @@ class Vehicle {
   final String model;
   final String licensePlate;
   final int mileage;
+  final String myRole;
 
   Vehicle({
     required this.id,
@@ -11,6 +12,7 @@ class Vehicle {
     required this.model,
     required this.licensePlate,
     required this.mileage,
+    this.myRole = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +22,7 @@ class Vehicle {
       "model": model,
       "licensePlate": licensePlate,
       "mileage": mileage,
+      "myRole": myRole,
     };
   }
 
@@ -39,6 +42,7 @@ class Vehicle {
       model: json["model"] as String? ?? '',
       licensePlate: (json["licensePlate"] ?? '') as String,
       mileage: asInt(json["mileage"]),
+      myRole: (json["myRole"] ?? json["my_role"] ?? '') as String,
     );
   }
 }

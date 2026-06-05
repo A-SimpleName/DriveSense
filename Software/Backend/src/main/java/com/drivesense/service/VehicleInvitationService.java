@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +70,7 @@ public class VehicleInvitationService {
         // Prüfen ob der Account noch ein freies Profil hat (ohne Zugriff auf das Fahrzeug)
         List<Profile> invitedProfiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
         boolean hasAvailableProfile = invitedProfiles.stream()
-                .anyMatch(p -> vehicleDao.getById(vehicleId, invitedAccount.getId()) == null);
+                .anyMatch(p -> !profileHasVehicle(p.getId(), vehicleId));
         if (!hasAvailableProfile) {
             throw new BadRequestException("Alle Profile dieses Accounts haben bereits Zugriff auf das Fahrzeug");
         }
@@ -118,7 +119,7 @@ public class VehicleInvitationService {
 
         // Nur Profile zurückgeben, die noch keinen Zugriff haben
         return profiles.stream()
-                .filter(p -> vehicleDao.getById(invitation.getVehicleId(), accountId) == null)
+                .filter(p -> !profileHasVehicle(p.getId(), invitation.getVehicleId()))
                 .collect(Collectors.toList());
     }
 
@@ -150,6 +151,26 @@ public class VehicleInvitationService {
 
     // ── Interne Hilfsmethoden ────────────────────────────────────────────────
 
+    public VehicleDto acceptInviteLink(String code) {
+        VehicleInvitation invitation = getValidInvitationByCode(code);
+
+        Account invitedAccount = accountDao.getById(invitation.getInvitedAccountId());
+        if (invitedAccount == null) {
+            throw new NotFoundException("Eingeladener Account nicht gefunden");
+        }
+
+        List<Profile> profiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
+        Profile targetProfile = profiles.stream()
+                .filter(p -> !profileHasVehicle(p.getId(), invitation.getVehicleId()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Alle Profile dieses Accounts haben bereits Zugriff auf das Fahrzeug"));
+
+        vehicleDao.addProfileAssociation(invitation.getVehicleId(), targetProfile.getId(), invitation.getRole());
+        vehicleInvitationDao.updateStatus(invitation.getId(), "ACCEPTED");
+
+        return vehicleDao.getById(invitation.getVehicleId(), invitedAccount.getId());
+    }
+
     private VehicleInvitation getValidInvitation(int accountId, String code) {
         List<VehicleInvitation> pending = vehicleInvitationDao.getAllPendingByAccount(accountId);
         if (pending == null || pending.isEmpty()) {
@@ -170,7 +191,34 @@ public class VehicleInvitationService {
         return invitation;
     }
 
+    private VehicleInvitation getValidInvitationByCode(String code) {
+        List<VehicleInvitation> pending = vehicleInvitationDao.getAllPending();
+        if (pending == null || pending.isEmpty()) {
+            throw new BadRequestException("Ungueltiger oder abgelaufener Einladungslink");
+        }
+
+        VehicleInvitation invitation = pending.stream()
+                .filter(inv -> BCrypt.checkpw(code, inv.getCodeHash()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Ungueltiger oder abgelaufener Einladungslink"));
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            vehicleInvitationDao.updateStatus(invitation.getId(), "EXPIRED");
+            throw new BadRequestException("Einladungslink ist abgelaufen");
+        }
+
+        return invitation;
+    }
+
+    private boolean profileHasVehicle(int profileId, int vehicleId) {
+        return vehicleDao.getAllVehiclesByProfile(profileId)
+                .stream()
+                .anyMatch(v -> v.getId() == vehicleId);
+    }
+
     private String generateCode() {
-        return String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        byte[] bytes = new byte[24];
+        new SecureRandom().nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }

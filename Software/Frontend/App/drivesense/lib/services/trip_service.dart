@@ -5,6 +5,7 @@ import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'dart:convert';
@@ -223,8 +224,9 @@ class TripService {
   }
 
   Future<void> _deleteCachedServerTrip(int tripId) async {
+    final int accountId = LocalAccountScope.requireAccountId();
     final Trip? cachedTrip = await _tripRepository.getByLocalId(
-      'server:$tripId',
+      'server:$accountId:$tripId',
     );
     if (cachedTrip != null) {
       await _tripRepository.deleteById(cachedTrip.id);
@@ -494,6 +496,8 @@ class TripService {
     final List<Trip> localBeforeSync = await _tripRepository
         .getByProfileAndProtocol(profileId, protocolId);
     final List<TripSummary> serverSummaries = <TripSummary>[];
+    final Set<int> serverTripIds = <int>{};
+    bool serverFetchSucceeded = false;
 
     try {
       final http.Response response = await http.get(
@@ -501,7 +505,10 @@ class TripService {
         headers: RequestHeaders.authenticated(),
       );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.statusCode == 204 || response.body.trim().isEmpty) {
+        serverFetchSucceeded = true;
+      } else if (response.statusCode >= 200 && response.statusCode < 300) {
+        serverFetchSucceeded = true;
         final List<dynamic> jsonList =
             jsonDecode(response.body) as List<dynamic>;
 
@@ -516,6 +523,7 @@ class TripService {
           }
 
           serverSummaries.add(summary);
+          serverTripIds.add(summary.id);
 
           await _upsertServerTrip(
             profileId: profileId,
@@ -528,6 +536,14 @@ class TripService {
           'fetchTrips server sync skipped: ${response.statusCode} ${response.body}',
         );
       }
+
+      if (serverFetchSucceeded) {
+        await _tripRepository.deleteSyncedByProfileAndProtocolExceptServerIds(
+          profileId: profileId,
+          protocolId: protocolId,
+          serverIds: serverTripIds,
+        );
+      }
     } catch (e, st) {
       debugPrint(
         'fetchTrips server sync failed, using local Isar only: $e\n$st',
@@ -537,7 +553,7 @@ class TripService {
     final List<Trip> localAfterSync = await _tripRepository
         .getByProfileAndProtocol(profileId, protocolId);
 
-    if (serverSummaries.isNotEmpty) {
+    if (serverFetchSucceeded) {
       final List<TripSummary> unsyncedLocals = localAfterSync
           .where((Trip trip) => !trip.isSynced)
           .map((Trip trip) => TripSummary.fromTrip(trip))
@@ -566,11 +582,13 @@ class TripService {
     required int protocolId,
     required TripSummary summary,
   }) async {
-    final String serverLocalId = 'server:${summary.id}';
+    final int accountId = LocalAccountScope.requireAccountId();
+    final String serverLocalId = 'server:$accountId:${summary.id}';
     final Trip? existing = await _tripRepository.getByLocalId(serverLocalId);
 
     final Trip trip = existing ?? Trip();
     trip.localId = serverLocalId;
+    trip.accountId = accountId;
     trip.profileId = profileId;
     trip.vehicleId = summary.vehicleId;
     trip.protocolId = protocolId;

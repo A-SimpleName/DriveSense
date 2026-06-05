@@ -53,6 +53,11 @@ public class GlobalExceptionHandler {
         return error(403, ex.getMessage());
     }
 
+    @ExceptionHandler(NotVerifiedException.class)
+    public ResponseEntity<Map<String, String>> handleNotVerified(NotVerifiedException ex) {
+        return error(406, ex.getMessage());
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException ex) {
         return error(400, ex.getMessage());

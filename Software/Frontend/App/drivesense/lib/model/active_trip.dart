@@ -6,6 +6,7 @@ part 'active_trip.g.dart';
 class ActiveTrip {
   Id id = Isar.autoIncrement;
 
+  int accountId = 0;
   late int profileId;
   late int vehicleId;
   late int protocolId;

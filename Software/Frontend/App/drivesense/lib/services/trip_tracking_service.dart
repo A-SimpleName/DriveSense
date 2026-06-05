@@ -141,14 +141,15 @@ class TripTrackingService {
       return;
     }
 
-    final ServiceRequestResult result = await FlutterForegroundTask.startService(
-      serviceId: _foregroundServiceId,
-      serviceTypes: const [ForegroundServiceTypes.location],
-      notificationTitle: 'DriveSense zeichnet eine Fahrt auf',
-      notificationText: 'Standorttracking ist aktiv.',
-      notificationInitialRoute: 'MainPage',
-      callback: startTripTrackingForegroundTask,
-    );
+    final ServiceRequestResult result =
+        await FlutterForegroundTask.startService(
+          serviceId: _foregroundServiceId,
+          serviceTypes: const [ForegroundServiceTypes.location],
+          notificationTitle: 'DriveSense zeichnet eine Fahrt auf',
+          notificationText: 'Standorttracking ist aktiv.',
+          notificationInitialRoute: 'MainPage',
+          callback: startTripTrackingForegroundTask,
+        );
 
     if (result is ServiceRequestFailure) {
       _foregroundTrackingRequested = false;
@@ -328,8 +329,10 @@ class TripTrackingService {
       return;
     }
 
-    final permissions.PermissionStatus requested =
-        await permissions.Permission.locationAlways.request();
+    final permissions.PermissionStatus requested = await permissions
+        .Permission
+        .locationAlways
+        .request();
     if (!requested.isGranted) {
       throw const TripTrackingException(
         'Bitte Standortzugriff "Immer erlauben", damit Fahrten auch bei geschlossener App aufgezeichnet werden.',
@@ -450,7 +453,9 @@ class _TripTrackingTaskHandler extends TaskHandler {
   }
 
   Future<void> _persistPosition(Position position) async {
-    final ActiveTrip? activeTrip = await _activeTripRepository.getActive();
+    final ActiveTrip? activeTrip = await _activeTripRepository.getActive(
+      allowUnscoped: true,
+    );
     if (activeTrip == null) {
       await _stopService();
       return;
@@ -497,7 +502,9 @@ class _TripTrackingTaskHandler extends TaskHandler {
   }
 
   Future<void> _seedLastAcceptedPoint() async {
-    final ActiveTrip? activeTrip = await _activeTripRepository.getActive();
+    final ActiveTrip? activeTrip = await _activeTripRepository.getActive(
+      allowUnscoped: true,
+    );
     if (activeTrip == null) {
       return;
     }
@@ -512,7 +519,9 @@ class _TripTrackingTaskHandler extends TaskHandler {
   }
 
   Future<void> _verifyActiveTripStillExists() async {
-    final ActiveTrip? activeTrip = await _activeTripRepository.getActive();
+    final ActiveTrip? activeTrip = await _activeTripRepository.getActive(
+      allowUnscoped: true,
+    );
     if (activeTrip == null) {
       await _stopService();
       return;
@@ -652,10 +661,8 @@ Map<String, dynamic>? _stringKeyedMap(Object? value) {
 
   if (value is Map) {
     return value.map<String, dynamic>(
-      (dynamic key, dynamic value) => MapEntry<String, dynamic>(
-        key.toString(),
-        value,
-      ),
+      (dynamic key, dynamic value) =>
+          MapEntry<String, dynamic>(key.toString(), value),
     );
   }
 

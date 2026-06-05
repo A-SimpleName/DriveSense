@@ -234,6 +234,20 @@ public class AccountDao {
     // ── Soft Delete ─────────────────────────────────────────────────────────
 
     /**
+     * Loescht eine nicht-verifizierte Registrierung physisch.
+     */
+    public boolean deleteUnverifiedById(int id) {
+        String sql = "DELETE FROM account WHERE id = ? AND email_verified = false AND deleted_at IS NULL";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Loeschen der nicht verifizierten Registrierung", e);
+        }
+    }
+
+    /**
      * Soft-löscht einen Account (setzt deleted_at).
      * Historische Trips, Protocols und Vehicles bleiben erhalten
      * (dank RESTRICT / SET NULL auf den Foreign Keys).

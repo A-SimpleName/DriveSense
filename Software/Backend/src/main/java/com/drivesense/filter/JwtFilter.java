@@ -27,12 +27,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
         return path.startsWith("/api/account/login")
                 || path.startsWith("/api/account/signUp")
+                || path.startsWith("/api/account/cancel-signup")
                 || path.startsWith("/api/account/refresh")
                 || path.startsWith("/api/account/logout")
                 || path.startsWith("/api/account/verify-email")
                 || path.startsWith("/api/account/resend-verification")
                 || path.startsWith("/api/account/forgot-password")
-                || path.startsWith("/api/account/reset-password");
+                || path.startsWith("/api/account/reset-password")
+                || path.startsWith("/api/vehicles/invitations/accept-link");
     }
 
     @Override

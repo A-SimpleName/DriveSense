@@ -14,6 +14,7 @@ import com.drivesense.service.VehicleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -95,6 +96,27 @@ public class VehicleController {
      * POST /api/vehicles/{vehicleId}/invitations
      * OWNER / CO_OWNER lädt einen Account per E-Mail ein.
      */
+    @GetMapping(value = "/invitations/accept-link", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> acceptInviteLink(@RequestParam String code) {
+        VehicleDto vehicle = vehicleInvitationService.acceptInviteLink(code);
+        String vehicleName = escapeHtml(vehicle.getModel() + " (" + vehicle.getLicensePlate() + ")");
+        return ResponseEntity.ok("""
+                <!doctype html>
+                <html lang="de">
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <title>DriveSense Einladung angenommen</title>
+                </head>
+                <body style="font-family:Arial,sans-serif;margin:40px;line-height:1.5">
+                  <h1>Einladung angenommen</h1>
+                  <p>Du hast jetzt Zugriff auf das Fahrzeug <strong>%s</strong>.</p>
+                  <p>Du kannst DriveSense nun wieder oeffnen.</p>
+                </body>
+                </html>
+                """.formatted(vehicleName));
+    }
+
     @PostMapping("/{vehicleId}/invitations")
     public ResponseEntity<Void> inviteToVehicle(
             @PathVariable int vehicleId,
@@ -142,5 +164,23 @@ public class VehicleController {
         int accountId = (int) httpRequest.getAttribute("accountId");
         vehicleInvitationService.acceptInvite(accountId, request.getCode(), request.getProfileId());
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/invitations/accept")
+    public ResponseEntity<Void> acceptInviteForCurrentAccount(
+            @RequestBody @Valid AcceptInviteRequest request,
+            HttpServletRequest httpRequest) {
+
+        int accountId = (int) httpRequest.getAttribute("accountId");
+        vehicleInvitationService.acceptInvite(accountId, request.getCode(), request.getProfileId());
+        return ResponseEntity.ok().build();
+    }
+
+    private String escapeHtml(String value) {
+        return value == null ? "" : value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 }

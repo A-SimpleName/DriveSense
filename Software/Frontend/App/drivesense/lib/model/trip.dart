@@ -9,6 +9,7 @@ class Trip {
   @Index(unique: true)
   late String localId;
 
+  int accountId = 0;
   late String trackingPointsJson;
 
   late int profileId;

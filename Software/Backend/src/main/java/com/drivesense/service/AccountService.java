@@ -1,6 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
+import com.drivesense.db.EmailVerificationDao;
 import com.drivesense.db.ProfileDao;
 import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
@@ -22,6 +23,7 @@ public class AccountService {
 
     @Autowired private AccountDao accountDao;
     @Autowired private ProfileDao profileDao;
+    @Autowired private EmailVerificationDao emailVerificationDao;
     @Autowired private JwtService jwtService;
     @Autowired private EmailVerificationService emailVerificationService;
     @Autowired private EmailService emailService;
@@ -43,6 +45,20 @@ public class AccountService {
         accountDao.insert(account);
         emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
         return toResponse(account);
+    }
+
+    public void cancelSignUp(CancelSignUpRequest request) {
+        Account account = accountDao.getByEmail(request.getEmail());
+        if (account == null || account.isEmailVerified()) {
+            return;
+        }
+
+        if (!BCrypt.checkpw(request.getPassword(), account.getPassword())) {
+            throw new BadRequestException("Registrierung konnte nicht abgebrochen werden");
+        }
+
+        emailVerificationDao.deleteByAccountId(account.getId());
+        accountDao.deleteUnverifiedById(account.getId());
     }
 
     public LoginResponse login(LoginRequest request) {
