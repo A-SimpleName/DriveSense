@@ -5,8 +5,8 @@ import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 class VehicleActionResult {
   final bool isSuccess;
@@ -241,7 +241,6 @@ class VehicleService {
 
   // ─── Ein neues Fahrzeug erstellen ─────────────────────────────────────────
   // Backend gibt die rohe Vehicle-Entity zurück (HTTP 201).
-  // Vehicle.fromJson() verarbeitet beide Key-Varianten (licenseplate / licensePlate).
   static Future<Vehicle?> createVehicle({
     required String model,
     required String licensePlate,

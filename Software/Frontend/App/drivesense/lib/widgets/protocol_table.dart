@@ -250,7 +250,7 @@ class ProtocolTable extends StatelessWidget {
       return;
     }
 
-    final bool success = await TripService().deleteTripSummary(trip.id);
+    final bool success = await TripService().deleteTripSummary(trip);
     await onChanged?.call();
 
     if (!context.mounted) {

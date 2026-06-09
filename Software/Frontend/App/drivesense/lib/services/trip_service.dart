@@ -7,11 +7,11 @@ import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 
 final String _baseUrl = ApiConfig.baseUrl;
 
@@ -185,9 +185,14 @@ class TripService {
     }
   }
 
-  Future<bool> deleteTripSummary(int tripId) async {
+  Future<bool> deleteTripSummary(TripSummary tripSummary) async {
+    final int tripId = tripSummary.id;
     if (tripId <= 0) {
       return false;
+    }
+
+    if (!tripSummary.isSynced) {
+      return _deleteLocalTripSummary(tripId);
     }
 
     try {
@@ -196,9 +201,33 @@ class TripService {
         headers: RequestHeaders.authenticated(),
       );
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      final bool success =
+          response.statusCode >= 200 && response.statusCode < 300;
+      if (success) {
+        await _deleteCachedServerTrip(tripId);
+      }
+      return success;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<bool> _deleteLocalTripSummary(int tripId) async {
+    final Trip? localTrip = await _tripRepository.getById(tripId);
+    if (localTrip == null || localTrip.isSynced) {
+      return false;
+    }
+
+    await _tripRepository.deleteById(localTrip.id);
+    return true;
+  }
+
+  Future<void> _deleteCachedServerTrip(int tripId) async {
+    final Trip? cachedTrip = await _tripRepository.getByLocalId(
+      'server:$tripId',
+    );
+    if (cachedTrip != null) {
+      await _tripRepository.deleteById(cachedTrip.id);
     }
   }
 
@@ -288,10 +317,10 @@ class TripService {
         vehicleLicensePlate:
             detail.summary.vehicleLicensePlate ??
             fallbackSummary.vehicleLicensePlate,
-        accountFname:
-            detail.summary.accountFname ?? fallbackSummary.accountFname,
-        accountLname:
-            detail.summary.accountLname ?? fallbackSummary.accountLname,
+        accountFirstName:
+            detail.summary.accountFirstName ?? fallbackSummary.accountFirstName,
+        accountLastName:
+            detail.summary.accountLastName ?? fallbackSummary.accountLastName,
         vehicleModel:
             detail.summary.vehicleModel ?? fallbackSummary.vehicleModel,
         startPoint: detail.summary.startPoint ?? fallbackSummary.startPoint,

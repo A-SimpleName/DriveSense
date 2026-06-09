@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { logout, logoutProfile } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
@@ -9,11 +9,8 @@ import "../styles/usermeu.css";
 
 function UserMenu() {
     const [open, setOpen] = useState(false);
-<<<<<<< HEAD
-=======
     const [confirmLogout, setConfirmLogout] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
->>>>>>> Niklas
     const navigate = useNavigate();
 
     const {
@@ -32,8 +29,6 @@ function UserMenu() {
         navigate("/");
     };
 
-<<<<<<< HEAD
-=======
     const handleConfirmLogout = async () => {
         await logout();
         setAccount(null);
@@ -63,7 +58,6 @@ function UserMenu() {
 
     const profileInitial = profile?.name?.[0]?.toUpperCase() || account?.fName?.[0]?.toUpperCase() || "?";
 
->>>>>>> Niklas
     return (
         <div className="user-menu">
             <div
@@ -84,17 +78,7 @@ function UserMenu() {
                     <Button className="userMenu-btn" label="Mein Profil" onClick={() => navigate("/profile")} />
                     <Button className="userMenu-btn" label="Einstellungen" onClick={() => navigate("/settings")} />
           
-<<<<<<< HEAD
-                    <Button className="userMenu-btn" label="Logout" onClick={async () => {
-                            await logout();
-                            setAccount(null);
-                            setProfile(null);
-                            setProfileSelected(false);
-                            setIsAuth(false);
-                        }} />
-=======
                     <Button className="userMenu-btn" label="Logout" onClick={() => setConfirmLogout(true)} />
->>>>>>> Niklas
 
                     <Button className="userMenu-btn" label="Benutzer wechseln" onClick={handleSwitch} />
                 </div>

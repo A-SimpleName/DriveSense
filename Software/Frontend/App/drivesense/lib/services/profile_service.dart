@@ -6,10 +6,11 @@ import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:drivesense/services/protocol_service.dart';
+import 'package:drivesense/services/token_storage.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 class SelectProfileResponse {
   final bool isSuccess;
@@ -286,8 +287,14 @@ class ProfileService {
           : null;
       final String? profileToken = _extractProfileToken(decodedBody);
       final Profile? profile = _extractProfile(decodedBody);
+      if (profileToken == null || profileToken.isEmpty) {
+        return const SelectProfileResponse(
+          isSuccess: false,
+          message: 'Profil-Token fehlt in der Serverantwort.',
+        );
+      }
 
-      RuntimeStore.setActiveProfile(
+      await TokenStorage.instance.saveSelectedProfile(
         profileId: profile?.id ?? profileId,
         profileToken: profileToken,
         profileRole: profile?.role,

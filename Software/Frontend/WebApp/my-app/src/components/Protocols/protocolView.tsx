@@ -155,16 +155,10 @@ export default function ProtocolView({
                 </div>
 
                 {!isGroup && (
-<<<<<<< HEAD
-                    <div className="right">
-                        <div className="proto-sub">
-                            {protocol.created_by_account?.fname} {protocol.created_by_account?.lname}
-=======
                     <div className={styles.right}>
                         <div className={styles.protoSub}>
-                            {protocol.created_by_account.fname}{" "}
-                            {protocol.created_by_account.lname}
->>>>>>> Niklas
+                            {protocol.created_by_account.firstName}{" "}
+                            {protocol.created_by_account.lastName}
                         </div>
 
                         <div className={styles.userInfo}>

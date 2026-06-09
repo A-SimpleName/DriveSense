@@ -1,16 +1,18 @@
 class Account {
-  final String fName;
-  final String lName;
+  final String firstName;
+  final String lastName;
   final String email;
   final String password;
   final DateTime? birthdate;
-  
+  final String? pendingEmail;
+
   Account({
-    required this.fName,
-    required this.lName,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.password,
     this.birthdate,
+    this.pendingEmail,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,23 +22,24 @@ class Account {
         : '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 
     return {
-      "fName": fName,
-      "lName": lName,
-      "email": email,
-      "password": password,
-      "birthdate": formattedBirthdate,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+      'birthdate': formattedBirthdate,
     };
   }
 
-    factory Account.fromJson(Map<String, dynamic> json) {
+  factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      fName: json["fName"] ?? '',
-      lName: json["lName"] ?? '',
-      email: json["email"] ?? '',
-      password: json["password"] ?? '',
-      birthdate: json["birthdate"] != null
-          ? DateTime.parse(json["birthdate"])
+      firstName: json['firstName'] ?? json['fName'] ?? '',
+      lastName: json['lastName'] ?? json['lName'] ?? '',
+      email: json['email'] ?? '',
+      password: json['password'] ?? '',
+      birthdate: json['birthdate'] != null
+          ? DateTime.parse(json['birthdate'])
           : null,
+      pendingEmail: json['pendingEmail'] ?? json['pending_email'],
     );
   }
 }

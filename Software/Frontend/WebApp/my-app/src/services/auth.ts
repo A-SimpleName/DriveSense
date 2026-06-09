@@ -3,15 +3,15 @@
 import api from "../api/httpService";
 
 export async function signUp(
-  fname: string,
-  lname: string,
+  firstName: string,
+  lastName: string,
   email: string,
   password: string,
   birthdate: string
 ) {
   return api.post("/account/signUp", {
-    fname,
-    lname,
+    firstName,
+    lastName,
     email,
     password,
     birthdate: birthdate.split("T")[0],

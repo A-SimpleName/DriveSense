@@ -1,8 +1,9 @@
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/account.dart';
-import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/email_verification_service.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
+import 'package:drivesense/widgets/verification_code_dialog.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -20,10 +21,16 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   DateTime? _birthdate;
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  bool _isStrongPassword(String password) {
+    return RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$').hasMatch(password);
+  }
 
   @override
   void dispose() {
@@ -31,6 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
     _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _birthdateController.dispose();
     super.dispose();
   }
@@ -118,6 +126,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   },
                 ),
               ),
+              validator: (String? value) {
+                final String password = value?.trim() ?? '';
+                if (password.isEmpty) {
+                  return 'Passwort darf nicht leer sein';
+                }
+                if (!_isStrongPassword(password)) {
+                  return 'Mindestens 8 Zeichen, Gross-/Kleinbuchstabe und Zahl';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: _obscurePassword,
+              decoration: const InputDecoration(
+                labelText: 'Passwort wiederholen',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -162,13 +189,33 @@ class _SignUpPageState extends State<SignUpPage> {
     final String lastName = _lastNameController.text.trim();
     final String email = _emailController.text.trim();
     final String password = _passwordController.text.trim();
+    final String confirmPassword = _confirmPasswordController.text.trim();
 
     if (firstName.isEmpty ||
         lastName.isEmpty ||
         email.isEmpty ||
-        password.isEmpty) {
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bitte alle Felder ausfuellen.')),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Die Passwörter stimmen nicht ueberein.')),
+      );
+      return;
+    }
+
+    if (!_isStrongPassword(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Das Passwort muss mindestens 8 Zeichen, einen Grossbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten.',
+          ),
+        ),
       );
       return;
     }
@@ -179,8 +226,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
     try {
       final Account account = Account(
-        fName: firstName,
-        lName: lastName,
+        firstName: firstName,
+        lastName: lastName,
         email: email,
         password: password,
         birthdate: _birthdate,
@@ -194,6 +241,40 @@ class _SignUpPageState extends State<SignUpPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(signUpResult.message)));
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      final bool? verified = await VerificationCodeDialog.show(
+        context: context,
+        title: 'E-Mail bestaetigen',
+        description:
+            'Wir haben einen Bestätigungscode an $email gesendet. Bitte gib ihn ein, um die Registrierung abzuschliessen.',
+        submitLabel: 'Code bestaetigen',
+        resendLabel: 'Code erneut senden',
+        onSubmit: (String code) => EmailVerificationService.verifySignupEmail(
+          email: email,
+          code: code,
+        ),
+        onResend: () =>
+            EmailVerificationService.resendSignupVerification(email),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (verified != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Registrierung angelegt, aber die E-Mail wurde noch nicht bestaetigt.',
+            ),
+          ),
+        );
         return;
       }
 
@@ -217,21 +298,17 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
-      RuntimeStore.setAuthToken(signInResult.accountToken!);
-      if (signInResult.refreshToken != null &&
-          signInResult.refreshToken!.isNotEmpty) {
-        RuntimeStore.setRefreshToken(signInResult.refreshToken!);
-      }
-
-      SignInAndSignUp.redirectToProfileSelectPage(
-        token: signInResult.accountToken,
-      );
-
       if (!mounted) {
         return;
       }
 
-      Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        SignInAndSignUp.redirectToProfileSelectPage(
+          token: signInResult.accountToken,
+        ),
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) {
         return;
