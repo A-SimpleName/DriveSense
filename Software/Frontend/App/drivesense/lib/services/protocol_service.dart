@@ -72,6 +72,7 @@ class ProtocolService {
 
   static Future<Protocol?> createProtocol({
     required String name,
+    int? usergroupId,
   }) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
     final String trimmedName = name.trim();
@@ -86,6 +87,7 @@ class ProtocolService {
             headers: RequestHeaders.authenticatedJson(),
             body: jsonEncode(<String, dynamic>{
               'name': trimmedName,
+              'usergroupId': usergroupId,
             }),
           )
           .timeout(const Duration(seconds: 10));
@@ -116,9 +118,7 @@ class ProtocolService {
   }
 
   static Future<int?> createDefaultProtocol() async {
-    final Protocol? protocol = await createProtocol(
-      name: 'L17 Protokoll',
-    );
+    final Protocol? protocol = await createProtocol(name: 'L17 Protokoll');
     return protocol?.id;
   }
 
@@ -171,9 +171,7 @@ class ProtocolService {
   }
 
   static Future<bool> deleteProtocol(int protocolId) async {
-    final Uri uri = Uri.parse(
-      '${ApiConfig.baseUrl}/api/protocols/$protocolId',
-    );
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols/$protocolId');
 
     try {
       final http.Response response = await http
