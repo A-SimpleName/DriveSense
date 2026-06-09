@@ -72,6 +72,37 @@ public class EmailVerificationService {
         emailVerificationDao.deleteByAccountId(account.getId());
     }
 
+    public void confirmEmailChange(int accountId, String code) {
+        Account account = accountDao.getById(accountId);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        if (account.getPendingEmail() == null) {
+            throw new BadRequestException("Keine ausstehende Email-Änderung");
+        }
+
+        List<EmailVerification> codes = emailVerificationDao.getAllByAccountId(accountId);
+        if (codes == null || codes.isEmpty()) {
+            throw new BadRequestException("Kein Verifizierungscode gefunden");
+        }
+
+        EmailVerification valid = codes.stream()
+                .filter(ev -> BCrypt.checkpw(code, ev.getCodeHash()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Ungültiger Code"));
+
+        if (valid.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Code ist abgelaufen");
+        }
+
+        // Email übernehmen
+        account.setEmail(account.getPendingEmail());
+        account.setPendingEmail(null);
+        account.setEmailVerified(true);
+        accountDao.update(account);
+
+        emailVerificationDao.deleteByAccountId(accountId);
+    }
+
     // ──────────────────────────────────────────
     // HILFSMETHODEN
     // ──────────────────────────────────────────

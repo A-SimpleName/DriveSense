@@ -3,8 +3,9 @@ export interface Account {
     firstName: string;
     lastName: string;
     email: string;
-    pwd: string;
-    created_at: Date;
+    pendingEmail?: string | null;
+    birthdate?: string | null;
+    created_at?: string;
 }
 
 export interface AccountResponse {
@@ -12,6 +13,7 @@ export interface AccountResponse {
     firstName: string;
     lastName: string;
     email: string;
-    birthdate: Date;
-    created_at: Date;
+    pendingEmail?: string | null;
+    birthdate?: string | null;
+    created_at?: string;
 }
