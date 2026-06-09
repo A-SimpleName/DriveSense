@@ -6,6 +6,7 @@ import com.drivesense.dto.request.SaveVehicleRequest;
 import com.drivesense.dto.request.VerifyInviteRequest;
 import com.drivesense.dto.response.ProfileSelectionResponse;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.dto.response.VehicleMemberResponse;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Profile;
 import com.drivesense.model.Vehicle;
@@ -49,6 +50,19 @@ public class VehicleController {
     public ResponseEntity<VehicleDto> getVehicle(@PathVariable int id, HttpServletRequest request) {
         int accountId = (int) request.getAttribute("accountId");
         return ResponseEntity.ok(vehicleService.getVehicleById(id, accountId));
+    }
+
+    @GetMapping("/{id}/members")
+    public ResponseEntity<List<VehicleMemberResponse>> getVehicleMembers(
+            @PathVariable int id,
+            HttpServletRequest request) {
+
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewaehlt");
+        }
+
+        return ResponseEntity.ok(vehicleService.getVehicleMembers(id, profileId));
     }
 
     @PostMapping

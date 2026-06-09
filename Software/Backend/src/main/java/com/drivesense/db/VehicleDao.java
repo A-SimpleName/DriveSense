@@ -2,6 +2,7 @@ package com.drivesense.db;
 
 import com.drivesense.DbConnection;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.dto.response.VehicleMemberResponse;
 import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.Vehicle;
@@ -100,6 +101,47 @@ public class VehicleDao {
         """;
 
         return query(sql, ps -> {});
+    }
+
+    public List<VehicleMemberResponse> getMembersByVehicleId(int vehicleId) {
+        String sql = """
+            SELECT p.id AS profile_id,
+                   p.name AS profile_name,
+                   p.role AS profile_role,
+                   TRIM(CONCAT(COALESCE(acc.first_name, ''), ' ', COALESCE(acc.last_name, ''))) AS account_name,
+                   acc.email AS account_email,
+                   pv.role AS vehicle_role
+            FROM profile_vehicle pv
+            JOIN vehicle v ON v.id = pv.vehicle_id AND v.deleted_at IS NULL
+            JOIN profile p ON p.id = pv.profile_id AND p.deleted_at IS NULL
+            JOIN account acc ON acc.id = p.account_id AND acc.deleted_at IS NULL
+            WHERE pv.vehicle_id = ?
+            ORDER BY
+                CASE pv.role
+                    WHEN 'OWNER' THEN 0
+                    WHEN 'CO_OWNER' THEN 1
+                    ELSE 2
+                END,
+                p.name
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, vehicleId);
+
+            ResultSet rs = ps.executeQuery();
+            List<VehicleMemberResponse> list = new ArrayList<>();
+
+            while (rs.next()) {
+                list.add(mapMember(rs));
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der Fahrzeug-Freigaben", e);
+        }
     }
 
     // ─────────────────────────────────────────────
@@ -325,5 +367,16 @@ public class VehicleDao {
         dto.setOwnerProfileName(rs.getString("owner_profile_name"));
         dto.setMyRole(rs.getString("my_role"));
         return dto;
+    }
+
+    private VehicleMemberResponse mapMember(ResultSet rs) throws SQLException {
+        VehicleMemberResponse member = new VehicleMemberResponse();
+        member.setProfileId(rs.getInt("profile_id"));
+        member.setProfileName(rs.getString("profile_name"));
+        member.setProfileRole(rs.getString("profile_role"));
+        member.setAccountName(rs.getString("account_name"));
+        member.setAccountEmail(rs.getString("account_email"));
+        member.setVehicleRole(rs.getString("vehicle_role"));
+        return member;
     }
 }

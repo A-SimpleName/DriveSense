@@ -2,6 +2,7 @@ package com.drivesense.service;
 
 import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.dto.response.VehicleMemberResponse;
 import com.drivesense.exceptions.NotFoundException;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Vehicle;
@@ -28,6 +29,21 @@ public class VehicleService {
         VehicleDto vehicle = vehicleDao.getById(id, accountId);
         if (vehicle == null) throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
         return vehicle;
+    }
+
+    public List<VehicleMemberResponse> getVehicleMembers(int vehicleId, int requesterProfileId) {
+        VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(requesterProfileId)
+                .stream()
+                .filter(v -> v.getId() == vehicleId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Vehicle nicht gefunden oder kein Zugriff"));
+
+        String role = vehicle.getMyRole();
+        if (!"OWNER".equals(role) && !"CO_OWNER".equals(role)) {
+            throw new UnauthorizedException("Nur Owner und Co-Owner duerfen Fahrzeug-Freigaben sehen");
+        }
+
+        return vehicleDao.getMembersByVehicleId(vehicleId);
     }
 
     public Vehicle saveVehicle(Vehicle vehicle, int profileId) {

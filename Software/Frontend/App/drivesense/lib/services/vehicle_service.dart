@@ -180,6 +180,36 @@ class VehicleService {
 
   // ─── Ein bestehendes Fahrzeug am Server aktualisieren ────────────────────
   // Gibt true zurück wenn erfolgreich, false wenn nicht.
+  static Future<List<VehicleMember>> fetchVehicleMembers(int vehicleId) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/$vehicleId/members',
+    );
+
+    try {
+      final http.Response response = await http
+          .get(uri, headers: RequestHeaders.authenticated())
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return <VehicleMember>[];
+      }
+
+      final dynamic decoded = _decodeJson(response.body);
+      if (decoded is! List) {
+        return <VehicleMember>[];
+      }
+
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(VehicleMember.fromJson)
+          .where((VehicleMember member) => member.profileId > 0)
+          .toList();
+    } catch (e) {
+      debugPrint('FetchVehicleMembers failed at $uri: $e');
+      return <VehicleMember>[];
+    }
+  }
+
   static Future<bool> updateVehicle(Vehicle vehicle) async {
     final Uri uri = Uri.parse(
       '${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}',
