@@ -1,5 +1,4 @@
 import '../styles/button.css';
-import type { ReactNode } from 'react';
 
 type ButtonProps = {
   className?: string;

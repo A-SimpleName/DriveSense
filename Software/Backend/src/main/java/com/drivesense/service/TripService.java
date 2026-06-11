@@ -12,6 +12,7 @@ import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -166,6 +167,17 @@ public class TripService {
         }
         return tripSummaries.stream()
                 .mapToDouble(TripSummary::getDistance)
+                .sum();
+    }
+
+    public long getTotalDuration(int profileId) {
+        List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
+        if (tripSummaries == null) {
+            return 0;
+        }
+        return tripSummaries.stream()
+                .filter(trip -> trip.getEndTime() != null && trip.getStartTime() != null)
+                .mapToLong(trip -> Duration.between(trip.getStartTime(), trip.getEndTime()).toMinutes())
                 .sum();
     }
 

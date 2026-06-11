@@ -10,7 +10,7 @@ import { getAllVehicles } from "../../services/vehicleService";
 import "../../styles/table.css";
 import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
-import { TableSkeleton, ButtonSpinner } from "../loadingSkeleton";
+import { TableSkeleton } from "../loadingSkeleton";
 
 interface EditValues {
     startTime: string;

@@ -40,6 +40,6 @@ export interface TripSummary {
 }
 
 export interface Tripdetailed {
-    tripSummaryDto: TripSummaryDto;
+    tripSummary: TripSummaryDto;
     trackingpoints: Trackingpoint[];
 }

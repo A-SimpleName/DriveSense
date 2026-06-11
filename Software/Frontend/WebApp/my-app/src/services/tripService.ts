@@ -23,6 +23,9 @@ export const getTripById = (id: number) =>
 export const getTotalKm = () =>
     handleRequest<number>(http.get<number>("/trips/totalKm"));
 
+export const getTotalDuration = () =>
+    handleRequest<number>(http.get<number>("/trips/totalDuration"));
+
 export const createTrip = (trip: Omit<TripSummary, "id">) =>
     handleRequest<void>(http.post("/trips", trip));
 

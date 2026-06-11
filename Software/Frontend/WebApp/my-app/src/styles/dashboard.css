@@ -1,0 +1,135 @@
+.dashboard-greeting {
+    margin: 0 0 1.25rem;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.dashboard-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.dashboard-card-title {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+.dashboard-card-subtitle {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.dashboard-card-value {
+    margin: 0 0 8px;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+/* Week chart */
+.dashboard-bar-chart {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 25rem;
+}
+
+.dashboard-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    height: 100%;
+}
+
+.dashboard-bar {
+    width: 100%;
+    min-width: 8px;
+    background: blue;
+    border-radius: 3px 3px 0 0;
+    align-self: flex-end;
+}
+
+.dashboard-bar-label {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+}
+
+/* Recent trips */
+.dashboard-trips-card {
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-trip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.dashboard-trip-row:last-child {
+    border-bottom: none;
+}
+
+.dashboard-trip-route {
+    color: var(--color-text-primary);
+}
+
+.dashboard-trip-distance {
+    color: var(--color-text-secondary);
+}
+
+.dashboard-trip-condition {
+    font-size: 11px;
+    background: var(--color-background-success);
+    color: var(--color-text-success);
+    padding: 2px 8px;
+    border-radius: var(--border-radius-md);
+}
+
+.dashboard-trip-date {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+}
+
+.dashboard-action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 15px;
+    text-align: center;
+}

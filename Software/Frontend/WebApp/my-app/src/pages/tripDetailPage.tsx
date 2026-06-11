@@ -24,24 +24,30 @@ function TripDetailPage() {
     if (error) return <p>Fehler: {error}</p>;
     if (!trip) return <p>Fahrt nicht gefunden</p>;
 
-    const { tripSummaryDto, trackingpoints } = trip;
+    console.log(trip);
+
+    const tripSummary = trip.tripSummary;
+    const trackingpoints = trip.trackingpoints;
+
     const route = trackingpoints.map(p => ({ lat: p.lat, lng: p.lng }));
+
+    const fullName = tripSummary.accountFirstName + " " + tripSummary.accountLastName;
 
     return (
         <div>
             <h1>Fahrt Details</h1>
 
-            <StatCard title="Fahrer:" value={`${tripSummaryDto.accountFirstName} ${tripSummaryDto.accountLastName}`} />
-            <StatCard title="Fahrzeug:" value={`${tripSummaryDto.vehicleModel} (${tripSummaryDto.licensePlate})`} />
-            <StatCard title="Start:" value={new Date(tripSummaryDto.startTime).toLocaleString()} />
-            <StatCard title="Ende:" value={tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "-"} />
-            <StatCard title="Distanz:" value={`${tripSummaryDto.distance} km`} />
-            <StatCard title="Von:" value={tripSummaryDto.startPoint} />
-            <StatCard title="Nach:" value={tripSummaryDto.endPoint} />
-            {tripSummaryDto.furthestPoint && (
-                <StatCard title="Weitester Punkt:" value={tripSummaryDto.furthestPoint} />
+            <StatCard title="Fahrer:" value={fullName} />
+            <StatCard title="Fahrzeug:" value={`${tripSummary.vehicleModel} (${tripSummary.licensePlate})`} />
+            <StatCard title="Start:" value={new Date(tripSummary.startTime).toLocaleString()} />
+            <StatCard title="Ende:" value={tripSummary.endTime ? new Date(tripSummary.endTime).toLocaleString() : "-"} />
+            <StatCard title="Distanz:" value={`${tripSummary.distance} km`} />
+            <StatCard title="Von:" value={tripSummary.startPoint} />
+            <StatCard title="Nach:" value={tripSummary.endPoint} />
+            {tripSummary.furthestPoint && (
+                <StatCard title="Weitester Punkt:" value={tripSummary.furthestPoint} />
             )}
-            <StatCard title="Strassenzustand:" value={tripSummaryDto.roadSurfaceConditions} />
+            <StatCard title="Strassenzustand:" value={tripSummary.roadSurfaceConditions} />
 
             {route.length > 0 && <MapView route={route} />}
         </div>

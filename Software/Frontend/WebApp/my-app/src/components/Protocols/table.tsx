@@ -50,11 +50,13 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
         setConfirmDeleteId(null);
     };
 
-    const renderTable = (protocols: Protocol[], title: string) => (
+    const renderTable = (protocols: Protocol[], title: string, showAdd: boolean = true) => (
         <>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", marginTop: "24px" }}>
                 <h3 style={{ margin: 0 }}>{title}</h3>
-                <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
+                {showAdd && (
+                    <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
+                )}
             </div>
             <table style={{ width: "100%" }}>
                 <thead>
@@ -84,8 +86,8 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
             {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
             {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
 
-            {renderTable(ownProtocols, "Eigene Protokolle")}
-            {renderTable(groupProtocols, "Gruppenprotokolle")}
+            {renderTable(ownProtocols, "Eigene Protokolle", true)}
+            {renderTable(groupProtocols, "Gruppenprotokolle", false)}
 
             <ConfirmationDialog
                 open={confirmDeleteId !== null}
