@@ -1111,15 +1111,10 @@ extension ActiveTripQueryFilter
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-  vehicleIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'vehicleId',
-          value: value,
-        ),
-      );
+        include: include,
+        property: r'vehicleId',
+        value: value,
     });
   }
 
@@ -1128,13 +1123,9 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'vehicleId',
-          value: value,
-        ),
-      );
+        include: include,
+        property: r'vehicleId',
+        value: value,
     });
   }
 
@@ -1145,15 +1136,11 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'vehicleId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+        property: r'vehicleId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
     });
   }
 }
@@ -1479,10 +1466,6 @@ extension ActiveTripQueryWhereDistinct
   QueryBuilder<ActiveTrip, ActiveTrip, QDistinct>
   distinctByLastAcceptedPointJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'lastAcceptedPointJson',
-        caseSensitive: caseSensitive,
-      );
     });
   }
 
@@ -1510,14 +1493,7 @@ extension ActiveTripQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByTrackingPointsJson({
-    bool caseSensitive = true,
-  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'trackingPointsJson',
-        caseSensitive: caseSensitive,
-      );
     });
   }
 
