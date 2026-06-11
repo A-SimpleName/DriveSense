@@ -4,6 +4,9 @@ import 'package:drivesense/services/isar_service.dart';
 import 'package:isar/isar.dart';
 
 class TripRepository {
+  static const String syncInProgressMarker = '__sync_in_progress__';
+  static const Duration syncInProgressTimeout = Duration(minutes: 5);
+
   Future<void> save(Trip trip) async {
     final isar = await IsarService.getInstance();
     trip.accountId = _requireAccountId(trip.accountId);
@@ -78,12 +81,21 @@ class TripRepository {
     }
 
     final isar = await IsarService.getInstance();
-    return isar.trips
+    final List<Trip> unsyncedTrips = await isar.trips
         .filter()
         .accountIdEqualTo(accountId)
         .and()
         .isSyncedEqualTo(false)
         .findAll();
+    final DateTime now = DateTime.now();
+
+    return unsyncedTrips.where((Trip trip) {
+      if (trip.lastError != syncInProgressMarker) {
+        return true;
+      }
+
+      return now.difference(trip.createdAt) >= syncInProgressTimeout;
+    }).toList();
   }
 
   Future<Trip?> getByLocalId(String localId) async {

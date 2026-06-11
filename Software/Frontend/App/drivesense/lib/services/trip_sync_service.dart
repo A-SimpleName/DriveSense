@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
+import 'package:drivesense/model/trip_detailed.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
@@ -32,11 +33,14 @@ class TripSyncService {
     required this.tripService,
   });
 
-  String _createLocalId(int accountId) {
-    return 'local:$accountId:${DateTime.now().microsecondsSinceEpoch}';
+  String _createLocalId(int accountId, TripSummary trip) {
+    final int localTripId = trip.id > 0
+        ? trip.id
+        : trip.startTime.microsecondsSinceEpoch;
+    return 'local:$accountId:$localTripId';
   }
 
-  Future<void> saveTripWithRetry(
+  Future<TripDetailed> saveTripWithRetry(
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
   ) async {
@@ -47,8 +51,14 @@ class TripSyncService {
     }
 
     final int accountId = LocalAccountScope.requireAccountId();
-    final localTrip = Trip()
-      ..localId = _createLocalId(accountId)
+    final String localId = _createLocalId(accountId, trip);
+    final Trip? existingLocalTrip = await isarTripRepository.getByLocalId(
+      localId,
+    );
+    final Trip localTrip = existingLocalTrip ?? Trip();
+
+    localTrip
+      ..localId = localId
       ..accountId = accountId
       ..trackingPointsJson = jsonEncode(
         trackingPoints.map((tp) => tp.toJson()).toList(),
@@ -63,23 +73,82 @@ class TripSyncService {
       ..type = trip.type
       ..startMileage = trip.startMileage
       ..endMileage = trip.endMileage
-      ..createdAt = DateTime.now()
+      ..createdAt = existingLocalTrip?.createdAt ?? DateTime.now()
       ..isSynced = false
-      ..retryCount = 0;
+      ..retryCount = existingLocalTrip?.retryCount ?? 0
+      ..lastError = TripRepository.syncInProgressMarker;
 
     await isarTripRepository.save(localTrip);
 
     try {
-      await tripService.saveTripToDb(trip, trackingPoints);
+      final TripDetailed syncedDetail = await tripService.saveTripToDb(
+        trip,
+        trackingPoints,
+      );
+      await _applySyncedSummary(localTrip, syncedDetail.summary, accountId);
       localTrip.isSynced = true;
+      localTrip.retryCount = 0;
       localTrip.lastError = null;
       await isarTripRepository.update(localTrip);
+      return syncedDetail;
     } catch (e) {
       localTrip.retryCount += 1;
       localTrip.lastError = e.toString();
       await isarTripRepository.update(localTrip);
-      throw Exception("Trip lokal gespeichert, wird später synchronisiert");
+      throw Exception('Trip lokal gespeichert, wird spaeter synchronisiert.');
     }
+  }
+
+  Future<void> _applySyncedSummary(
+    Trip localTrip,
+    TripSummary syncedSummary,
+    int accountId,
+  ) async {
+    final double fallbackDistanceKm = localTrip.distanceKm;
+    final String fallbackRoadSurfaceConditions =
+        localTrip.roadSurfaceConditions;
+    final int fallbackStartMileage = localTrip.startMileage;
+    final int fallbackEndMileage = localTrip.endMileage;
+
+    if (syncedSummary.id > 0) {
+      final String serverLocalId = 'server:$accountId:${syncedSummary.id}';
+      final Trip? conflictingServerTrip = await isarTripRepository.getByLocalId(
+        serverLocalId,
+      );
+      if (conflictingServerTrip != null &&
+          conflictingServerTrip.id != localTrip.id) {
+        await isarTripRepository.deleteById(conflictingServerTrip.id);
+      }
+      localTrip.localId = serverLocalId;
+    }
+    localTrip.profileId = syncedSummary.profileId > 0
+        ? syncedSummary.profileId
+        : localTrip.profileId;
+    localTrip.vehicleId = syncedSummary.vehicleId > 0
+        ? syncedSummary.vehicleId
+        : localTrip.vehicleId;
+    localTrip.protocolId = syncedSummary.protocolId > 0
+        ? syncedSummary.protocolId
+        : localTrip.protocolId;
+    localTrip.startTime = syncedSummary.startTime;
+    localTrip.endTime = syncedSummary.endTime ?? localTrip.endTime;
+    localTrip.distanceKm =
+        syncedSummary.distanceKm > 0 || fallbackDistanceKm <= 0
+        ? syncedSummary.distanceKm
+        : fallbackDistanceKm;
+    localTrip.roadSurfaceConditions =
+        syncedSummary.roadSurfaceConditions.trim().isNotEmpty
+        ? syncedSummary.roadSurfaceConditions
+        : fallbackRoadSurfaceConditions;
+    localTrip.type = syncedSummary.type ?? localTrip.type;
+    localTrip.startMileage =
+        syncedSummary.startMileage > 0 || fallbackStartMileage <= 0
+        ? syncedSummary.startMileage
+        : fallbackStartMileage;
+    localTrip.endMileage =
+        syncedSummary.endMileage > 0 || fallbackEndMileage <= 0
+        ? syncedSummary.endMileage
+        : fallbackEndMileage;
   }
 
   Future<TripSyncResult> syncPendingTrips() async {
@@ -106,7 +175,15 @@ class TripSyncService {
             .map((item) => Trackingpoint.fromJson(item as Map<String, dynamic>))
             .toList();
 
-        await tripService.saveTripToDb(trip, trackingPoints);
+        final TripDetailed syncedDetail = await tripService.saveTripToDb(
+          trip,
+          trackingPoints,
+        );
+        await _applySyncedSummary(
+          pendingTrip,
+          syncedDetail.summary,
+          pendingTrip.accountId,
+        );
         await _syncVehicleMileageForTrip(trip);
         pendingTrip.isSynced = true;
         pendingTrip.lastError = null;

@@ -28,12 +28,22 @@ class TripSessionException implements Exception {
 
 class TripSessionStopResult {
   final TripSummary trip;
-  final Object? syncError;
-  final bool vehicleMileageSaved;
+  final TripDetailed localDetail;
+  final Future<TripSessionSyncResult> syncFuture;
 
   const TripSessionStopResult({
     required this.trip,
-    required this.syncError,
+    required this.localDetail,
+    required this.syncFuture,
+  });
+}
+
+class TripSessionSyncResult {
+  final TripDetailed detail;
+  final bool vehicleMileageSaved;
+
+  const TripSessionSyncResult({
+    required this.detail,
     required this.vehicleMileageSaved,
   });
 }
@@ -328,26 +338,23 @@ class TripSessionService extends ChangeNotifier {
     final DateTime end = DateTime.now();
     final double distanceKm = activeDraft.distanceMeters / 1000;
     final int endMileage = activeDraft.startMileage + distanceKm.round();
+    final List<Trackingpoint> finishedTrackingPositions =
+        List<Trackingpoint>.from(_trackingPositions);
     final TripSummary finishedTrip = _summaryFromActiveTrip(
       activeDraft,
     ).copyWith(endTime: end, distanceKm: distanceKm, endMileage: endMileage);
     final TripDetailed finishedTripDetail = TripDetailed(
       summary: finishedTrip,
-      trackingpoints: List<Trackingpoint>.from(_trackingPositions),
+      trackingpoints: finishedTrackingPositions,
     );
 
     RuntimeStore.addTrip(finishedTrip);
     RuntimeStore.addTripDetail(finishedTrip.id, finishedTripDetail);
 
     final Vehicle? updatedVehicle = _updateRuntimeVehicleMileage(finishedTrip);
-    Object? syncError;
-    try {
-      await tripSyncService.saveTripWithRetry(finishedTrip, _trackingPositions);
-    } catch (e) {
-      syncError = e;
-    }
-
-    final bool vehicleMileageSaved = await _persistVehicleMileage(
+    final Future<TripSessionSyncResult> syncFuture = _syncFinishedTrip(
+      finishedTrip,
+      finishedTrackingPositions,
       updatedVehicle,
     );
 
@@ -356,9 +363,45 @@ class TripSessionService extends ChangeNotifier {
 
     return TripSessionStopResult(
       trip: finishedTrip,
-      syncError: syncError,
-      vehicleMileageSaved: vehicleMileageSaved,
+      localDetail: finishedTripDetail,
+      syncFuture: syncFuture,
     );
+  }
+
+  Future<TripSessionSyncResult> _syncFinishedTrip(
+    TripSummary finishedTrip,
+    List<Trackingpoint> trackingPositions,
+    Vehicle? updatedVehicle,
+  ) async {
+    try {
+      final TripDetailed syncedDetail = await tripSyncService.saveTripWithRetry(
+        finishedTrip,
+        trackingPositions,
+      );
+      final TripSummary resultTrip = _mergeSyncedSummary(
+        syncedDetail.summary,
+        fallback: finishedTrip,
+      );
+      final TripDetailed resultDetail = syncedDetail.copyWith(
+        summary: resultTrip,
+      );
+
+      RuntimeStore.upsertTrip(resultTrip, replaceTripId: finishedTrip.id);
+      RuntimeStore.addTripDetail(resultTrip.id, resultDetail);
+
+      _updateLastTripIfStillCurrent(finishedTrip, resultTrip);
+
+      final bool vehicleMileageSaved = await _persistVehicleMileage(
+        updatedVehicle,
+      );
+      return TripSessionSyncResult(
+        detail: resultDetail,
+        vehicleMileageSaved: vehicleMileageSaved,
+      );
+    } catch (e) {
+      await _persistVehicleMileage(updatedVehicle);
+      rethrow;
+    }
   }
 
   Future<void> abortTrip() async {
@@ -510,6 +553,21 @@ class TripSessionService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _updateLastTripIfStillCurrent(
+    TripSummary localTrip,
+    TripSummary syncedTrip,
+  ) {
+    final TripSummary? currentLastTrip = _state.lastTrip;
+    if (currentLastTrip != null &&
+        currentLastTrip.id != localTrip.id &&
+        currentLastTrip.startTime != localTrip.startTime) {
+      return;
+    }
+
+    _state = _state.copyWith(lastTrip: syncedTrip);
+    notifyListeners();
+  }
+
   TripSummary _summaryFromActiveTrip(ActiveTrip activeTrip) {
     final double distanceKm = activeTrip.distanceMeters / 1000;
     return TripSummary(
@@ -526,6 +584,40 @@ class TripSessionService extends ChangeNotifier {
       startMileage: activeTrip.startMileage,
       endMileage: activeTrip.startMileage + distanceKm.round(),
       isSynced: false,
+    );
+  }
+
+  TripSummary _mergeSyncedSummary(
+    TripSummary syncedSummary, {
+    required TripSummary fallback,
+  }) {
+    return syncedSummary.copyWith(
+      vehicleLicensePlate:
+          syncedSummary.vehicleLicensePlate ?? fallback.vehicleLicensePlate,
+      accountFirstName:
+          syncedSummary.accountFirstName ?? fallback.accountFirstName,
+      accountLastName:
+          syncedSummary.accountLastName ?? fallback.accountLastName,
+      vehicleModel: syncedSummary.vehicleModel ?? fallback.vehicleModel,
+      startPoint: syncedSummary.startPoint ?? fallback.startPoint,
+      furthestPoint: syncedSummary.furthestPoint ?? fallback.furthestPoint,
+      endPoint: syncedSummary.endPoint ?? fallback.endPoint,
+      type: syncedSummary.type ?? fallback.type,
+      endTime: syncedSummary.endTime ?? fallback.endTime,
+      distanceKm: syncedSummary.distanceKm > 0 || fallback.distanceKm <= 0
+          ? syncedSummary.distanceKm
+          : fallback.distanceKm,
+      roadSurfaceConditions:
+          syncedSummary.roadSurfaceConditions.trim().isNotEmpty
+          ? syncedSummary.roadSurfaceConditions
+          : fallback.roadSurfaceConditions,
+      startMileage: syncedSummary.startMileage > 0 || fallback.startMileage <= 0
+          ? syncedSummary.startMileage
+          : fallback.startMileage,
+      endMileage: syncedSummary.endMileage > 0 || fallback.endMileage <= 0
+          ? syncedSummary.endMileage
+          : fallback.endMileage,
+      isSynced: true,
     );
   }
 

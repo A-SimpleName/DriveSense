@@ -15,33 +15,88 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-Future<void> showTripDetailDialog(BuildContext context, TripSummary trip) {
+Future<void> showTripDetailDialog(
+  BuildContext context,
+  TripSummary trip, {
+  TripDetailed? initialDetail,
+  Future<TripDetailed>? refreshDetail,
+}) {
   return showDialog<void>(
     context: context,
     builder: (BuildContext dialogContext) {
-      return _TripDetailDialog(trip: trip);
+      return _TripDetailDialog(
+        trip: trip,
+        initialDetail: initialDetail,
+        refreshDetail: refreshDetail,
+      );
     },
   );
 }
 
 class _TripDetailDialog extends StatefulWidget {
   final TripSummary trip;
+  final TripDetailed? initialDetail;
+  final Future<TripDetailed>? refreshDetail;
 
-  const _TripDetailDialog({required this.trip});
+  const _TripDetailDialog({
+    required this.trip,
+    required this.initialDetail,
+    required this.refreshDetail,
+  });
 
   @override
   State<_TripDetailDialog> createState() => _TripDetailDialogState();
 }
 
 class _TripDetailDialogState extends State<_TripDetailDialog> {
-  late final Future<TripDetailed> _detailFuture;
+  late TripDetailed _detail;
+  bool _isLoading = true;
+  String? _loadError;
 
   @override
   void initState() {
     super.initState();
-    _detailFuture = TripService().fetchTripDetail(
-      widget.trip.id,
-      fallbackSummary: widget.trip,
+    _detail =
+        widget.initialDetail ??
+        TripDetailed(
+          summary: widget.trip,
+          trackingpoints: const <Trackingpoint>[],
+        );
+    _loadDetail();
+  }
+
+  void _loadDetail() {
+    final Future<TripDetailed> detailFuture =
+        widget.refreshDetail ??
+        TripService().fetchTripDetail(
+          widget.trip.id,
+          fallbackSummary: widget.trip,
+        );
+
+    unawaited(
+      detailFuture
+          .then<void>((TripDetailed detail) {
+            if (!mounted) {
+              return;
+            }
+
+            setState(() {
+              _detail = detail;
+              _isLoading = false;
+              _loadError = null;
+            });
+          })
+          .catchError((Object error) {
+            if (!mounted) {
+              return;
+            }
+
+            setState(() {
+              _isLoading = false;
+              _loadError =
+                  'Serverdaten konnten nicht aktualisiert werden. Lokale Daten werden angezeigt.';
+            });
+          }),
     );
   }
 
@@ -62,57 +117,36 @@ class _TripDetailDialogState extends State<_TripDetailDialog> {
       content: SizedBox(
         width: dialogWidth,
         height: dialogHeight,
-        child: FutureBuilder<TripDetailed>(
-          future: _detailFuture,
-          initialData: TripDetailed(
-            summary: widget.trip,
-            trackingpoints: const <Trackingpoint>[],
-          ),
-          builder:
-              (BuildContext context, AsyncSnapshot<TripDetailed> snapshot) {
-                final TripDetailed detail =
-                    snapshot.data ??
-                    TripDetailed(
-                      summary: widget.trip,
-                      trackingpoints: const <Trackingpoint>[],
-                    );
-                final bool isLoading =
-                    snapshot.connectionState == ConnectionState.waiting;
-
-                return Column(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (_isLoading) const LinearProgressIndicator(minHeight: 2),
+            if (_loadError != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _loadError!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    if (isLoading) const LinearProgressIndicator(minHeight: 2),
-                    if (snapshot.hasError)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'Details konnten nicht vollstaendig geladen werden.',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            ..._detailRows(detail.summary),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Karte',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            _TripMapPreview(points: detail.trackingpoints),
-                          ],
-                        ),
-                      ),
+                    ..._detailRows(_detail.summary),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Karte',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
+                    const SizedBox(height: 8),
+                    _TripMapPreview(points: _detail.trackingpoints),
                   ],
-                );
-              },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       actions: <Widget>[

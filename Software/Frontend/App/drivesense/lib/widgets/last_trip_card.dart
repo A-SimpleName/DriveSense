@@ -1,5 +1,6 @@
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/widgets/protocol_trip_fields.dart';
 import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 
@@ -50,6 +51,18 @@ class _LastTripCardState extends State<LastTripCard> {
                 Text(
                   widget.lastTrip?.endTime != null && lastTripDuration != null
                       ? lastTripDuration.toString().split('.').first
+                      : '--',
+                ),
+                Text('Start-km: '),
+                Text(
+                  widget.lastTrip != null
+                      ? formatProtocolMileage(widget.lastTrip!.startMileage)
+                      : '--',
+                ),
+                Text('End-km: '),
+                Text(
+                  widget.lastTrip != null
+                      ? formatProtocolMileage(widget.lastTrip!.endMileage)
                       : '--',
                 ),
               ],

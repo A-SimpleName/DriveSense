@@ -12,6 +12,7 @@ import 'package:drivesense/services/vehicle_service.dart';
 import 'package:drivesense/widgets/current_trip_card.dart';
 import 'package:drivesense/widgets/last_trip_card.dart';
 import 'package:drivesense/widgets/start_trip_card.dart';
+import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 
 class HomePageBody extends StatefulWidget {
@@ -69,20 +70,6 @@ class _HomePageBodyState extends State<HomePageBody> {
                       isStoppingTrip: _isStoppingTrip,
                     ),
                     const SizedBox(height: 12),
-                    Text('Lat: ${state.currentLatitude}'),
-                    Text('Lng: ${state.currentLongitude}'),
-                    Text('Events: ${state.eventCount}'),
-                    Text(
-                      'Last added: ${state.lastAddedMeters.toStringAsFixed(2)} m',
-                    ),
-                    Text(
-                      'Total: ${state.totalDistanceMeters.toStringAsFixed(2)} m',
-                    ),
-                    Text(
-                      'Accuracy: ${state.lastAccuracy?.toStringAsFixed(1)} m',
-                    ),
-                    Text('Speed: ${state.lastSpeed?.toStringAsFixed(2)} m/s'),
-                    const SizedBox(height: 16),
                   ],
                 );
               }
@@ -165,13 +152,11 @@ class _HomePageBodyState extends State<HomePageBody> {
     } catch (e) {
       _showSnackBar(e.toString());
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        setState(() {
+          _isStartingTrip = false;
+        });
       }
-
-      setState(() {
-        _isStartingTrip = false;
-      });
     }
   }
 
@@ -220,28 +205,32 @@ class _HomePageBodyState extends State<HomePageBody> {
     try {
       final TripSessionStopResult result = await _tripSessionService.stopTrip();
 
-      if (result.syncError != null) {
-        _showSnackBar(result.syncError.toString());
-        return;
-      }
-
-      if (!result.vehicleMileageSaved) {
-        _showSnackBar(
-          'Fahrt gespeichert, aber Fahrzeug-Kilometerstand konnte nicht aktualisiert werden.',
-        );
-      }
-    } on TripHttpException catch (e) {
-      _showSnackBar(e.message);
-    } catch (e) {
-      _showSnackBar(e.toString());
-    } finally {
       if (!mounted) {
         return;
       }
 
-      setState(() {
-        _isStoppingTrip = false;
-      });
+      unawaited(
+        showTripDetailDialog(
+          context,
+          result.trip,
+          initialDetail: result.localDetail,
+          refreshDetail: result.syncFuture.then(
+            (TripSessionSyncResult syncResult) => syncResult.detail,
+          ),
+        ),
+      );
+
+      unawaited(_handleTripSyncResult(result.syncFuture));
+    } on TripHttpException catch (e) {
+      _showSnackBar(e.message);
+    } catch (e) {
+      _showSnackBar(_messageForError(e));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isStoppingTrip = false;
+        });
+      }
     }
   }
 
@@ -261,6 +250,34 @@ class _HomePageBodyState extends State<HomePageBody> {
       return bTime.compareTo(aTime);
     });
     return trips.first;
+  }
+
+  Future<void> _handleTripSyncResult(
+    Future<TripSessionSyncResult> syncFuture,
+  ) async {
+    try {
+      final TripSessionSyncResult result = await syncFuture;
+      if (!result.vehicleMileageSaved) {
+        _showSnackBar(
+          'Fahrt gespeichert, aber Fahrzeug-Kilometerstand konnte nicht aktualisiert werden.',
+        );
+      }
+    } catch (e) {
+      _showSnackBar(_messageForError(e));
+    }
+  }
+
+  String _messageForError(Object error) {
+    final String rawMessage = error.toString().trim();
+    final String message = rawMessage.startsWith('Exception: ')
+        ? rawMessage.substring('Exception: '.length).trim()
+        : rawMessage;
+    if (message.isEmpty ||
+        message == 'undefined' ||
+        rawMessage == 'Exception: undefined') {
+      return 'Fahrt lokal gespeichert. Serverdaten werden spaeter synchronisiert.';
+    }
+    return message;
   }
 
   void _showSnackBar(String message) {

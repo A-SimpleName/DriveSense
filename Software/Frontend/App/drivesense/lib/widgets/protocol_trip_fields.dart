@@ -209,11 +209,17 @@ String formatProtocolDistance(double distanceKm) {
 }
 
 String formatProtocolMileage(int mileage) {
-  return mileage > 0 ? mileage.toString() : '-';
+  return mileage >= 0 ? mileage.toString() : '-';
 }
 
 String formatProtocolText(String? value) {
   final String text = (value ?? '').trim();
+  final String normalized = text.toLowerCase();
+  if (normalized == 'undefined' ||
+      normalized == 'null' ||
+      normalized == 'unbekannt') {
+    return '-';
+  }
   return text.isNotEmpty ? text : '-';
 }
 
@@ -224,7 +230,11 @@ String formatProtocolRoute(TripSummary trip) {
         trip.furthestPoint ?? '',
         trip.endPoint ?? '',
       ].map((String value) => value.trim()).where((String value) {
-        return value.isNotEmpty;
+        final String normalized = value.toLowerCase();
+        return value.isNotEmpty &&
+            normalized != 'undefined' &&
+            normalized != 'null' &&
+            normalized != 'unbekannt';
       }).toList();
 
   if (routePoints.isNotEmpty) {
@@ -232,12 +242,16 @@ String formatProtocolRoute(TripSummary trip) {
   }
 
   final String type = (trip.type ?? '').trim();
-  return type.isNotEmpty ? type : '-';
+  return formatProtocolText(type);
 }
 
 String formatProtocolVehicleLicensePlate(TripSummary trip) {
   final String licensePlate = (trip.vehicleLicensePlate ?? '').trim();
-  if (licensePlate.isNotEmpty) {
+  final String normalized = licensePlate.toLowerCase();
+  if (licensePlate.isNotEmpty &&
+      normalized != 'undefined' &&
+      normalized != 'null' &&
+      normalized != 'unbekannt') {
     return licensePlate;
   }
 

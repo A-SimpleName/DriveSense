@@ -25,7 +25,36 @@ class RuntimeStore {
   static final TripRepository pendingTripRepository = TripRepository();
 
   static void addTrip(TripSummary trip) {
-    trips.add(trip);
+    upsertTrip(trip);
+  }
+
+  static void upsertTrip(TripSummary trip, {int? replaceTripId}) {
+    int index = -1;
+    for (int i = 0; i < trips.length; i++) {
+      if (_sameTripIdentity(trips[i], trip, replaceTripId: replaceTripId)) {
+        index = i;
+        break;
+      }
+    }
+
+    if (index < 0) {
+      trips.add(trip);
+      return;
+    }
+
+    final List<TripSummary> nextTrips = <TripSummary>[];
+    for (int i = 0; i < trips.length; i++) {
+      final TripSummary existing = trips[i];
+      if (i == index) {
+        nextTrips.add(trip);
+        continue;
+      }
+
+      if (!_sameTripIdentity(existing, trip, replaceTripId: replaceTripId)) {
+        nextTrips.add(existing);
+      }
+    }
+    trips = nextTrips;
   }
 
   static void setVehicles(List<Vehicle> newVehicles) {
@@ -122,9 +151,7 @@ class RuntimeStore {
   }
 
   static void addTripDetail(int tripId, TripDetailed detail) {
-    if (!tripDetailCache.containsKey(tripId)) {
-      tripDetailCache[tripId] = detail;
-    }
+    tripDetailCache[tripId] = detail;
   }
 
   static TripDetailed? getTripDetail(int tripId) {
@@ -132,7 +159,80 @@ class RuntimeStore {
   }
 
   static void setTrips(List<TripSummary> newTrips) {
-    trips = newTrips;
+    trips = _dedupeTrips(newTrips);
+  }
+
+  static List<TripSummary> _dedupeTrips(List<TripSummary> source) {
+    final List<TripSummary> deduped = <TripSummary>[];
+    for (final TripSummary trip in source) {
+      final int existingIndex = deduped.indexWhere(
+        (TripSummary existing) => _sameTripIdentity(existing, trip),
+      );
+      if (existingIndex >= 0) {
+        deduped[existingIndex] = _preferTripSummary(
+          deduped[existingIndex],
+          trip,
+        );
+      } else {
+        deduped.add(trip);
+      }
+    }
+    return deduped;
+  }
+
+  static TripSummary _preferTripSummary(TripSummary a, TripSummary b) {
+    if (b.isSynced && !a.isSynced) {
+      return b;
+    }
+    if (a.isSynced && !b.isSynced) {
+      return a;
+    }
+    final int aScore = _tripCompletenessScore(a);
+    final int bScore = _tripCompletenessScore(b);
+    return bScore >= aScore ? b : a;
+  }
+
+  static int _tripCompletenessScore(TripSummary trip) {
+    int score = 0;
+    if (_hasUsefulText(trip.startPoint)) score++;
+    if (_hasUsefulText(trip.furthestPoint)) score++;
+    if (_hasUsefulText(trip.endPoint)) score++;
+    if (_hasUsefulText(trip.roadSurfaceConditions)) score++;
+    if (trip.distanceKm > 0) score++;
+    if (trip.startMileage > 0) score++;
+    if (trip.endMileage > 0) score++;
+    return score;
+  }
+
+  static bool _hasUsefulText(String? value) {
+    final String text = (value ?? '').trim().toLowerCase();
+    return text.isNotEmpty &&
+        text != 'undefined' &&
+        text != 'null' &&
+        text != 'unbekannt';
+  }
+
+  static bool _sameTripIdentity(
+    TripSummary existing,
+    TripSummary trip, {
+    int? replaceTripId,
+  }) {
+    if (existing.id == trip.id ||
+        (replaceTripId != null && existing.id == replaceTripId)) {
+      return true;
+    }
+
+    if (existing.profileId != trip.profileId ||
+        existing.protocolId != trip.protocolId ||
+        existing.vehicleId != trip.vehicleId) {
+      return false;
+    }
+
+    final int startDeltaMs = existing.startTime
+        .difference(trip.startTime)
+        .inMilliseconds
+        .abs();
+    return startDeltaMs <= 2500;
   }
 
   static void setAuthToken(String token) {

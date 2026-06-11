@@ -19,7 +19,7 @@ final String _baseUrl = ApiConfig.baseUrl;
 class TripService {
   final TripRepository _tripRepository = TripRepository();
 
-  Future<void> saveTripToDb(
+  Future<TripDetailed> saveTripToDb(
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
   ) async {
@@ -116,6 +116,12 @@ class TripService {
         statusCode: trackingpointsRes.statusCode,
       );
     }
+
+    return _detailFromTrackingpointsResponse(
+      trackingpointsRes,
+      fallbackSummary: createdTrip,
+      fallbackTrackingPoints: trackingPointsWithTripId,
+    );
   }
 
   Future<http.Response> _postTripSummary(
@@ -236,9 +242,10 @@ class TripService {
   Future<TripDetailed> fetchTripDetail(
     int tripId, {
     TripSummary? fallbackSummary,
+    bool forceRefresh = false,
   }) async {
     final TripDetailed? cached = RuntimeStore.getTripDetail(tripId);
-    if (cached != null) {
+    if (!forceRefresh && cached != null) {
       return cached;
     }
 
@@ -269,6 +276,10 @@ class TripService {
       debugPrint('fetchTripDetail server lookup failed: $e\n$st');
     }
 
+    if (cached != null) {
+      return cached;
+    }
+
     final TripDetailed? localDetail = await _fetchLocalTripDetail(
       tripId,
       fallbackSummary: fallbackSummary,
@@ -286,6 +297,37 @@ class TripService {
     }
 
     throw TripHttpException('Fahrtdetails konnten nicht geladen werden.');
+  }
+
+  TripDetailed _detailFromTrackingpointsResponse(
+    http.Response response, {
+    required TripSummary fallbackSummary,
+    required List<Trackingpoint> fallbackTrackingPoints,
+  }) {
+    final String rawBody = response.body.trim();
+    if (rawBody.isEmpty) {
+      return TripDetailed(
+        summary: fallbackSummary,
+        trackingpoints: fallbackTrackingPoints,
+      );
+    }
+
+    try {
+      final dynamic decoded = jsonDecode(rawBody);
+      if (decoded is Map<String, dynamic>) {
+        return _withFallbackSummaryFields(
+          TripDetailed.fromJson(decoded),
+          fallbackSummary,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('Trackingpoints response parsing failed: $e\n$st');
+    }
+
+    return TripDetailed(
+      summary: fallbackSummary,
+      trackingpoints: fallbackTrackingPoints,
+    );
   }
 
   Future<TripDetailed?> _fetchLocalTripDetail(
@@ -330,6 +372,23 @@ class TripService {
             detail.summary.furthestPoint ?? fallbackSummary.furthestPoint,
         endPoint: detail.summary.endPoint ?? fallbackSummary.endPoint,
         type: detail.summary.type ?? fallbackSummary.type,
+        endTime: detail.summary.endTime ?? fallbackSummary.endTime,
+        distanceKm:
+            detail.summary.distanceKm > 0 || fallbackSummary.distanceKm <= 0
+            ? detail.summary.distanceKm
+            : fallbackSummary.distanceKm,
+        roadSurfaceConditions:
+            detail.summary.roadSurfaceConditions.trim().isNotEmpty
+            ? detail.summary.roadSurfaceConditions
+            : fallbackSummary.roadSurfaceConditions,
+        startMileage:
+            detail.summary.startMileage > 0 || fallbackSummary.startMileage <= 0
+            ? detail.summary.startMileage
+            : fallbackSummary.startMileage,
+        endMileage:
+            detail.summary.endMileage > 0 || fallbackSummary.endMileage <= 0
+            ? detail.summary.endMileage
+            : fallbackSummary.endMileage,
       ),
     );
   }
@@ -522,14 +581,23 @@ class TripService {
             continue;
           }
 
-          serverSummaries.add(summary);
           serverTripIds.add(summary.id);
 
-          await _upsertServerTrip(
-            profileId: profileId,
-            protocolId: protocolId,
-            summary: summary,
+          final Trip? matchingUnsyncedLocal = _findMatchingUnsyncedLocal(
+            localBeforeSync,
+            summary,
           );
+          serverSummaries.add(
+            _mergeServerSummaryWithLocal(summary, matchingUnsyncedLocal),
+          );
+
+          if (matchingUnsyncedLocal == null) {
+            await _upsertServerTrip(
+              profileId: profileId,
+              protocolId: protocolId,
+              summary: summary,
+            );
+          }
         }
       } else {
         debugPrint(
@@ -555,7 +623,11 @@ class TripService {
 
     if (serverFetchSucceeded) {
       final List<TripSummary> unsyncedLocals = localAfterSync
-          .where((Trip trip) => !trip.isSynced)
+          .where(
+            (Trip trip) =>
+                !trip.isSynced &&
+                !_isRepresentedByServer(trip, serverSummaries),
+          )
           .map((Trip trip) => TripSummary.fromTrip(trip))
           .toList();
 
@@ -585,6 +657,13 @@ class TripService {
     final int accountId = LocalAccountScope.requireAccountId();
     final String serverLocalId = 'server:$accountId:${summary.id}';
     final Trip? existing = await _tripRepository.getByLocalId(serverLocalId);
+    if (existing == null) {
+      final List<Trip> localTrips = await _tripRepository
+          .getByProfileAndProtocol(profileId, protocolId);
+      if (_findMatchingUnsyncedLocal(localTrips, summary) != null) {
+        return;
+      }
+    }
 
     final Trip trip = existing ?? Trip();
     trip.localId = serverLocalId;
@@ -594,11 +673,19 @@ class TripService {
     trip.protocolId = protocolId;
     trip.startTime = summary.startTime;
     trip.endTime = summary.endTime;
-    trip.distanceKm = summary.distanceKm;
-    trip.roadSurfaceConditions = summary.roadSurfaceConditions;
-    trip.type = summary.type;
-    trip.startMileage = summary.startMileage;
-    trip.endMileage = summary.endMileage;
+    trip.distanceKm = summary.distanceKm > 0 || existing == null
+        ? summary.distanceKm
+        : existing.distanceKm;
+    trip.roadSurfaceConditions = summary.roadSurfaceConditions.trim().isNotEmpty
+        ? summary.roadSurfaceConditions
+        : existing?.roadSurfaceConditions ?? '';
+    trip.type = summary.type ?? existing?.type;
+    trip.startMileage = summary.startMileage > 0 || existing == null
+        ? summary.startMileage
+        : existing.startMileage;
+    trip.endMileage = summary.endMileage > 0 || existing == null
+        ? summary.endMileage
+        : existing.endMileage;
     trip.createdAt = existing?.createdAt ?? DateTime.now();
     trip.isSynced = true;
     trip.retryCount = 0;
@@ -606,5 +693,101 @@ class TripService {
     trip.trackingPointsJson = existing?.trackingPointsJson ?? '[]';
 
     await _tripRepository.save(trip);
+  }
+
+  Trip? _findMatchingUnsyncedLocal(
+    List<Trip> localTrips,
+    TripSummary serverSummary,
+  ) {
+    for (final Trip localTrip in localTrips) {
+      if (!localTrip.isSynced &&
+          _isSamePhysicalTrip(localTrip, serverSummary)) {
+        return localTrip;
+      }
+    }
+
+    return null;
+  }
+
+  bool _isRepresentedByServer(
+    Trip localTrip,
+    List<TripSummary> serverSummaries,
+  ) {
+    for (final TripSummary serverSummary in serverSummaries) {
+      if (_isSamePhysicalTrip(localTrip, serverSummary)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isSamePhysicalTrip(Trip localTrip, TripSummary serverSummary) {
+    if (serverSummary.profileId > 0 &&
+        localTrip.profileId != serverSummary.profileId) {
+      return false;
+    }
+    if (serverSummary.protocolId > 0 &&
+        localTrip.protocolId != serverSummary.protocolId) {
+      return false;
+    }
+    if (serverSummary.vehicleId > 0 &&
+        localTrip.vehicleId != serverSummary.vehicleId) {
+      return false;
+    }
+
+    final int startDeltaMs = localTrip.startTime
+        .difference(serverSummary.startTime)
+        .inMilliseconds
+        .abs();
+    if (startDeltaMs <= 2500) {
+      return true;
+    }
+
+    final DateTime? localEndTime = localTrip.endTime;
+    final DateTime? serverEndTime = serverSummary.endTime;
+    if (localEndTime == null || serverEndTime == null) {
+      return false;
+    }
+
+    final int endDeltaMs = localEndTime
+        .difference(serverEndTime)
+        .inMilliseconds
+        .abs();
+    final double distanceDelta =
+        (localTrip.distanceKm - serverSummary.distanceKm).abs();
+    return endDeltaMs <= 2500 && distanceDelta <= 0.2;
+  }
+
+  TripSummary _mergeServerSummaryWithLocal(
+    TripSummary serverSummary,
+    Trip? localTrip,
+  ) {
+    if (localTrip == null) {
+      return serverSummary;
+    }
+
+    return serverSummary.copyWith(
+      profileId: serverSummary.profileId > 0
+          ? serverSummary.profileId
+          : localTrip.profileId,
+      vehicleId: serverSummary.vehicleId > 0
+          ? serverSummary.vehicleId
+          : localTrip.vehicleId,
+      protocolId: serverSummary.protocolId > 0
+          ? serverSummary.protocolId
+          : localTrip.protocolId,
+      endTime: serverSummary.endTime ?? localTrip.endTime,
+      distanceKm: serverSummary.distanceKm > 0 || localTrip.distanceKm <= 0
+          ? serverSummary.distanceKm
+          : localTrip.distanceKm,
+      startMileage:
+          serverSummary.startMileage > 0 || localTrip.startMileage <= 0
+          ? serverSummary.startMileage
+          : localTrip.startMileage,
+      endMileage: serverSummary.endMileage > 0 || localTrip.endMileage <= 0
+          ? serverSummary.endMileage
+          : localTrip.endMileage,
+    );
   }
 }
