@@ -21,12 +21,13 @@ class ProtocolPageBody extends StatefulWidget {
 }
 
 class _ProtocolPageBodyState extends State<ProtocolPageBody> {
-  List<Protocol> _protocols = <Protocol>[];
   bool _isLoading = true;
   bool _isCreating = false;
   bool _isExportingPdf = false;
   String? _loadError;
   int? _lastProfileId;
+
+  List<Protocol> get _protocols => RuntimeStore.protocols;
 
   @override
   void initState() {
@@ -284,10 +285,10 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       if (protocols.isEmpty) {
+        RuntimeStore.setProtocols(<Protocol>[]);
         RuntimeStore.setCurrentProtocolId(0);
         RuntimeStore.setTrips(<TripSummary>[]);
         setState(() {
-          _protocols = <Protocol>[];
           _isLoading = false;
         });
         return;
@@ -301,7 +302,6 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       setState(() {
-        _protocols = protocols;
         _isLoading = false;
       });
     } catch (e) {
@@ -310,7 +310,6 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       setState(() {
-        _protocols = <Protocol>[];
         _isLoading = false;
         _loadError = 'Protokolle konnten nicht geladen werden: $e';
       });
@@ -428,9 +427,9 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       final List<Protocol> protocols = await ProtocolService.fetchProtocols();
-      final List<Protocol> updatedProtocols = protocols.isNotEmpty
-          ? protocols
-          : <Protocol>[..._protocols, createdProtocol];
+      if (protocols.isEmpty) {
+        RuntimeStore.upsertProtocol(createdProtocol);
+      }
 
       RuntimeStore.setCurrentProtocolId(createdProtocol.id);
       await RuntimeStore.refreshTrips();
@@ -438,9 +437,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         return;
       }
 
-      setState(() {
-        _protocols = updatedProtocols;
-      });
+      setState(() {});
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

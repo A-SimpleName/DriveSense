@@ -318,7 +318,10 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
   }
 
   Future<void> _refreshProtocolsForActiveProfile() async {
-    await ProtocolService.ensureDefaultProtocolForActiveProfile();
+    await ProtocolService.fetchProtocols();
+    if (RuntimeStore.protocols.isEmpty) {
+      await ProtocolService.ensureDefaultProtocolForActiveProfile();
+    }
     await RuntimeStore.refreshTrips();
     await widget.onProtocolsChanged?.call();
   }

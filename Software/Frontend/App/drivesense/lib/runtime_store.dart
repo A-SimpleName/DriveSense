@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
@@ -9,6 +10,7 @@ import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
   static List<Vehicle> vehicles = [];
+  static List<Protocol> protocols = [];
   static List<TripSummary> trips = [];
   static Map<int, TripDetailed> tripDetailCache = {};
   static String authToken = '';
@@ -37,6 +39,17 @@ class RuntimeStore {
     }
   }
 
+  static void setProtocols(List<Protocol> newProtocols) {
+    protocols = newProtocols;
+
+    final bool currentProtocolStillAvailable = protocols.any(
+      (Protocol protocol) => protocol.id == currentProtocolId,
+    );
+    if (!currentProtocolStillAvailable) {
+      currentProtocolId = protocols.isNotEmpty ? protocols.first.id : 0;
+    }
+  }
+
   static void upsertVehicle(Vehicle vehicle) {
     bool replaced = false;
     vehicles = vehicles.map((Vehicle existing) {
@@ -52,6 +65,42 @@ class RuntimeStore {
     }
   }
 
+  static void upsertProtocol(Protocol protocol) {
+    if (protocol.id <= 0) {
+      return;
+    }
+
+    bool replaced = false;
+    protocols = protocols.map((Protocol existing) {
+      if (existing.id == protocol.id) {
+        replaced = true;
+        return protocol;
+      }
+      return existing;
+    }).toList();
+
+    if (!replaced) {
+      protocols = <Protocol>[...protocols, protocol];
+    }
+
+    if (currentProtocolId <= 0) {
+      currentProtocolId = protocol.id;
+    }
+  }
+
+  static void removeProtocol(int protocolId) {
+    protocols = protocols
+        .where((Protocol protocol) => protocol.id != protocolId)
+        .toList();
+
+    final bool currentProtocolStillAvailable = protocols.any(
+      (Protocol protocol) => protocol.id == currentProtocolId,
+    );
+    if (!currentProtocolStillAvailable) {
+      currentProtocolId = protocols.isNotEmpty ? protocols.first.id : 0;
+    }
+  }
+
   static Vehicle? getCurrentVehicle() {
     for (final Vehicle vehicle in vehicles) {
       if (vehicle.id == currentVehicleId) {
@@ -60,6 +109,16 @@ class RuntimeStore {
     }
 
     return vehicles.isNotEmpty ? vehicles.first : null;
+  }
+
+  static Protocol? getCurrentProtocol() {
+    for (final Protocol protocol in protocols) {
+      if (protocol.id == currentProtocolId) {
+        return protocol;
+      }
+    }
+
+    return protocols.isNotEmpty ? protocols.first : null;
   }
 
   static void addTripDetail(int tripId, TripDetailed detail) {
@@ -119,6 +178,7 @@ class RuntimeStore {
       currentVehicleId = 0;
       currentProtocolId = 0;
       vehicles = [];
+      protocols = [];
       trips = [];
       tripDetailCache = {};
     }
@@ -190,6 +250,7 @@ class RuntimeStore {
     currentVehicleId = 0;
     currentProtocolId = 0;
     vehicles = [];
+    protocols = [];
     trips = [];
     tripDetailCache = {};
   }

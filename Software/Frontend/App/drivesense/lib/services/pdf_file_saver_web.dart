@@ -27,3 +27,7 @@ Future<String> savePdfFile({
 
   return safeFilename;
 }
+
+String userVisiblePdfPath(String path) {
+  return path;
+}

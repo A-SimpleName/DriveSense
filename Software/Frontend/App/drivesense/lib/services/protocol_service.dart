@@ -24,7 +24,9 @@ class ProtocolService {
       }
 
       final dynamic decoded = _decodeJson(response.body);
-      return _extractProtocols(decoded);
+      final List<Protocol> protocols = _extractProtocols(decoded);
+      RuntimeStore.setProtocols(protocols);
+      return protocols;
     } catch (e) {
       debugPrint('FetchProtocols failed at $uri: $e');
       return <Protocol>[];
@@ -32,7 +34,10 @@ class ProtocolService {
   }
 
   static Future<int?> resolveFirstAvailableProtocolId() async {
-    final List<Protocol> protocols = await fetchProtocols();
+    List<Protocol> protocols = RuntimeStore.protocols;
+    if (protocols.isEmpty) {
+      protocols = await fetchProtocols();
+    }
     if (protocols.isEmpty) {
       return null;
     }
@@ -47,7 +52,10 @@ class ProtocolService {
   static Future<int?> resolvePreferredCurrentOrFirstAvailableProtocolId({
     int preferredProtocolId = 0,
   }) async {
-    final List<Protocol> protocols = await fetchProtocols();
+    List<Protocol> protocols = RuntimeStore.protocols;
+    if (protocols.isEmpty) {
+      protocols = await fetchProtocols();
+    }
     if (protocols.isEmpty) {
       return null;
     }
@@ -107,6 +115,7 @@ class ProtocolService {
 
       final Protocol protocol = Protocol.fromJson(decoded);
       if (protocol.id > 0) {
+        RuntimeStore.upsertProtocol(protocol);
         return protocol;
       }
 
@@ -180,7 +189,12 @@ class ProtocolService {
 
       debugPrint('DeleteProtocol <- status=${response.statusCode}, uri=$uri');
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      final bool success =
+          response.statusCode >= 200 && response.statusCode < 300;
+      if (success) {
+        RuntimeStore.removeProtocol(protocolId);
+      }
+      return success;
     } catch (e) {
       debugPrint('DeleteProtocol failed at $uri: $e');
       return false;

@@ -47,9 +47,10 @@ class PdfService {
         path: path,
         filename: filename,
       );
+      final String visiblePath = userVisiblePdfPath(path);
       final String message = shareOpened
           ? 'PDF exportiert. Teilen/Speichern geoeffnet.'
-          : 'PDF exportiert: $path';
+          : 'PDF exportiert: $visiblePath';
       return PdfExportResult.success(message, path);
     } catch (e) {
       debugPrint('GeneratePdf failed at $uri: $e');

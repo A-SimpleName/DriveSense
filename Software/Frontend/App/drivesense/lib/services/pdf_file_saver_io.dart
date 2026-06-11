@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+const String _exportFolderName = 'Drivesense';
+const String _androidPublicDownloadPath =
+    '/storage/emulated/0/Download/$_exportFolderName';
+
 Future<String> savePdfFile({
   required List<int> bytes,
   required String filename,
@@ -29,12 +33,20 @@ Future<String> savePdfFile({
 Future<List<Directory>> _exportDirectories() async {
   final List<Directory> directories = <Directory>[];
 
+  if (Platform.isAndroid) {
+    try {
+      directories.add(
+        await Directory(_androidPublicDownloadPath).create(recursive: true),
+      );
+    } catch (_) {}
+  }
+
   try {
     final Directory? downloadsDirectory = await getDownloadsDirectory();
     if (downloadsDirectory != null) {
       directories.add(
         await Directory(
-          '${downloadsDirectory.path}${Platform.pathSeparator}DriveSense',
+          '${downloadsDirectory.path}${Platform.pathSeparator}$_exportFolderName',
         ).create(recursive: true),
       );
     }
@@ -42,19 +54,11 @@ Future<List<Directory>> _exportDirectories() async {
 
   if (Platform.isAndroid) {
     try {
-      directories.add(
-        await Directory(
-          '/storage/emulated/0/Download/DriveSense',
-        ).create(recursive: true),
-      );
-    } catch (_) {}
-
-    try {
       final Directory? externalDirectory = await getExternalStorageDirectory();
       if (externalDirectory != null) {
         directories.add(
           await Directory(
-            '${externalDirectory.path}${Platform.pathSeparator}DriveSense',
+            '${externalDirectory.path}${Platform.pathSeparator}$_exportFolderName',
           ).create(recursive: true),
         );
       }
@@ -64,14 +68,14 @@ Future<List<Directory>> _exportDirectories() async {
   final Directory documentsDirectory = await getApplicationDocumentsDirectory();
   directories.add(
     await Directory(
-      '${documentsDirectory.path}${Platform.pathSeparator}DriveSense',
+      '${documentsDirectory.path}${Platform.pathSeparator}$_exportFolderName',
     ).create(recursive: true),
   );
 
   final Directory tempDirectory = await getTemporaryDirectory();
   directories.add(
     await Directory(
-      '${tempDirectory.path}${Platform.pathSeparator}DriveSense',
+      '${tempDirectory.path}${Platform.pathSeparator}$_exportFolderName',
     ).create(recursive: true),
   );
 
@@ -108,4 +112,15 @@ String _safeFilename(String filename) {
   return sanitized.toLowerCase().endsWith('.pdf')
       ? sanitized
       : '$sanitized.pdf';
+}
+
+String userVisiblePdfPath(String path) {
+  final String normalizedPath = path.replaceAll('\\', '/');
+  if (Platform.isAndroid &&
+      normalizedPath.startsWith(_androidPublicDownloadPath)) {
+    final String filename = normalizedPath.split('/').last;
+    return 'Downloads/$_exportFolderName/$filename';
+  }
+
+  return path;
 }

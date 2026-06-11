@@ -5,6 +5,7 @@ import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/repository/active_trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/trip_session_service.dart';
 import 'package:drivesense/services/trip_sync_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
@@ -37,7 +38,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _initialize() async {
-    await _loadVehicles();
+    await Future.wait(<Future<void>>[_loadVehicles(), _loadProtocols()]);
     await _tripSessionService.initialize();
   }
 
@@ -91,7 +92,10 @@ class _HomePageBodyState extends State<HomePageBody> {
                   StartTripCard(
                     onStart: _onStartTrip,
                     vehicles: RuntimeStore.vehicles,
+                    protocols: RuntimeStore.protocols,
+                    selectedProtocolId: RuntimeStore.getCurrentProtocolId(),
                     selectedVehicleId: RuntimeStore.getCurrentVehicleId(),
+                    onProtocolChanged: _onProtocolChanged,
                     onVehicleChanged: _onVehicleChanged,
                     isStartingTrip: _isStartingTrip,
                   ),
@@ -115,10 +119,33 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
   }
 
+  Future<void> _loadProtocols() async {
+    await ProtocolService.ensureDefaultProtocolForActiveProfile();
+    if (!mounted) return;
+
+    setState(() {});
+  }
+
   void _onVehicleChanged(int vehicleId) {
     setState(() {
       RuntimeStore.setCurrentVehicleId(vehicleId);
     });
+  }
+
+  void _onProtocolChanged(int protocolId) {
+    setState(() {
+      RuntimeStore.setCurrentProtocolId(protocolId);
+    });
+    unawaited(_refreshTripsForSelectedProtocol());
+  }
+
+  Future<void> _refreshTripsForSelectedProtocol() async {
+    await RuntimeStore.refreshTrips();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
   }
 
   void _onStartTrip() {

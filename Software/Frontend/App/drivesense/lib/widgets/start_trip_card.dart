@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/vehicle.dart';
+import 'package:drivesense/model/protocol.dart';
 
 class StartTripCard extends StatefulWidget {
   const StartTripCard({
     super.key,
     required this.onStart,
+    required this.protocols,
+    required this.selectedProtocolId,
+    required this.onProtocolChanged,
     required this.vehicles,
     required this.selectedVehicleId,
     required this.onVehicleChanged,
@@ -13,6 +17,9 @@ class StartTripCard extends StatefulWidget {
   });
 
   final VoidCallback onStart;
+  final List<Protocol> protocols;
+  final int selectedProtocolId;
+  final ValueChanged<int> onProtocolChanged;
   final List<Vehicle> vehicles;
   final int selectedVehicleId;
   final ValueChanged<int> onVehicleChanged;
@@ -25,11 +32,24 @@ class StartTripCard extends StatefulWidget {
 class _StartTripCardState extends State<StartTripCard> {
   @override
   Widget build(BuildContext context) {
-    final int? selectedVehicleId = widget.vehicles.any(
-      (Vehicle vehicle) => vehicle.id == widget.selectedVehicleId,
-    )
+    final int? selectedVehicleId =
+        widget.vehicles.any(
+          (Vehicle vehicle) => vehicle.id == widget.selectedVehicleId,
+        )
         ? widget.selectedVehicleId
         : null;
+    final int? selectedProtocolId =
+        widget.protocols.any(
+          (Protocol protocol) => protocol.id == widget.selectedProtocolId,
+        )
+        ? widget.selectedProtocolId
+        : null;
+    final bool canStartTrip =
+        widget.vehicles.isNotEmpty &&
+        widget.protocols.isNotEmpty &&
+        selectedVehicleId != null &&
+        selectedProtocolId != null &&
+        !widget.isStartingTrip;
 
     return Card(
       color: AppColors.primaryPurple.withValues(alpha: 0.4),
@@ -58,6 +78,7 @@ class _StartTripCardState extends State<StartTripCard> {
                   child: Text('Fahrzeug: '),
                 ),
                 DropdownButtonFormField<int>(
+                  key: ValueKey<String>('vehicle-$selectedVehicleId'),
                   initialValue: selectedVehicleId,
                   isExpanded: true,
                   hint: const Text('Fahrzeug auswaehlen'),
@@ -77,15 +98,42 @@ class _StartTripCardState extends State<StartTripCard> {
                     }
                   },
                 ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Protokoll: '),
+                ),
+                DropdownButtonFormField<int>(
+                  key: ValueKey<String>('protocol-$selectedProtocolId'),
+                  initialValue: selectedProtocolId,
+                  isExpanded: true,
+                  hint: Text(
+                    widget.protocols.isEmpty
+                        ? 'Keine Protokolle'
+                        : 'Protokoll auswaehlen',
+                  ),
+                  items: widget.protocols
+                      .map(
+                        (Protocol protocol) => DropdownMenuItem<int>(
+                          value: protocol.id,
+                          child: Text(protocol.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: widget.protocols.isEmpty
+                      ? null
+                      : (int? protocolId) {
+                          if (protocolId != null) {
+                            widget.onProtocolChanged(protocolId);
+                          }
+                        },
+                ),
               ],
             ),
             const SizedBox(height: 24),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: widget.vehicles.isEmpty || widget.isStartingTrip
-                    ? null
-                    : widget.onStart,
+                onPressed: canStartTrip ? widget.onStart : null,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),

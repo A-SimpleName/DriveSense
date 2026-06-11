@@ -4,3 +4,7 @@ Future<String> savePdfFile({
 }) {
   throw UnsupportedError('PDF export is not supported on this platform.');
 }
+
+String userVisiblePdfPath(String path) {
+  return path;
+}
