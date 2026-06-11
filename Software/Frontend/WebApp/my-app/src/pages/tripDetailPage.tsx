@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import MapView from "../components/MapView";
 import type { Tripdetailed } from "../model/trip";
 import { getTripById } from "../services/tripService";
+import { TextSkeleton } from "../components/loadingSkeleton";
+import StatCard from "../components/statCard";
 
 function TripDetailPage() {
     const { id } = useParams();
@@ -18,7 +20,7 @@ function TripDetailPage() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TextSkeleton lines={7} />;
     if (error) return <p>Fehler: {error}</p>;
     if (!trip) return <p>Fahrt nicht gefunden</p>;
 
@@ -29,17 +31,17 @@ function TripDetailPage() {
         <div>
             <h1>Fahrt Details</h1>
 
-            <p><strong>Fahrer:</strong> {tripSummaryDto.accountFirstName} {tripSummaryDto.accountLastName}</p>
-            <p><strong>Fahrzeug:</strong> {tripSummaryDto.vehicleModel} ({tripSummaryDto.licensePlate})</p>
-            <p><strong>Start:</strong> {new Date(tripSummaryDto.startTime).toLocaleString()}</p>
-            <p><strong>Ende:</strong> {tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "-"}</p>
-            <p><strong>Distanz:</strong> {tripSummaryDto.distance} km</p>
-            <p><strong>Von:</strong> {tripSummaryDto.startPoint}</p>
-            <p><strong>Nach:</strong> {tripSummaryDto.endPoint}</p>
+            <StatCard title="Fahrer:" value={`${tripSummaryDto.accountFirstName} ${tripSummaryDto.accountLastName}`} />
+            <StatCard title="Fahrzeug:" value={`${tripSummaryDto.vehicleModel} (${tripSummaryDto.licensePlate})`} />
+            <StatCard title="Start:" value={new Date(tripSummaryDto.startTime).toLocaleString()} />
+            <StatCard title="Ende:" value={tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "-"} />
+            <StatCard title="Distanz:" value={`${tripSummaryDto.distance} km`} />
+            <StatCard title="Von:" value={tripSummaryDto.startPoint} />
+            <StatCard title="Nach:" value={tripSummaryDto.endPoint} />
             {tripSummaryDto.furthestPoint && (
-                <p><strong>Weitester Punkt:</strong> {tripSummaryDto.furthestPoint}</p>
+                <StatCard title="Weitester Punkt:" value={tripSummaryDto.furthestPoint} />
             )}
-            <p><strong>Strassenzustand:</strong> {tripSummaryDto.roadSurfaceConditions}</p>
+            <StatCard title="Strassenzustand:" value={tripSummaryDto.roadSurfaceConditions} />
 
             {route.length > 0 && <MapView route={route} />}
         </div>

@@ -10,6 +10,7 @@ import { getAllVehicles } from "../../services/vehicleService";
 import "../../styles/table.css";
 import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
+import { TableSkeleton, ButtonSpinner } from "../loadingSkeleton";
 
 interface EditValues {
     startTime: string;
@@ -151,7 +152,7 @@ function TripsTable() {
         setConfirmDeleteId(null);
     };
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TableSkeleton rows={5} cols={9} />;
     if (loadError) return <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>;
 
     const isEditing = (id: number) => editingTripId === id;

@@ -5,6 +5,7 @@ import MapView from "../components/MapView";
 import { getLatestTrip, getTotalKm, getTripById } from "../services/tripService";
 import { useEffect, useState } from "react";
 import type { Tripdetailed, TripSummary } from "../model/trip";
+import { StatSkeleton } from "../components/loadingSkeleton";
 
 function Dashboard() {
     const [lastTrip, setLastTrip] = useState<TripSummary | null>(null);
@@ -34,7 +35,7 @@ function Dashboard() {
             .catch(err => setError(err.message));
     }, [lastTrip]);
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <StatSkeleton count={2} />;
     if (error) return <p>Fehler: {error}</p>;
 
     const lastTripText =

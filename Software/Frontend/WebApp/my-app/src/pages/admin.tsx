@@ -11,6 +11,7 @@ import type { AccountResponse } from "../model/account";
 import type { Profile } from "../model/profile";
 import type { UserGroup, GroupMember } from "../model/usergroup";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { TableSkeleton } from "../components/loadingSkeleton";
 import "../styles/admin.css";
 
 type Tab = "accounts" | "profile" | "gruppen";
@@ -90,7 +91,7 @@ function AdminPage() {
             adminRemoveMember(groupId, profileId).then(() =>
                 setGroupMembers(prev => ({ ...prev, [groupId]: prev[groupId].filter(m => m.profileId !== profileId) }))));
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TableSkeleton rows={5} cols={4} />;
     if (loadError) return (
         <div>
             <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>

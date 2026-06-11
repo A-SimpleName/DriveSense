@@ -130,6 +130,14 @@ export default function SelectProfilePage({
                     )}
 
                     <button className="selectProfile-btn" onClick={handleCreate} disabled={creating}>
+                        {creating && (
+                            <span style={{
+                                display: "inline-block", width: "12px", height: "12px",
+                                border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                verticalAlign: "middle", marginRight: "6px",
+                            }} />
+                        )}
                         {creating ? "Wird erstellt..." : "Profil erstellen"}
                     </button>
                 </div>

@@ -71,6 +71,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(403).body(error);
     }
 
+    @ExceptionHandler(NotVerifiedException.class)
+    public ResponseEntity<Map<String, String>> handleNotVerified(NotVerifiedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(406).body(error);
+    }
+
     // Falsche Eingabe → 400
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException ex) {

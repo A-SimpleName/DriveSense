@@ -30,7 +30,7 @@ public class AccountService {
 
     public AccountResponse signUp(SignUpRequest request) {
         // Inline-Feldfehler → erscheint direkt beim E-Mail-Feld im Frontend
-        if (accountDao.getByEmail(request.getEmail()) != null) {
+        if (accountDao.getByEmailIncludeDeleted(request.getEmail()) != null || accountDao.existsByPendingEmail(request.getEmail())) {
             throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
         String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
@@ -52,7 +52,7 @@ public class AccountService {
             throw new UnauthorizedException("Email oder Passwort falsch");
         }
         if (!account.isEmailVerified()) {
-            throw new UnauthorizedException("Email nicht verifiziert");
+            throw new NotVerifiedException("Email nicht verifiziert");
         }
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(account.getId());
         LoginResponse res = new LoginResponse();
@@ -142,8 +142,8 @@ public class AccountService {
             throw new BadRequestException("Die neue E-Mail ist identisch mit der aktuellen");
         }
 
-        // Prüfen ob bereits ein anderer aktiver Account diese E-Mail als primäre Adresse hat
-        if (accountDao.getByEmail(newEmail) != null) {
+        // Prüfen ob bereits ein anderer Account diese E-Mail als primäre Adresse hat
+        if (accountDao.getByEmailIncludeDeleted(newEmail) != null) {
             throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben");
         }
 

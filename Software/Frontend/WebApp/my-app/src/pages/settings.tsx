@@ -12,10 +12,11 @@ import { deleteAccount, updateAccount, requestEmailChange } from "../services/ac
 import { changePassword } from "../services/auth";
 
 export default function Settings() {
-    const { account, setAccount } = useAuth();
+    const { account, setAccount,setProfile } = useAuth();
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [editEmailOpen, setEditEmailOpen] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -45,13 +46,17 @@ export default function Settings() {
 
     async function handleDelete() {
         setError(null);
+        setDeleting(true);
         try {
             await deleteAccount();
             setAccount(null);
-            navigate("/");
+            setProfile(null);
+            navigate("/login");
         } catch (err: any) {
             setError(err?.message || "Löschen fehlgeschlagen");
             setConfirmDelete(false);
+        } finally {
+            setDeleting(false);
         }
     }
 
@@ -164,12 +169,6 @@ export default function Settings() {
                             type: "text",
                             key: "repeatPassword",
                             label: "Neues Passwort wiederholen"
-                        },
-                        {
-                            label: "Passwort vergessen?",
-                            type: "button",
-                            key: "forgotPassword",
-                            onClick: () => navigate("/forgot-password")
                         }
                     ]}
                 />
@@ -181,6 +180,7 @@ export default function Settings() {
                 message="Möchtest du diesen Account wirklich löschen?"
                 confirmLabel="Ja, löschen"
                 cancelLabel="Abbrechen"
+                confirmLoading={deleting}
                 onConfirm={handleDelete}
                 onCancel={() => setConfirmDelete(false)}
             />

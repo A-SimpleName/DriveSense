@@ -7,6 +7,7 @@ import { Button } from "../components/button";
 import { InviteMemberForm } from "../components/group/InviteMemberForm";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { TableSkeleton } from "../components/loadingSkeleton";
 
 const canRemove = (myRole: string, targetRole: string): boolean => {
     if (targetRole === "OWNER") return false;
@@ -85,7 +86,7 @@ function GroupDetailPage() {
             .catch(err => setRoleError(err?.message || "Rolle konnte nicht geändert werden"));
     };
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TableSkeleton rows={4} cols={3} />;
 
     if (loadError) return (
         <div>

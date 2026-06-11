@@ -29,6 +29,7 @@ function SignUpPage({ onNeedsVerification }: Props) {
     const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const clearFieldError = (field: string) => {
         setFieldErrors(prev => {
@@ -58,9 +59,11 @@ function SignUpPage({ onNeedsVerification }: Props) {
         e.preventDefault();
         setError(null);
         setFieldErrors(null);
+        setSubmitting(true);
 
         if (password !== confirmPassword) {
             setError("Die Passwörter stimmen nicht überein.");
+            setSubmitting(false);
             return;
         }
 
@@ -75,6 +78,8 @@ function SignUpPage({ onNeedsVerification }: Props) {
             } else {
                 setError(err?.message || "Registrierung fehlgeschlagen");
             }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -161,6 +166,7 @@ function SignUpPage({ onNeedsVerification }: Props) {
                                 value={birthdate}
                                 onChange={(e) => setBirthdate(e.target.value)}
                             />
+                            <FieldError errors={fieldErrors} field="birthdate" />
                         </label>
 
                         <label className="signup-field">
@@ -248,8 +254,16 @@ function SignUpPage({ onNeedsVerification }: Props) {
 
                         {error && <p className="signup-error-banner">{error}</p>}
 
-                        <button className="signup-submit full" type="submit" disabled={submitDisabled}>
-                            Konto erstellen
+                        <button className="signup-submit full" type="submit" disabled={submitDisabled || submitting}>
+                            {submitting && (
+                                <span style={{
+                                    display: "inline-block", width: "12px", height: "12px",
+                                    border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                    borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                    verticalAlign: "middle", marginRight: "6px",
+                                }} />
+                            )}
+                            {submitting ? "Wird registriert..." : "Konto erstellen"}
                         </button>
                     </form>
 

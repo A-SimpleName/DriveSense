@@ -5,6 +5,7 @@ import type { UserGroup } from "../../model/usergroup";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
+import { TableSkeleton } from "../loadingSkeleton";
 
 interface Props {
     newGroup: UserGroup | null;
@@ -83,7 +84,7 @@ function GroupTable({ newGroup }: Props) {
         setEditName("");
     };
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TableSkeleton rows={3} cols={3} />;
     if (error) return <p>Fehler: {error}</p>;
 
     return (
@@ -128,6 +129,7 @@ function GroupTable({ newGroup }: Props) {
                                             <>
                                                 <Button
                                                     label={saving ? "Speichern..." : "Speichern"}
+                                                    loading={saving}
                                                     onClick={() => handleEditSave(group.id)}
                                                     stopPropagation
                                                 />

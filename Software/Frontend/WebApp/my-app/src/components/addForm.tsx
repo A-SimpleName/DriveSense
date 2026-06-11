@@ -5,7 +5,6 @@ import { getFieldErrors } from "../errorHandling/errorHandling"
 export type FieldDef =
     | { type: "text" | "number"; key: string; label: string; placeholder?: string; defaultValue?: string | number }
     | { type: "select"; key: string; label: string; options: { label: string; value: string }[]; defaultValue?: string }
-    | { type: "button"; key: string; label: string; onClick: () => void; defaultValue?: never }
 
 interface Props {
     title: string

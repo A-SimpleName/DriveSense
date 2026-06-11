@@ -14,23 +14,27 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     setError(null);
+    setLoading(true);
     try {
       await login(email, password);
       sessionStorage.removeItem("profileSelected");
       onLoginSuccess();
       navigate("/select-profile");
     } catch (err: any) {
-      if (err?.status === 403) {
+      if (err?.status === 406) {
         sessionStorage.setItem("pendingVerificationEmail", email);
         onNeedsVerification();
       } else {
         setError(err?.message || "Login fehlgeschlagen");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,7 +92,7 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
           {error && <p className="login-error">{error}</p>}
 
           <div className="login-actions">
-            <Button className="login-submit" label="Login" type="button" onClick={handleLogin} />
+            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} />
           </div>
 
           <Link to="/forgot-password">Passwort vergessen?</Link>

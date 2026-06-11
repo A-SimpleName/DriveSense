@@ -98,7 +98,7 @@ export default function ProfilePage() {
                             )}
 
                             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                                <Button label={saving ? "Speichert..." : "Speichern"} type="button" onClick={handleSave} />
+                                <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} type="button" onClick={handleSave} />
                                 <Button label="Abbrechen" className="secondary" type="button" onClick={() => { setIsEditing(false); setSaveError(null); }} />
                             </div>
                         </>

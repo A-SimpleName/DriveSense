@@ -4,6 +4,7 @@ import type { CreateVehicle, Vehicle } from "../../model/vehicle"
 import "../../styles/table.css"
 import { Button } from "../button"
 import { ConfirmationDialog } from "../ConfirmationDialog"
+import { TableSkeleton } from "../loadingSkeleton"
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
@@ -70,7 +71,7 @@ function VehiclesTable() {
         if (e.key === "Escape") handleCancel()
     }
 
-    if (loading) return <p>Laden...</p>
+    if (loading) return <TableSkeleton rows={4} cols={6} />
     if (loadError) return <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
 
     return (
@@ -136,7 +137,7 @@ function VehiclesTable() {
                                     <td>
                                         {editingId === vehicle.id ? (
                                             <>
-                                                <Button label={saving ? "Speichert..." : "Speichern"} onClick={() => handleSave(vehicle.id)} />
+                                                <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} />
                                                 <Button label="Abbrechen" onClick={handleCancel} />
                                             </>
                                         ) : (

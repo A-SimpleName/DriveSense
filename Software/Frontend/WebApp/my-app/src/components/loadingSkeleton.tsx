@@ -2,10 +2,40 @@
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-// für Tabellen
-export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
+// Spinner für Button-Aktionen
+export function ButtonSpinner() {
     return (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <span
+            style={{
+                display: "inline-block",
+                width: "14px",
+                height: "14px",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderTopColor: "#fff",
+                borderRadius: "50%",
+                animation: "spin 0.6s linear infinite",
+                verticalAlign: "middle",
+                marginRight: "6px",
+            }}
+        />
+    );
+}
+
+// Zentrierter Seiten-Spinner (für Tabellen/Seiten die keinen Skeleton haben)
+export function PageSpinner() {
+    return (
+        <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
+            <span className="spinner" />
+        </div>
+    );
+}
+
+// für Tabellen
+export function TableSkeleton({ rows = 5, cols = 4, title }: { rows?: number; cols?: number; title?: string }) {
+    return (
+        <div>
+            {title && <h2>{title}</h2>}
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
                 <tr>
                     {Array(cols).fill(0).map((_, i) => (
@@ -27,6 +57,7 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
                 ))}
             </tbody>
         </table>
+        </div>
     );
 }
 
@@ -58,9 +89,9 @@ export function CardSkeleton({ count = 3 }: { count?: number }) {
 // für einzelne Werte z.B Dashboard Statistiken
 export function StatSkeleton({ count = 4 }: { count?: number }) {
     return (
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${count}, 1fr)`, gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {Array(count).fill(0).map((_, i) => (
-                <div key={i} style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px" }}>
+                <div key={i} className="stat-card">
                     <Skeleton height={14} width="60%" style={{ marginBottom: "8px" }} />
                     <Skeleton height={32} width="40%" />
                 </div>

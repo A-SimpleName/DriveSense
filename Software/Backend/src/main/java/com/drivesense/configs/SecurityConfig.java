@@ -1,6 +1,7 @@
 package com.drivesense.configs;
 
 import com.drivesense.filter.JwtFilter;
+import com.drivesense.filter.RateLimitFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +21,9 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private RateLimitFilter rateLimitFilter;
+
     @Autowired
     private JwtFilter jwtFilter;
 
@@ -41,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -14,10 +14,12 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [exportError, setExportError] = useState<string | null>(null);
+    const [exportingId, setExportingId] = useState<number | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const handleExport = async (id: number) => {
         setExportError(null);
+        setExportingId(id);
         try {
             const { blob, filename } = await exportProtocol(id);
             const url = window.URL.createObjectURL(blob);
@@ -30,6 +32,8 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
             window.URL.revokeObjectURL(url);
         } catch (err: any) {
             setExportError(err?.message || "Export fehlgeschlagen");
+        } finally {
+            setExportingId(null);
         }
     };
 
@@ -64,7 +68,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                         <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
                             <td>{protocol.name}</td>
                             <td style={{ textAlign: "center" }}>
-                                <Button label="Exportieren" stopPropagation onClick={() => handleExport(protocol.id)} />
+                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
                                 <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
                             </td>
                         </tr>
