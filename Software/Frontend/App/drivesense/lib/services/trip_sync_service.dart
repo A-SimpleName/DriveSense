@@ -6,6 +6,7 @@ import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
@@ -31,8 +32,8 @@ class TripSyncService {
     required this.tripService,
   });
 
-  String _createLocalId() {
-    return DateTime.now().microsecondsSinceEpoch.toString();
+  String _createLocalId(int accountId) {
+    return 'local:$accountId:${DateTime.now().microsecondsSinceEpoch}';
   }
 
   Future<void> saveTripWithRetry(
@@ -45,8 +46,10 @@ class TripSyncService {
       );
     }
 
+    final int accountId = LocalAccountScope.requireAccountId();
     final localTrip = Trip()
-      ..localId = _createLocalId()
+      ..localId = _createLocalId(accountId)
+      ..accountId = accountId
       ..trackingPointsJson = jsonEncode(
         trackingPoints.map((tp) => tp.toJson()).toList(),
       )

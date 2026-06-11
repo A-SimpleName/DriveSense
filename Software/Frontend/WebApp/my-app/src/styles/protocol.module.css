@@ -1,0 +1,141 @@
+.pdfContainer {
+    font-family: Arial, sans-serif;
+    font-size: 8pt;
+    color: #1a1a2e;
+    padding: 16px;
+    background: white;
+}
+
+/* HEADER */
+.header {
+    background: #1A3C6E;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left {
+    display: flex;
+    flex-direction: column;
+}
+
+.right {
+    text-align: right;
+}
+
+.center {
+    text-align: center;
+}
+
+.brand {
+    color: white;
+    font-size: 15pt;
+    font-weight: bold;
+}
+
+.protoName {
+    color: white;
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 2px;
+}
+
+.protoSub {
+    color: #BBCDE8;
+    font-size: 7.5pt;
+}
+
+.userInfo {
+    color: #BBCDE8;
+    font-size: 7pt;
+    margin-top: 2px;
+}
+
+.accent {
+    height: 3px;
+    background: #2E7DCC;
+    margin-bottom: 8px;
+}
+
+.summary {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sumCell {
+    flex: 1;
+    border: 1px solid #2E7DCC;
+    border-radius: 4px;
+    padding: 7px;
+    text-align: center;
+}
+
+.sumVal {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #1A3C6E;
+}
+
+.sumLbl {
+    font-size: 7pt;
+    color: #6878A0;
+}
+
+.sectionTitle {
+    font-size: 9pt;
+    font-weight: bold;
+    color: #1A3C6E;
+    margin-bottom: 4px;
+    border-bottom: 2px solid #2E7DCC;
+    padding-bottom: 3px;
+}
+
+.pdfContainer table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8pt;
+}
+
+.pdfContainer thead th {
+    background: #1A3C6E;
+    color: white;
+    padding: 5px 6px;
+    text-align: center;
+    border: 1px solid #2E7DCC;
+    font-weight: bold;
+}
+
+.pdfContainer tbody tr:nth-child(odd) td {
+    background: #ffffff;
+}
+
+.pdfContainer tbody tr:nth-child(even) td {
+    background: #F0F5FF;
+}
+
+.pdfContainer tbody td {
+    padding: 5px 6px;
+    border: 1px solid #C0CFDF;
+    text-align: center;
+}
+
+.pdfContainer tbody td.left {
+    text-align: left;
+}
+
+/* FOOTER */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid #2E7DCC;
+    padding-top: 4px;
+    margin-top: 8px;
+    font-size: 7pt;
+    color: #9AAAC0;
+}
+
+.footer strong {
+    color: #1A3C6E;
+}

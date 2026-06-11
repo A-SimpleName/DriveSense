@@ -11,10 +11,14 @@ function Vehicles() {
         <div>
             <h1>Fahrzeuge</h1>
 
-            <Button
-                label="+ Fahrzeug hinzufügen"
-                onClick={() => setShowForm(true)}
-            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                <Button
+                    label="+"
+                    className="small icon"
+                    title="Fahrzeug hinzufügen"
+                    onClick={() => setShowForm(true)}
+                />
+            </div>
 
             {showForm && (
                 <VehicleAddForm

@@ -11,7 +11,7 @@ class ProtocolTable extends StatelessWidget {
 
   const ProtocolTable({super.key, this.onChanged});
 
-  static const double _actionColumnWidth = 140;
+  static const double _actionColumnWidth = 160;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
 
   static final TableBorder _headerTableBorder = TableBorder(
@@ -146,7 +146,7 @@ class ProtocolTable extends StatelessWidget {
   Widget _cell(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Text(text, maxLines: 2, overflow: TextOverflow.ellipsis),
+      child: Text(text),
     );
   }
 
@@ -252,7 +252,7 @@ class ProtocolTable extends StatelessWidget {
       return;
     }
 
-    final bool success = await TripService().deleteTripSummary(trip.id);
+    final bool success = await TripService().deleteTripSummary(trip);
     await onChanged?.call();
 
     if (!context.mounted) {

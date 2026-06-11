@@ -33,8 +33,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/account/login").permitAll()
                         .requestMatchers("/api/account/signUp").permitAll()
+                        .requestMatchers("/api/account/cancel-signup").permitAll()
                         .requestMatchers("/api/account/refresh").permitAll()
                         .requestMatchers("/api/account/logout").permitAll()
+                        .requestMatchers("/api/account/verify-email").permitAll()
+                        .requestMatchers("/api/account/resend-verification").permitAll()
+                        .requestMatchers("/api/account/forgot-password").permitAll()
+                        .requestMatchers("/api/account/reset-password").permitAll()
+                        .requestMatchers("/api/vehicles/invitations/accept-link").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

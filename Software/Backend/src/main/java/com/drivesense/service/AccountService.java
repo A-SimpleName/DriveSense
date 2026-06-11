@@ -1,11 +1,9 @@
 package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
+import com.drivesense.db.EmailVerificationDao;
 import com.drivesense.db.ProfileDao;
-import com.drivesense.dto.request.LoginRequest;
-import com.drivesense.dto.request.SignUpRequest;
-import com.drivesense.dto.request.UpdateAccountRequest;
-import com.drivesense.dto.request.UpdatePasswordRequest;
+import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.LoginResponse;
 import com.drivesense.dto.response.RefreshResponse;
@@ -17,45 +15,61 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class AccountService {
-    @Autowired
-    private AccountDao accountDao;
-    @Autowired
-    private ProfileDao profileDao;
-    @Autowired
-    private JwtService jwtService;
+
+    @Autowired private AccountDao accountDao;
+    @Autowired private ProfileDao profileDao;
+    @Autowired private EmailVerificationDao emailVerificationDao;
+    @Autowired private JwtService jwtService;
+    @Autowired private EmailVerificationService emailVerificationService;
+    @Autowired private EmailService emailService;
+
+    // ── Auth ────────────────────────────────────────────────────────────────
 
     public AccountResponse signUp(SignUpRequest request) {
         Account existing = accountDao.getByEmail(request.getEmail());
         if (existing != null) {
-            throw new BadRequestException("Email bereits vergeben");
+            throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
-
-        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-
+        String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         Account account = new Account();
         account.setFirstName(request.getFirstName());
         account.setLastName(request.getLastName());
         account.setEmail(request.getEmail());
-        account.setPassword(hashedPassword);
+        account.setPassword(hashedPwd);
         account.setBirthdate(request.getBirthdate());
         accountDao.insert(account);
-
+        emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
         return toResponse(account);
+    }
+
+    public void cancelSignUp(CancelSignUpRequest request) {
+        Account account = accountDao.getByEmail(request.getEmail());
+        if (account == null || account.isEmailVerified()) {
+            return;
+        }
+
+        if (!BCrypt.checkpw(request.getPassword(), account.getPassword())) {
+            throw new BadRequestException("Registrierung konnte nicht abgebrochen werden");
+        }
+
+        emailVerificationDao.deleteByAccountId(account.getId());
+        accountDao.deleteUnverifiedById(account.getId());
     }
 
     public LoginResponse login(LoginRequest request) {
         Account account = accountDao.getByEmail(request.getEmail());
-        // bewusst gleiche Message für Email und Passwort – kein Hinweis welches falsch ist
         if (account == null || !BCrypt.checkpw(request.getPassword(), account.getPassword())) {
             throw new BadRequestException("Email oder Passwort falsch");
         }
-
+        if (!account.isEmailVerified()) {
+            throw new UnauthorizedException("Bitte verifiziere zuerst deine E-Mail-Adresse");
+        }
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(account.getId());
-
         LoginResponse res = new LoginResponse();
         res.setAccountToken(jwtService.generateAccountToken(account.getId()));
         res.setRefreshToken(jwtService.generateRefreshToken(account.getId()));
@@ -67,14 +81,11 @@ public class AccountService {
         if (!jwtService.isValid(accountToken) || !jwtService.extractType(accountToken).equals("ACCOUNT")) {
             throw new UnauthorizedException("Ungültiger Account Token");
         }
-
         int accountId = jwtService.extractAccountId(accountToken);
         Profile profile = profileDao.getById(profileId);
-
         if (profile == null || profile.getAccount_id() != accountId) {
             throw new NotFoundException("Profil nicht gefunden");
         }
-
         SelectProfileResponse res = new SelectProfileResponse();
         res.setProfileToken(jwtService.generateProfileToken(accountId, profileId, profile.getRole()));
         res.setProfile(profile);
@@ -85,65 +96,160 @@ public class AccountService {
         if (!jwtService.isValid(refreshToken) || !jwtService.extractType(refreshToken).equals("REFRESH")) {
             throw new UnauthorizedException("Ungültiger Refresh Token");
         }
-
         int accountId = jwtService.extractAccountId(refreshToken);
         RefreshResponse res = new RefreshResponse();
         res.setAccountToken(jwtService.generateAccountToken(accountId));
         return res;
     }
 
+    // ── Lesen ───────────────────────────────────────────────────────────────
+
     public AccountResponse getById(int id) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
         return toResponse(account);
     }
 
-    public List<Account> getAll () {
+    public List<Account> getAll() {
         return accountDao.getAll();
     }
 
+    // ── Aktualisieren ───────────────────────────────────────────────────────
+
     public AccountResponse update(int id, UpdateAccountRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        String originalFirstName = account.getFirstName();
+        String originalLastName = account.getLastName();
+        String originalEmail = account.getEmail();
+        String originalPendingEmail = account.getPendingEmail();
+        boolean originalEmailVerified = account.isEmailVerified();
+        LocalDate originalBirthdate = account.getBirthdate();
+
+        boolean emailChanged = !account.getEmail().equalsIgnoreCase(request.getEmail());
+
+        try {
+            if (emailChanged) {
+                Account emailTaken = accountDao.getByEmail(request.getEmail());
+                if (emailTaken != null) {
+                    throw new FieldValidationException("email", "Email ist bereits vergeben");
+                }
+                if (accountDao.existsByPendingEmail(request.getEmail(), id)) {
+                    throw new FieldValidationException("email", "Email wird bereits von einem anderen Account beansprucht");
+                }
+            }
+
+            account.setFirstName(request.getFirstName());
+            account.setLastName(request.getLastName());
+
+            if (emailChanged) {
+                account.setPendingEmail(request.getEmail());
+            }
+
+            accountDao.update(account);
+
+            if (emailChanged) {
+                emailVerificationService.sendVerificationCode(id, request.getEmail());
+            }
+
+            return toResponse(account);
+        } catch (ExternalApiException e) {
+            account.setFirstName(originalFirstName);
+            account.setLastName(originalLastName);
+            account.setEmail(originalEmail);
+            account.setPendingEmail(originalPendingEmail);
+            account.setEmailVerified(originalEmailVerified);
+            account.setBirthdate(originalBirthdate);
+            accountDao.update(account);
+            throw e;
         }
-
-        account.setFirstName(request.getFirstName());
-        account.setLastName(request.getLastName());
-        account.setEmail(request.getEmail());
-        accountDao.update(account);
-
-        return toResponse(account);
     }
 
     public void updatePassword(int id, UpdatePasswordRequest request) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
-
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
         if (!BCrypt.checkpw(request.getOldPassword(), account.getPassword())) {
             throw new BadRequestException("Altes Passwort falsch");
         }
-
-        // neues Passwort darf nicht gleich wie altes sein
         if (BCrypt.checkpw(request.getNewPassword(), account.getPassword())) {
             throw new BadRequestException("Neues Passwort darf nicht gleich wie das alte sein");
         }
-
-        String hashedPassword = BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt());
-        accountDao.updatePassword(id, hashedPassword);
+        accountDao.updatePassword(id, BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
     }
 
+    // ── Change-Email-Flow ───────────────────────────────────────────────────
+
+    /**
+     * Schritt 1: User gibt neue E-Mail an.
+     * Prüft auf Duplikate (primary + pending), setzt pending_email und
+     * schickt einen Verifikations-Code an die neue Adresse.
+     */
+    public void requestEmailChange(int accountId, String newEmail) {
+        Account account = accountDao.getById(accountId);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+
+        // Neue E-Mail darf nicht identisch mit der aktuellen sein
+        if (newEmail.equalsIgnoreCase(account.getEmail())) {
+            throw new BadRequestException("Die neue E-Mail ist identisch mit der aktuellen");
+        }
+
+        // Prüfen ob bereits ein anderer aktiver Account diese E-Mail als primäre Adresse hat
+        if (accountDao.getByEmail(newEmail) != null) {
+            throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben");
+        }
+
+        // Prüfen ob die E-Mail schon als pending_email bei einem anderen Account liegt
+        if (accountDao.existsByPendingEmail(newEmail, accountId)) {
+            throw new BadRequestException("Diese E-Mail-Adresse wird bereits von einem anderen Account beansprucht");
+        }
+
+        // pending_email setzen (DB-seitig UNIQUE → kein Race-Condition-Problem)
+        accountDao.setPendingEmail(accountId, newEmail);
+
+        try {
+            // Verifikations-Code an neue Adresse senden
+            emailVerificationService.sendVerificationCode(accountId, newEmail);
+        } catch (ExternalApiException e) {
+            accountDao.clearPendingEmail(accountId);
+            throw e;
+        }
+    }
+
+    /**
+     * Schritt 2: User gibt den Code ein, der an die neue E-Mail gesendet wurde.
+     * Nach erfolgreicher Verifikation: email = pending_email, pending_email = NULL.
+     */
+    public void confirmEmailChange(int accountId, String code) {
+        Account account = accountDao.getById(accountId);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+        if (account.getPendingEmail() == null) {
+            throw new BadRequestException("Keine ausstehende E-Mail-Änderung vorhanden");
+        }
+
+        emailVerificationService.confirmEmailChange(accountId, code);
+    }
+
+    /**
+     * Bricht eine laufende E-Mail-Änderung ab.
+     */
+    public void cancelEmailChange(int accountId) {
+        accountDao.clearPendingEmail(accountId);
+    }
+
+    // ── Soft Delete ─────────────────────────────────────────────────────────
+
+    /**
+     * Soft-löscht den Account. Historische Trips, Protocols und Vehicles
+     * bleiben durch RESTRICT / SET NULL auf den FK erhalten.
+     */
     public void delete(int id) {
         Account account = accountDao.getById(id);
-        if (account == null) {
-            throw new NotFoundException("Account nicht gefunden");
-        }
-        accountDao.deleteById(id);
+        if (account == null) throw new NotFoundException("Account nicht gefunden");
+        accountDao.softDelete(id);
     }
+
+    // ── Mapper ──────────────────────────────────────────────────────────────
 
     private AccountResponse toResponse(Account account) {
         AccountResponse res = new AccountResponse();
@@ -151,6 +257,8 @@ public class AccountService {
         res.setFirstName(account.getFirstName());
         res.setLastName(account.getLastName());
         res.setEmail(account.getEmail());
+        res.setPendingEmail(account.getPendingEmail());
+        res.setBirthdate(account.getBirthdate());
         return res;
     }
 }

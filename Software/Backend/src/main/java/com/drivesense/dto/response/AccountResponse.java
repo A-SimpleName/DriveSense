@@ -7,14 +7,15 @@ public class AccountResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private String pendingEmail;
     private LocalDate birthdate;
-
-    public LocalDate getBirthdate() {
-        return birthdate;
-    }
 
     public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public LocalDate getBirthdate() {
+        return this.birthdate;
     }
 
     public int getId() {
@@ -48,4 +49,6 @@ public class AccountResponse {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
 }

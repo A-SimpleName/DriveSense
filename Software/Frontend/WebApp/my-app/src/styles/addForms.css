@@ -1,14 +1,149 @@
-.vehicleAddForm {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 400px;
-    margin: 0 auto;
-    border: 3px solid rgb(16, 45, 99);
-    border-radius: 12px;
-    margin-bottom: 30px;
+.addForm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.vehicleAddForm * {
-    margin-left: 20px;
+.addForm {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: addForm-in 0.2s ease;
+}
+
+@keyframes addForm-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.addForm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.addForm-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.addForm-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+.addForm-close:hover {
+  background: var(--surface-strong);
+}
+
+.addForm-error {
+  margin: 0;
+  padding: 12px 24px;
+  background: rgba(220, 38, 38, 0.07);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.addForm-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+}
+
+.addForm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.addForm-field:last-of-type {
+  border-bottom: none;
+}
+
+.addForm-field label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+.addForm-field input,
+.addForm-field select,
+.addForm-field textarea {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  width: 100%;
+}
+
+.addForm-field input:hover,
+.addForm-field select:hover,
+.addForm-field textarea:hover {
+  background: transparent;
+  border: none;
+}
+
+.addForm-field input:focus,
+.addForm-field select:focus,
+.addForm-field textarea:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.addForm-field:focus-within label {
+  color: var(--primary);
+}
+
+.addForm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.addForm-cancel {
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
 }

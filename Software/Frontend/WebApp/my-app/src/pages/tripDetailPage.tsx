@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getTripById } from "../services/tripService";
-import type { Tripdetailed } from "../model/trip";
 import MapView from "../components/MapView";
+import type { Tripdetailed } from "../model/trip";
+import { getTripById } from "../services/tripService";
 
 function TripDetailPage() {
     const { id } = useParams();
@@ -22,25 +22,24 @@ function TripDetailPage() {
     if (error) return <p>Fehler: {error}</p>;
     if (!trip) return <p>Fahrt nicht gefunden</p>;
 
-    const { tripSummary, trackingpoints } = trip;
-
+    const { tripSummaryDto, trackingpoints } = trip;
     const route = trackingpoints.map(p => ({ lat: p.lat, lng: p.lng }));
 
     return (
         <div>
             <h1>Fahrt Details</h1>
 
-            <p><strong>Fahrer:</strong> {tripSummary.accountFname} {tripSummary.accountLname}</p>
-            <p><strong>Fahrzeug:</strong> {tripSummary.vehicleModel} ({tripSummary.licensePlate})</p>
-            <p><strong>Start:</strong> {new Date(tripSummary.startTime).toLocaleString()}</p>
-            <p><strong>Ende:</strong> {tripSummary.endTime ? new Date(tripSummary.endTime).toLocaleString() : "—"}</p>
-            <p><strong>Distanz:</strong> {tripSummary.distance} km</p>
-            <p><strong>Von:</strong> {tripSummary.startPoint}</p>
-            <p><strong>Nach:</strong> {tripSummary.endPoint}</p>
-            {tripSummary.furthestPoint && (
-                <p><strong>Weitester Punkt:</strong> {tripSummary.furthestPoint}</p>
+            <p><strong>Fahrer:</strong> {tripSummaryDto.accountFirstName} {tripSummaryDto.accountLastName}</p>
+            <p><strong>Fahrzeug:</strong> {tripSummaryDto.vehicleModel} ({tripSummaryDto.licensePlate})</p>
+            <p><strong>Start:</strong> {new Date(tripSummaryDto.startTime).toLocaleString()}</p>
+            <p><strong>Ende:</strong> {tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "-"}</p>
+            <p><strong>Distanz:</strong> {tripSummaryDto.distance} km</p>
+            <p><strong>Von:</strong> {tripSummaryDto.startPoint}</p>
+            <p><strong>Nach:</strong> {tripSummaryDto.endPoint}</p>
+            {tripSummaryDto.furthestPoint && (
+                <p><strong>Weitester Punkt:</strong> {tripSummaryDto.furthestPoint}</p>
             )}
-            <p><strong>Straßenzustand:</strong> {tripSummary.roadSurfaceConditions}</p>
+            <p><strong>Strassenzustand:</strong> {tripSummaryDto.roadSurfaceConditions}</p>
 
             {route.length > 0 && <MapView route={route} />}
         </div>

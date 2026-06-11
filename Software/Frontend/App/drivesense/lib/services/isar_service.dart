@@ -19,4 +19,12 @@ class IsarService {
 
     return _isar!;
   }
+
+  static Future<void> clearLocalTripData() async {
+    final Isar isar = await getInstance();
+    await isar.writeTxn(() async {
+      await isar.activeTrips.clear();
+      await isar.trips.clear();
+    });
+  }
 }

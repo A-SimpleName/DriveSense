@@ -1,21 +1,18 @@
 import http from "../api/httpService"
-import type { Tripdetailed, TripSummary } from "../model/trip"
-import { getErrorMessage } from "../errorHandling/getErrorMessage"
+import type { Tripdetailed, TripSummary, TripSummaryDto } from "../model/trip"
+import { toAppError } from "../errorHandling/errorHandling";
 
 // auslagern in die HTTP methdode am besten
 async function handleRequest<T>(request: Promise<T>): Promise<T> {
     try {
         return await request;
     } catch (err: any) {
-        throw {
-            message: getErrorMessage(err),
-            fieldErrors: err?.errors || null
-        };
+        throw toAppError(err);
     }
 }
 
 export const getAllTrips = () =>
-    handleRequest<TripSummary[]>(http.get<TripSummary[]>("/trips"));
+    handleRequest<TripSummaryDto[]>(http.get<TripSummaryDto[]>("/trips"));
 
 export const getLatestTrip = () =>
     handleRequest<TripSummary | undefined>(http.get<TripSummary | undefined>("/trips/latest"));

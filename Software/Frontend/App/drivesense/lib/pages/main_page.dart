@@ -18,11 +18,11 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndexBottomNav = 0;
+  int _protocolPageVersion = 0;
   String _currentAppBarTitle = 'Übersicht';
   late final TripRepository isarTripRepository;
   late final TripSyncService tripSyncService;
   late final TripService tripService;
-  
 
   @override
   void initState() {
@@ -33,10 +33,12 @@ class _MainPageState extends State<MainPage> {
     isarTripRepository = TripRepository();
     tripSyncService = TripSyncService(
       isarTripRepository: isarTripRepository,
-      tripService: tripService
+      tripService: tripService,
     );
 
-    debugPrint('[MainPage.initState] Scheduling _syncPendingTrips via microtask');
+    debugPrint(
+      '[MainPage.initState] Scheduling _syncPendingTrips via microtask',
+    );
     Future.microtask(_syncPendingTrips);
   }
 
@@ -47,7 +49,9 @@ class _MainPageState extends State<MainPage> {
       await tripSyncService.syncPendingTrips();
       debugPrint('[_syncPendingTrips] syncPendingTrips completed');
     } catch (e) {
-      debugPrint('[_syncPendingTrips] syncPendingTrips error (continuing anyway): $e');
+      debugPrint(
+        '[_syncPendingTrips] syncPendingTrips error (continuing anyway): $e',
+      );
     }
     // Refresh from server after sync to repopulate local DB if cleared by user
     // (e.g., via phone settings "Clear app data")
@@ -65,8 +69,11 @@ class _MainPageState extends State<MainPage> {
         index: _selectedIndexBottomNav,
         children: [
           HomePageBody(tripSyncService: tripSyncService),
-          ProtocolPageBody(tripSyncService: tripSyncService),
-          ProfilePageBody(),
+          ProtocolPageBody(
+            key: ValueKey<int>(_protocolPageVersion),
+            tripSyncService: tripSyncService,
+          ),
+          ProfilePageBody(onProtocolsChanged: _handleProtocolsChanged),
         ],
       ),
       bottomNavigationBar: DsBottomNavigation(
@@ -97,5 +104,13 @@ class _MainPageState extends State<MainPage> {
         },
       ),
     );
+  }
+
+  Future<void> _handleProtocolsChanged() async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _protocolPageVersion++);
   }
 }

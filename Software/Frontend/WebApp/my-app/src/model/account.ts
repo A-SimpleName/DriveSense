@@ -1,17 +1,19 @@
 export interface Account {
     id: number;
-    fname: string;
-    lname: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    pwd: string;
-    created_at: Date;
+    pendingEmail?: string | null;
+    birthdate?: string | null;
+    created_at?: string;
 }
 
 export interface AccountResponse {
     id: number;
-    fname: string;
-    lname: string;
+    firstName: string;
+    lastName: string;
     email: string;
-    birthdate: Date;
-    created_at: Date;
+    pendingEmail?: string | null;
+    birthdate?: string | null;
+    created_at?: string;
 }

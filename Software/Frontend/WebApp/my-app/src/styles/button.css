@@ -1,17 +1,27 @@
 button {
-    color: white;
-    border-radius: 12px;
-    height: 2em;
-    width: 8em;
-    background-color: dodgerblue;
-    border: none;
-    font-weight: bold;
-    margin: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #000000;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
 }
 
-.app-container button {
-    width: auto;
-    height: 2.5em;
+button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #1a3a8a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(37,99,235,0.18);
 }
 
 button:hover {
@@ -19,6 +29,56 @@ button:hover {
     cursor: pointer;
 }
 
-body {
-    height: 100%;
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  color: var(--text);
+  border-color: #e2e8f0;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+button.ghost:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary-dark);
+}
+
+button.small {
+  min-height: 32px;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+button.large {
+  min-height: 50px;
+  padding: 14px 32px;
+  font-size: 1.05rem;
+}
+
+button.full {
+  width: 100%;
+}
+
+button.icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  gap: 0;
 }

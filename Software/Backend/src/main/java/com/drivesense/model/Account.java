@@ -1,6 +1,7 @@
 package com.drivesense.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Account {
     private int id;
@@ -8,9 +9,13 @@ public class Account {
     private String lastName;
     private String password;
     private String email;
+    private String pendingEmail;
     private LocalDate birthdate;
+    private boolean emailVerified;
+    private LocalDateTime deletedAt;
 
     public Account () {}
+
     public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -43,6 +48,24 @@ public class Account {
         this.lastName = lastName;
     }
 
+
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
+
+    public LocalDate getBirthdate() { return birthdate; }
+    public void setBirthdate(LocalDate birthdate) { this.birthdate = birthdate; }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -51,20 +74,12 @@ public class Account {
         this.password = password;
     }
 
-    public LocalDate getBirthdate() {
-        return birthdate;
+    public boolean isEmailVerified() {
+        return emailVerified;
     }
 
-    public void setBirthdate(LocalDate birthdate) {
-        this.birthdate = birthdate;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
     @Override
