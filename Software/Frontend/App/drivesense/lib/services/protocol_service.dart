@@ -126,19 +126,6 @@ class ProtocolService {
     }
   }
 
-  static Future<int?> createDefaultProtocol() async {
-    final Protocol? protocol = await createProtocol(name: 'L17 Protokoll');
-    return protocol?.id;
-  }
-
-  static Future<int> ensureDefaultProtocolForActiveProfile() async {
-    int? protocolId = await resolveCurrentOrFirstAvailableProtocolId();
-    protocolId ??= await createDefaultProtocol();
-    final int resolved = protocolId ?? 0;
-    RuntimeStore.setCurrentProtocolId(resolved);
-    return resolved;
-  }
-
   static dynamic _decodeJson(String rawBody) {
     if (rawBody.trim().isEmpty) {
       return null;

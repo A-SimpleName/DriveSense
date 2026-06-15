@@ -111,7 +111,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _loadProtocols() async {
-    await ProtocolService.ensureDefaultProtocolForActiveProfile();
+    await ProtocolService.fetchProtocols();
     if (!mounted) return;
 
     setState(() {});

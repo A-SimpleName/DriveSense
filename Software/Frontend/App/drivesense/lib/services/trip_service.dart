@@ -489,7 +489,7 @@ class TripService {
       return resolved;
     }
 
-    return ProtocolService.createDefaultProtocol();
+    return null;
   }
 
   Future<int?> _resolveVehicleIdForSync({
@@ -504,7 +504,7 @@ class TripService {
       return resolved;
     }
 
-    return VehicleService.createDefaultVehicle(profileId);
+    return null;
   }
 
   Future<TripSummary?> fetchLatestTrip() async {

@@ -89,64 +89,6 @@ class VehicleService {
         : null;
   }
 
-  static Future<int?> createDefaultVehicle(int profileId) async {
-    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
-
-    try {
-      final http.Response response = await http
-          .post(
-            uri,
-            headers: RequestHeaders.authenticatedJson(),
-            body: jsonEncode(<String, dynamic>{
-              'model': 'L17 Fahrzeug',
-              'licensePlate': 'L17-$profileId',
-              'mileage': 0,
-            }),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      debugPrint(
-        'CreateDefaultVehicle <- status=${response.statusCode}, uri=$uri, body=${response.body}',
-      );
-
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        return null;
-      }
-
-      final dynamic decoded = _decodeJson(response.body);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-
-      final dynamic idValue = decoded['id'];
-      if (idValue is int && idValue > 0) {
-        return idValue;
-      }
-      if (idValue is num) {
-        final int value = idValue.toInt();
-        return value > 0 ? value : null;
-      }
-      if (idValue != null) {
-        final int? value = int.tryParse(idValue.toString());
-        if (value != null && value > 0) {
-          return value;
-        }
-      }
-    } catch (e) {
-      debugPrint('CreateDefaultVehicle failed at $uri: $e');
-    }
-
-    return null;
-  }
-
-  static Future<int> ensureDefaultVehicleForActiveProfile(int profileId) async {
-    int? vehicleId = await resolveFirstAvailableVehicleId();
-    vehicleId ??= await createDefaultVehicle(profileId);
-    final int resolved = vehicleId ?? 0;
-    RuntimeStore.setCurrentVehicleId(resolved);
-    return resolved;
-  }
-
   // ─── Alle Fahrzeuge des aktuellen Profils vom Server laden ───────────────
   // Gibt eine leere Liste zurück wenn etwas schiefgeht (kein Crash).
   static Future<List<Vehicle>> fetchVehicles() async {
