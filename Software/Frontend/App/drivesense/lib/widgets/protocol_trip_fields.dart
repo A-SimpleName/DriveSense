@@ -60,16 +60,6 @@ List<ProtocolTripField> protocolTripFieldsForRole(String role) {
           value: (TripSummary trip) =>
               formatProtocolText(trip.roadSurfaceConditions),
         ),
-        ProtocolTripField(
-          header: 'Unterschrift\nBegleiter',
-          width: 130,
-          value: (_) => '-',
-        ),
-        ProtocolTripField(
-          header: 'Unterschrift\nBewerber',
-          width: 130,
-          value: (_) => '-',
-        ),
       ];
     case 'BERUFSFAHRER':
       return <ProtocolTripField>[

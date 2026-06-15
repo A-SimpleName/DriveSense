@@ -6,13 +6,21 @@ import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ProtocolTable extends StatelessWidget {
+class ProtocolTable extends StatefulWidget {
   final Future<void> Function()? onChanged;
 
   const ProtocolTable({super.key, this.onChanged});
 
+  @override
+  State<ProtocolTable> createState() => _ProtocolTableState();
+}
+
+class _ProtocolTableState extends State<ProtocolTable> {
+  static const int _tripsPerPage = 20;
   static const double _actionColumnWidth = 160;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
+  int _pageIndex = 0;
+  int _lastProtocolId = RuntimeStore.getCurrentProtocolId();
 
   static final TableBorder _headerTableBorder = TableBorder(
     top: _tableBorderSide,
@@ -41,11 +49,19 @@ class ProtocolTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<TripSummary> trips = RuntimeStore.trips;
+    _syncPageState(trips.length);
+
     final List<ProtocolTripField> columns = protocolTripFieldsForRole(
       RuntimeStore.getActiveProfileRole(),
     );
     final Map<int, TableColumnWidth> columnWidths = _columnWidthsFor(columns);
     final double tableWidth = _tableWidthFor(columns);
+    final int pageCount = _pageCountFor(trips.length);
+    final int startIndex = trips.isEmpty ? 0 : _pageIndex * _tripsPerPage;
+    final int endIndex = _pageEndIndex(trips.length, startIndex);
+    final List<TripSummary> visibleTrips = trips.isEmpty
+        ? <TripSummary>[]
+        : trips.sublist(startIndex, endIndex);
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -57,66 +73,170 @@ class ProtocolTable extends StatelessWidget {
             ? tableWidth
             : viewportWidth;
 
-        return SizedBox(
-          width: double.infinity,
-          child: ClipRect(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+        return Column(
+          children: <Widget>[
+            Expanded(
               child: SizedBox(
-                width: effectiveTableWidth,
-                child: Column(
-                  children: <Widget>[
-                    Table(
-                      border: _headerTableBorder,
-                      columnWidths: columnWidths,
-                      children: <TableRow>[
-                        TableRow(
-                          key: const ValueKey('headerRow'),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                          ),
-                          children: <Widget>[
-                            ...columns.map(
-                              (ProtocolTripField column) =>
-                                  _headerCell(column.header),
-                            ),
-                            _headerCell('Aktionen'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: trips.isEmpty
-                          ? const Center(
-                              child: Text('Keine Fahrten vorhanden.'),
-                            )
-                          : SingleChildScrollView(
-                              child: Table(
-                                border: _bodyTableBorder,
-                                columnWidths: columnWidths,
-                                children: trips
-                                    .map(
-                                      (TripSummary trip) => TableRow(
-                                        children: <Widget>[
-                                          ...columns.map(
-                                            (ProtocolTripField column) =>
-                                                _cell(column.value(trip)),
-                                          ),
-                                          _actionCell(context, trip),
-                                        ],
-                                      ),
-                                    )
-                                    .toList(),
+                width: double.infinity,
+                child: ClipRect(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: effectiveTableWidth,
+                      child: Column(
+                        children: <Widget>[
+                          Table(
+                            border: _headerTableBorder,
+                            columnWidths: columnWidths,
+                            children: <TableRow>[
+                              TableRow(
+                                key: const ValueKey('headerRow'),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                ),
+                                children: <Widget>[
+                                  ...columns.map(
+                                    (ProtocolTripField column) =>
+                                        _headerCell(column.header),
+                                  ),
+                                  _headerCell('Aktionen'),
+                                ],
                               ),
-                            ),
+                            ],
+                          ),
+                          Expanded(
+                            child: visibleTrips.isEmpty
+                                ? const Center(
+                                    child: Text('Keine Fahrten vorhanden.'),
+                                  )
+                                : SingleChildScrollView(
+                                    child: Table(
+                                      border: _bodyTableBorder,
+                                      columnWidths: columnWidths,
+                                      children: visibleTrips
+                                          .map(
+                                            (TripSummary trip) => TableRow(
+                                              children: <Widget>[
+                                                ...columns.map(
+                                                  (ProtocolTripField column) =>
+                                                      _cell(column.value(trip)),
+                                                ),
+                                                _actionCell(context, trip),
+                                              ],
+                                            ),
+                                          )
+                                          .toList(),
+                                    ),
+                                  ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+            if (trips.length > _tripsPerPage)
+              _paginationControls(
+                totalTrips: trips.length,
+                pageCount: pageCount,
+                startIndex: startIndex,
+                endIndex: endIndex,
+              ),
+          ],
         );
       },
+    );
+  }
+
+  void _syncPageState(int tripCount) {
+    final int protocolId = RuntimeStore.getCurrentProtocolId();
+    if (_lastProtocolId != protocolId) {
+      _lastProtocolId = protocolId;
+      _pageIndex = 0;
+      return;
+    }
+
+    final int pageCount = _pageCountFor(tripCount);
+    if (_pageIndex >= pageCount) {
+      _pageIndex = pageCount - 1;
+    }
+  }
+
+  int _pageCountFor(int tripCount) {
+    if (tripCount <= 0) {
+      return 1;
+    }
+    return ((tripCount - 1) ~/ _tripsPerPage) + 1;
+  }
+
+  int _pageEndIndex(int tripCount, int startIndex) {
+    final int endIndex = startIndex + _tripsPerPage;
+    return endIndex > tripCount ? tripCount : endIndex;
+  }
+
+  void _goToPage(int pageIndex, int pageCount) {
+    final int nextPageIndex = pageIndex.clamp(0, pageCount - 1).toInt();
+    if (nextPageIndex == _pageIndex) {
+      return;
+    }
+
+    setState(() {
+      _pageIndex = nextPageIndex;
+    });
+  }
+
+  Widget _paginationControls({
+    required int totalTrips,
+    required int pageCount,
+    required int startIndex,
+    required int endIndex,
+  }) {
+    final bool isFirstPage = _pageIndex == 0;
+    final bool isLastPage = _pageIndex >= pageCount - 1;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              'Fahrten ${startIndex + 1}-$endIndex von $totalTrips',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          IconButton(
+            tooltip: 'Erste Seite',
+            onPressed: isFirstPage ? null : () => _goToPage(0, pageCount),
+            icon: const Icon(Icons.first_page),
+          ),
+          IconButton(
+            tooltip: 'Vorherige Seite',
+            onPressed: isFirstPage
+                ? null
+                : () => _goToPage(_pageIndex - 1, pageCount),
+            icon: const Icon(Icons.chevron_left),
+          ),
+          SizedBox(
+            width: 88,
+            child: Center(child: Text('Seite ${_pageIndex + 1} / $pageCount')),
+          ),
+          IconButton(
+            tooltip: 'Naechste Seite',
+            onPressed: isLastPage
+                ? null
+                : () => _goToPage(_pageIndex + 1, pageCount),
+            icon: const Icon(Icons.chevron_right),
+          ),
+          IconButton(
+            tooltip: 'Letzte Seite',
+            onPressed: isLastPage
+                ? null
+                : () => _goToPage(pageCount - 1, pageCount),
+            icon: const Icon(Icons.last_page),
+          ),
+        ],
+      ),
     );
   }
 
@@ -207,7 +327,7 @@ class ProtocolTable extends StatelessWidget {
 
     try {
       await TripService().updateTripSummary(updatedTrip);
-      await onChanged?.call();
+      await widget.onChanged?.call();
       if (!context.mounted) {
         return;
       }
@@ -253,7 +373,7 @@ class ProtocolTable extends StatelessWidget {
     }
 
     final bool success = await TripService().deleteTripSummary(trip);
-    await onChanged?.call();
+    await widget.onChanged?.call();
 
     if (!context.mounted) {
       return;

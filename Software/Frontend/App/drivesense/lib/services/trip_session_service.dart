@@ -50,6 +50,7 @@ class TripSessionSyncResult {
 
 class TripSessionState {
   final bool hasActiveTrip;
+  final bool isPaused;
   final double totalDistanceMeters;
   final Duration currentTripDuration;
   final int eventCount;
@@ -63,6 +64,7 @@ class TripSessionState {
 
   const TripSessionState({
     required this.hasActiveTrip,
+    required this.isPaused,
     required this.totalDistanceMeters,
     required this.currentTripDuration,
     required this.eventCount,
@@ -78,6 +80,7 @@ class TripSessionState {
   factory TripSessionState.inactive({TripSummary? lastTrip}) {
     return TripSessionState(
       hasActiveTrip: false,
+      isPaused: false,
       totalDistanceMeters: 0,
       currentTripDuration: Duration.zero,
       eventCount: 0,
@@ -93,6 +96,7 @@ class TripSessionState {
 
   TripSessionState copyWith({
     bool? hasActiveTrip,
+    bool? isPaused,
     double? totalDistanceMeters,
     Duration? currentTripDuration,
     int? eventCount,
@@ -106,6 +110,7 @@ class TripSessionState {
   }) {
     return TripSessionState(
       hasActiveTrip: hasActiveTrip ?? this.hasActiveTrip,
+      isPaused: isPaused ?? this.isPaused,
       totalDistanceMeters: totalDistanceMeters ?? this.totalDistanceMeters,
       currentTripDuration: currentTripDuration ?? this.currentTripDuration,
       eventCount: eventCount ?? this.eventCount,
@@ -175,6 +180,7 @@ class TripSessionService extends ChangeNotifier {
 
     RuntimeStore.setCurrentProtocolId(activeDraft.protocolId);
     RuntimeStore.setCurrentVehicleId(activeDraft.vehicleId);
+    RuntimeStore.setCurrentTripPurpose(activeDraft.type ?? '');
 
     _activeDraft = activeDraft;
     _trackingPositions = _decodeTrackingPoints(activeDraft.trackingPointsJson);
@@ -184,8 +190,9 @@ class TripSessionService extends ChangeNotifier {
 
     _state = TripSessionState(
       hasActiveTrip: true,
+      isPaused: activeDraft.isPaused,
       totalDistanceMeters: activeDraft.distanceMeters,
-      currentTripDuration: DateTime.now().difference(activeDraft.startTime),
+      currentTripDuration: _currentTripDuration(activeDraft),
       eventCount: _trackingPositions.length,
       lastAddedMeters: 0,
       lastAccuracy: lastPoint?.accuracy,
@@ -196,6 +203,11 @@ class TripSessionService extends ChangeNotifier {
       lastTrip: lastTrip,
     );
     notifyListeners();
+
+    if (activeDraft.isPaused) {
+      await trackingService.stopTracking();
+      return;
+    }
 
     trackingService.seedLastAcceptedPoint(lastPoint);
     _setupTrackingCallbacks();
@@ -252,6 +264,7 @@ class TripSessionService extends ChangeNotifier {
     final Vehicle? selectedVehicle = RuntimeStore.getCurrentVehicle();
     final DateTime startTime = DateTime.now();
     final int startMileage = selectedVehicle?.mileage ?? 0;
+    final String? tripType = _tripTypeForActiveProfile();
     final ActiveTrip activeDraft = ActiveTrip()
       ..profileId = profileId
       ..vehicleId = vehicleId
@@ -261,6 +274,10 @@ class TripSessionService extends ChangeNotifier {
       ..distanceMeters = 0
       ..trackingPointsJson = '[]'
       ..lastAcceptedPointJson = null
+      ..type = tripType
+      ..isPaused = false
+      ..pausedAt = null
+      ..pausedDurationSeconds = 0
       ..createdAt = startTime
       ..updatedAt = startTime;
 
@@ -270,6 +287,7 @@ class TripSessionService extends ChangeNotifier {
     _trackingPositions = <Trackingpoint>[];
     _state = TripSessionState(
       hasActiveTrip: true,
+      isPaused: false,
       totalDistanceMeters: 0,
       currentTripDuration: Duration.zero,
       eventCount: 0,
@@ -294,6 +312,109 @@ class TripSessionService extends ChangeNotifier {
     _startUiTicker();
   }
 
+  Future<void> pauseTrip() async {
+    await _waitForPendingTrackingUpdate();
+    await _refreshActiveDraftFromRepository();
+
+    final ActiveTrip? activeDraft = _activeDraft;
+    if (activeDraft == null) {
+      throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
+    }
+
+    if (activeDraft.isPaused) {
+      return;
+    }
+
+    await trackingService.emitCurrentPoint();
+    await _waitForPendingTrackingUpdate();
+    await trackingService.stopTracking();
+    await _waitForPendingTrackingUpdate();
+    await _refreshActiveDraftFromRepository();
+
+    final ActiveTrip? refreshedDraft = _activeDraft;
+    if (refreshedDraft == null) {
+      throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
+    }
+
+    final DateTime pausedAt = DateTime.now();
+    refreshedDraft
+      ..isPaused = true
+      ..pausedAt = pausedAt
+      ..updatedAt = pausedAt;
+    await activeTripRepository.update(refreshedDraft);
+    _activeDraft = refreshedDraft;
+    _stopUiTicker();
+
+    _state = _state.copyWith(
+      isPaused: true,
+      currentTripDuration: _currentTripDuration(refreshedDraft),
+      activeTrip: _summaryFromActiveTrip(refreshedDraft),
+    );
+    notifyListeners();
+  }
+
+  Future<void> resumeTrip() async {
+    await _waitForPendingTrackingUpdate();
+    await _refreshActiveDraftFromRepository();
+
+    final ActiveTrip? activeDraft = _activeDraft;
+    if (activeDraft == null) {
+      throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
+    }
+
+    if (!activeDraft.isPaused) {
+      return;
+    }
+
+    final DateTime resumedAt = DateTime.now();
+    final DateTime? pausedAt = activeDraft.pausedAt;
+    if (pausedAt != null && resumedAt.isAfter(pausedAt)) {
+      activeDraft.pausedDurationSeconds += resumedAt
+          .difference(pausedAt)
+          .inSeconds;
+    }
+
+    activeDraft
+      ..isPaused = false
+      ..pausedAt = null
+      ..updatedAt = resumedAt;
+    await activeTripRepository.update(activeDraft);
+    _activeDraft = activeDraft;
+
+    final Trackingpoint? lastPoint =
+        _decodeTrackingPoint(activeDraft.lastAcceptedPointJson) ??
+        (_trackingPositions.isNotEmpty ? _trackingPositions.last : null);
+    trackingService.seedLastAcceptedPoint(lastPoint);
+    _setupTrackingCallbacks();
+
+    _state = _state.copyWith(
+      isPaused: false,
+      currentTripDuration: _currentTripDuration(activeDraft),
+      activeTrip: _summaryFromActiveTrip(activeDraft),
+    );
+    notifyListeners();
+
+    try {
+      await trackingService.startTracking();
+      _startUiTicker();
+    } catch (_) {
+      final DateTime failedAt = DateTime.now();
+      activeDraft
+        ..isPaused = true
+        ..pausedAt = failedAt
+        ..updatedAt = failedAt;
+      await activeTripRepository.update(activeDraft);
+      _activeDraft = activeDraft;
+      _state = _state.copyWith(
+        isPaused: true,
+        currentTripDuration: _currentTripDuration(activeDraft),
+        activeTrip: _summaryFromActiveTrip(activeDraft),
+      );
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   Future<TripSessionStopResult> stopTrip() async {
     final Future<TripSessionStopResult>? pendingStopTrip = _pendingStopTrip;
     if (pendingStopTrip != null) {
@@ -315,7 +436,9 @@ class TripSessionService extends ChangeNotifier {
       throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
     }
 
-    await trackingService.emitCurrentPoint();
+    if (!_activeDraft!.isPaused) {
+      await trackingService.emitCurrentPoint();
+    }
     await _waitForPendingTrackingUpdate();
     await trackingService.stopTracking();
     await _waitForPendingTrackingUpdate();
@@ -448,7 +571,7 @@ class TripSessionService extends ChangeNotifier {
     bool alreadyPersisted,
   ) async {
     final ActiveTrip? activeDraft = _activeDraft;
-    if (activeDraft == null || !_state.hasActiveTrip) {
+    if (activeDraft == null || !_state.hasActiveTrip || activeDraft.isPaused) {
       return;
     }
 
@@ -462,15 +585,23 @@ class TripSessionService extends ChangeNotifier {
       _trackingPositions = _decodeTrackingPoints(
         persistedDraft.trackingPointsJson,
       );
+      if (persistedDraft.isPaused) {
+        _state = _state.copyWith(
+          isPaused: true,
+          currentTripDuration: _currentTripDuration(persistedDraft),
+          activeTrip: _summaryFromActiveTrip(persistedDraft),
+        );
+        notifyListeners();
+        return;
+      }
+
       final Trackingpoint lastPoint =
           _decodeTrackingPoint(persistedDraft.lastAcceptedPointJson) ??
           (_trackingPositions.isNotEmpty ? _trackingPositions.last : point);
 
       _state = _state.copyWith(
         totalDistanceMeters: persistedDraft.distanceMeters,
-        currentTripDuration: DateTime.now().difference(
-          persistedDraft.startTime,
-        ),
+        currentTripDuration: _currentTripDuration(persistedDraft),
         eventCount: _trackingPositions.length,
         lastAddedMeters: distanceAdded,
         lastAccuracy: lastPoint.accuracy,
@@ -494,7 +625,7 @@ class TripSessionService extends ChangeNotifier {
 
     _state = _state.copyWith(
       totalDistanceMeters: activeDraft.distanceMeters,
-      currentTripDuration: DateTime.now().difference(activeDraft.startTime),
+      currentTripDuration: _currentTripDuration(activeDraft),
       eventCount: _state.eventCount + 1,
       lastAddedMeters: distanceAdded,
       lastAccuracy: point.accuracy,
@@ -510,12 +641,14 @@ class TripSessionService extends ChangeNotifier {
     _uiTimer?.cancel();
     _uiTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       final ActiveTrip? activeDraft = _activeDraft;
-      if (activeDraft == null || !_state.hasActiveTrip) {
+      if (activeDraft == null ||
+          !_state.hasActiveTrip ||
+          activeDraft.isPaused) {
         return;
       }
 
       _state = _state.copyWith(
-        currentTripDuration: DateTime.now().difference(activeDraft.startTime),
+        currentTripDuration: _currentTripDuration(activeDraft),
       );
       notifyListeners();
     });
@@ -580,11 +713,34 @@ class TripSessionService extends ChangeNotifier {
       endTime: null,
       distanceKm: distanceKm,
       roadSurfaceConditions: '',
-      type: null,
+      type: activeTrip.type,
       startMileage: activeTrip.startMileage,
       endMileage: activeTrip.startMileage + distanceKm.round(),
       isSynced: false,
     );
+  }
+
+  String? _tripTypeForActiveProfile() {
+    if (RuntimeStore.getActiveProfileRole() != 'BERUFSFAHRER') {
+      return null;
+    }
+
+    final String tripType = RuntimeStore.getCurrentTripPurpose().trim();
+    return tripType.isEmpty ? null : tripType;
+  }
+
+  Duration _currentTripDuration(ActiveTrip activeTrip) {
+    final DateTime referenceTime = activeTrip.isPaused
+        ? activeTrip.pausedAt ?? DateTime.now()
+        : DateTime.now();
+    final int activeSeconds =
+        referenceTime.difference(activeTrip.startTime).inSeconds -
+        activeTrip.pausedDurationSeconds;
+
+    if (activeSeconds <= 0) {
+      return Duration.zero;
+    }
+    return Duration(seconds: activeSeconds);
   }
 
   TripSummary _mergeSyncedSummary(

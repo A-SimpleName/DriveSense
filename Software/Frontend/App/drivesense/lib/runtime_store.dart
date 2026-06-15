@@ -21,6 +21,7 @@ class RuntimeStore {
   static int? currentProfileId;
   static int currentVehicleId = 0;
   static int currentProtocolId = 0;
+  static String currentTripPurpose = '';
   static final TripService tripService = TripService();
   static final TripRepository pendingTripRepository = TripRepository();
 
@@ -277,6 +278,7 @@ class RuntimeStore {
     if (profileChanged) {
       currentVehicleId = 0;
       currentProtocolId = 0;
+      currentTripPurpose = '';
       vehicles = [];
       protocols = [];
       trips = [];
@@ -349,6 +351,7 @@ class RuntimeStore {
     currentProfileId = null;
     currentVehicleId = 0;
     currentProtocolId = 0;
+    currentTripPurpose = '';
     vehicles = [];
     protocols = [];
     trips = [];
@@ -387,5 +390,13 @@ class RuntimeStore {
     } catch (e, st) {
       debugPrint('[refreshTrips] ERROR: $e\n$st');
     }
+  }
+
+  static void setCurrentTripPurpose(String value) {
+    currentTripPurpose = value;
+  }
+
+  static String getCurrentTripPurpose() {
+    return currentTripPurpose;
   }
 }

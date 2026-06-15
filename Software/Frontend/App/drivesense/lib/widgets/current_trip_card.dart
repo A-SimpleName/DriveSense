@@ -1,33 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:drivesense/config/app_colors.dart';
 
-class CurrentTripCard extends StatefulWidget {
+class CurrentTripCard extends StatelessWidget {
   const CurrentTripCard({
     super.key,
     required this.onStop,
     required this.onAbort,
+    required this.onPauseResume,
     required this.currentTripDistance,
     required this.currentTripDuration,
     required this.currentVehicle,
+    required this.isPaused,
     required this.isStoppingTrip,
+    required this.isChangingPauseState,
   });
 
   final VoidCallback onStop;
   final VoidCallback onAbort;
+  final VoidCallback onPauseResume;
   final double currentTripDistance;
   final Duration currentTripDuration;
   final String currentVehicle;
+  final bool isPaused;
   final bool isStoppingTrip;
-
-  @override
-  State<CurrentTripCard> createState() => _CurrentTripCardState();
-}
-
-class _CurrentTripCardState extends State<CurrentTripCard> {
-  bool isPaused = false;
+  final bool isChangingPauseState;
 
   @override
   Widget build(BuildContext context) {
+    final bool isTripActionBlocked = isStoppingTrip || isChangingPauseState;
+
     return Card(
       elevation: 0,
       color: AppColors.primaryPurple.withValues(alpha: 0.4),
@@ -51,22 +52,24 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
                 Text('Aktuelle Fahrt: '),
                 Text(''),
                 Text('Distanz: '),
-                Text('${(widget.currentTripDistance / 1000).toStringAsFixed(2)} km'),
+                Text('${(currentTripDistance / 1000).toStringAsFixed(2)} km'),
                 Text('Zeit: '),
-                Text(widget.currentTripDuration.toString().split('.').first),
+                Text(currentTripDuration.toString().split('.').first),
+                Text('Status: '),
+                Text(isPaused ? 'Pausiert' : 'Aktiv'),
                 Text('Aktives Fahrzeug: '),
-                Text(widget.currentVehicle),
+                Text(currentVehicle),
               ],
             ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: widget.isStoppingTrip ? null : widget.onStop,
+                onPressed: isTripActionBlocked ? null : onStop,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: widget.isStoppingTrip
+                child: isStoppingTrip
                     ? const SizedBox(
                         height: 18,
                         width: 18,
@@ -79,26 +82,24 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: widget.isStoppingTrip
-                    ? null
-                    : () {
-                  _onPauseResumeTrip();
-                },
+                onPressed: isTripActionBlocked ? null : onPauseResume,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: Text(isPaused ? 'Fahrt fortsetzen' : 'Fahrt pausieren'),
+                child: isChangingPauseState
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(isPaused ? 'Fahrt fortsetzen' : 'Fahrt pausieren'),
               ),
             ),
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: widget.isStoppingTrip
-                    ? null
-                    : () {
-                  widget.onAbort();
-                },
+                onPressed: isTripActionBlocked ? null : onAbort,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
@@ -112,11 +113,5 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
         ),
       ),
     );
-  }
-
-  void _onPauseResumeTrip() {
-    setState(() {
-      isPaused = !isPaused;
-    });
   }
 }

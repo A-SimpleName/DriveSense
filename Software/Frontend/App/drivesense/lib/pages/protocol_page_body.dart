@@ -5,7 +5,7 @@ import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/trip_sync_service.dart';
-import 'package:drivesense/widgets/ds_snyc_trips_button.dart';
+import 'package:drivesense/widgets/snyc_trips_button.dart';
 import 'package:drivesense/widgets/protocol_table.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/pdf_service.dart';

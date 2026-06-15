@@ -32,46 +32,58 @@ const ActiveTripSchema = CollectionSchema(
       name: r'distanceMeters',
       type: IsarType.double,
     ),
+    r'isPaused': PropertySchema(id: 3, name: r'isPaused', type: IsarType.bool),
     r'lastAcceptedPointJson': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastAcceptedPointJson',
       type: IsarType.string,
     ),
+    r'pausedAt': PropertySchema(
+      id: 5,
+      name: r'pausedAt',
+      type: IsarType.dateTime,
+    ),
+    r'pausedDurationSeconds': PropertySchema(
+      id: 6,
+      name: r'pausedDurationSeconds',
+      type: IsarType.long,
+    ),
     r'profileId': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'profileId',
       type: IsarType.long,
     ),
     r'protocolId': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'protocolId',
       type: IsarType.long,
     ),
     r'startMileage': PropertySchema(
-      id: 6,
+      id: 9,
       name: r'startMileage',
       type: IsarType.long,
     ),
     r'startTime': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'startTime',
       type: IsarType.dateTime,
     ),
     r'trackingPointsJson': PropertySchema(
-      id: 8,
+      id: 11,
       name: r'trackingPointsJson',
       type: IsarType.string,
     ),
+    r'type': PropertySchema(id: 12, name: r'type', type: IsarType.string),
     r'updatedAt': PropertySchema(
-      id: 9,
+      id: 13,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'vehicleId': PropertySchema(
-      id: 10,
+      id: 14,
       name: r'vehicleId',
       type: IsarType.long,
-    )
+    ),
   },
   estimateSize: _activeTripEstimateSize,
   serialize: _activeTripSerialize,
@@ -100,6 +112,12 @@ int _activeTripEstimateSize(
     }
   }
   bytesCount += 3 + object.trackingPointsJson.length * 3;
+  {
+    final value = object.type;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -112,14 +130,18 @@ void _activeTripSerialize(
   writer.writeLong(offsets[0], object.accountId);
   writer.writeDateTime(offsets[1], object.createdAt);
   writer.writeDouble(offsets[2], object.distanceMeters);
-  writer.writeString(offsets[3], object.lastAcceptedPointJson);
-  writer.writeLong(offsets[4], object.profileId);
-  writer.writeLong(offsets[5], object.protocolId);
-  writer.writeLong(offsets[6], object.startMileage);
-  writer.writeDateTime(offsets[7], object.startTime);
-  writer.writeString(offsets[8], object.trackingPointsJson);
-  writer.writeDateTime(offsets[9], object.updatedAt);
-  writer.writeLong(offsets[10], object.vehicleId);
+  writer.writeBool(offsets[3], object.isPaused);
+  writer.writeString(offsets[4], object.lastAcceptedPointJson);
+  writer.writeDateTime(offsets[5], object.pausedAt);
+  writer.writeLong(offsets[6], object.pausedDurationSeconds);
+  writer.writeLong(offsets[7], object.profileId);
+  writer.writeLong(offsets[8], object.protocolId);
+  writer.writeLong(offsets[9], object.startMileage);
+  writer.writeDateTime(offsets[10], object.startTime);
+  writer.writeString(offsets[11], object.trackingPointsJson);
+  writer.writeString(offsets[12], object.type);
+  writer.writeDateTime(offsets[13], object.updatedAt);
+  writer.writeLong(offsets[14], object.vehicleId);
 }
 
 ActiveTrip _activeTripDeserialize(
@@ -133,14 +155,18 @@ ActiveTrip _activeTripDeserialize(
   object.createdAt = reader.readDateTime(offsets[1]);
   object.distanceMeters = reader.readDouble(offsets[2]);
   object.id = id;
-  object.lastAcceptedPointJson = reader.readStringOrNull(offsets[3]);
-  object.profileId = reader.readLong(offsets[4]);
-  object.protocolId = reader.readLong(offsets[5]);
-  object.startMileage = reader.readLong(offsets[6]);
-  object.startTime = reader.readDateTime(offsets[7]);
-  object.trackingPointsJson = reader.readString(offsets[8]);
-  object.updatedAt = reader.readDateTime(offsets[9]);
-  object.vehicleId = reader.readLong(offsets[10]);
+  object.isPaused = reader.readBool(offsets[3]);
+  object.lastAcceptedPointJson = reader.readStringOrNull(offsets[4]);
+  object.pausedAt = reader.readDateTimeOrNull(offsets[5]);
+  object.pausedDurationSeconds = reader.readLong(offsets[6]);
+  object.profileId = reader.readLong(offsets[7]);
+  object.protocolId = reader.readLong(offsets[8]);
+  object.startMileage = reader.readLong(offsets[9]);
+  object.startTime = reader.readDateTime(offsets[10]);
+  object.trackingPointsJson = reader.readString(offsets[11]);
+  object.type = reader.readStringOrNull(offsets[12]);
+  object.updatedAt = reader.readDateTime(offsets[13]);
+  object.vehicleId = reader.readLong(offsets[14]);
   return object;
 }
 
@@ -158,20 +184,28 @@ P _activeTripDeserializeProp<P>(
     case 2:
       return (reader.readDouble(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 9:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 10:
+      return (reader.readDateTime(offset)) as P;
+    case 11:
+      return (reader.readString(offset)) as P;
+    case 12:
+      return (reader.readStringOrNull(offset)) as P;
+    case 13:
+      return (reader.readDateTime(offset)) as P;
+    case 14:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -203,10 +237,7 @@ extension ActiveTripQueryWhere
     on QueryBuilder<ActiveTrip, ActiveTrip, QWhereClause> {
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
@@ -232,8 +263,10 @@ extension ActiveTripQueryWhere
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterWhereClause> idGreaterThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -241,8 +274,10 @@ extension ActiveTripQueryWhere
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterWhereClause> idLessThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -257,12 +292,14 @@ extension ActiveTripQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -270,26 +307,25 @@ extension ActiveTripQueryWhere
 extension ActiveTripQueryFilter
     on QueryBuilder<ActiveTrip, ActiveTrip, QFilterCondition> {
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> accountIdEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'accountId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'accountId', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      accountIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  accountIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'accountId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'accountId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -298,11 +334,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'accountId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'accountId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -313,37 +351,38 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'accountId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'accountId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> createdAtEqualTo(
-      DateTime value) {
+    DateTime value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'createdAt', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      createdAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  createdAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -352,11 +391,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -367,64 +408,69 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'createdAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      distanceMetersEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  distanceMetersEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'distanceMeters',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'distanceMeters',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      distanceMetersGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'distanceMeters',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      distanceMetersLessThan(
+  distanceMetersGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'distanceMeters',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'distanceMeters',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      distanceMetersBetween(
+  distanceMetersLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'distanceMeters',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  distanceMetersBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -432,24 +478,26 @@ extension ActiveTripQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'distanceMeters',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'distanceMeters',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
@@ -458,11 +506,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -471,11 +521,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -486,82 +538,97 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonIsNull() {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> isPausedEqualTo(
+    bool value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'lastAcceptedPointJson',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isPaused', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonIsNotNull() {
+  lastAcceptedPointJsonIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'lastAcceptedPointJson',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lastAcceptedPointJson'),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  lastAcceptedPointJsonIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lastAcceptedPointJson'),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
+  lastAcceptedPointJsonEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonLessThan(
+  lastAcceptedPointJsonGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonBetween(
+  lastAcceptedPointJsonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -569,109 +636,244 @@ extension ActiveTripQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastAcceptedPointJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'lastAcceptedPointJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
+  lastAcceptedPointJsonStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'lastAcceptedPointJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'lastAcceptedPointJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lastAcceptedPointJson', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  lastAcceptedPointJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          property: r'lastAcceptedPointJson',
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> pausedAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'pausedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  pausedAtIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'pausedAt'),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> pausedAtEqualTo(
+    DateTime? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'pausedAt', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  pausedAtGreaterThan(DateTime? value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'pausedAt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> pausedAtLessThan(
+    DateTime? value, {
+    bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'pausedAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> pausedAtBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'pausedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonContains(String value, {bool caseSensitive = true}) {
+  pausedDurationSecondsEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'lastAcceptedPointJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'pausedDurationSeconds',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonMatches(String pattern,
-          {bool caseSensitive = true}) {
+  pausedDurationSecondsGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'lastAcceptedPointJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'pausedDurationSeconds',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonIsEmpty() {
+  pausedDurationSecondsLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastAcceptedPointJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'pausedDurationSeconds',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      lastAcceptedPointJsonIsNotEmpty() {
+  pausedDurationSecondsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'lastAcceptedPointJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'pausedDurationSeconds',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> profileIdEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'profileId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'profileId', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      profileIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  profileIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'profileId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'profileId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -680,11 +882,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'profileId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'profileId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -695,51 +899,51 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'profileId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'profileId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> protocolIdEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'protocolId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'protocolId', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      protocolIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  protocolIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'protocolId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'protocolId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      protocolIdLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  protocolIdLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'protocolId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'protocolId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -750,93 +954,93 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'protocolId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'protocolId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      startMileageEqualTo(int value) {
+  startMileageEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startMileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'startMileage', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      startMileageGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  startMileageGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'startMileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'startMileage',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      startMileageLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  startMileageLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'startMileage',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'startMileage',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      startMileageBetween(
+  startMileageBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'startMileage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'startMileage',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> startTimeEqualTo(
-      DateTime value) {
+    DateTime value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'startTime', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      startTimeGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  startTimeGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'startTime',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -845,11 +1049,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'startTime',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -860,64 +1066,69 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'startTime',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'startTime',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  trackingPointsJsonEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonLessThan(
+  trackingPointsJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonBetween(
+  trackingPointsJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -925,108 +1136,271 @@ extension ActiveTripQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'trackingPointsJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'trackingPointsJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonStartsWith(
+  trackingPointsJsonStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'trackingPointsJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'trackingPointsJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'trackingPointsJson', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
+  trackingPointsJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'trackingPointsJson', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'type'),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'type'),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'type',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonEndsWith(
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'trackingPointsJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'trackingPointsJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'type',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonIsEmpty() {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'trackingPointsJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'type', value: ''),
+      );
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      trackingPointsJsonIsNotEmpty() {
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> typeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'trackingPointsJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'type', value: ''),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> updatedAtEqualTo(
-      DateTime value) {
+    DateTime value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'updatedAt', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      updatedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  updatedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'updatedAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -1035,11 +1409,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'updatedAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -1050,37 +1426,38 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'updatedAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'updatedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition> vehicleIdEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'vehicleId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'vehicleId', value: value),
+      );
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterFilterCondition>
-      vehicleIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  vehicleIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'vehicleId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'vehicleId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -1089,11 +1466,13 @@ extension ActiveTripQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'vehicleId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'vehicleId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -1104,13 +1483,15 @@ extension ActiveTripQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'vehicleId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'vehicleId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -1154,23 +1535,61 @@ extension ActiveTripQuerySortBy
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      sortByDistanceMetersDesc() {
+  sortByDistanceMetersDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'distanceMeters', Sort.desc);
     });
   }
 
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByIsPaused() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPaused', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByIsPausedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPaused', Sort.desc);
+    });
+  }
+
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      sortByLastAcceptedPointJson() {
+  sortByLastAcceptedPointJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastAcceptedPointJson', Sort.asc);
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      sortByLastAcceptedPointJsonDesc() {
+  sortByLastAcceptedPointJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastAcceptedPointJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByPausedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByPausedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
+  sortByPausedDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedDurationSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
+  sortByPausedDurationSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedDurationSeconds', Sort.desc);
     });
   }
 
@@ -1223,16 +1642,28 @@ extension ActiveTripQuerySortBy
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      sortByTrackingPointsJson() {
+  sortByTrackingPointsJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'trackingPointsJson', Sort.asc);
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      sortByTrackingPointsJsonDesc() {
+  sortByTrackingPointsJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'trackingPointsJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> sortByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
     });
   }
 
@@ -1294,7 +1725,7 @@ extension ActiveTripQuerySortThenBy
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      thenByDistanceMetersDesc() {
+  thenByDistanceMetersDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'distanceMeters', Sort.desc);
     });
@@ -1312,17 +1743,55 @@ extension ActiveTripQuerySortThenBy
     });
   }
 
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByIsPaused() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPaused', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByIsPausedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isPaused', Sort.desc);
+    });
+  }
+
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      thenByLastAcceptedPointJson() {
+  thenByLastAcceptedPointJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastAcceptedPointJson', Sort.asc);
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      thenByLastAcceptedPointJsonDesc() {
+  thenByLastAcceptedPointJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastAcceptedPointJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByPausedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByPausedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
+  thenByPausedDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedDurationSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
+  thenByPausedDurationSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'pausedDurationSeconds', Sort.desc);
     });
   }
 
@@ -1375,16 +1844,28 @@ extension ActiveTripQuerySortThenBy
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      thenByTrackingPointsJson() {
+  thenByTrackingPointsJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'trackingPointsJson', Sort.asc);
     });
   }
 
   QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy>
-      thenByTrackingPointsJsonDesc() {
+  thenByTrackingPointsJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'trackingPointsJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QAfterSortBy> thenByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
     });
   }
 
@@ -1433,11 +1914,32 @@ extension ActiveTripQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct>
-      distinctByLastAcceptedPointJson({bool caseSensitive = true}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByIsPaused() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'lastAcceptedPointJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'isPaused');
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct>
+  distinctByLastAcceptedPointJson({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'lastAcceptedPointJson',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByPausedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pausedAt');
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct>
+  distinctByPausedDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'pausedDurationSeconds');
     });
   }
 
@@ -1465,11 +1967,22 @@ extension ActiveTripQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByTrackingPointsJson(
-      {bool caseSensitive = true}) {
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByTrackingPointsJson({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'trackingPointsJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'trackingPointsJson',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<ActiveTrip, ActiveTrip, QDistinct> distinctByType({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'type', caseSensitive: caseSensitive);
     });
   }
 
@@ -1512,10 +2025,29 @@ extension ActiveTripQueryProperty
     });
   }
 
+  QueryBuilder<ActiveTrip, bool, QQueryOperations> isPausedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isPaused');
+    });
+  }
+
   QueryBuilder<ActiveTrip, String?, QQueryOperations>
-      lastAcceptedPointJsonProperty() {
+  lastAcceptedPointJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastAcceptedPointJson');
+    });
+  }
+
+  QueryBuilder<ActiveTrip, DateTime?, QQueryOperations> pausedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pausedAt');
+    });
+  }
+
+  QueryBuilder<ActiveTrip, int, QQueryOperations>
+  pausedDurationSecondsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'pausedDurationSeconds');
     });
   }
 
@@ -1544,9 +2076,15 @@ extension ActiveTripQueryProperty
   }
 
   QueryBuilder<ActiveTrip, String, QQueryOperations>
-      trackingPointsJsonProperty() {
+  trackingPointsJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'trackingPointsJson');
+    });
+  }
+
+  QueryBuilder<ActiveTrip, String?, QQueryOperations> typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'type');
     });
   }
 

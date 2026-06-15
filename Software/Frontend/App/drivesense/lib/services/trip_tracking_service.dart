@@ -461,6 +461,12 @@ class _TripTrackingTaskHandler extends TaskHandler {
       return;
     }
 
+    if (activeTrip.isPaused) {
+      _lastAcceptedPoint = null;
+      await _stopService();
+      return;
+    }
+
     final List<Trackingpoint> trackingPoints = _decodeTrackingPoints(
       activeTrip.trackingPointsJson,
     );
@@ -509,6 +515,12 @@ class _TripTrackingTaskHandler extends TaskHandler {
       return;
     }
 
+    if (activeTrip.isPaused) {
+      _lastAcceptedPoint = null;
+      await _stopService();
+      return;
+    }
+
     final List<Trackingpoint> trackingPoints = _decodeTrackingPoints(
       activeTrip.trackingPointsJson,
     );
@@ -523,6 +535,11 @@ class _TripTrackingTaskHandler extends TaskHandler {
       allowUnscoped: true,
     );
     if (activeTrip == null) {
+      await _stopService();
+      return;
+    }
+
+    if (activeTrip.isPaused) {
       await _stopService();
       return;
     }

@@ -27,6 +27,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   late final TripSessionService _tripSessionService;
   bool _isStartingTrip = false;
   bool _isStoppingTrip = false;
+  bool _isChangingPauseState = false;
 
   @override
   void initState() {
@@ -62,12 +63,15 @@ class _HomePageBodyState extends State<HomePageBody> {
                     CurrentTripCard(
                       onStop: _onStopTrip,
                       onAbort: _onAbortTrip,
+                      onPauseResume: _onPauseResumeTrip,
                       currentTripDistance: state.totalDistanceMeters,
                       currentTripDuration: state.currentTripDuration,
                       currentVehicle: _tripSessionService.formatVehicleName(
                         currentVehicle,
                       ),
+                      isPaused: state.isPaused,
                       isStoppingTrip: _isStoppingTrip,
+                      isChangingPauseState: _isChangingPauseState,
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -160,8 +164,37 @@ class _HomePageBodyState extends State<HomePageBody> {
     }
   }
 
+  void _onPauseResumeTrip() {
+    if (_isStoppingTrip || _isChangingPauseState) {
+      return;
+    }
+
+    setState(() {
+      _isChangingPauseState = true;
+    });
+    unawaited(_pauseOrResumeTrip());
+  }
+
+  Future<void> _pauseOrResumeTrip() async {
+    try {
+      if (_tripSessionService.state.isPaused) {
+        await _tripSessionService.resumeTrip();
+      } else {
+        await _tripSessionService.pauseTrip();
+      }
+    } catch (e) {
+      _showSnackBar(_messageForError(e));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isChangingPauseState = false;
+        });
+      }
+    }
+  }
+
   void _onAbortTrip() {
-    if (_isStoppingTrip) {
+    if (_isStoppingTrip || _isChangingPauseState) {
       return;
     }
 
@@ -194,7 +227,7 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _onStopTrip() async {
-    if (_isStoppingTrip) {
+    if (_isStoppingTrip || _isChangingPauseState) {
       return;
     }
 

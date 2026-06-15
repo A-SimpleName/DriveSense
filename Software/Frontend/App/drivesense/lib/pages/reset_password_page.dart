@@ -1,6 +1,6 @@
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/services/account_service.dart';
-import 'package:drivesense/widgets/ds_auth_scaffold.dart';
+import 'package:drivesense/widgets/auth_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class ResetPasswordPage extends StatefulWidget {

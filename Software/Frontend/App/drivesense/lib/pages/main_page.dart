@@ -2,7 +2,7 @@ import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/widgets/ds_app_bar.dart';
-import 'package:drivesense/widgets/ds_bottom_navigation.dart';
+import 'package:drivesense/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/home_page_body.dart';
 import 'package:drivesense/pages/protocol_page_body.dart';

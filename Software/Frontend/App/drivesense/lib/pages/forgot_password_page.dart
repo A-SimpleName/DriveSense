@@ -1,6 +1,6 @@
 import 'package:drivesense/services/account_service.dart';
 import 'package:drivesense/pages/reset_password_page.dart';
-import 'package:drivesense/widgets/ds_auth_scaffold.dart';
+import 'package:drivesense/widgets/auth_scaffold.dart';
 import 'package:drivesense/widgets/verification_code_dialog.dart';
 import 'package:flutter/material.dart';
 

@@ -1,3 +1,4 @@
+import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/vehicle.dart';
@@ -111,6 +112,7 @@ class _StartTripCardState extends State<StartTripCard> {
                         ? 'Keine Protokolle'
                         : 'Protokoll auswaehlen',
                   ),
+
                   items: widget.protocols
                       .map(
                         (Protocol protocol) => DropdownMenuItem<int>(
@@ -127,6 +129,22 @@ class _StartTripCardState extends State<StartTripCard> {
                           }
                         },
                 ),
+                if (RuntimeStore.getActiveProfileRole() == 'BERUFSFAHRER') ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Typ / Zweck: '),
+                  ),
+                  TextFormField(
+                    key: ValueKey<String>(
+                      'trip-purpose-${RuntimeStore.getCurrentProtocolId()}',
+                    ),
+                    initialValue: RuntimeStore.getCurrentTripPurpose(),
+                    decoration: const InputDecoration(hintText: 'Typ / Zweck'),
+                    onChanged: (String value) {
+                      RuntimeStore.setCurrentTripPurpose(value);
+                    },
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 24),

@@ -16,6 +16,10 @@ class ActiveTrip {
   late double distanceMeters;
   late String trackingPointsJson;
   String? lastAcceptedPointJson;
+  String? type;
+  bool isPaused = false;
+  DateTime? pausedAt;
+  int pausedDurationSeconds = 0;
 
   late DateTime createdAt;
   late DateTime updatedAt;
