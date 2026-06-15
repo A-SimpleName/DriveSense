@@ -2,7 +2,7 @@ import { useState } from "react";
 import { resetPassword } from "../services/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { Button } from "../components/button";
+import "../styles/resetPassword.css";
 
 export default function ResetPasswordPage() {
     const navigate = useNavigate();
@@ -28,8 +28,6 @@ export default function ResetPasswordPage() {
     const passwordMeetsPolicy = passwordRules.every((rule) => rule.met);
     const passwordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
     const submitDisabled = !email.trim() || !code.trim() || !newPassword || !confirmPassword || !passwordMeetsPolicy || passwordMismatch || loading;
-    const [show, setShow] = useState(false);
-    const [repeatPassword, setRepeatPassword] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

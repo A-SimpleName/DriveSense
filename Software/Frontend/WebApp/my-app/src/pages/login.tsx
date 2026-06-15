@@ -41,15 +41,29 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-header">
-          <span className="login-title">Drive Sense</span>
+        <div className="login-hero">
+          <span className="login-kicker">Drive Sense</span>
           <h1 className="login-heading">Melde dich an</h1>
-          <p className="login-subtitle">
+          <p className="login-copy">
             Nutze dein Profil, um auf deine Fahrzeuge, Fahrten und Protokolle zuzugreifen.
           </p>
+          <ul className="login-bullets">
+            <li>Fahrten, Fahrzeuge und Protokolle zentral verwalten</li>
+            <li>Überblick über deine Mobilität jederzeit behalten</li>
+            <li>Schnell und einfach in deinen Bereich zurückkehren</li>
+          </ul>
         </div>
 
-        <div className="login-form">
+        <div className="login-panel">
+          <div className="login-header">
+            <span className="login-title">Willkommen</span>
+            <h2 className="login-panel-title">Mit DriveSense starten</h2>
+            <p className="login-subtitle">
+              Melde dich an, um deine Daten zu sehen und direkt weiterzuarbeiten.
+            </p>
+          </div>
+
+          <div className="login-form">
           <input
             className="login-input"
             type="email"
@@ -98,8 +112,9 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
           <Link to="/forgot-password">Passwort vergessen?</Link>
         </div>
 
-        <div className="login-footer">
-          Noch keinen Account? <Link to="/signUp">Registrieren</Link>
+          <div className="login-footer">
+            Noch keinen Account? <Link to="/signup">Registrieren</Link>
+          </div>
         </div>
       </div>
     </div>

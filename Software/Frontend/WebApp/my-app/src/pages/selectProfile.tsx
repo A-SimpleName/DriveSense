@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { useAuth } from "../context/authContext";
 import type { Profile } from "../model/profile";
 import { logout, selectProfile } from "../services/auth";
@@ -24,6 +25,7 @@ export default function SelectProfilePage({
     const [logoutError, setLogoutError] = useState<string | null>(null);
     const [selectError, setSelectError] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
+    const [confirmLogout, setConfirmLogout] = useState(false);
 
     const ROLE_OPTIONS = ["PRIVAT", "FAHRSCHÜLER", "BERUFSFAHRER"];
 
@@ -70,8 +72,10 @@ export default function SelectProfilePage({
         setLogoutError(null);
         try {
             await logout();
+            setProfile(null);
             setIsAuth(false);
             setProfileSelected(false);
+            setConfirmLogout(false);
             navigate("/login");
         } catch (err: any) {
             setLogoutError(err?.message || "Logout fehlgeschlagen");
@@ -87,9 +91,19 @@ export default function SelectProfilePage({
                     <p>Wähle ein Profil für deine Fahrt, oder erstelle ein neues.</p>
                 </div>
                 <div className="selectProfile-heroActions">
-                    <Button className="secondary" label="Logout" type="button" onClick={handleLogout} />
+                    <Button className="secondary" label="Logout" type="button" onClick={() => setConfirmLogout(true)} />
                 </div>
             </div>
+
+            <ConfirmationDialog
+                open={confirmLogout}
+                title="Logout bestätigen"
+                message="Möchtest du dich wirklich abmelden?"
+                confirmLabel="Ja, abmelden"
+                cancelLabel="Abbrechen"
+                onConfirm={handleLogout}
+                onCancel={() => setConfirmLogout(false)}
+            />
 
             {logoutError && <p style={{ color: "#dc2626" }}>{logoutError}</p>}
             {selectError && <p style={{ color: "#dc2626" }}>{selectError}</p>}

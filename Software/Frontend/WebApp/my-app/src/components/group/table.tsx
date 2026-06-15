@@ -25,7 +25,10 @@ function GroupTable({ newGroup }: Props) {
 
     useEffect(() => {
         setLoading(true);
-        Promise.all([getGroups(), getCurrentProfile()])
+        Promise.all([
+            getGroups(),
+            getCurrentProfile()
+        ])
             .then(([groupsData, profile]) => {
                 setGroups(groupsData);
                 setCurrentProfileId(profile.id ?? null);
@@ -35,7 +38,9 @@ function GroupTable({ newGroup }: Props) {
     }, []);
 
     useEffect(() => {
-        if (newGroup) setGroups(prev => [...prev, newGroup]);
+        if (newGroup) {
+            setGroups(prev => [...prev, newGroup]);
+        }
     }, [newGroup]);
 
     const isOwner = (group: UserGroup) => group.ownerId === currentProfileId;
@@ -53,6 +58,8 @@ function GroupTable({ newGroup }: Props) {
         setConfirmDeleteGroupId(null);
     };
 
+    const closeConfirm = () => setConfirmDeleteGroupId(null);
+
     const handleEditStart = (group: UserGroup) => {
         setEditingGroupId(group.id);
         setEditName(group.name);
@@ -64,7 +71,9 @@ function GroupTable({ newGroup }: Props) {
         setError(null);
         updateGroup(groupId, editName.trim())
             .then(() => {
-                setGroups(prev => prev.map(g => g.id === groupId ? { ...g, name: editName.trim() } : g));
+                setGroups(prev =>
+                    prev.map(g => g.id === groupId ? { ...g, name: editName.trim() } : g)
+                );
                 setEditingGroupId(null);
             })
             .catch(err => setError(err.message))
@@ -77,6 +86,7 @@ function GroupTable({ newGroup }: Props) {
     };
 
     if (loading) return <TableSkeleton rows={3} cols={3} />;
+    if (error) return <p>Fehler: {error}</p>;
 
     return (
         <div>
@@ -154,7 +164,7 @@ function GroupTable({ newGroup }: Props) {
                 confirmLabel="Gruppe löschen"
                 cancelLabel="Abbrechen"
                 onConfirm={confirmDelete}
-                onCancel={() => setConfirmDeleteGroupId(null)}
+                onCancel={closeConfirm}
             />
         </div>
     );

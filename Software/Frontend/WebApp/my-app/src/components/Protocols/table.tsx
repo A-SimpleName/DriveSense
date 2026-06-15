@@ -1,5 +1,5 @@
 import type { Protocol } from "../../model/protocol";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 import { Button } from "../button";
 import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
@@ -64,52 +64,36 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                     )}
                 </div>
             </div>
-            <div className="page-table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Aktion</th>
+            <table style={{ width: "100%" }}>
+                <thead>
+                    <tr>
+                        <th style={{ textAlign: "left", width: "40%" }}>Name</th>
+                        <th style={{ textAlign: "center", width: "60%" }}>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {protocols.map(protocol => (
+                        <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
+                            <td>{protocol.name}</td>
+                            <td style={{ textAlign: "center" }}>
+                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
+                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {protocols.length === 0 ? (
-                            <tr>
-                                <td colSpan={2} className="page-empty">Keine Protokolle vorhanden</td>
-                            </tr>
-                        ) : protocols.map(protocol => (
-                            <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
-                                <td>{protocol.name}</td>
-                                <td onClick={e => e.stopPropagation()}>
-                                    <div style={{ display: "flex", gap: "8px" }}>
-                                        <Button
-                                            label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"}
-                                            loading={exportingId === protocol.id}
-                                            stopPropagation
-                                            onClick={() => handleExport(protocol.id)}
-                                        />
-                                        <Button
-                                            label="Löschen"
-                                            stopPropagation
-                                            onClick={() => setConfirmDeleteId(protocol.id)}
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    ))}
+                </tbody>
+            </table>
+        </>
     );
 
     return (
         <div>
+            {/* Getrennte Fehlermeldungen für Export und Löschen */}
             {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
             {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
 
-            {renderTable(ownProtocols, "Eigene Protokolle", true)}
-            {renderTable(groupProtocols, "Gruppenprotokolle", false)}
+            {renderTable(ownProtocols, "Eigene Protokolle")}
+            {renderTable(groupProtocols, "Gruppenprotokolle")}
 
             <ConfirmationDialog
                 open={confirmDeleteId !== null}
