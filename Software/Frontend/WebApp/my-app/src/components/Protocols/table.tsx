@@ -4,6 +4,7 @@ import { Button } from "../button";
 import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
 import { ConfirmationDialog } from "../ConfirmationDialog";
+import "../../styles/pageLayout.css";
 
 export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm, onDeleted }: {
     ownProtocols: Protocol[];
@@ -51,38 +52,59 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
     };
 
     const renderTable = (protocols: Protocol[], title: string, showAdd: boolean = true) => (
-        <>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", marginTop: "24px" }}>
-                <h3 style={{ margin: 0 }}>{title}</h3>
-                {showAdd && (
-                    <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
-                )}
+        <div style={{ marginBottom: "2rem" }}>
+            <div className="page-toolbar">
+                <span className="page-toolbar-left" style={{ fontSize: "14px", fontWeight: 500 }}>{title}</span>
+                <div className="page-toolbar-right">
+                    <span style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
+                        {protocols.length} {protocols.length === 1 ? "Protokoll" : "Protokolle"}
+                    </span>
+                    {showAdd && (
+                        <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
+                    )}
+                </div>
             </div>
-            <table style={{ width: "100%" }}>
-                <thead>
-                    <tr>
-                        <th style={{ textAlign: "left", width: "40%" }}>Name</th>
-                        <th style={{ textAlign: "center", width: "60%" }}>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {protocols.map(protocol => (
-                        <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
-                            <td>{protocol.name}</td>
-                            <td style={{ textAlign: "center" }}>
-                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
-                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
-                            </td>
+            <div className="page-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Aktion</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </>
+                    </thead>
+                    <tbody>
+                        {protocols.length === 0 ? (
+                            <tr>
+                                <td colSpan={2} className="page-empty">Keine Protokolle vorhanden</td>
+                            </tr>
+                        ) : protocols.map(protocol => (
+                            <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
+                                <td>{protocol.name}</td>
+                                <td onClick={e => e.stopPropagation()}>
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                        <Button
+                                            label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"}
+                                            loading={exportingId === protocol.id}
+                                            stopPropagation
+                                            onClick={() => handleExport(protocol.id)}
+                                        />
+                                        <Button
+                                            label="Löschen"
+                                            stopPropagation
+                                            onClick={() => setConfirmDeleteId(protocol.id)}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     );
 
     return (
         <div>
-            {/* Getrennte Fehlermeldungen für Export und Löschen */}
             {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
             {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
 

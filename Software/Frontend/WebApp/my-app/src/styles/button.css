@@ -8,7 +8,7 @@ button {
   border-radius: 12px;
   border: 1px solid transparent;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: #000000;
+  color: whitesmoke;
   font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: 0.01em;

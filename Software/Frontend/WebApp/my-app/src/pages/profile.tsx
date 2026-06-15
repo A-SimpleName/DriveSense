@@ -4,6 +4,7 @@ import { Button } from "../components/button";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { useAuth } from "../context/authContext";
 import { updateProfile, deleteProfile } from "../services/profileService";
+import StatCard from "../components/statCard";
 
 export default function ProfilePage() {
     const navigate = useNavigate();
@@ -104,8 +105,8 @@ export default function ProfilePage() {
                         </>
                     ) : (
                         <>
-                            <p><strong>Profilname:</strong> {profile?.name || "Nicht verfügbar"}</p>
-                            <p><strong>Rolle:</strong> {profile?.role || "Nicht verfügbar"}</p>
+                            <StatCard title="Profilname:" value={profile?.name || "Nicht verfügbar"}/>
+                            <StatCard title="Rolle:" value={profile?.role || "Nicht verfügbar"}/>
                         </>
                     )}
                 </div>
@@ -114,9 +115,9 @@ export default function ProfilePage() {
             <div style={{ marginBottom: "2rem" }}>
                 <h2>Konto-Informationen</h2>
                 <div style={{ display: "grid", gap: "0.5rem", maxWidth: "400px" }}>
-                    <p><strong>Vorname:</strong> {account?.firstName || "Nicht verfügbar"}</p>
-                    <p><strong>Nachname:</strong> {account?.lastName || "Nicht verfügbar"}</p>
-                    <p><strong>E-Mail:</strong> {account?.email || "Nicht verfügbar"}</p>
+                    <StatCard title="Vorname:" value={account?.firstName || "Nicht verfügbar"}/>
+                    <StatCard title="Nachname:" value={account?.lastName || "Nicht verfügbar"}/>
+                    <StatCard title="E-Mail:" value={account?.email || "Nicht verfügbar"}/>
                 </div>
             </div>
 

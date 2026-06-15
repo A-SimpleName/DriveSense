@@ -10,6 +10,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 
 import { deleteAccount, updateAccount, requestEmailChange } from "../services/accountService";
 import { changePassword } from "../services/auth";
+import StatCard from "../components/statCard";
 
 export default function Settings() {
     const { account, setAccount,setProfile } = useAuth();
@@ -81,8 +82,8 @@ export default function Settings() {
 
             <h2>Account</h2>
 
-            <p>Angemeldeter Account: {account?.firstName} {account?.lastName}</p>
-            <p>Email: {account?.email}</p>
+            <StatCard title="Angemeldeter Account:" value={`${account?.firstName} ${account?.lastName}`} />
+            <StatCard title="Email:" value={account?.email} />
 
             <Button
                 label="Name bearbeiten"
