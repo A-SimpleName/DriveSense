@@ -84,30 +84,31 @@ export default function Settings() {
 
             <StatCard title="Angemeldeter Account:" value={`${account?.firstName} ${account?.lastName}`} />
             <StatCard title="Email:" value={account?.email} />
+            <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+                <Button
+                    label="Name bearbeiten"
+                    type="button"
+                    onClick={() => setEditOpen(true)}
+                />
 
-            <Button
-                label="Name bearbeiten"
-                type="button"
-                onClick={() => setEditOpen(true)}
-            />
+                <Button
+                    label="E-Mail ändern"
+                    type="button"
+                    onClick={() => setEditEmailOpen(true)}
+                />
 
-            <Button
-                label="E-Mail ändern"
-                type="button"
-                onClick={() => setEditEmailOpen(true)}
-            />
+                <Button
+                    label="Passwort ändern"
+                    type="button"
+                    onClick={() => setShowPasswordForm(true)}
+                />
 
-            <Button
-                label="Passwort ändern"
-                type="button"
-                onClick={() => setShowPasswordForm(true)}
-            />
-
-            <Button
-                label="Account löschen"
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-            />
+                <Button
+                    label="Account löschen"
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                />
+            </div>
 
             {editOpen && (
                 <AddForm
