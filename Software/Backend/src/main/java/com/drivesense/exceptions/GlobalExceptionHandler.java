@@ -1,38 +1,57 @@
 package com.drivesense.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Validation Fehler
+    // @Valid Fehler → fieldErrors
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
-
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> fieldErrors.put(error.getField(), error.getDefaultMessage()));
+        return fieldErrorResponse("Validierungsfehler", fieldErrors);
+    }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Validierungsfehler");
-        response.put("errors", fieldErrors);
+    // @Validated auf Service-Ebene
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> fieldErrors = new HashMap<>();
+        ex.getConstraintViolations()
+                .forEach(v -> fieldErrors.put(
+                        v.getPropertyPath().toString(),
+                        v.getMessage()
+                ));
+        return fieldErrorResponse("Validierungsfehler", fieldErrors);
+    }
 
-        return ResponseEntity.badRequest().body(response);
+    // Manuelle Feldfehler aus Service (z.B. "email bereits vergeben" → erscheint inline beim Feld)
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleFieldValidation(FieldValidationException ex) {
+        return fieldErrorResponse("Validierungsfehler", ex.getFieldErrors());
     }
 
     @ExceptionHandler(PdfExportException.class)
     public ResponseEntity<Map<String, String>> handlePdfExport(PdfExportException ex) {
+        log.error("PDF Export Fehler", ex);
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            error.put("detail", ex.getCause().getMessage());
+        }
         return ResponseEntity.status(500).body(error);
     }
 
@@ -50,6 +69,13 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("message", ex.getMessage());
         return ResponseEntity.status(403).body(error);
+    }
+
+    @ExceptionHandler(NotVerifiedException.class)
+    public ResponseEntity<Map<String, String>> handleNotVerified(NotVerifiedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(406).body(error);
     }
 
     // Falsche Eingabe → 400
@@ -75,12 +101,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleExternalApi(ExternalApiException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", "Externer Dienst nicht verfügbar – bitte später erneut versuchen");
-        return ResponseEntity.status(503).body(error); // 503 = Service Unavailable
+        return ResponseEntity.status(503).body(error);
     }
 
-    // Falsche HTTP-Methode -> 405
+    // Falsche HTTP-Methode → 405
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<Map<String, String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+    public ResponseEntity<Map<String, String>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
         Map<String, String> error = new HashMap<>();
         error.put("message", "HTTP-Methode nicht erlaubt: " + ex.getMethod());
         return ResponseEntity.status(405).body(error);
@@ -94,21 +120,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(500).body(error);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+    // ── Hilfsmethoden ────────────────────────────────────────────────────────
 
-        Map<String, String> fieldErrors = new HashMap<>();
-
-        ex.getConstraintViolations()
-                .forEach(v -> fieldErrors.put(
-                        v.getPropertyPath().toString(),
-                        v.getMessage()
-                ));
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Validierungsfehler");
-        response.put("errors", fieldErrors);
-
-        return ResponseEntity.badRequest().body(response);
+    private ResponseEntity<Map<String, Object>> fieldErrorResponse(String message, Map<String, String> fieldErrors) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", message);
+        body.put("errors", fieldErrors);
+        return ResponseEntity.badRequest().body(body);
     }
 }

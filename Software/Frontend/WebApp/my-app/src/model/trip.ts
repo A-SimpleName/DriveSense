@@ -6,10 +6,10 @@ export interface TripSummaryDto {
     vehicleId: number;
     protocolId: number;
     protocolName: string;
-    startTime: string; 
+    startTime: string;
     endTime: string;
-    accountFname: string;
-    accountLname: string;
+    accountFirstName: string;
+    accountLastName: string;
     vehicleModel: string;
     licensePlate: string;
     distance: number;
@@ -22,13 +22,12 @@ export interface TripSummaryDto {
     endMileage: number;
 }
 
-
 export interface TripSummary {
     id: number;
     profileId: number;
     vehicleId: number;
     protocolId: number;
-    startTime: string; 
+    startTime: string;
     endTime: string;
     distance: number;
     roadSurfaceConditions: string;

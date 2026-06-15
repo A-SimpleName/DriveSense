@@ -1,5 +1,6 @@
 import 'package:drivesense/config/app_assets.dart';
 import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:flutter/material.dart';
 
 class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -46,15 +47,20 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
               case 'Abmelden':
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (dialogContext) => AlertDialog(
                     title: const Text('Möchten Sie sich abmelden?'),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(dialogContext),
                         child: const Text('Abbrechen'),
                       ),
                       TextButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          Navigator.pop(dialogContext);
+                          await SignInAndSignUp.signOut();
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.pushNamedAndRemoveUntil(
                             context,
                             'SignInPage',

@@ -11,8 +11,8 @@ public class Profile {
     private String name;
     @NotBlank(message = "Rolle darf nicht leer sein")
     @Pattern(
-            regexp = "PRIVAT|FAHRSCHÜLER|BERUFSFAHRER",
-            message = "Rolle muss PRIVAT, Fahrschüler oder BERUFSFAHRER sein"
+            regexp = "PRIVAT|FAHRSCHÜLER|FAHRSCHUELER|FAHRSCHULER|BERUFSFAHRER",
+            message = "Rolle muss PRIVAT, FAHRSCHUELER oder BERUFSFAHRER sein"
     )
     private String role;
     private int account_id;

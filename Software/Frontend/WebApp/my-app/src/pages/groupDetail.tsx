@@ -7,8 +7,8 @@ import { Button } from "../components/button";
 import { InviteMemberForm } from "../components/group/InviteMemberForm";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { TableSkeleton } from "../components/loadingSkeleton";
 
-// wer darf wen entfernen
 const canRemove = (myRole: string, targetRole: string): boolean => {
     if (targetRole === "OWNER") return false;
     if (myRole === "OWNER") return true;
@@ -16,29 +16,31 @@ const canRemove = (myRole: string, targetRole: string): boolean => {
     return false;
 };
 
-// nur Owner darf Rollen ändern
 const canChangeRole = (myRole: string, targetRole: string): boolean => {
     if (targetRole === "OWNER") return false;
     return myRole === "OWNER";
 };
-    
+
 function GroupDetailPage() {
     const { id } = useParams();
     const groupId = Number(id);
 
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    // Separate Fehler-States für Remove und RoleUpdate
+    const [removeError, setRemoveError] = useState<string | null>(null);
+    const [roleError, setRoleError] = useState<string | null>(null);
+
     const [group, setGroup] = useState<UserGroup | null>(null);
     const [members, setMembers] = useState<GroupMember[]>([]);
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
     const [showInviteForm, setShowInviteForm] = useState(false);
     const [showProtocolForm, setShowProtocolForm] = useState(false);
     const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ profileId: number; message: string } | null>(null);
-    
 
     useEffect(() => {
         setLoading(true);
-        setError(null);
+        setLoadError(null);
         Promise.all([
             getGroupById(groupId),
             getGroupMembers(groupId),
@@ -49,18 +51,17 @@ function GroupDetailPage() {
                 setMembers(membersData);
                 setCurrentProfileId(profile.id ?? null);
             })
-            .catch(err => setError(err.message))
+            .catch(err => setLoadError(err?.message || "Fehler beim Laden"))
             .finally(() => setLoading(false));
     }, [groupId]);
 
-    // eigene Rolle direkt aus Memberliste ableiten
     const myRole = members.find(m => m.profileId === currentProfileId)?.groupRole ?? "MEMBER";
 
     const handleRemove = (profileId: number) => {
-        setError(null);
+        setRemoveError(null);
         deleteMember(groupId, profileId)
             .then(() => setMembers(prev => prev.filter(m => m.profileId !== profileId)))
-            .catch(err => setError(err.message));
+            .catch(err => setRemoveError(err?.message || "Mitglied konnte nicht entfernt werden"));
     };
 
     const requestRemove = (profileId: number, message: string) => {
@@ -73,28 +74,33 @@ function GroupDetailPage() {
         setConfirmRemoveMember(null);
     };
 
-    const closeConfirm = () => setConfirmRemoveMember(null);
-
     const handleUpdateRole = (profileId: number, currentRole: string) => {
         const groupRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
-        setError(null);
+        setRoleError(null);
         updateMemberRole(groupId, profileId, groupRole)
             .then(() =>
                 setMembers(prev =>
-                    prev.map(m =>
-                        m.profileId === profileId ? { ...m, groupRole: groupRole } : m
-                    )
+                    prev.map(m => m.profileId === profileId ? { ...m, groupRole } : m)
                 )
             )
-            .catch(err => setError(err.message));
+            .catch(err => setRoleError(err?.message || "Rolle konnte nicht geändert werden"));
     };
 
-    if (loading) return <p>Laden...</p>;
-    if (error) return <p>Fehler: {error}</p>;
+    if (loading) return <TableSkeleton rows={4} cols={3} />;
+
+    if (loadError) return (
+        <div>
+            <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
+            <Button label="Erneut versuchen" type="button" onClick={() => window.location.reload()} />
+        </div>
+    );
 
     return (
         <div>
             <h2>{group?.name} - Mitglieder</h2>
+
+            {removeError && <p style={{ color: "#dc2626" }}>{removeError}</p>}
+            {roleError && <p style={{ color: "#dc2626" }}>{roleError}</p>}
 
             {(myRole === "OWNER" || myRole === "ADMIN") && (
                 <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
@@ -103,36 +109,23 @@ function GroupDetailPage() {
             {showInviteForm && (
                 <div
                     onClick={() => setShowInviteForm(false)}
-                    style={{
-                        position: "fixed", inset: 0,
-                        background: "rgba(0,0,0,0.4)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        zIndex: 100,
-                    }}
+                    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}
                 >
                     <div onClick={e => e.stopPropagation()}>
-                        <InviteMemberForm
-                            groupId={groupId}
-                            onClose={() => setShowInviteForm(false)}
-                        />
+                        <InviteMemberForm groupId={groupId} onClose={() => setShowInviteForm(false)} />
                     </div>
                 </div>
             )}
 
-            <Button
-                label="+ Protokoll hinzufügen"
-                onClick={() => setShowProtocolForm(true)}
-            />
+            <Button label="+ Protokoll hinzufügen" onClick={() => setShowProtocolForm(true)} />
 
-            {
-                showProtocolForm && (
-                    <ProtocolAddForm
-                        onClose={() => setShowProtocolForm(false)}
-                        onSuccess={() => setShowProtocolForm(false)}
-                        usergroupId={groupId}
-                    />
-                )
-            }
+            {showProtocolForm && (
+                <ProtocolAddForm
+                    onClose={() => setShowProtocolForm(false)}
+                    onSuccess={() => setShowProtocolForm(false)}
+                    usergroupId={groupId}
+                />
+            )}
 
             <table>
                 <thead>
@@ -186,7 +179,7 @@ function GroupDetailPage() {
                 confirmLabel="Ja, löschen"
                 cancelLabel="Abbrechen"
                 onConfirm={confirmRemove}
-                onCancel={closeConfirm}
+                onCancel={() => setConfirmRemoveMember(null)}
             />
         </div>
     );

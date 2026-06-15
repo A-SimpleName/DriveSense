@@ -45,7 +45,12 @@ export default function ResetPasswordPage() {
         setLoading(true);
         setError(null);
         try {
-            await resetPassword(email.trim(), code.trim(), newPassword);
+            await resetPassword(
+                email.trim(),
+                code.trim(),
+                newPassword
+            );
+
             navigate("/login");
         } catch (err: any) {
             setError(err?.message || "Fehler beim Zurücksetzen");
@@ -183,6 +188,14 @@ export default function ResetPasswordPage() {
                         {error && <p className="form-hint error">{error}</p>}
 
                         <button className="reset-password-submit" type="submit" disabled={submitDisabled}>
+                            {loading && (
+                                <span style={{
+                                    display: "inline-block", width: "12px", height: "12px",
+                                    border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                    borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                    verticalAlign: "middle", marginRight: "6px",
+                                }} />
+                            )}
                             {loading ? "Wird gespeichert..." : "Passwort speichern"}
                         </button>
 

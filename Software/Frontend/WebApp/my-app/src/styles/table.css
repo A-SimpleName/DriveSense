@@ -1,17 +1,11 @@
 .ridesTable {
   overflow-x: auto;
+  overflow-y: hidden;
   border-radius: var(--radius);
-}
-
-.ridesTable input,
-.ridesTable select {
-    width: 100%;
-    max-width: 120px;
-    box-sizing: border-box;
-}
-
-.ridesTable input[type="datetime-local"] {
-    max-width: 160px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+  scrollbar-width: thin;
 }
 
 table {
@@ -20,7 +14,7 @@ table {
   background: var(--surface);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 table thead {
@@ -31,7 +25,7 @@ table thead {
 
 table th,
 table td {
-  padding: 16px 18px;
+  padding: 14px 16px;
   text-align: left;
   vertical-align: middle;
   border-bottom: 1px solid var(--border-light);
@@ -54,9 +48,10 @@ table tbody tr:nth-child(even) {
 }
 
 table tbody tr:hover {
-  background: rgba(37,99,235,0.04);
+  background: rgba(37,99,235,0.06);
+  color: var(--text);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 table td {

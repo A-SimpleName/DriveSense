@@ -7,6 +7,7 @@ type ConfirmationDialogProps = {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -17,6 +18,7 @@ export function ConfirmationDialog({
   message,
   confirmLabel = "Löschen",
   cancelLabel = "Abbrechen",
+  confirmLoading = false,
   onConfirm,
   onCancel,
 }: ConfirmationDialogProps) {
@@ -44,8 +46,8 @@ export function ConfirmationDialog({
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
-          <Button className="secondary small" label={cancelLabel} onClick={onCancel} />
-          <Button label={confirmLabel} onClick={onConfirm} />
+          <Button className="secondary small" label={cancelLabel} onClick={onCancel} disabled={confirmLoading} />
+          <Button label={confirmLoading ? `${confirmLabel}...` : confirmLabel} loading={confirmLoading} onClick={onConfirm} />
         </div>
       </div>
     </div>,

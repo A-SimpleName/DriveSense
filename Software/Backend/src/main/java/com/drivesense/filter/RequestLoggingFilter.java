@@ -1,4 +1,4 @@
-package com.drivesense.configs;
+package com.drivesense.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

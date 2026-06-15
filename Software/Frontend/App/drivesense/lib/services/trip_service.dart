@@ -1,16 +1,17 @@
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
+import 'package:drivesense/model/trip_detailed.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
+import 'package:drivesense/services/auth_http_client.dart' as http;
 
 final String _baseUrl = ApiConfig.baseUrl;
 
@@ -133,9 +134,7 @@ class TripService {
 
     return http.post(
       Uri.parse('$_baseUrl/api/trips/summary'),
-      headers: <String, String>{
-        ...RequestHeaders.authenticatedJson(),
-      },
+      headers: <String, String>{...RequestHeaders.authenticatedJson()},
       body: jsonEncode(payload),
     );
   }
@@ -174,9 +173,7 @@ class TripService {
 
     final http.Response response = await http.put(
       Uri.parse('$_baseUrl/api/trips/${tripSummary.id}'),
-      headers: <String, String>{
-        ...RequestHeaders.authenticatedJson(),
-      },
+      headers: <String, String>{...RequestHeaders.authenticatedJson()},
       body: jsonEncode(payload),
     );
 
@@ -188,11 +185,15 @@ class TripService {
     }
   }
 
-  Future<bool> deleteTripSummary(int tripId) async {
+  Future<bool> deleteTripSummary(TripSummary tripSummary) async {
+    final int tripId = tripSummary.id;
     if (tripId <= 0) {
       return false;
     }
 
+    if (!tripSummary.isSynced) {
+      return _deleteLocalTripSummary(tripId);
+    }
 
     try {
       final http.Response response = await http.delete(
@@ -200,9 +201,150 @@ class TripService {
         headers: RequestHeaders.authenticated(),
       );
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      final bool success =
+          response.statusCode >= 200 && response.statusCode < 300;
+      if (success) {
+        await _deleteCachedServerTrip(tripId);
+      }
+      return success;
     } catch (_) {
       return false;
+    }
+  }
+
+  Future<bool> _deleteLocalTripSummary(int tripId) async {
+    final Trip? localTrip = await _tripRepository.getById(tripId);
+    if (localTrip == null || localTrip.isSynced) {
+      return false;
+    }
+
+    await _tripRepository.deleteById(localTrip.id);
+    return true;
+  }
+
+  Future<void> _deleteCachedServerTrip(int tripId) async {
+    final Trip? cachedTrip = await _tripRepository.getByLocalId(
+      'server:$tripId',
+    );
+    if (cachedTrip != null) {
+      await _tripRepository.deleteById(cachedTrip.id);
+    }
+  }
+
+  Future<TripDetailed> fetchTripDetail(
+    int tripId, {
+    TripSummary? fallbackSummary,
+  }) async {
+    final TripDetailed? cached = RuntimeStore.getTripDetail(tripId);
+    if (cached != null) {
+      return cached;
+    }
+
+    try {
+      final http.Response response = await http
+          .get(
+            Uri.parse('$_baseUrl/api/trips/$tripId'),
+            headers: RequestHeaders.authenticated(),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final dynamic decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final TripDetailed detail = _withFallbackSummaryFields(
+            TripDetailed.fromJson(decoded),
+            fallbackSummary,
+          );
+          RuntimeStore.addTripDetail(tripId, detail);
+          return detail;
+        }
+      } else {
+        debugPrint(
+          'fetchTripDetail server lookup skipped: ${response.statusCode} ${response.body}',
+        );
+      }
+    } catch (e, st) {
+      debugPrint('fetchTripDetail server lookup failed: $e\n$st');
+    }
+
+    final TripDetailed? localDetail = await _fetchLocalTripDetail(
+      tripId,
+      fallbackSummary: fallbackSummary,
+    );
+    if (localDetail != null) {
+      RuntimeStore.addTripDetail(tripId, localDetail);
+      return localDetail;
+    }
+
+    if (fallbackSummary != null) {
+      return TripDetailed(
+        summary: fallbackSummary,
+        trackingpoints: <Trackingpoint>[],
+      );
+    }
+
+    throw TripHttpException('Fahrtdetails konnten nicht geladen werden.');
+  }
+
+  Future<TripDetailed?> _fetchLocalTripDetail(
+    int tripId, {
+    TripSummary? fallbackSummary,
+  }) async {
+    final Trip? trip = await _tripRepository.getById(tripId);
+    if (trip == null) {
+      return null;
+    }
+
+    return _withFallbackSummaryFields(
+      TripDetailed(
+        summary: TripSummary.fromTrip(trip),
+        trackingpoints: _decodeTrackingPoints(trip.trackingPointsJson),
+      ),
+      fallbackSummary,
+    );
+  }
+
+  TripDetailed _withFallbackSummaryFields(
+    TripDetailed detail,
+    TripSummary? fallbackSummary,
+  ) {
+    if (fallbackSummary == null) {
+      return detail;
+    }
+
+    return detail.copyWith(
+      summary: detail.summary.copyWith(
+        vehicleLicensePlate:
+            detail.summary.vehicleLicensePlate ??
+            fallbackSummary.vehicleLicensePlate,
+        accountFirstName:
+            detail.summary.accountFirstName ?? fallbackSummary.accountFirstName,
+        accountLastName:
+            detail.summary.accountLastName ?? fallbackSummary.accountLastName,
+        vehicleModel:
+            detail.summary.vehicleModel ?? fallbackSummary.vehicleModel,
+        startPoint: detail.summary.startPoint ?? fallbackSummary.startPoint,
+        furthestPoint:
+            detail.summary.furthestPoint ?? fallbackSummary.furthestPoint,
+        endPoint: detail.summary.endPoint ?? fallbackSummary.endPoint,
+        type: detail.summary.type ?? fallbackSummary.type,
+      ),
+    );
+  }
+
+  List<Trackingpoint> _decodeTrackingPoints(String value) {
+    try {
+      final dynamic decoded = jsonDecode(value);
+      if (decoded is! List) {
+        return <Trackingpoint>[];
+      }
+
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(Trackingpoint.fromJson)
+          .toList();
+    } catch (_) {
+      return <Trackingpoint>[];
     }
   }
 
@@ -221,6 +363,7 @@ class TripService {
       'distance': tripSummary.distanceKm,
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
       'startPoint': tripSummary.startPoint,
+      'furthestPoint': tripSummary.furthestPoint,
       'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
       'startMileage': tripSummary.startMileage,
@@ -252,9 +395,7 @@ class TripService {
 
     return http.post(
       Uri.parse('$_baseUrl/api/trips/$tripId/trackingpoints'),
-      headers: <String, String>{
-        ...RequestHeaders.authenticatedJson(),
-      },
+      headers: <String, String>{...RequestHeaders.authenticatedJson()},
       body: jsonEncode(payload),
     );
   }
@@ -278,9 +419,7 @@ class TripService {
     return 0;
   }
 
-  Future<int?> _resolveProtocolIdForSync({
-    int preferredProtocolId = 0,
-  }) async {
+  Future<int?> _resolveProtocolIdForSync({int preferredProtocolId = 0}) async {
     final int? resolved =
         await ProtocolService.resolvePreferredCurrentOrFirstAvailableProtocolId(
           preferredProtocolId: preferredProtocolId,
@@ -307,12 +446,54 @@ class TripService {
     return VehicleService.createDefaultVehicle(profileId);
   }
 
+  Future<TripSummary?> fetchLatestTrip() async {
+    try {
+      final http.Response response = await http.get(
+        Uri.parse('$_baseUrl/api/trips/latest'),
+        headers: RequestHeaders.authenticated(),
+      );
+
+      if (response.statusCode == 204 || response.body.trim().isEmpty) {
+        return null;
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        debugPrint(
+          'fetchLatestTrip skipped: ${response.statusCode} ${response.body}',
+        );
+        return null;
+      }
+
+      final dynamic decoded = jsonDecode(response.body);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+
+      final TripSummary summary = TripSummary.fromJson(decoded);
+      if (summary.id <= 0) {
+        return null;
+      }
+
+      if (summary.profileId > 0 && summary.protocolId > 0) {
+        await _upsertServerTrip(
+          profileId: summary.profileId,
+          protocolId: summary.protocolId,
+          summary: summary,
+        );
+      }
+
+      return summary;
+    } catch (e, st) {
+      debugPrint('fetchLatestTrip failed, using local data only: $e\n$st');
+      return null;
+    }
+  }
+
   Future<List<TripSummary>> fetchTrips(int profileId, int protocolId) async {
     // Isar is the source of truth: return local data even when server sync fails.
     final List<Trip> localBeforeSync = await _tripRepository
         .getByProfileAndProtocol(profileId, protocolId);
     final List<TripSummary> serverSummaries = <TripSummary>[];
-
 
     try {
       final http.Response response = await http.get(
@@ -408,5 +589,4 @@ class TripService {
 
     await _tripRepository.save(trip);
   }
-
 }

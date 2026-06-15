@@ -1,23 +1,44 @@
 // SignUpPage — nach Registrierung zu Verifizierung weiterleiten
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp } from "../services/auth";
+import { getFieldErrors } from "../errorHandling/errorHandling"; // ← deinen tatsächlichen Import-Pfad anpassen
 import "../styles/signup.css";
 
 interface Props {
     onNeedsVerification: () => void;
 }
 
+function FieldError({ errors, field }: { errors: Record<string, string> | null; field: string }) {
+    if (!errors?.[field]) return null;
+    return (
+        <span style={{ fontSize: "0.8rem", color: "#dc2626", display: "block", marginTop: "4px" }}>
+            {errors[field]}
+        </span>
+    );
+}
+
 function SignUpPage({ onNeedsVerification }: Props) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [fName, setFname] = useState("");
-    const [lName, setLName] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [birthdate, setBirthdate] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const clearFieldError = (field: string) => {
+        setFieldErrors(prev => {
+            if (!prev?.[field]) return prev;
+            const next = { ...prev };
+            delete next[field];
+            return Object.keys(next).length > 0 ? next : null;
+        });
+    };
 
     const passwordRules = [
         { key: "length", label: "Mindestens 8 Zeichen", met: password.length >= 8 },
@@ -28,23 +49,37 @@ function SignUpPage({ onNeedsVerification }: Props) {
 
     const passwordMeetsPolicy = passwordRules.every((rule) => rule.met);
     const passwordMismatch = confirmPassword.length > 0 && password !== confirmPassword;
-    const submitDisabled = !fName || !lName || !email || !password || !confirmPassword || !birthdate || passwordMismatch || !passwordMeetsPolicy;
+    const submitDisabled =
+        !firstName || !lastName || !email || !password || !confirmPassword ||
+        !birthdate || passwordMismatch || !passwordMeetsPolicy;
 
-    const handleSignUp = async (e: React.FormEvent) => {
+    const hasError = (field: string) => !!fieldErrors?.[field];
+
+    const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
+        setFieldErrors(null);
+        setSubmitting(true);
 
         if (password !== confirmPassword) {
             setError("Die Passwörter stimmen nicht überein.");
+            setSubmitting(false);
             return;
         }
 
         try {
-            await signUp(fName, lName, email, password, birthdate);
+            await signUp(firstName, lastName, email, password, birthdate);
             sessionStorage.setItem("pendingVerificationEmail", email);
             onNeedsVerification();
         } catch (err: any) {
-            setError(err?.message || "Registrierung fehlgeschlagen");
+            const fields = getFieldErrors(err);
+            if (fields && Object.keys(fields).length > 0) {
+                setFieldErrors(fields);
+            } else {
+                setError(err?.message || "Registrierung fehlgeschlagen");
+            }
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -57,7 +92,6 @@ function SignUpPage({ onNeedsVerification }: Props) {
                     <p className="signup-copy">
                         Registriere dich, um Fahrten, Fahrzeuge und Protokolle zentral zu verwalten.
                     </p>
-
                     <ul className="signup-highlights">
                         <li>Dein persönliches Fahrzeug- und Protokoll-Setup</li>
                         <li>Schnelle Fahrtenverwaltung mit vollständigem Überblick</li>
@@ -77,38 +111,50 @@ function SignUpPage({ onNeedsVerification }: Props) {
                             <label className="signup-field">
                                 <span className="signup-label">Vorname</span>
                                 <input
-                                    className="signup-input"
+                                    className={`signup-input ${hasError("firstName") ? "input-error" : ""}`}
                                     type="text"
-                                    name="fname"
-                                    value={fName}
-                                    onChange={(e) => setFname(e.target.value)}
+                                    id="firstName"
+                                    value={firstName}
+                                    onChange={(e) => {
+                                        setFirstName(e.target.value);
+                                        clearFieldError("firstName");
+                                    }}
                                     placeholder="Max"
                                 />
+                                <FieldError errors={fieldErrors} field="firstName" />
                             </label>
 
                             <label className="signup-field">
                                 <span className="signup-label">Nachname</span>
                                 <input
-                                    className="signup-input"
+                                    className={`signup-input ${hasError("lastName") ? "input-error" : ""}`}
                                     type="text"
-                                    name="lname"
-                                    value={lName}
-                                    onChange={(e) => setLName(e.target.value)}
+                                    id="lastName"
+                                    value={lastName}
+                                    onChange={(e) => {
+                                        setLastName(e.target.value);
+                                        clearFieldError("lastName");
+                                    }}
                                     placeholder="Mustermann"
                                 />
+                                <FieldError errors={fieldErrors} field="lastName" />
                             </label>
                         </div>
 
                         <label className="signup-field">
                             <span className="signup-label">E-Mail</span>
                             <input
-                                className="signup-input"
+                                className={`signup-input ${hasError("email") ? "input-error" : ""}`}
                                 type="email"
-                                name="email"
+                                id="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    clearFieldError("email");
+                                }}
                                 placeholder="max@example.com"
                             />
+                            <FieldError errors={fieldErrors} field="email" />
                         </label>
 
                         <label className="signup-field">
@@ -116,21 +162,25 @@ function SignUpPage({ onNeedsVerification }: Props) {
                             <input
                                 className="signup-input"
                                 type="date"
-                                name="birthdate"
+                                id="birthdate"
                                 value={birthdate}
                                 onChange={(e) => setBirthdate(e.target.value)}
                             />
+                            <FieldError errors={fieldErrors} field="birthdate" />
                         </label>
 
                         <label className="signup-field">
                             <span className="signup-label">Passwort</span>
                             <div className="password-input-wrapper">
                                 <input
-                                    className={`signup-input password-input ${password.length > 0 && !passwordMeetsPolicy ? "input-error" : ""}`}
+                                    className={`signup-input password-input ${hasError("password") || (password.length > 0 && !passwordMeetsPolicy) ? "input-error" : ""}`}
                                     type={showPassword ? "text" : "password"}
-                                    name="password"
+                                    id="password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        clearFieldError("password");
+                                    }}
                                     placeholder="Passwort eingeben"
                                 />
                                 <button
@@ -153,6 +203,7 @@ function SignUpPage({ onNeedsVerification }: Props) {
                                     )}
                                 </button>
                             </div>
+                            <FieldError errors={fieldErrors} field="password" />
                             <ul className="password-requirements">
                                 {passwordRules.map((rule) => (
                                     <li
@@ -172,7 +223,6 @@ function SignUpPage({ onNeedsVerification }: Props) {
                                 <input
                                     className={`signup-input password-input ${passwordMismatch ? "input-error" : ""}`}
                                     type={showConfirmPassword ? "text" : "password"}
-                                    name="confirmPassword"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Passwort erneut eingeben"
@@ -204,8 +254,16 @@ function SignUpPage({ onNeedsVerification }: Props) {
 
                         {error && <p className="signup-error-banner">{error}</p>}
 
-                        <button className="signup-submit full" type="submit" disabled={submitDisabled}>
-                            Konto erstellen
+                        <button className="signup-submit full" type="submit" disabled={submitDisabled || submitting}>
+                            {submitting && (
+                                <span style={{
+                                    display: "inline-block", width: "12px", height: "12px",
+                                    border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                    borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                    verticalAlign: "middle", marginRight: "6px",
+                                }} />
+                            )}
+                            {submitting ? "Wird registriert..." : "Konto erstellen"}
                         </button>
                     </form>
 

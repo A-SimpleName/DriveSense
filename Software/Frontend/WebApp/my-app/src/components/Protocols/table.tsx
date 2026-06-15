@@ -5,7 +5,7 @@ import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 
-export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm }: { ownProtocols: Protocol[], groupProtocols: Protocol[], setShowForm: (open: boolean) => void }) {
+export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm, onDeleted }: { ownProtocols: Protocol[], groupProtocols: Protocol[], setShowForm: (open: boolean) => void, onDeleted?: () => void }) {
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
@@ -33,8 +33,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
     const handleDelete = (id: number) => {
         deleteProtocol(id)
             .then(() => {
-                // Nach dem Löschen die Seite neu laden oder die Listen aktualisieren
-                window.location.reload();
+                onDeleted?.();
             })
             .catch(err => setError(err.message))
     }

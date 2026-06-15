@@ -1,6 +1,5 @@
 import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/account.dart';
-import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -179,8 +178,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
     try {
       final Account account = Account(
-        fName: firstName,
-        lName: lastName,
+        firstName: firstName,
+        lastName: lastName,
         email: email,
         password: password,
         birthdate: _birthdate,
@@ -217,21 +216,17 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
-      RuntimeStore.setAuthToken(signInResult.accountToken!);
-      if (signInResult.refreshToken != null &&
-          signInResult.refreshToken!.isNotEmpty) {
-        RuntimeStore.setRefreshToken(signInResult.refreshToken!);
-      }
-
-      SignInAndSignUp.redirectToProfileSelectPage(
-        token: signInResult.accountToken,
-      );
-
       if (!mounted) {
         return;
       }
 
-      Navigator.pushNamedAndRemoveUntil(context, 'MainPage', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        SignInAndSignUp.redirectToProfileSelectPage(
+          token: signInResult.accountToken,
+        ),
+        (route) => false,
+      );
     } catch (e) {
       if (!mounted) {
         return;

@@ -1,66 +1,194 @@
-.vehicleAddForm,
-.protocolAddForm,
-.groupAddForm {
+.addForm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.addForm {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  max-width: 640px;
-  margin: 0 auto 32px;
-  padding: 32px;
+  width: 100%;
+  max-width: 600px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  animation: slideUp 0.3s ease;
+  overflow: hidden;
+  animation: addForm-in 0.2s ease;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes addForm-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.vehicleAddForm *,
-.protocolAddForm *,
-.groupAddForm * {
+.addForm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.addForm-header h2 {
   margin: 0;
-}
-
-.vehicleAddForm label,
-.protocolAddForm label,
-.groupAddForm label {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text);
-  font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 8px;
 }
 
-.vehicleAddForm input,
-.protocolAddForm input,
-.groupAddForm input,
-.vehicleAddForm select,
-.protocolAddForm select,
-.groupAddForm select,
-.vehicleAddForm textarea,
-.protocolAddForm textarea,
-.groupAddForm textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
+.addForm-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
-  background: var(--surface-soft);
-  font-size: 1rem;
+  transition: background 0.2s ease;
 }
 
-.vehicleAddForm button,
-.protocolAddForm button,
-.groupAddForm button {
-  margin-top: 8px;
+.addForm-close:hover {
+  background: var(--surface-strong);
+}
+
+.addForm-error {
+  margin: 0;
+  padding: 12px 24px;
+  background: rgba(220, 38, 38, 0.07);
+  border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.addForm-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px;
+}
+
+.addForm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.addForm-field:last-of-type {
+  border-bottom: none;
+}
+
+.addForm-field label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+.addForm-field input,
+.addForm-field select,
+.addForm-field textarea {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  width: 100%;
+}
+
+.addForm-field input:hover,
+.addForm-field select:hover,
+.addForm-field textarea:hover {
+  background: transparent;
+  border: none;
+}
+
+.addForm-field input:focus,
+.addForm-field select:focus,
+.addForm-field textarea:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.addForm-field:focus-within label {
+  color: var(--primary);
+}
+
+.addForm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.addForm-cancel {
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.addForm-cancel:hover {
+  background: var(--surface-strong);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.addForm-submit {
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.addForm-submit:hover:not(:disabled) {
+  background: var(--primary-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.addForm-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.addForm-field--error label {
+  color: #dc2626;
+}
+
+.addForm-field--error input,
+.addForm-field--error select,
+.addForm-field--error textarea {
+  color: #dc2626;
+}
+
+.addForm-field--error:focus-within label {
+  color: #dc2626;
+}
+
+.addForm-field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 2px;
 }
