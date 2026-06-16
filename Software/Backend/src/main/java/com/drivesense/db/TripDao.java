@@ -2,6 +2,7 @@ package com.drivesense.db;
 
 import com.drivesense.DbConnection;
 import com.drivesense.dto.response.TripSummaryDto;
+import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.DatabaseException;
 import com.drivesense.model.TripSummary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,6 @@ public class TripDao {
         this.dbConnection = dbConnection;
     }
 
-    // ─────────────────────────────────────────────
-    // INSERT
-    // ─────────────────────────────────────────────
     public int insert(TripSummary tripSummary) {
         String sql = """
             INSERT INTO trip (
@@ -40,8 +38,33 @@ public class TripDao {
                 end_point,
                 furthest_point,
                 start_mileage,
-                end_mileage
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                end_mileage,
+                vehicle_model_snapshot,
+                licenseplate_snapshot,
+                profile_name_snapshot
+            )
+            SELECT
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                v.model,
+                v.license_plate,
+                p.name
+            FROM vehicle v
+            JOIN profile_vehicle pv ON pv.vehicle_id = v.id
+            JOIN profile p ON p.id = pv.profile_id
+            WHERE v.id = ?
+              AND pv.profile_id = ?
         """;
 
         try (Connection conn = dbConnection.getConnection();
@@ -60,14 +83,19 @@ public class TripDao {
             ps.setString(11, tripSummary.getFurthestPoint());
             ps.setInt(12, tripSummary.getStartMileage());
             ps.setInt(13, tripSummary.getEndMileage());
+            ps.setInt(14, tripSummary.getVehicleId());
+            ps.setInt(15, tripSummary.getProfileId());
 
-            ps.executeUpdate();
+            int insertedRows = ps.executeUpdate();
+            if (insertedRows == 0) {
+                throw new BadRequestException("Fahrzeug ist fuer dieses Profil nicht verfuegbar");
+            }
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     return keys.getInt(1);
                 }
-                throw new DatabaseException("Keine Trip ID zurückgegeben", new SQLException());
+                throw new DatabaseException("Keine Trip ID zurueckgegeben", new SQLException());
             }
 
         } catch (SQLException e) {
@@ -75,9 +103,6 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // READ SINGLE
-    // ─────────────────────────────────────────────
     public TripSummary getById(int id) {
         String sql = "SELECT * FROM trip WHERE id = ?";
 
@@ -86,7 +111,6 @@ public class TripDao {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-
             return rs.next() ? map(rs) : null;
 
         } catch (SQLException e) {
@@ -113,50 +137,47 @@ public class TripDao {
 
     public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
         String sql = """
-                SELECT
-                    t.id,
-                    t.profile_id,
-                    t.vehicle_id,
-                    t.protocol_id,
-                    pr.name AS protocol_name,
-                    t.start_time,
-                    t.end_time,
-                    t.distance,
-                    t.start_mileage,
-                    t.end_mileage,
-                    v.license_plate,
-                    v.model AS vehicle_model,
-                    t.start_point,
-                    t.furthest_point,
-                    t.end_point,
-                    t.road_surface_conditions,
-                    t.type,
-                    a.first_name,
-                    a.last_name
-                FROM trip t
-                JOIN protocol pr ON t.protocol_id = pr.id
-                JOIN vehicle v ON t.vehicle_id = v.id
-                JOIN profile prf ON t.profile_id = prf.id
-                JOIN account a ON prf.account_id = a.id
-                WHERE t.profile_id = ?
-                  AND t.end_time IS NOT NULL
-                  AND EXISTS (
-                      SELECT 1
-                      FROM trackingpoint tp
-                      WHERE tp.trip_id = t.id
-                  )
-                ORDER BY t.end_time DESC, t.start_time DESC, t.id DESC
-                LIMIT 1
-                """;
+            SELECT
+                t.id,
+                t.profile_id,
+                t.vehicle_id,
+                t.protocol_id,
+                pr.name AS protocol_name,
+                t.start_time,
+                t.end_time,
+                t.distance,
+                t.start_mileage,
+                t.end_mileage,
+                t.licenseplate_snapshot AS license_plate,
+                t.vehicle_model_snapshot AS vehicle_model,
+                t.start_point,
+                t.furthest_point,
+                t.end_point,
+                t.road_surface_conditions,
+                t.type,
+                a.first_name,
+                a.last_name
+            FROM trip t
+            JOIN protocol pr ON t.protocol_id = pr.id
+            JOIN profile prf ON t.profile_id = prf.id
+            JOIN account a ON prf.account_id = a.id
+            WHERE t.profile_id = ?
+              AND t.end_time IS NOT NULL
+              AND EXISTS (
+                  SELECT 1
+                  FROM trackingpoint tp
+                  WHERE tp.trip_id = t.id
+              )
+            ORDER BY t.end_time DESC, t.start_time DESC, t.id DESC
+            LIMIT 1
+        """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, profileId);
             ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) return mapToDto(rs);
-            return null;
+            return rs.next() ? mapToDto(rs) : null;
 
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim Laden der letzten Fahrt", e);
@@ -164,35 +185,33 @@ public class TripDao {
     }
 
     public List<TripSummaryDto> getAllByProtocolId(int protocolId) {
-
         String sql = """
-        SELECT
-            t.id,
-            t.profile_id,
-            t.vehicle_id,
-            t.protocol_id,
-            pr.name AS protocol_name,
-            t.start_time,
-            t.end_time,
-            t.distance,
-            t.start_mileage,
-            t.end_mileage,
-            v.license_plate,
-            v.model AS vehicle_model,
-            t.start_point,
-            t.furthest_point,
-            t.end_point,
-            t.road_surface_conditions,
-            t.type,
-            a.first_name,
-            a.last_name
-        FROM trip t
-        JOIN protocol pr ON t.protocol_id = pr.id
-        JOIN vehicle v ON t.vehicle_id = v.id
-        JOIN profile prf ON t.profile_id = prf.id
-        JOIN account a ON prf.account_id = a.id
-        WHERE t.protocol_id = ?
-    """;
+            SELECT
+                t.id,
+                t.profile_id,
+                t.vehicle_id,
+                t.protocol_id,
+                pr.name AS protocol_name,
+                t.start_time,
+                t.end_time,
+                t.distance,
+                t.start_mileage,
+                t.end_mileage,
+                t.licenseplate_snapshot AS license_plate,
+                t.vehicle_model_snapshot AS vehicle_model,
+                t.start_point,
+                t.furthest_point,
+                t.end_point,
+                t.road_surface_conditions,
+                t.type,
+                a.first_name,
+                a.last_name
+            FROM trip t
+            JOIN protocol pr ON t.protocol_id = pr.id
+            JOIN profile prf ON t.profile_id = prf.id
+            JOIN account a ON prf.account_id = a.id
+            WHERE t.protocol_id = ?
+        """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -201,9 +220,7 @@ public class TripDao {
             ResultSet rs = ps.executeQuery();
 
             List<TripSummaryDto> list = new ArrayList<>();
-            while (rs.next()) {
-                list.add(mapToDto(rs));
-            }
+            while (rs.next()) list.add(mapToDto(rs));
             return list;
 
         } catch (SQLException e) {
@@ -211,9 +228,6 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // READ LISTS
-    // ─────────────────────────────────────────────
     public List<TripSummary> getByProfileId(int profileId) {
         String sql = "SELECT * FROM trip WHERE profile_id = ?";
 
@@ -245,8 +259,8 @@ public class TripDao {
                 t.distance,
                 t.start_mileage,
                 t.end_mileage,
-                v.license_plate,
-                v.model AS vehicle_model,
+                t.licenseplate_snapshot AS license_plate,
+                t.vehicle_model_snapshot AS vehicle_model,
                 t.start_point,
                 t.furthest_point,
                 t.end_point,
@@ -256,7 +270,6 @@ public class TripDao {
                 a.last_name
             FROM trip t
             JOIN protocol pr ON t.protocol_id = pr.id
-            JOIN vehicle v ON t.vehicle_id = v.id
             JOIN profile prf ON t.profile_id = prf.id
             JOIN account a ON prf.account_id = a.id
             WHERE t.profile_id = ?
@@ -294,11 +307,7 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // DTO QUERIES (ACCESS CONTROL)
-    // ─────────────────────────────────────────────
     public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
-
         String sql = """
             SELECT
                 t.id,
@@ -311,8 +320,8 @@ public class TripDao {
                 t.distance,
                 t.start_mileage,
                 t.end_mileage,
-                v.license_plate,
-                v.model AS vehicle_model,
+                t.licenseplate_snapshot AS license_plate,
+                t.vehicle_model_snapshot AS vehicle_model,
                 t.start_point,
                 t.furthest_point,
                 t.end_point,
@@ -322,7 +331,6 @@ public class TripDao {
                 a.last_name
             FROM trip t
             JOIN protocol pr ON t.protocol_id = pr.id
-            JOIN vehicle v ON t.vehicle_id = v.id
             JOIN profile prf ON t.profile_id = prf.id
             JOIN account a ON prf.account_id = a.id
             WHERE t.id = ?
@@ -353,7 +361,6 @@ public class TripDao {
     }
 
     public List<TripSummaryDto> getAllByProfileAndProtocolId(int protocolId, int profileId) {
-
         String sql = """
             SELECT
                 t.id,
@@ -366,8 +373,8 @@ public class TripDao {
                 t.distance,
                 t.start_mileage,
                 t.end_mileage,
-                v.license_plate,
-                v.model AS vehicle_model,
+                t.licenseplate_snapshot AS license_plate,
+                t.vehicle_model_snapshot AS vehicle_model,
                 t.start_point,
                 t.furthest_point,
                 t.end_point,
@@ -377,7 +384,6 @@ public class TripDao {
                 a.last_name
             FROM trip t
             JOIN protocol pr ON t.protocol_id = pr.id
-            JOIN vehicle v ON t.vehicle_id = v.id
             JOIN profile prf ON t.profile_id = prf.id
             JOIN account a ON prf.account_id = a.id
             WHERE t.protocol_id = ?
@@ -410,9 +416,6 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // UPDATE
-    // ─────────────────────────────────────────────
     public void update(TripSummary tripSummary) {
         String sql = """
             UPDATE trip SET
@@ -455,9 +458,6 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // DELETE
-    // ─────────────────────────────────────────────
     public void deleteById(int id) {
         String sql = "DELETE FROM trip WHERE id = ?";
 
@@ -468,13 +468,10 @@ public class TripDao {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Fehler beim Löschen der Fahrt", e);
+            throw new DatabaseException("Fehler beim Loeschen der Fahrt", e);
         }
     }
 
-    // ─────────────────────────────────────────────
-    // MAPPERS
-    // ─────────────────────────────────────────────
     private TripSummary map(ResultSet rs) throws SQLException {
         TripSummary t = new TripSummary();
         t.setId(rs.getInt("id"));
@@ -503,7 +500,8 @@ public class TripDao {
         dto.setProtocolId(rs.getInt("protocol_id"));
         dto.setProtocolName(rs.getString("protocol_name"));
 
-        dto.setStartTime(rs.getTimestamp("start_time").toLocalDateTime());
+        Timestamp start = rs.getTimestamp("start_time");
+        if (start != null) dto.setStartTime(start.toLocalDateTime());
 
         Timestamp end = rs.getTimestamp("end_time");
         if (end != null) dto.setEndTime(end.toLocalDateTime());
@@ -511,18 +509,14 @@ public class TripDao {
         dto.setDistance(rs.getDouble("distance"));
         dto.setStartMileage(rs.getInt("start_mileage"));
         dto.setEndMileage(rs.getInt("end_mileage"));
-
         dto.setType(rs.getString("type"));
         dto.setLicensePlate(rs.getString("license_plate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
-
         dto.setStartPoint(rs.getString("start_point"));
         dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));
-
         dto.setAccountFirstName(rs.getString("first_name"));
         dto.setAccountLastName(rs.getString("last_name"));
-
         dto.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
 
         return dto;

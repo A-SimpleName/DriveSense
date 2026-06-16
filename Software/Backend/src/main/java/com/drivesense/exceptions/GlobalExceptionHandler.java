@@ -53,6 +53,11 @@ public class GlobalExceptionHandler {
         return error(403, ex.getMessage());
     }
 
+    @ExceptionHandler(NotVerifiedException.class)
+    public ResponseEntity<Map<String, String>> handleNotVerified(NotVerifiedException ex) {
+        return error(406, ex.getMessage());
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException ex) {
         return error(400, ex.getMessage());
@@ -61,7 +66,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PdfExportException.class)
     public ResponseEntity<Map<String, String>> handlePdfExport(PdfExportException ex) {
         log.error("PDF Export Fehler", ex);
-        return error(500, ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("message", ex.getMessage());
+        if (ex.getCause() != null && ex.getCause().getMessage() != null) {
+            error.put("detail", ex.getCause().getMessage());
+        }
+        return ResponseEntity.status(500).body(error);
     }
 
     @ExceptionHandler(DatabaseException.class)

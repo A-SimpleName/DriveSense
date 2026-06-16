@@ -163,6 +163,17 @@ function AppContent() {
               <Route path="admin" element={<AdminPage />} />
               <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
             </Route>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/trips" element={<TripsPage />} />
+            <Route path="/trips/:id" element={<TripDetailPage />} />
+            <Route path="/protocols/:id" element={<ProtocolDetail />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/settings" element={<Settings/>}/>
+            <Route path="/protocols" element={<ProtocolPage />} />
+            <Route path="/groups" element={<GroupPage />} />
+            <Route path="/groups/:id" element={<GroupDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/invite" element={<InviteAcceptPage />} />
           </>
         )}
         

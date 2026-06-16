@@ -153,7 +153,6 @@ export default function ProtocolView({
                         · {type.toUpperCase()}
                     </div>
                 </div>
-
                 {!isGroup && (
                     <div className={styles.right}>
                         <div className={styles.protoSub}>

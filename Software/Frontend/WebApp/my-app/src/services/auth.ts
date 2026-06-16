@@ -1,5 +1,3 @@
-// services/auth-service.ts
-
 import api from "../api/httpService";
 import { toAppError } from "../errorHandling/errorHandling";
 
@@ -12,58 +10,56 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
 }
 
 export async function signUp(
-  firstName: string,
-  lastName: string,
-  email: string,
-  password: string,
-  birthdate: string
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string,
+    birthdate: string
 ) {
-  return handleRequest(api.post("/account/signUp", {
-    firstName,
-    lastName,
-    email,
-    password,
-    birthdate: birthdate ? birthdate.split("T")[0] : null,
-  }));
+    return handleRequest(api.post("/account/signUp", {
+        firstName,
+        lastName,
+        email,
+        password,
+        birthdate: birthdate ? birthdate.split("T")[0] : null,
+    }));
 }
 
 export async function login(email: string, password: string) {
-  return handleRequest(api.post("/account/login", {
-    email,
-    password,
-  }));
+    return handleRequest(api.post("/account/login", {
+        email,
+        password,
+    }));
 }
 
 export async function logout() {
-  return handleRequest(api.post("/account/logout", {}));
+    return handleRequest(api.post("/account/logout", {}));
 }
 
 export async function logoutProfile() {
-  return handleRequest(api.post("/profiles/logout", {}));
+    return handleRequest(api.post("/profiles/logout", {}));
 }
 
 export async function checkAuth() {
-  try {
-    await api.get("/account");
-    return true;
-  } catch {
-    return false;
-  }
+    try {
+        await api.get("/account");
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 export async function selectProfile(profileId: number) {
-  return handleRequest(api.post(
-    `/account/select-profile?profileId=${profileId}`,
-    {}
-  ));
+    return handleRequest(api.post(
+        `/account/select-profile?profileId=${profileId}`,
+        {}
+    ));
 }
 
-// verify-email
 export async function verifyEmail(email: string, code: string) {
     return handleRequest(api.post("/account/verify-email", { email, code }));
 }
 
-// resend-verification
 export async function resendVerification(email: string) {
     return handleRequest(api.post("/account/resend-verification", { email }));
 }
@@ -77,5 +73,9 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(email: string, code: string, newPassword: string) {
-    return handleRequest(api.post("/account/reset-password", { email, code, newPassword }));
+    return handleRequest(api.post("/account/reset-password", {
+        email,
+        code,
+        newPassword,
+    }));
 }

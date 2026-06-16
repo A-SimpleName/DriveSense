@@ -1,5 +1,5 @@
-import type { Vehicle } from "../model/vehicle";
-import http from "../api/httpService";  
+import type { Vehicle, VehicleMember } from "../model/vehicle";
+import http from "../api/httpService";
 import type { CreateVehicle } from "../model/vehicle";
 import { toAppError } from "../errorHandling/errorHandling";
 
@@ -10,7 +10,6 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
         throw toAppError(err);
     }
 }
-
 
 export const getAllVehicles = () =>
     handleRequest<Vehicle[]>(http.get<Vehicle[]>("/vehicles/account"));
@@ -26,3 +25,24 @@ export const updateVehicle = (id: number, vehicle: CreateVehicle) =>
 
 export const deleteVehicle = (id: number) =>
     handleRequest<void>(http.delete(`/vehicles/${id}`));
+
+// Mitglieder eines Fahrzeugs laden (nur OWNER und CO_OWNER)
+export const getVehicleMembers = (vehicleId: number) =>
+    handleRequest<VehicleMember[]>(http.get<VehicleMember[]>(`/vehicles/${vehicleId}/members`));
+
+// Mitglied entfernen (OWNER entfernt CO_OWNER/DRIVER, CO_OWNER entfernt nur DRIVER)
+export const removeVehicleMember = (vehicleId: number, targetProfileId: number) =>
+    handleRequest<void>(http.delete(`/vehicles/${vehicleId}/members/${targetProfileId}`));
+
+// Einladung per E-Mail verschicken
+// role: "CO_OWNER" | "DRIVER" – wird vom Backend gegen die Rolle des Einladers geprüft
+export const inviteToVehicle = (vehicleId: number, email: string, role: "CO_OWNER" | "DRIVER") =>
+    handleRequest<void>(
+        http.post(`/vehicles/${vehicleId}/invitations`, { email, role })
+    );
+
+// Einladung annehmen – nur Code nötig, Profil wird automatisch gewählt (wie Group-Flow)
+export const acceptVehicleInvite = (code: string) =>
+    handleRequest<void>(
+        http.post(`/vehicles/invitations/accept`, { code })
+    );

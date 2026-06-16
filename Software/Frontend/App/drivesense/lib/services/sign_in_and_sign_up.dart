@@ -43,6 +43,32 @@ class SignInResult {
 class SignInAndSignUp {
   SignInAndSignUp._();
 
+  static String? _extractServerMessage(String rawBody) {
+    final Map<String, dynamic>? body = _parseJsonObject(rawBody);
+    if (body == null) {
+      return rawBody.trim().isEmpty ? null : rawBody.trim();
+    }
+
+    final dynamic errors = body['errors'];
+    if (errors is Map<String, dynamic> && errors.isNotEmpty) {
+      final String combined = errors.entries
+          .map(
+            (MapEntry<String, dynamic> entry) => '${entry.key}: ${entry.value}',
+          )
+          .join(', ');
+      if (combined.trim().isNotEmpty) {
+        return combined;
+      }
+    }
+
+    final dynamic message = body['message'] ?? body['error'];
+    if (message is String && message.trim().isNotEmpty) {
+      return message.trim();
+    }
+
+    return null;
+  }
+
   static Future<SignUpResult> signUp(Account account) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account/signUp');
     final Map<String, dynamic> payload = account.toJson();
@@ -52,11 +78,7 @@ class SignInAndSignUp {
 
     try {
       final http.Response response = await http
-          .post(
-            uri,
-            headers: RequestHeaders.json(),
-            body: jsonEncode(payload),
-          )
+          .post(uri, headers: RequestHeaders.json(), body: jsonEncode(payload))
           .timeout(const Duration(seconds: 10));
 
       final int statusCode = response.statusCode;
@@ -86,6 +108,15 @@ class SignInAndSignUp {
           isSuccess: false,
           message:
               '403 Forbidden: Backend blockiert den Aufruf (oft CSRF/CORS/Security-Rule).',
+          statusCode: statusCode,
+        );
+      }
+
+      final String? backendMessage = _extractServerMessage(response.body);
+      if (backendMessage != null) {
+        return SignUpResult(
+          isSuccess: false,
+          message: backendMessage,
           statusCode: statusCode,
         );
       }

@@ -66,7 +66,6 @@ export default function Settings() {
             <p>
                 Angemeldeter Account: {account?.firstName} {account?.lastName}
             </p>
-
             <p>Email: {account?.email}</p>
 
             <Button

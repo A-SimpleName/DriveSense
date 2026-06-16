@@ -6,6 +6,8 @@ import 'package:drivesense/widgets/ds_auth_scaffold.dart';
 import 'package:drivesense/widgets/verification_code_dialog.dart';
 import 'package:flutter/material.dart';
 
+enum _VerificationResult { verified, cancelled, failed }
+
 class SignUpPage extends StatefulWidget {
   final bool? token;
 
@@ -30,6 +32,55 @@ class _SignUpPageState extends State<SignUpPage> {
 
   bool _isStrongPassword(String password) {
     return RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$').hasMatch(password);
+  }
+
+  Future<_VerificationResult> _openVerificationDialog(String email) async {
+    final bool? verified = await VerificationCodeDialog.show(
+      context: context,
+      title: 'E-Mail bestaetigen',
+      description:
+          'Wir haben einen Bestätigungscode an $email gesendet. Bitte gib ihn ein, um die Registrierung abzuschliessen.',
+      submitLabel: 'Code bestaetigen',
+      resendLabel: 'Code erneut senden',
+      onSubmit: (String code) =>
+          EmailVerificationService.verifySignupEmail(email: email, code: code),
+      onResend: () => EmailVerificationService.resendSignupVerification(email),
+    );
+
+    if (verified == true) {
+      return _VerificationResult.verified;
+    }
+
+    if (verified == false) {
+      return _VerificationResult.cancelled;
+    }
+
+    return _VerificationResult.failed;
+  }
+
+  Future<_VerificationResult> _recoverVerificationAfterServerError(
+    String email,
+  ) async {
+    final String? resendError =
+        await EmailVerificationService.resendSignupVerification(email);
+
+    if (resendError != null) {
+      return _VerificationResult.failed;
+    }
+
+    if (!mounted) {
+      return _VerificationResult.failed;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Registrierung möglicherweise erstellt. Bitte E-Mail-Code bestaetigen.',
+        ),
+      ),
+    );
+
+    return _openVerificationDialog(email);
   }
 
   @override
@@ -234,10 +285,16 @@ class _SignUpPageState extends State<SignUpPage> {
       );
 
       final SignUpResult signUpResult = await SignInAndSignUp.signUp(account);
-      if (!signUpResult.isSuccess) {
-        if (!mounted) {
-          return;
-        }
+      if (!mounted) {
+        return;
+      }
+
+      _VerificationResult verificationResult = _VerificationResult.failed;
+      if (signUpResult.isSuccess) {
+        verificationResult = await _openVerificationDialog(email);
+      } else if (signUpResult.statusCode == 500) {
+        verificationResult = await _recoverVerificationAfterServerError(email);
+      } else {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(signUpResult.message)));
@@ -248,30 +305,30 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
-      final bool? verified = await VerificationCodeDialog.show(
-        context: context,
-        title: 'E-Mail bestaetigen',
-        description:
-            'Wir haben einen Bestätigungscode an $email gesendet. Bitte gib ihn ein, um die Registrierung abzuschliessen.',
-        submitLabel: 'Code bestaetigen',
-        resendLabel: 'Code erneut senden',
-        onSubmit: (String code) => EmailVerificationService.verifySignupEmail(
+      if (verificationResult == _VerificationResult.cancelled) {
+        await EmailVerificationService.cancelSignup(
           email: email,
-          code: code,
-        ),
-        onResend: () =>
-            EmailVerificationService.resendSignupVerification(email),
-      );
+          password: password,
+        );
+        if (!mounted) {
+          return;
+        }
 
-      if (!mounted) {
-        return;
-      }
-
-      if (verified != true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Registrierung angelegt, aber die E-Mail wurde noch nicht bestaetigt.',
+              'Registrierung fehlgeschlagen, Email wurde nicht verifiziert',
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (verificationResult != _VerificationResult.verified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Registrierung konnte nicht abgeschlossen werden. Bitte erneut versuchen.',
             ),
           ),
         );

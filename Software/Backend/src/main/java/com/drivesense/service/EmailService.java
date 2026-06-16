@@ -1,14 +1,18 @@
 package com.drivesense.service;
 
+import com.drivesense.exceptions.ExternalApiException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class EmailService {
@@ -21,6 +25,9 @@ public class EmailService {
 
     @Value("${app.mail.from-name}")
     private String fromName;
+
+    @Value("${app.vehicle-invite.accept-url}")
+    private String vehicleInviteAcceptUrl;
 
     // ──────────────────────────────────────────
     // PUBLIC METHODEN
@@ -56,6 +63,9 @@ public class EmailService {
                                       String code) {
 
         String subject = inviterName + " hat dich zu einem Fahrzeug eingeladen";
+        String inviteUrl = vehicleInviteAcceptUrl.formatted(
+                URLEncoder.encode(code, StandardCharsets.UTF_8)
+        );
 
         String html = baseTemplate(
                 "Fahrzeugeinladung",
@@ -63,7 +73,8 @@ public class EmailService {
                 "<strong>" + escapeHtml(inviterName) + "</strong> hat dich zu dem Fahrzeug " +
                         "<strong>" + escapeHtml(vehicleName) + "</strong> eingeladen.<br><br>" +
                         "Rolle: <strong>" + escapeHtml(role) + "</strong><br><br>" +
-                        "Gib diesen Code in der App ein oder nutze die Einladung.",
+                        "Klicke auf den Button, um Zugriff zu erhalten, oder gib den Code in der App ein." +
+                        "<br><br><a href=\"" + escapeHtml(inviteUrl) + "\" style=\"display:inline-block;background:#4f8ef7;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;\">Fahrzeug annehmen</a>",
                 code,
                 "Der Code ist 48 Stunden gültig."
         );
@@ -84,8 +95,10 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(message);
+      } catch (MailException e) {
+        throw new ExternalApiException("E-Mail konnte nicht gesendet werden", e);
         } catch (MessagingException | java.io.UnsupportedEncodingException e) {
-            System.err.println("Email konnte nicht gesendet werden an " + to + ": " + e.getMessage());
+        throw new ExternalApiException("E-Mail konnte nicht vorbereitet werden", e);
         }
     }
 

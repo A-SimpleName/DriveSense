@@ -25,6 +25,8 @@ public class WebConfig implements WebMvcConfigurer {
             }
         };
     }
+
+    @SuppressWarnings("deprecation")
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.setUseTrailingSlashMatch(true);

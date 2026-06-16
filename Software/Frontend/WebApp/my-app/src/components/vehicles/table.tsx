@@ -1,21 +1,35 @@
 import { useEffect, useState } from "react"
-import { getAllVehicles, deleteVehicle, updateVehicle } from "../../services/vehicleService"
+import { getAllVehicles, deleteVehicle, updateVehicle, inviteToVehicle } from "../../services/vehicleService"
 import type { CreateVehicle, Vehicle } from "../../model/vehicle"
 import "../../styles/table.css"
 import { Button } from "../button"
 import { ConfirmationDialog } from "../ConfirmationDialog"
+import { VehicleMembers } from "./VehicleMembers"
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([])
+    const [loading, setLoading] = useState(false)
+    const [loadError, setLoadError] = useState<string | null>(null)
+
+    // Bearbeiten
     const [editingId, setEditingId] = useState<number | null>(null)
     const [editData, setEditData] = useState<CreateVehicle | null>(null)
-    const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
-    const [loadError, setLoadError] = useState<string | null>(null)
-    // Getrennte Fehler: Speichern pro Zeile, Löschen global
     const [saveError, setSaveError] = useState<{ id: number; message: string } | null>(null)
+
+    // Löschen
     const [deleteError, setDeleteError] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+
+    // Einladen
+    const [invitingId, setInvitingId] = useState<number | null>(null)
+    const [inviteEmail, setInviteEmail] = useState("")
+    const [inviteRole, setInviteRole] = useState<"CO_OWNER" | "DRIVER">("DRIVER")
+    const [inviting, setInviting] = useState(false)
+    const [inviteError, setInviteError] = useState<{ id: number; message: string } | null>(null)
+
+    // Mitglieder-Detailansicht
+    const [membersVehicle, setMembersVehicle] = useState<Vehicle | null>(null)
 
     useEffect(() => {
         setLoading(true)
@@ -25,9 +39,12 @@ function VehiclesTable() {
             .finally(() => setLoading(false))
     }, [])
 
+    // ── Bearbeiten ───────────────────────────────────────────────────────────
+
     const handleEdit = (vehicle: Vehicle) => {
         setSaveError(null)
         setDeleteError(null)
+        closeInvite()
         setEditingId(vehicle.id)
         setEditData({ model: vehicle.model, licensePlate: vehicle.licensePlate, mileage: vehicle.mileage })
     }
@@ -47,10 +64,16 @@ function VehiclesTable() {
                 setVehicles(prev => prev.map(v => v.id === id ? { ...v, ...editData } : v))
                 handleCancel()
             })
-            // Fehler direkt an die Zeile binden, nicht global
             .catch(err => setSaveError({ id, message: err?.message || "Speichern fehlgeschlagen" }))
             .finally(() => setSaving(false))
     }
+
+    const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
+        if (e.key === "Enter") handleSave(id)
+        if (e.key === "Escape") handleCancel()
+    }
+
+    // ── Löschen ──────────────────────────────────────────────────────────────
 
     const handleDelete = (id: number) => {
         setDeleteError(null)
@@ -65,10 +88,40 @@ function VehiclesTable() {
         setConfirmDeleteId(null)
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
-        if (e.key === "Enter") handleSave(id)
-        if (e.key === "Escape") handleCancel()
+    // ── Einladen ─────────────────────────────────────────────────────────────
+
+    const openInvite = (vehicle: Vehicle) => {
+        handleCancel()
+        setDeleteError(null)
+        setInvitingId(vehicle.id)
+        setInviteEmail("")
+        setInviteRole("DRIVER")
+        setInviteError(null)
     }
+
+    const closeInvite = () => {
+        setInvitingId(null)
+        setInviteEmail("")
+        setInviteRole("DRIVER")
+        setInviteError(null)
+    }
+
+    const handleInviteSend = (vehicle: Vehicle) => {
+        if (!inviteEmail.trim()) return
+        setInviting(true)
+        setInviteError(null)
+        inviteToVehicle(vehicle.id, inviteEmail, inviteRole)
+            .then(() => closeInvite())
+            .catch(err => setInviteError({ id: vehicle.id, message: err?.message || "Einladung fehlgeschlagen" }))
+            .finally(() => setInviting(false))
+    }
+
+    const handleInviteKeyDown = (e: React.KeyboardEvent, vehicle: Vehicle) => {
+        if (e.key === "Enter") handleInviteSend(vehicle)
+        if (e.key === "Escape") closeInvite()
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────────
 
     if (loading) return <p>Laden...</p>
     if (loadError) return <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
@@ -93,8 +146,12 @@ function VehiclesTable() {
 
                 <tbody>
                     {vehicles.map(vehicle => {
-                        const canEdit = vehicle.myRole === "OWNER" || vehicle.myRole === "CO_OWNER"
-                        const canDelete = vehicle.myRole === "OWNER"
+                        const canEdit          = vehicle.myRole === "OWNER" || vehicle.myRole === "CO_OWNER"
+                        const canDelete        = vehicle.myRole === "OWNER"
+                        const canInvite        = vehicle.myRole === "OWNER" || vehicle.myRole === "CO_OWNER"
+                        const canInviteCoOwner = vehicle.myRole === "OWNER"
+                        // Mitglieder sehen dürfen OWNER und CO_OWNER
+                        const canSeeMembers    = vehicle.myRole === "OWNER" || vehicle.myRole === "CO_OWNER"
 
                         return (
                             <>
@@ -139,15 +196,59 @@ function VehiclesTable() {
                                                 <Button label={saving ? "Speichert..." : "Speichern"} onClick={() => handleSave(vehicle.id)} />
                                                 <Button label="Abbrechen" onClick={handleCancel} />
                                             </>
+                                        ) : invitingId === vehicle.id ? (
+                                            <>
+                                                <Button label="Abbrechen" onClick={closeInvite} />
+                                            </>
                                         ) : (
                                             <>
-                                                {canEdit && <Button label="Bearbeiten" stopPropagation onClick={() => handleEdit(vehicle)} />}
-                                                {canDelete && <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(vehicle.id)} />}
+                                                {canEdit       && <Button label="Bearbeiten" stopPropagation onClick={() => handleEdit(vehicle)} />}
+                                                {canInvite     && <Button label="Einladen"   stopPropagation onClick={() => openInvite(vehicle)} />}
+                                                {canSeeMembers && <Button label="Mitglieder" stopPropagation onClick={() => setMembersVehicle(vehicle)} />}
+                                                {canDelete     && <Button label="Löschen"    stopPropagation onClick={() => setConfirmDeleteId(vehicle.id)} />}
                                             </>
                                         )}
                                     </td>
                                 </tr>
 
+                                {/* Inline-Einladungsformular */}
+                                {invitingId === vehicle.id && (
+                                    <tr key={`${vehicle.id}-invite`}>
+                                        <td colSpan={6} style={{ padding: "8px" }}>
+                                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                                                <input
+                                                    type="email"
+                                                    placeholder="E-Mail-Adresse"
+                                                    value={inviteEmail}
+                                                    onChange={e => setInviteEmail(e.target.value)}
+                                                    onKeyDown={e => handleInviteKeyDown(e, vehicle)}
+                                                    style={{ flex: 1, minWidth: 200 }}
+                                                />
+                                                {/* Rollenauswahl nur für OWNER – CO_OWNER kann nur DRIVER einladen */}
+                                                {canInviteCoOwner && (
+                                                    <select
+                                                        value={inviteRole}
+                                                        onChange={e => setInviteRole(e.target.value as "CO_OWNER" | "DRIVER")}
+                                                    >
+                                                        <option value="DRIVER">DRIVER</option>
+                                                        <option value="CO_OWNER">CO_OWNER</option>
+                                                    </select>
+                                                )}
+                                                <Button
+                                                    label={inviting ? "Sende..." : "Einladung senden"}
+                                                    onClick={() => handleInviteSend(vehicle)}
+                                                />
+                                            </div>
+                                            {inviteError?.id === vehicle.id && (
+                                                <p style={{ color: "#dc2626", fontSize: "0.85rem", margin: "4px 0 0" }}>
+                                                    {inviteError.message}
+                                                </p>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {/* Speichern-Fehler */}
                                 {saveError?.id === vehicle.id && (
                                     <tr key={`${vehicle.id}-error`}>
                                         <td colSpan={6} style={{ color: "#dc2626", fontSize: "0.85rem", padding: "4px 8px" }}>
@@ -170,6 +271,13 @@ function VehiclesTable() {
                 onConfirm={confirmDelete}
                 onCancel={() => setConfirmDeleteId(null)}
             />
+
+            {membersVehicle && (
+                <VehicleMembers
+                    vehicle={membersVehicle}
+                    onClose={() => setMembersVehicle(null)}
+                />
+            )}
         </div>
     )
 }

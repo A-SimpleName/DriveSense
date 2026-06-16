@@ -24,6 +24,16 @@ class EmailVerificationService {
     });
   }
 
+  static Future<String?> cancelSignup({
+    required String email,
+    required String password,
+  }) async {
+    return _postJson('/api/account/cancel-signup', <String, String>{
+      'email': email,
+      'password': password,
+    });
+  }
+
   static Future<String?> confirmEmailChange(String code) async {
     return _postJson('/api/account/confirm-email-change', <String, String>{
       'code': code,

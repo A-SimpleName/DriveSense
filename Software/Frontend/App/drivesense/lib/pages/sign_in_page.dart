@@ -18,10 +18,8 @@ class _SignInPageState extends State<SignInPage> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
-
   String? email;
   String? password;
-  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +32,7 @@ class _SignInPageState extends State<SignInPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextFormField(
-              onChanged: (value) {
-                email = value;
-
-                if (_errorMessage != null) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
-                }
-              },
+              onChanged: (value) => email = value,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
                 labelText: 'E-Mail Adresse',
@@ -52,24 +42,14 @@ class _SignInPageState extends State<SignInPage> {
             ),
             const SizedBox(height: 12),
             TextFormField(
-              onChanged: (value) {
-                password = value;
-
-                if (_errorMessage != null) {
-                  setState(() {
-                    _errorMessage = null;
-                  });
-                }
-              },
+              onChanged: (value) => password = value,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Passwort',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
                   ),
                   onPressed: () {
                     setState(() {
@@ -80,37 +60,6 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            if (_errorMessage != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.red.shade200,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
             SizedBox(
               height: 48,
               child: ElevatedButton(
@@ -126,9 +75,7 @@ class _SignInPageState extends State<SignInPage> {
                     ? const SizedBox(
                         height: 18,
                         width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text('Anmelden'),
               ),
@@ -147,18 +94,12 @@ class _SignInPageState extends State<SignInPage> {
               child: const Text('Passwort vergessen?'),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Sie haben noch keinen Account?',
-              textAlign: TextAlign.center,
-            ),
+            Text('Sie haben noch keinen Account?', textAlign: TextAlign.center),
             TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  'SignUpPage',
-                );
+              onPressed: () => {
+                Navigator.pushReplacementNamed(context, 'SignUpPage'),
               },
-              child: const Text('Jetzt Registrieren'),
+              child: Text('Jetzt Registrieren'),
             ),
           ],
         ),
@@ -171,16 +112,14 @@ class _SignInPageState extends State<SignInPage> {
     final String passwordValue = password?.trim() ?? '';
 
     if (emailValue.isEmpty || passwordValue.isEmpty) {
-      setState(() {
-        _errorMessage =
-            'Bitte E-Mail-Adresse und Passwort eingeben.';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte E-Mail und Passwort eingeben.')),
+      );
       return;
     }
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -188,7 +127,6 @@ class _SignInPageState extends State<SignInPage> {
         emailValue,
         passwordValue,
       );
-
       debugPrint(
         'SignIn result: success=${result.isSuccess}, status=${result.statusCode}, message=${result.message}, accountToken=${result.accountToken != null ? 'present' : 'null'}',
       );
@@ -197,13 +135,9 @@ class _SignInPageState extends State<SignInPage> {
         return;
       }
 
-      if (result.statusCode == 400) {
-        setState(() {
-          _errorMessage =
-              'E-Mail-Adresse oder Passwort sind nicht korrekt.';
-        });
-        return;
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(result.message)));
 
       if (result.isSuccess) {
         Navigator.pushNamedAndRemoveUntil(
@@ -213,23 +147,19 @@ class _SignInPageState extends State<SignInPage> {
           ),
           (route) => false,
         );
-        return;
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
-      );
     } catch (e) {
       debugPrint('SignIn error: $e');
-
       if (!mounted) {
         return;
       }
-
-      setState(() {
-        _errorMessage =
-            'Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.',
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {

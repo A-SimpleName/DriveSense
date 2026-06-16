@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getTripById } from "../services/tripService";
-import type { Tripdetailed } from "../model/trip";
 import MapView from "../components/MapView";
+import type { Tripdetailed } from "../model/trip";
+import { getTripById } from "../services/tripService";
 
 function TripDetailPage() {
     const { id } = useParams();
@@ -23,7 +23,6 @@ function TripDetailPage() {
     if (!trip) return <p>Fahrt nicht gefunden</p>;
 
     const { tripSummaryDto, trackingpoints } = trip;
-
     const route = trackingpoints.map(p => ({ lat: p.lat, lng: p.lng }));
 
     return (
@@ -33,14 +32,14 @@ function TripDetailPage() {
             <p><strong>Fahrer:</strong> {tripSummaryDto.accountFirstName} {tripSummaryDto.accountLastName}</p>
             <p><strong>Fahrzeug:</strong> {tripSummaryDto.vehicleModel} ({tripSummaryDto.licensePlate})</p>
             <p><strong>Start:</strong> {new Date(tripSummaryDto.startTime).toLocaleString()}</p>
-            <p><strong>Ende:</strong> {tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "—"}</p>
+            <p><strong>Ende:</strong> {tripSummaryDto.endTime ? new Date(tripSummaryDto.endTime).toLocaleString() : "-"}</p>
             <p><strong>Distanz:</strong> {tripSummaryDto.distance} km</p>
             <p><strong>Von:</strong> {tripSummaryDto.startPoint}</p>
             <p><strong>Nach:</strong> {tripSummaryDto.endPoint}</p>
             {tripSummaryDto.furthestPoint && (
                 <p><strong>Weitester Punkt:</strong> {tripSummaryDto.furthestPoint}</p>
             )}
-            <p><strong>Straßenzustand:</strong> {tripSummaryDto.roadSurfaceConditions}</p>
+            <p><strong>Strassenzustand:</strong> {tripSummaryDto.roadSurfaceConditions}</p>
 
             {route.length > 0 && <MapView route={route} />}
         </div>

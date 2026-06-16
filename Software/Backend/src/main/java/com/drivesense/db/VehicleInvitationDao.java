@@ -69,6 +69,19 @@ public class VehicleInvitationDao {
         }
     }
 
+    public List<VehicleInvitation> getAllPending() {
+        String sql = "SELECT * FROM vehicle_invitation WHERE status = 'PENDING'";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            List<VehicleInvitation> list = new ArrayList<>();
+            while (rs.next()) list.add(map(rs));
+            return list;
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden der Fahrzeug-Einladungen", e);
+        }
+    }
+
     /** Aktualisiert Code + Ablaufzeit einer bestehenden Einladung (Re-Invite). */
     public void updateCode(int id, String codeHash, LocalDateTime expiresAt) {
         String sql = "UPDATE vehicle_invitation SET code_hash = ?, expires_at = ?, created_at = NOW() WHERE id = ?";

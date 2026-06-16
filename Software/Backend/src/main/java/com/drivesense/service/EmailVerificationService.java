@@ -1,6 +1,7 @@
 package com.drivesense.service;
 import com.drivesense.db.AccountDao;
 import com.drivesense.db.EmailVerificationDao;
+import com.drivesense.exceptions.ExternalApiException;
 import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.NotFoundException;
 import com.drivesense.model.Account;
@@ -39,7 +40,12 @@ public class EmailVerificationService {
         ev.setExpiresAt(LocalDateTime.now().plusMinutes(15));
         emailVerificationDao.insert(ev);
 
-        emailService.sendVerificationCode(email, code);
+        try {
+            emailService.sendVerificationCode(email, code);
+        } catch (ExternalApiException e) {
+            emailVerificationDao.deleteByAccountId(accountId);
+            throw e;
+        }
     }
 
     // ──────────────────────────────────────────

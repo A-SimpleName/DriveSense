@@ -50,7 +50,7 @@ class RequestHeaders {
     );
 
     return <String, String>{
-      'Content-Type': ?contentType,
+      if (contentType != null) 'Content-Type': contentType,
       if (clientType != null && clientType.isNotEmpty)
         'X-Client-Type': clientType,
       includeProfileTokenHeader: includeProfileToken ? 'true' : 'false',
