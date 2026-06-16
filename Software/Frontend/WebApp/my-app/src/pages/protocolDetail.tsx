@@ -37,7 +37,7 @@ export default function ProtocolDetailPage() {
     const isGroup = protocol.usergroup?.id != null;
 
     switch (protocol.protocolRole) {
-        case "FAHRSCHÜLER": return <ProtocolView protocol={protocol} type="FAHRSCHÜLER" isGroup={isGroup} />;
+        case "FAHRSCHUELER": return <ProtocolView protocol={protocol} type="FAHRSCHUELER" isGroup={isGroup} />;
         case "PRIVAT":      return <ProtocolView protocol={protocol} type="PRIVAT"      isGroup={isGroup} />;
         case "BERUFSFAHRER":return <ProtocolView protocol={protocol} type="BERUFSFAHRER" isGroup={isGroup} />;
         default:            return <div>Unbekannte Rolle: {protocol.protocolRole}</div>;

@@ -83,7 +83,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                     ))}
                 </tbody>
             </table>
-        </>
+        </div>
     );
 
     return (
@@ -92,8 +92,8 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
             {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
             {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
 
-            {renderTable(ownProtocols, "Eigene Protokolle")}
-            {renderTable(groupProtocols, "Gruppenprotokolle")}
+            {renderTable(ownProtocols, "Eigene Protokolle",true)}
+            {renderTable(groupProtocols, "Gruppenprotokolle",false)}
 
             <ConfirmationDialog
                 open={confirmDeleteId !== null}

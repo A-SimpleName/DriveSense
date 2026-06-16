@@ -99,3 +99,42 @@ export function StatSkeleton({ count = 4 }: { count?: number }) {
         </div>
     );
 }
+
+export function DashboardSkeleton() {
+    return (
+        <div>
+            <Skeleton height={28} width="200px" style={{ marginBottom: "1.25rem" }} />
+
+            <div className="dashboard-stat-grid" style={{ marginBottom: "1.5rem" }}>
+                {Array(4).fill(0).map((_, i) => (
+                    <div key={i} className="stat-card">
+                        <Skeleton height={14} width="60%" style={{ marginBottom: "8px" }} />
+                        <Skeleton height={32} width="40%" />
+                    </div>
+                ))}
+            </div>
+
+            <div className="dashboard-main-grid" style={{ marginBottom: "1.5rem" }}>
+                <div className="dashboard-card">
+                    <Skeleton height={14} width="100px" style={{ marginBottom: "12px" }} />
+                    <Skeleton height={200} />
+                </div>
+                <div className="dashboard-card">
+                    <Skeleton height={14} width="100px" style={{ marginBottom: "12px" }} />
+                    <Skeleton height={20} width="60%" style={{ marginBottom: "4px" }} />
+                    <Skeleton height={28} width="40%" style={{ marginBottom: "8px" }} />
+                    <Skeleton height={150} />
+                </div>
+            </div>
+
+            <div className="dashboard-trips-card">
+                <Skeleton height={14} width="120px" style={{ marginBottom: "8px" }} />
+                {Array(5).fill(0).map((_, i) => (
+                    <div key={i} style={{ padding: "8px 0", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+                        <Skeleton height={14} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}

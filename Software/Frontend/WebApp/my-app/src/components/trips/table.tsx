@@ -25,7 +25,7 @@ interface EditValues {
 type SortField = "date" | "distance";
 type SortDir = "asc" | "desc";
 
-const TRIPS_PER_PAGE = 20;
+const TRIPS_PER_PAGE = 12;
 
 function TripsTable() {
     const navigate = useNavigate();
@@ -45,6 +45,7 @@ function TripsTable() {
     const [currentPage, setCurrentPage] = useState(1);
 
     // Filter & Sort
+    const [showFilters, setShowFilters] = useState(false);
     const [filterFrom, setFilterFrom] = useState("");
     const [filterTo, setFilterTo] = useState("");
     const [filterVehicleId, setFilterVehicleId] = useState<number | "">("");
@@ -249,42 +250,98 @@ function TripsTable() {
         <>
             {deleteError && <p style={{ color: "#dc2626", marginBottom: "12px" }}>{deleteError}</p>}
 
-            {/* Filter & Sort Toolbar */}
-            <div className="page-toolbar" style={{ marginBottom: 0, borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0" }}>
-                <div className="page-toolbar-left" style={{ flexWrap: "wrap", gap: "8px" }}>
-                    <input
-                        type="date"
-                        value={filterFrom}
-                        onChange={e => { setFilterFrom(e.target.value); handleFilterChange(); }}
-                        title="Von Datum"
+            {/* Toolbar */}
+            <div
+                className="page-toolbar"
+                style={{
+                    marginBottom: 0,
+                    borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
+                    justifyContent: "space-between",
+                }}
+            >
+                <div className="page-toolbar-left">
+                    <Button
+                        label={`Filter ${hasActiveFilters ? "(Aktiv)" : ""}`}
+                        onClick={() => setShowFilters(prev => !prev)}
                     />
-                    <input
-                        type="date"
-                        value={filterTo}
-                        onChange={e => { setFilterTo(e.target.value); handleFilterChange(); }}
-                        title="Bis Datum"
-                    />
-                    <select
-                        value={filterVehicleId}
-                        onChange={e => { setFilterVehicleId(e.target.value === "" ? "" : Number(e.target.value)); handleFilterChange(); }}
-                    >
-                        <option value="">Alle Fahrzeuge</option>
-                        {allVehicles.map(v => (
-                            <option key={v.id} value={v.id}>{v.model} ({v.licensePlate})</option>
-                        ))}
-                    </select>
-                    {hasActiveFilters && (
-                        <Button label="Filter zurücksetzen" onClick={handleResetFilters} />
-                    )}
                 </div>
+
                 <div className="page-toolbar-right">
-                    <Button label={sortLabel("date", "Datum")} onClick={() => handleSortChange("date")} />
-                    <Button label={sortLabel("distance", "Distanz")} onClick={() => handleSortChange("distance")} />
-                    <span style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
+                    <span
+                        style={{
+                            fontSize: "13px",
+                            color: "var(--color-text-secondary)",
+                        }}
+                    >
                         {filteredAndSorted.length} Fahrten
                     </span>
                 </div>
             </div>
+
+            {showFilters && (
+                <div
+                    className="page-toolbar"
+                    style={{
+                        borderTop: "none",
+                        borderRadius: 0,
+                        marginBottom: "12px",
+                    }}
+                >
+                    <div
+                        className="page-toolbar-left"
+                        style={{
+                            flexWrap: "wrap",
+                            gap: "8px",
+                        }}
+                    >
+                        <input
+                            type="date"
+                            value={filterFrom}
+                            onChange={e => {
+                                setFilterFrom(e.target.value);
+                                handleFilterChange();
+                            }}
+                            title="Von Datum"
+                        />
+
+                        <input
+                            type="date"
+                            value={filterTo}
+                            onChange={e => {
+                                setFilterTo(e.target.value);
+                                handleFilterChange();
+                            }}
+                            title="Bis Datum"
+                        />
+
+                        <select
+                            value={filterVehicleId}
+                            onChange={e => {
+                                setFilterVehicleId(
+                                    e.target.value === ""
+                                        ? ""
+                                        : Number(e.target.value)
+                                );
+                                handleFilterChange();
+                            }}
+                        >
+                            <option value="">Alle Fahrzeuge</option>
+                            {allVehicles.map(v => (
+                                <option key={v.id} value={v.id}>
+                                    {v.model} ({v.licensePlate})
+                                </option>
+                            ))}
+                        </select>
+
+                        {hasActiveFilters && (
+                            <Button
+                                label="Filter zurücksetzen"
+                                onClick={handleResetFilters}
+                            />
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div
                 className="ridesTable"
@@ -337,13 +394,32 @@ function TripsTable() {
               <table>
                 <thead>
                     <tr>
-                        <th>Datum</th>
+                        <th
+                            onClick={() => handleSortChange("date")}
+                            style={{ cursor: "pointer", userSelect: "none" }}
+                        >
+                            <span style={{ whiteSpace: "nowrap" }}>
+                                Datum <span>{sortField === "date" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+                            </span>
+                        </th>
                         <th>Startzeit</th>
                         <th>Endzeit</th>
                         <th>Fahrer</th>
                         <th>Fahrzeug</th>
                         <th>Kennzeichen</th>
-                        <th>Distanz</th>
+                        <th
+                            onClick={() => handleSortChange("distance")}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <span style={{ whiteSpace: "nowrap" }}>
+                                Distanz{" "}
+                                <span>
+                                    {sortField === "distance"
+                                        ? (sortDir === "asc" ? "↑" : "↓")
+                                        : "↕"}
+                                </span>
+                            </span>
+                        </th>
                         <th>Strecke</th>
                         <th>Protokoll</th>
                         {(role === "PRIVAT" || role === "FAHRSCHUELER" || role === "FAHRSCHÜLER") && (

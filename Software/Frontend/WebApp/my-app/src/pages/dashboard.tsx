@@ -5,7 +5,7 @@ import MapView from "../components/MapView";
 import { getLatestTrip, getTotalKm, getAllTrips, getTripById, getTotalDuration } from "../services/tripService";
 import { useEffect, useState } from "react";
 import type { Tripdetailed, TripSummaryDto } from "../model/trip";
-import { StatSkeleton } from "../components/loadingSkeleton";
+import { DashboardSkeleton } from "../components/loadingSkeleton";
 import { useAuth } from "../context/authContext";
 import "../styles/dashboard.css";
 
@@ -14,6 +14,7 @@ function Dashboard() {
     const { profile } = useAuth();
     const [lastTripDetailed, setLastTripDetailed] = useState<Tripdetailed | null>(null);
     const [totalKm, setTotalKm] = useState<string>("0 km");
+    const [tripAmount, setTripAmount] = useState<number>(0);
     const [recentTrips, setRecentTrips] = useState<TripSummaryDto[]>([]);
     const [totalDuration, setTotalDuration] = useState<number>(0);
     const [loading, setLoading] = useState(true);
@@ -29,6 +30,7 @@ function Dashboard() {
             .then(([latest, km, all, duration]) => {
                 setTotalKm(`${km} km`);
                 setTotalDuration(duration);
+                setTripAmount(all.length);
                 setRecentTrips(all.slice(0, 5));
                 if (latest) return getTripById(latest.id);
                 return null;
@@ -40,7 +42,7 @@ function Dashboard() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <StatSkeleton count={4} />;
+    if (loading) return <DashboardSkeleton />;
     if (error) return <p>Fehler: {error}</p>;
 
     const greeting = () => {
@@ -69,7 +71,7 @@ function Dashboard() {
 
             <div className="dashboard-stat-grid">
                 <StatCard title="Gesamtstrecke" value={totalKm} />
-                <StatCard title="Fahrten" value={`${recentTrips.length}`} />
+                <StatCard title="Fahrten" value={`${tripAmount}`} />
                 <StatCard title="Fahrzeit gesamt" value={`${Math.floor(totalDuration / 60)}h ${totalDuration % 60}min`} />
                 {lastTrip && <StatCard title="Letzte Fahrt" value={`${lastTrip.distance} km`} />}
             </div>
@@ -120,7 +122,7 @@ function Dashboard() {
                     <Button label="Alle Fahrten" className="dashboard-action-btn" />
                 </Link>
                 <Link to="/groups" style={{ flex: 1 }}>
-                    <Button label="Gruppen ansehen" className="dashboard-action-btn" />
+                    <Button label="Gruppen" className="dashboard-action-btn" />
                 </Link>
                 <Link to="/vehicles" style={{ flex: 1 }}>
                     <Button label="Fahrzeuge" className="dashboard-action-btn" />

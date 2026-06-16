@@ -2,7 +2,7 @@ import type { ProtocolDetail } from "../../model/protocol";
 import type { TripSummaryDto } from "../../model/trip";
 import styles from "../../styles/protocol.module.css";
 
-type ProtocolType = "FAHRSCHÜLER" | "PRIVAT" | "BERUFSFAHRER";
+type ProtocolType = "FAHRSCHUELER" | "PRIVAT" | "BERUFSFAHRER";
 
 export default function ProtocolView({
     protocol,
@@ -21,7 +21,7 @@ export default function ProtocolView({
 
     const getColumns = () => {
         switch (type) {
-            case "FAHRSCHÜLER":
+            case "FAHRSCHUELER":
                 return [
                     ...(isGroup ? ["Fahrer"] : []),
                     "Datum",
@@ -68,7 +68,7 @@ export default function ProtocolView({
                     </td>
                 )}
 
-                {type === "FAHRSCHÜLER" && (
+                {type === "FAHRSCHUELER" && (
                     <>
                         <td>
                             {new Date(trip.startTime).toLocaleDateString(
