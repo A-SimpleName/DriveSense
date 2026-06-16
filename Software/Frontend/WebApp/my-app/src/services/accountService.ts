@@ -11,10 +11,10 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
 }
 
 export const getCurrentAccount = () => handleRequest(http.get<AccountResponse>("/account/me"));
-export const updateAccount = (firstName: string, lastName: string, email: string) =>
-    handleRequest(http.put(`/account`, { firstName, lastName, email }));
-export const requestEmailChange = (newEmail: string) =>
-    handleRequest(http.post(`/account/change-email`, { newEmail }));
+export const updateAccount = (firstName: string, lastName: string) => handleRequest(http.put(`/account`, { firstName, lastName }));
+export const cancelEmailChange = () => handleRequest(http.delete("/account/change-email"));
+export const deleteAccount = () => handleRequest(http.delete(`/account`));
+export const requestEmailChange = (newEmail: string) => handleRequest(http.post(`/account/change-email`, { newEmail }));
 export const confirmEmailChange = (code: string) => handleRequest(http.post(`/account/confirm-email-change`, { code }));
 
 

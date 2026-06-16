@@ -16,12 +16,13 @@ public class Account {
 
     public Account () {}
 
-    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate) {
+    public Account(String firstName, String lastName, String password, String email, LocalDate birthdate, String pendingEmail) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.password = password;
         this.email = email;
         this.birthdate = birthdate;
+        this.pendingEmail = pendingEmail;
     }
 
     public int getId() {

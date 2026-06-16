@@ -57,6 +57,14 @@ export default function VerifyEmailPage({ onVerified }: Props) {
                 {resendSuccess && <p style={{ color: "green" }}>Code wurde erneut gesendet!</p>}
 
                 <button type="submit" disabled={loading}>
+                    {loading && (
+                        <span style={{
+                            display: "inline-block", width: "12px", height: "12px",
+                            border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                            borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                            verticalAlign: "middle", marginRight: "6px",
+                        }} />
+                    )}
                     {loading ? "Wird überprüft..." : "Bestätigen"}
                 </button>
             </form>

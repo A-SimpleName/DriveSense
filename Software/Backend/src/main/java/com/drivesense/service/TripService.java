@@ -1,10 +1,8 @@
 package com.drivesense.service;
 
 
-import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
-import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
@@ -14,6 +12,7 @@ import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -148,8 +147,11 @@ public class TripService {
     }
 
     public List<TripSummaryDto> getAllByProfileId(int profileId) {
-        List<TripSummaryDto> trips = tripDao.getAllByProfileId(profileId);
-        return trips != null ? trips : List.of();
+        List<TripSummary> trips = tripDao.getByProfileId(profileId);
+        if (trips == null) return List.of();
+        return trips.stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
     public TripSummaryDto getLatestTrackedByProfileId(int profileId) {
@@ -163,6 +165,17 @@ public class TripService {
         }
         return tripSummaries.stream()
                 .mapToDouble(TripSummary::getDistance)
+                .sum();
+    }
+
+    public long getTotalDuration(int profileId) {
+        List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
+        if (tripSummaries == null) {
+            return 0;
+        }
+        return tripSummaries.stream()
+                .filter(trip -> trip.getEndTime() != null && trip.getStartTime() != null)
+                .mapToLong(trip -> Duration.between(trip.getStartTime(), trip.getEndTime()).toMinutes())
                 .sum();
     }
 
@@ -274,5 +287,18 @@ public class TripService {
         if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
             throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
         }
+    }
+
+    private TripSummaryDto mapToDto(TripSummary t) {
+        TripSummaryDto dto = new TripSummaryDto();
+        dto.setId(t.getId());
+        dto.setVehicleId(t.getVehicleId());
+        dto.setProtocolId(t.getProtocolId());
+        dto.setStartTime(t.getStartTime());
+        dto.setEndTime(t.getEndTime());
+        dto.setDistance(t.getDistance());
+        dto.setRoadSurfaceConditions(t.getRoadSurfaceConditions());
+        dto.setType(t.getType());
+        return dto;
     }
 }

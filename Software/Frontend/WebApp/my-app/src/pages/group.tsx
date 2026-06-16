@@ -4,6 +4,7 @@ import { GroupAddForm } from "../components/group/groupAddForm";
 import type { UserGroup } from "../model/usergroup";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import "../styles/pageLayout.css";
 
 function GroupPage() {
     const navigate = useNavigate();
@@ -12,13 +13,12 @@ function GroupPage() {
 
     return (
         <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h1>Gruppenverwaltung</h1>
-                <button onClick={() => navigate("/invite")}>Gruppeneinladung annehmen</button>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-                <Button label="+" className="small icon" title="Gruppe erstellen" onClick={() => setShowModal(true)} />
+            <div className="page-header">
+                <h1>Gruppen</h1>
+                <div className="page-header-actions">
+                    <Button label="Einladung annehmen" onClick={() => navigate("/invite")} />
+                    <Button label="Gruppe erstellen" title="Gruppe erstellen" onClick={() => setShowModal(true)} />
+                </div>
             </div>
 
             <GroupTable newGroup={newGroup} />

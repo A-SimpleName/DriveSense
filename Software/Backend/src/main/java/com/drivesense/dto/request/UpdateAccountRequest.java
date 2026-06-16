@@ -7,14 +7,10 @@ public class UpdateAccountRequest {
     private String firstName;
     @NotBlank(message = "Nachname darf nicht leer sein")
     private String lastName;
-    @NotBlank(message = "Email darf nicht leer sein")
-    @Email(message = "Email Format ungültig")
-    private String email;
 
-    public UpdateAccountRequest(String firstName, String lastName, String email) {
+    public UpdateAccountRequest(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
     }
     public UpdateAccountRequest(){}
 
@@ -32,13 +28,5 @@ public class UpdateAccountRequest {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 }

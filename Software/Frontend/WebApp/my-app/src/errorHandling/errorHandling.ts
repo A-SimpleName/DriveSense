@@ -1,4 +1,4 @@
-// errorHandling/errors.ts
+// errorHandling/errorHandling.ts
 // Einheitlicher Fehlertyp für das gesamte Projekt
 export type AppError = {
     message: string;

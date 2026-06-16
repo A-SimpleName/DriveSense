@@ -27,6 +27,14 @@ public class TripSummaryDto {
 
     }
 
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
     public String getProtocolName() {
         return protocolName;
     }
@@ -67,13 +75,6 @@ public class TripSummaryDto {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
 
     public int getStartMileage() {
         return startMileage;
@@ -82,6 +83,7 @@ public class TripSummaryDto {
     public void setStartMileage(int startMileage) {
         this.startMileage = startMileage;
     }
+
 
     public int getEndMileage() {
         return endMileage;

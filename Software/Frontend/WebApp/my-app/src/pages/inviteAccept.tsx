@@ -62,6 +62,14 @@ function InviteAcceptPage() {
                     />
                     {error && <p style={{ color: "red" }}>{error}</p>}
                     <button type="submit" disabled={loading}>
+                        {loading && (
+                            <span style={{
+                                display: "inline-block", width: "12px", height: "12px",
+                                border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                verticalAlign: "middle", marginRight: "6px",
+                            }} />
+                        )}
                         {loading ? "Wird geprüft..." : "Code prüfen"}
                     </button>
                 </form>
@@ -86,6 +94,14 @@ function InviteAcceptPage() {
                     ))}
                     {error && <p style={{ color: "red" }}>{error}</p>}
                     <button onClick={handleAccept} disabled={!selectedProfileId || loading}>
+                        {loading && (
+                            <span style={{
+                                display: "inline-block", width: "12px", height: "12px",
+                                border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                verticalAlign: "middle", marginRight: "6px",
+                            }} />
+                        )}
                         {loading ? "Wird beigetreten..." : "Beitreten"}
                     </button>
                 </div>

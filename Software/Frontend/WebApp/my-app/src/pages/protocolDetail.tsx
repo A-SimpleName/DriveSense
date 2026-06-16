@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import type { ProtocolDetail } from "../model/protocol";
 import { getProtocolByIdWithTrips } from "../services/protocolService";
 import ProtocolView from "../components/Protocols/protocolView";
+import { TextSkeleton } from "../components/loadingSkeleton";
 
 export default function ProtocolDetailPage() {
     const { id } = useParams();
@@ -22,7 +23,7 @@ export default function ProtocolDetailPage() {
 
     useEffect(() => { load(); }, [id]);
 
-    if (loading) return <div>Lade Protokoll...</div>;
+    if (loading) return <TextSkeleton lines={6} />;
 
     if (error) return (
         <div>
@@ -36,7 +37,7 @@ export default function ProtocolDetailPage() {
     const isGroup = protocol.usergroup?.id != null;
 
     switch (protocol.protocolRole) {
-        case "FAHRSCHÜLER": return <ProtocolView protocol={protocol} type="FAHRSCHÜLER" isGroup={isGroup} />;
+        case "FAHRSCHUELER": return <ProtocolView protocol={protocol} type="FAHRSCHUELER" isGroup={isGroup} />;
         case "PRIVAT":      return <ProtocolView protocol={protocol} type="PRIVAT"      isGroup={isGroup} />;
         case "BERUFSFAHRER":return <ProtocolView protocol={protocol} type="BERUFSFAHRER" isGroup={isGroup} />;
         default:            return <div>Unbekannte Rolle: {protocol.protocolRole}</div>;

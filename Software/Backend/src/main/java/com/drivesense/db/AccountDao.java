@@ -69,6 +69,19 @@ public class AccountDao {
         }
     }
 
+    /** Liefert aktiven Account per E-Mail (auch soft-gelöscht). */
+    public Account getByEmailIncludeDeleted(String email) {
+        String sql = "SELECT * FROM account WHERE email = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() ? map(rs) : null;
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden des Accounts", e);
+        }
+    }
+
     /** Prüft ob eine E-Mail bereits als pending_email vergeben ist (aktive Accounts). */
     public boolean existsByPendingEmail(String email) {
         String sql = "SELECT 1 FROM account WHERE pending_email = ? AND deleted_at IS NULL LIMIT 1";
