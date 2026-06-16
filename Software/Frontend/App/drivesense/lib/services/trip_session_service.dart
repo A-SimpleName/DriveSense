@@ -379,11 +379,7 @@ class TripSessionService extends ChangeNotifier {
 
   void _setupTrackingCallbacks() {
     trackingService.onTrackingUpdate =
-        (
-          Trackingpoint point,
-          double distanceAdded,
-          bool alreadyPersisted,
-        ) {
+        (Trackingpoint point, double distanceAdded, bool alreadyPersisted) {
           _pendingTrackingUpdate = _pendingTrackingUpdate
               .catchError((Object e) {
                 debugPrint('Previous tracking update failed: $e');
@@ -588,6 +584,12 @@ class TripSessionService extends ChangeNotifier {
   }
 
   Future<TripSummary?> _loadLatestCompletedTrip() async {
+    final TripSummary? serverLatestTrip = await RuntimeStore.tripService
+        .fetchLatestTrip();
+    if (serverLatestTrip != null) {
+      return serverLatestTrip;
+    }
+
     try {
       final Trip? latestTrip = await tripRepository.getLatestCompleted(
         profileId: RuntimeStore.currentProfileId,
@@ -597,12 +599,6 @@ class TripSessionService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Latest trip lookup failed: $e');
-    }
-
-    final TripSummary? serverLatestTrip =
-        await RuntimeStore.tripService.fetchLatestTrip();
-    if (serverLatestTrip != null) {
-      return serverLatestTrip;
     }
 
     if (RuntimeStore.trips.isEmpty) {

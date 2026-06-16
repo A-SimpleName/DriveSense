@@ -23,7 +23,9 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
     setLoading(true);
     try {
       await login(email, password);
+
       sessionStorage.removeItem("profileSelected");
+
       onLoginSuccess();
       navigate("/select-profile");
     } catch (err: any) {

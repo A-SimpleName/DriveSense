@@ -49,6 +49,10 @@ public class Account {
         this.lastName = lastName;
     }
 
+
+    public String getPendingEmail() { return pendingEmail; }
+    public void setPendingEmail(String pendingEmail) { this.pendingEmail = pendingEmail; }
+
     public LocalDate getBirthdate() { return birthdate; }
     public void setBirthdate(LocalDate birthdate) { this.birthdate = birthdate; }
     public LocalDateTime getDeletedAt() { return deletedAt; }
@@ -77,14 +81,6 @@ public class Account {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
-    }
-
-    public String getPendingEmail() {
-        return pendingEmail;
-    }
-
-    public void setPendingEmail(String pendingEmail) {
-        this.pendingEmail = pendingEmail;
     }
 
     @Override

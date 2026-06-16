@@ -11,7 +11,7 @@ class ProtocolTable extends StatelessWidget {
 
   const ProtocolTable({super.key, this.onChanged});
 
-  static const double _actionColumnWidth = 140;
+  static const double _actionColumnWidth = 160;
   static const BorderSide _tableBorderSide = BorderSide(color: Colors.grey);
 
   static final TableBorder _headerTableBorder = TableBorder(
@@ -188,7 +188,9 @@ class ProtocolTable extends StatelessWidget {
   Future<void> _openTripDialog(BuildContext context, TripSummary trip) async {
     if (trip.endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Offene Fahrt kann nicht bearbeitet werden.')),
+        const SnackBar(
+          content: Text('Offene Fahrt kann nicht bearbeitet werden.'),
+        ),
       );
       return;
     }
@@ -210,17 +212,17 @@ class ProtocolTable extends StatelessWidget {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fahrt aktualisiert.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Fahrt aktualisiert.')));
     } catch (e) {
       if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Speichern fehlgeschlagen: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Speichern fehlgeschlagen: $e')));
     }
   }
 

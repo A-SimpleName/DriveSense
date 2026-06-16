@@ -117,6 +117,7 @@ public class TripDao {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
+
             return rs.next() ? map(rs) : null;
 
         } catch (SQLException e) {
@@ -226,7 +227,6 @@ public class TripDao {
             ResultSet rs = ps.executeQuery();
 
             List<TripSummaryDto> list = new ArrayList<>();
-
             while (rs.next()) list.add(mapToDto(rs));
             return list;
 
@@ -246,7 +246,6 @@ public class TripDao {
 
             List<TripSummary> list = new ArrayList<>();
             while (rs.next()) list.add(map(rs));
-            
             return list;
 
         } catch (SQLException e) {
@@ -315,6 +314,9 @@ public class TripDao {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // DTO QUERIES (ACCESS CONTROL)
+    // ─────────────────────────────────────────────
     public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
         String sql = """
             SELECT
@@ -466,9 +468,6 @@ public class TripDao {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // DELETE
-    // ─────────────────────────────────────────────
     public void deleteById(int id) {
         String sql = "DELETE FROM trip WHERE id = ?";
 
@@ -526,7 +525,6 @@ public class TripDao {
         dto.setType(rs.getString("type"));
         dto.setLicensePlate(rs.getString("license_plate"));
         dto.setVehicleModel(rs.getString("vehicle_model"));
-
         dto.setStartPoint(rs.getString("start_point"));
         dto.setFurthestPoint(rs.getString("furthest_point"));
         dto.setEndPoint(rs.getString("end_point"));

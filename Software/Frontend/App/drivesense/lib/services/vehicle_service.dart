@@ -180,6 +180,36 @@ class VehicleService {
 
   // ─── Ein bestehendes Fahrzeug am Server aktualisieren ────────────────────
   // Gibt true zurück wenn erfolgreich, false wenn nicht.
+  static Future<List<VehicleMember>> fetchVehicleMembers(int vehicleId) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/$vehicleId/members',
+    );
+
+    try {
+      final http.Response response = await http
+          .get(uri, headers: RequestHeaders.authenticated())
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return <VehicleMember>[];
+      }
+
+      final dynamic decoded = _decodeJson(response.body);
+      if (decoded is! List) {
+        return <VehicleMember>[];
+      }
+
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(VehicleMember.fromJson)
+          .where((VehicleMember member) => member.profileId > 0)
+          .toList();
+    } catch (e) {
+      debugPrint('FetchVehicleMembers failed at $uri: $e');
+      return <VehicleMember>[];
+    }
+  }
+
   static Future<bool> updateVehicle(Vehicle vehicle) async {
     final Uri uri = Uri.parse(
       '${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}',
@@ -241,6 +271,88 @@ class VehicleService {
 
   // ─── Ein neues Fahrzeug erstellen ─────────────────────────────────────────
   // Backend gibt die rohe Vehicle-Entity zurück (HTTP 201).
+  static Future<VehicleActionResult> inviteVehicle({
+    required int vehicleId,
+    required String email,
+    required String role,
+  }) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/$vehicleId/invitations',
+    );
+
+    try {
+      final http.Response response = await http
+          .post(
+            uri,
+            headers: RequestHeaders.authenticatedJson(),
+            body: jsonEncode(<String, String>{'email': email, 'role': role}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Fahrzeugeinladung wurde per E-Mail gesendet.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message:
+            _extractServerMessage(response.body) ??
+            'Fahrzeugeinladung konnte nicht gesendet werden.',
+      );
+    } catch (e) {
+      debugPrint('InviteVehicle failed at $uri: $e');
+      return const VehicleActionResult(
+        isSuccess: false,
+        message: 'Fahrzeugeinladung konnte nicht gesendet werden.',
+      );
+    }
+  }
+
+  static Future<VehicleActionResult> acceptVehicleInvite({
+    required String code,
+    required int profileId,
+  }) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/invitations/accept',
+    );
+
+    try {
+      final http.Response response = await http
+          .post(
+            uri,
+            headers: RequestHeaders.authenticatedJson(),
+            body: jsonEncode(<String, dynamic>{
+              'code': code,
+              'profileId': profileId,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Fahrzeugeinladung wurde angenommen.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message:
+            _extractServerMessage(response.body) ??
+            'Fahrzeugeinladung konnte nicht angenommen werden.',
+      );
+    } catch (e) {
+      debugPrint('AcceptVehicleInvite failed at $uri: $e');
+      return const VehicleActionResult(
+        isSuccess: false,
+        message: 'Fahrzeugeinladung konnte nicht angenommen werden.',
+      );
+    }
+  }
+
   static Future<Vehicle?> createVehicle({
     required String model,
     required String licensePlate,

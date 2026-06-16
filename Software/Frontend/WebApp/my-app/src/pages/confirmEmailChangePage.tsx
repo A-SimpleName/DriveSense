@@ -16,6 +16,7 @@ export default function ConfirmEmailChangePage() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         if (!code.trim()) return;
 
         setLoading(true);
@@ -23,7 +24,9 @@ export default function ConfirmEmailChangePage() {
 
         try {
             await confirmEmailChange(code.trim());
+
             sessionStorage.removeItem("pendingEmailChange");
+
             navigate("/settings");
             window.location.reload();
         } catch (err: any) {

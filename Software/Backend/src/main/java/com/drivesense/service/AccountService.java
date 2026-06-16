@@ -1,6 +1,7 @@
 package com.drivesense.service;
 
 import com.drivesense.db.AccountDao;
+import com.drivesense.db.EmailVerificationDao;
 import com.drivesense.db.ProfileDao;
 import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.AccountResponse;
@@ -22,6 +23,7 @@ public class AccountService {
 
     @Autowired private AccountDao accountDao;
     @Autowired private ProfileDao profileDao;
+    @Autowired private EmailVerificationDao emailVerificationDao;
     @Autowired private JwtService jwtService;
     @Autowired private EmailVerificationService emailVerificationService;
     @Autowired private EmailService emailService;
@@ -42,14 +44,27 @@ public class AccountService {
         account.setBirthdate(request.getBirthdate());
         accountDao.insert(account);
         emailVerificationService.sendVerificationCode(account.getId(), account.getEmail());
-
         return toResponse(account);
+    }
+
+    public void cancelSignUp(CancelSignUpRequest request) {
+        Account account = accountDao.getByEmail(request.getEmail());
+        if (account == null || account.isEmailVerified()) {
+            return;
+        }
+
+        if (!BCrypt.checkpw(request.getPassword(), account.getPassword())) {
+            throw new BadRequestException("Registrierung konnte nicht abgebrochen werden");
+        }
+
+        emailVerificationDao.deleteByAccountId(account.getId());
+        accountDao.deleteUnverifiedById(account.getId());
     }
 
     public LoginResponse login(LoginRequest request) {
         Account account = accountDao.getByEmail(request.getEmail());
         if (account == null || !BCrypt.checkpw(request.getPassword(), account.getPassword())) {
-            throw new UnauthorizedException("Email oder Passwort falsch");
+            throw new BadRequestException("Email oder Passwort falsch");
         }
         if (!account.isEmailVerified()) {
             throw new NotVerifiedException("Email nicht verifiziert");
@@ -69,10 +84,10 @@ public class AccountService {
         int accountId = jwtService.extractAccountId(accountToken);
         Profile profile = profileDao.getById(profileId);
         if (profile == null || profile.getAccount_id() != accountId) {
-            throw new UnauthorizedException("Profil nicht gefunden oder kein Zugriff");
+            throw new NotFoundException("Profil nicht gefunden");
         }
         SelectProfileResponse res = new SelectProfileResponse();
-        res.setProfileToken(jwtService.generateProfileToken(accountId,profileId,profile.getRole()));
+        res.setProfileToken(jwtService.generateProfileToken(accountId, profileId, profile.getRole()));
         res.setProfile(profile);
         return res;
     }
@@ -175,7 +190,11 @@ public class AccountService {
             throw new BadRequestException("Keine ausstehende E-Mail-Änderung vorhanden");
         }
 
-        emailVerificationService.confirmEmailChange(accountId, code);
+        // Code gegen die pending_email verifizieren
+        emailVerificationService.verifyCode(account.getPendingEmail(), code);
+
+        // Atomares Übertragen: email ← pending_email, pending_email ← NULL
+        accountDao.confirmPendingEmail(accountId);
     }
 
     /**

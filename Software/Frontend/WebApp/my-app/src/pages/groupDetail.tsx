@@ -75,6 +75,7 @@ function GroupDetailPage() {
         setConfirmRemoveMember(null);
     };
 
+
     const handleUpdateRole = (profileId: number, currentRole: string) => {
         const groupRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
         setRoleError(null);
@@ -197,9 +198,9 @@ function GroupDetailPage() {
 
             <ConfirmationDialog
                 open={confirmRemoveMember !== null}
-                title="Aktion bestätigen"
+                title="Löschen bestätigen"
                 message={confirmRemoveMember?.message ?? "Soll die Aktion wirklich ausgeführt werden?"}
-                confirmLabel="Ja, bestätigen"
+                confirmLabel="Ja, löschen"
                 cancelLabel="Abbrechen"
                 onConfirm={confirmRemove}
                 onCancel={() => setConfirmRemoveMember(null)}

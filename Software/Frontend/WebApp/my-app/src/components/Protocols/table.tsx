@@ -23,12 +23,16 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
         setExportingId(id);
         try {
             const { blob, filename } = await exportProtocol(id);
+
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
+
             a.href = url;
             a.download = filename ?? `protocol_${id}.pdf`;
+
             document.body.appendChild(a);
             a.click();
+
             a.remove();
             window.URL.revokeObjectURL(url);
         } catch (err: any) {

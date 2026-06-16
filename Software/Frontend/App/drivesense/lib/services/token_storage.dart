@@ -1,4 +1,6 @@
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/isar_service.dart';
+import 'package:drivesense/services/jwt_identity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenStorage {
@@ -12,6 +14,7 @@ class TokenStorage {
   static const String _profileTokenKey = 'profileToken';
   static const String _profileIdKey = 'profileId';
   static const String _profileRoleKey = 'profileRole';
+  static const String _localDataAccountIdKey = 'localDataAccountId';
 
   Future<void> loadIntoRuntimeStore() async {
     final String accountToken = await readAccountToken() ?? '';
@@ -40,6 +43,14 @@ class TokenStorage {
 
   Future<String?> readProfileRole() => _storage.read(key: _profileRoleKey);
 
+  Future<int?> readLocalDataAccountId() async {
+    final String? raw = await _storage.read(key: _localDataAccountIdKey);
+    if (raw == null || raw.trim().isEmpty) {
+      return null;
+    }
+    return int.tryParse(raw);
+  }
+
   Future<int?> readProfileId() async {
     final String? raw = await _storage.read(key: _profileIdKey);
     if (raw == null || raw.trim().isEmpty) {
@@ -49,6 +60,7 @@ class TokenStorage {
   }
 
   Future<void> saveAccountToken(String token) async {
+    await _clearLocalTripsIfAccountChanged(token);
     RuntimeStore.setAuthToken(token);
     await _storage.write(key: _accountTokenKey, value: token);
   }
@@ -108,5 +120,31 @@ class TokenStorage {
       _storage.delete(key: _profileIdKey),
       _storage.delete(key: _profileRoleKey),
     ]);
+  }
+
+  Future<void> _clearLocalTripsIfAccountChanged(String accountToken) async {
+    final int? nextAccountId = JwtIdentity.accountIdFromToken(accountToken);
+    if (nextAccountId == null || nextAccountId <= 0) {
+      return;
+    }
+
+    final String? previousToken = await readAccountToken();
+    final int? previousTokenAccountId = JwtIdentity.accountIdFromToken(
+      previousToken,
+    );
+    final int? previousLocalDataAccountId = await readLocalDataAccountId();
+    final int? previousAccountId =
+        previousLocalDataAccountId ?? previousTokenAccountId;
+
+    if (previousAccountId != null &&
+        previousAccountId > 0 &&
+        previousAccountId != nextAccountId) {
+      await IsarService.clearLocalTripData();
+    }
+
+    await _storage.write(
+      key: _localDataAccountIdKey,
+      value: nextAccountId.toString(),
+    );
   }
 }

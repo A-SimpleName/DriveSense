@@ -87,10 +87,8 @@ class TripSummary {
       id: asInt(json["id"]),
       profileId: asInt(json["profileId"] ?? json["profile_id"]),
       vehicleId: asInt(json["vehicleId"] ?? json["vehicle_id"]),
-      vehicleLicensePlate:
-          (json["licensePlate"] ??
-                  json["vehicleLicensePlate"])
-              ?.toString(),
+      vehicleLicensePlate: (json["licensePlate"] ?? json["vehicleLicensePlate"])
+          ?.toString(),
       accountFirstName: json["accountFirstName"]?.toString(),
       accountLastName: json["accountLastName"]?.toString(),
       vehicleModel: json["vehicleModel"]?.toString(),
@@ -102,24 +100,23 @@ class TripSummary {
       distanceKm: asDouble(json["distance"] ?? json["distanceKm"]),
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
       startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
-      furthestPoint:
-          (json["furthestPoint"] ?? json["furthest_point"])?.toString(),
+      furthestPoint: (json["furthestPoint"] ?? json["furthest_point"])
+          ?.toString(),
       endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
       type: json["type"]?.toString(),
       isSynced: json["isSynced"] != false,
-      startMileage: asInt(
-        json["startMileage"] ?? json["start_mileage"],
-      ),
-      endMileage: asInt(
-        json["endMileage"] ?? json["end_mileage"],
-      ),
+      startMileage: asInt(json["startMileage"] ?? json["start_mileage"]),
+      endMileage: asInt(json["endMileage"] ?? json["end_mileage"]),
     );
   }
 
   factory TripSummary.fromTrip(Trip trip) {
     int mappedId = trip.id;
     if (trip.localId.startsWith('server:')) {
-      final String remoteIdValue = trip.localId.substring('server:'.length);
+      final List<String> localIdParts = trip.localId.split(':');
+      final String remoteIdValue = localIdParts.isNotEmpty
+          ? localIdParts.last
+          : '';
       final int? remoteId = int.tryParse(remoteIdValue);
       if (remoteId != null && remoteId > 0) {
         mappedId = remoteId;

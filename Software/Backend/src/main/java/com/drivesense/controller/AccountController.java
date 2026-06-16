@@ -37,6 +37,12 @@ public class AccountController {
         return ResponseEntity.status(201).body(accountService.signUp(request));
     }
 
+    @PostMapping("/cancel-signup")
+    public ResponseEntity<Void> cancelSignUp(@Valid @RequestBody CancelSignUpRequest request) {
+        accountService.cancelSignUp(request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
