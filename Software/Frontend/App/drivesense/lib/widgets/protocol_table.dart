@@ -48,6 +48,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
 
   @override
   Widget build(BuildContext context) {
+    // RuntimeStore.trips is already filtered to the selected profile/protocol;
+    // this widget only handles presentation, paging, and row actions.
     final List<TripSummary> trips = RuntimeStore.trips;
     _syncPageState(trips.length);
 
@@ -149,6 +151,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
     );
   }
 
+  /// Keeps the current page valid when the active protocol or trip count
+  /// changes after sync, delete, or profile switching.
   void _syncPageState(int tripCount) {
     final int protocolId = RuntimeStore.getCurrentProtocolId();
     if (_lastProtocolId != protocolId) {
@@ -305,6 +309,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
     );
   }
 
+  /// Opens the edit dialog for completed trips and refreshes the table after a
+  /// successful backend update.
   Future<void> _openTripDialog(BuildContext context, TripSummary trip) async {
     if (trip.endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -346,6 +352,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
     }
   }
 
+  /// Confirms trip deletion, delegates local/server deletion to TripService, and
+  /// refreshes visible rows afterwards.
   Future<void> _deleteTrip(BuildContext context, TripSummary trip) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -445,6 +453,8 @@ class _TripEditDialogState extends State<_TripEditDialog> {
     super.dispose();
   }
 
+  /// Validates editable protocol-table fields and returns a copied TripSummary
+  /// to the caller instead of mutating the original row directly.
   void _save() {
     final double? distanceKm = double.tryParse(
       _distanceCtrl.text.trim().replaceAll(',', '.'),

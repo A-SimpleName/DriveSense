@@ -37,6 +37,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     _loadProfile();
   }
 
+  /// Loads the selected profile, falling back to the first profile if no exact
+  /// runtime match exists.
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
 
@@ -63,6 +65,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     });
   }
 
+  /// Opens the profile rename dialog and updates local state after the backend
+  /// accepts the new name.
   Future<void> _showEditProfileNameDialog() async {
     final Profile? profile = _profile;
 
@@ -110,6 +114,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
   }
 
+  /// Deletes the active profile after confirmation and clears stored profile
+  /// context so the app returns to profile selection.
   Future<void> _deleteProfile() async {
     final Profile? profile = _profile;
 
@@ -171,6 +177,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
   }
 
+  /// Accepts a vehicle invite code for the active profile.
   Future<void> _showAcceptVehicleInviteDialog() async {
     final Profile? profile = _profile;
     if (profile == null ||
@@ -216,6 +223,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
   }
 
+  /// Verifies a group invite code, lets the user choose the invited profile
+  /// when needed, and refreshes protocols after joining.
   Future<void> _showAcceptGroupInviteDialog() async {
     final Profile? profile = _profile;
     if (profile == null ||
@@ -317,6 +326,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
     );
   }
 
+  /// Refreshes protocol-dependent UI after group/profile changes.
   Future<void> _refreshProtocolsForActiveProfile() async {
     await ProtocolService.fetchProtocols();
     await RuntimeStore.refreshTrips();

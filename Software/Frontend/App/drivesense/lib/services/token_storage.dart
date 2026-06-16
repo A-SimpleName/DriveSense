@@ -16,7 +16,10 @@ class TokenStorage {
   static const String _profileRoleKey = 'profileRole';
   static const String _localDataAccountIdKey = 'localDataAccountId';
 
+  /// Hydrates RuntimeStore from secure storage during app startup.
   Future<void> loadIntoRuntimeStore() async {
+    // Restore secure-storage tokens into the in-memory store before services
+    // build authenticated headers.
     final String accountToken = await readAccountToken() ?? '';
     final String refreshToken = await readRefreshToken() ?? '';
     final String? profileToken = await readProfileToken();
@@ -70,6 +73,8 @@ class TokenStorage {
     await _storage.write(key: _refreshTokenKey, value: token);
   }
 
+  /// Saves a fresh account session and clears any previously selected profile,
+  /// because profile tokens belong to the old account session.
   Future<void> saveLoginTokens({
     required String accountToken,
     required String refreshToken,
@@ -81,6 +86,7 @@ class TokenStorage {
     ]);
   }
 
+  /// Persists the active profile context used for authenticated API calls.
   Future<void> saveSelectedProfile({
     required int profileId,
     required String profileToken,
@@ -111,6 +117,7 @@ class TokenStorage {
     ]);
   }
 
+  /// Clears every persisted token and resets the in-memory session.
   Future<void> clearSession() async {
     RuntimeStore.clearSession();
     await Future.wait(<Future<void>>[
@@ -123,6 +130,8 @@ class TokenStorage {
   }
 
   Future<void> _clearLocalTripsIfAccountChanged(String accountToken) async {
+    // Local trip data belongs to one account. When a different user signs in on
+    // the same device, drop drafts and cached trips before storing new tokens.
     final int? nextAccountId = JwtIdentity.accountIdFromToken(accountToken);
     if (nextAccountId == null || nextAccountId <= 0) {
       return;

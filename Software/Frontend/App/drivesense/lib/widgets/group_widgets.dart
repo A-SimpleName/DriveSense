@@ -36,6 +36,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
   bool get _isGlobalAdmin =>
       RuntimeStore.getActiveProfileRole().trim().toUpperCase() == 'ADMIN';
 
+  /// Loads groups and their member lists together so each table section can
+  /// render role-based actions without extra per-row requests.
   Future<void> _loadGroups() async {
     setState(() => _isLoading = true);
 
@@ -62,6 +64,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     });
   }
 
+  /// Opens the create dialog, posts the new group, and refreshes the table when
+  /// creation succeeds.
   Future<void> _createGroup() async {
     if (_isCreatingGroup) {
       return;
@@ -97,6 +101,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     }
   }
 
+  /// Renames a group only when the current profile can manage it and no other
+  /// group mutation is already running.
   Future<void> _renameGroup(UserGroup group) async {
     if (!_canManageGroup(group) || _busyGroupId != null) {
       return;
@@ -142,6 +148,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     _showResult(result.isSuccess, result.message);
   }
 
+  /// Deletes a group after confirmation and refreshes protocols because group
+  /// deletion can remove group-owned protocols from the active profile.
   Future<void> _deleteGroup(UserGroup group) async {
     if (!_canManageGroup(group) || _busyGroupId != null) {
       return;
@@ -190,6 +198,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     }
   }
 
+  /// Sends a group invite when the current member role is allowed to invite.
   Future<void> _inviteMember(UserGroup group) async {
     final String myRole = _myRoleForGroup(group);
     if (!_canInvite(myRole) || _busyGroupId != null) {
@@ -221,6 +230,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     _showResult(result.isSuccess, result.message);
   }
 
+  /// Creates a protocol owned by this group and selects it immediately.
   Future<void> _createGroupProtocol(UserGroup group) async {
     if (_busyGroupId != null) {
       return;
@@ -263,6 +273,10 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     _showResult(true, 'Gruppenprotokoll wurde erstellt.');
   }
 
+  /// Removes another member or lets the current profile leave the group.
+  ///
+  /// The permission rules differ for self-removal and member removal, so this
+  /// method calculates the action first and then runs the shared delete flow.
   Future<void> _removeMember(UserGroup group, GroupMember member) async {
     final String myRole = _myRoleForGroup(group);
     final bool isSelf = member.profileId == widget.currentProfileId;
@@ -335,6 +349,8 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
     }
   }
 
+  /// Toggles a member between ADMIN and MEMBER when the current role is allowed
+  /// to change roles.
   Future<void> _toggleMemberRole(UserGroup group, GroupMember member) async {
     final String myRole = _myRoleForGroup(group);
     if (!_canChangeRole(myRole, member.groupRole)) {

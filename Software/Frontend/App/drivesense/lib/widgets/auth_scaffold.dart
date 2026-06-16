@@ -40,7 +40,7 @@ class DsAuthScaffold extends StatelessWidget {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(20),
-                        child: child
+                        child: child,
                       ),
                     ),
                   ),
@@ -50,6 +50,6 @@ class DsAuthScaffold extends StatelessWidget {
           ),
         ),
       ),
-    );   
+    );
   }
 }

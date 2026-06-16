@@ -24,6 +24,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     _loadVehicles();
   }
 
+  /// Loads vehicles and their share/member metadata for the current profile.
   Future<void> _loadVehicles() async {
     setState(() => _isLoading = true);
 
@@ -51,6 +52,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     });
   }
 
+  /// Opens the add/edit dialog and reloads the table when the dialog saves.
   Future<void> _openVehicleDialog({Vehicle? vehicle}) async {
     final bool? saved = await showDialog<bool>(
       context: context,
@@ -63,6 +65,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     }
   }
 
+  /// Confirms and deletes a vehicle, using stricter copy for owner deletion.
   Future<void> _deleteVehicle(Vehicle vehicle) async {
     final bool isOwner = _normalizeVehicleRole(vehicle.myRole) == 'OWNER';
     final bool? confirmed = await showDialog<bool>(
@@ -102,6 +105,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     }
   }
 
+  /// Opens the invite dialog when the current profile has share permission.
   Future<void> _shareVehicle(Vehicle vehicle) async {
     if (!_canInvite(vehicle)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -469,6 +473,8 @@ class _VehicleDialogState extends State<_VehicleDialog> {
     super.dispose();
   }
 
+  /// Validates vehicle form input and then calls create or update depending on
+  /// whether this dialog is editing an existing vehicle.
   Future<void> _save() async {
     final String model = _modelCtrl.text.trim();
     final String plate = _plateCtrl.text.trim();
@@ -597,6 +603,8 @@ class _VehicleInviteDialogState extends State<_VehicleInviteDialog> {
     super.dispose();
   }
 
+  /// Sends a vehicle invite code to the entered email and keeps the dialog open
+  /// when the backend rejects the invite.
   Future<void> _sendInvite() async {
     if (_formKey.currentState?.validate() != true || _isSending) {
       return;

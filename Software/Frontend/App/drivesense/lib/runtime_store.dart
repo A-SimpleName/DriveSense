@@ -3,7 +3,6 @@ import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
-import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/services/jwt_identity.dart';
 import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/trip_service.dart';
@@ -23,12 +22,15 @@ class RuntimeStore {
   static int currentProtocolId = 0;
   static String currentTripPurpose = '';
   static final TripService tripService = TripService();
-  static final TripRepository pendingTripRepository = TripRepository();
 
+  // Keep one visible entry per physical trip when a local draft later receives
+  // its server id after sync.
   static void addTrip(TripSummary trip) {
     upsertTrip(trip);
   }
 
+  /// Inserts or replaces a trip while collapsing the old local row and the new
+  /// server row into one visible entry.
   static void upsertTrip(TripSummary trip, {int? replaceTripId}) {
     int index = -1;
     for (int i = 0; i < trips.length; i++) {
@@ -58,6 +60,7 @@ class RuntimeStore {
     trips = nextTrips;
   }
 
+  /// Replaces the vehicle list and keeps the selected vehicle valid.
   static void setVehicles(List<Vehicle> newVehicles) {
     vehicles = newVehicles;
 
@@ -69,6 +72,7 @@ class RuntimeStore {
     }
   }
 
+  /// Replaces the protocol list and keeps the selected protocol valid.
   static void setProtocols(List<Protocol> newProtocols) {
     protocols = newProtocols;
 
@@ -160,6 +164,8 @@ class RuntimeStore {
   }
 
   static void setTrips(List<TripSummary> newTrips) {
+    // Server and local Isar data can overlap during sync; prefer the most
+    // complete version without showing duplicates in the protocol table.
     trips = _dedupeTrips(newTrips);
   }
 
@@ -218,6 +224,9 @@ class RuntimeStore {
     TripSummary trip, {
     int? replaceTripId,
   }) {
+    // Unsynced trips use local ids until the backend returns a permanent id,
+    // so identity falls back to the same profile/protocol/vehicle and start
+    // time tolerance used by the repository merge path.
     if (existing.id == trip.id ||
         (replaceTripId != null && existing.id == replaceTripId)) {
       return true;
@@ -236,6 +245,8 @@ class RuntimeStore {
     return startDeltaMs <= 2500;
   }
 
+  /// Stores the account token and resets profile-owned state when a different
+  /// account becomes active.
   static void setAuthToken(String token) {
     final int? previousAccountId = currentAccountId;
     final int? nextAccountId = JwtIdentity.accountIdFromToken(token);
@@ -259,10 +270,8 @@ class RuntimeStore {
     refreshToken = token;
   }
 
-  static String? getRefreshToken() {
-    return refreshToken;
-  }
-
+  /// Activates a profile token/role and clears profile-scoped data when the
+  /// user switches to another profile.
   static void setActiveProfile({
     required int profileId,
     String? profileToken,
@@ -276,6 +285,7 @@ class RuntimeStore {
     activeProfileRole = profileRole;
 
     if (profileChanged) {
+      // Profile-owned data must not leak across profile switches.
       currentVehicleId = 0;
       currentProtocolId = 0;
       currentTripPurpose = '';
@@ -310,6 +320,7 @@ class RuntimeStore {
     return currentProtocolId;
   }
 
+  /// Builds the Cookie header expected by the backend auth filters.
   static String? getCookieHeader({
     bool includeProfileToken = true,
     bool includeRefreshToken = false,
@@ -358,32 +369,25 @@ class RuntimeStore {
     tripDetailCache = {};
   }
 
+  /// Refreshes the visible trip list for the selected profile/protocol.
+  ///
+  /// Invalid selections intentionally return early because the UI can show an
+  /// empty protocol table until the user selects a valid context.
   static Future<void> refreshTrips() async {
-    debugPrint(
-      '[refreshTrips] START - currentProfileId=$currentProfileId, currentProtocolId=$currentProtocolId',
-    );
     if (currentProfileId == null) {
-      debugPrint('[refreshTrips] EARLY RETURN: currentProfileId is null');
       return;
     }
     if (currentProtocolId <= 0) {
-      debugPrint('[refreshTrips] EARLY RETURN: currentProtocolId is invalid');
       trips = [];
       return;
     }
 
     try {
-      debugPrint(
-        '[refreshTrips] Fetching trips for profileId=$currentProfileId, protocolId=$currentProtocolId',
-      );
       final fetchedTrips = await tripService.fetchTrips(
         currentProfileId!,
         currentProtocolId,
       );
 
-      debugPrint(
-        '[refreshTrips] SUCCESS: fetched ${fetchedTrips.length} trips',
-      );
       // fetchTrips already returns Isar-backed data (including unsynced entries)
       // and optionally enriches it from server, so no extra merge is needed.
       trips = fetchedTrips;

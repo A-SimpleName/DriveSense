@@ -19,6 +19,8 @@ final String _baseUrl = ApiConfig.baseUrl;
 class TripService {
   final TripRepository _tripRepository = TripRepository();
 
+  /// Uploads a completed trip by creating its summary first and then attaching
+  /// all recorded tracking points to the server-created trip id.
   Future<TripDetailed> saveTripToDb(
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
@@ -27,6 +29,8 @@ class TripService {
         ? trip.profileId
         : (RuntimeStore.currentProfileId ?? 0);
 
+    // Resolve and validate the ids before making HTTP calls. Without these
+    // checks, an offline trip could be uploaded into the wrong active context.
     if (profileId <= 0) {
       throw TripHttpException(
         'Trip kann nicht synchronisiert werden: profileId fehlt oder ist ungueltig.',
@@ -49,7 +53,6 @@ class TripService {
     }
 
     final int? vehicleId = await _resolveVehicleIdForSync(
-      profileId: profileId,
       preferredVehicleId: trip.vehicleId,
     );
     if (vehicleId == null || vehicleId <= 0) {
@@ -61,6 +64,8 @@ class TripService {
     RuntimeStore.setCurrentProtocolId(protocolId);
     RuntimeStore.setCurrentVehicleId(vehicleId);
 
+    // Only completed trips can be synced. Active trip drafts are persisted by
+    // TripSessionService until the user stops the trip.
     if (trip.endTime == null) {
       throw TripHttpException(
         'Trip kann nicht synchronisiert werden: endTime fehlt.',
@@ -74,6 +79,8 @@ class TripService {
       protocolId: protocolId,
     );
     if (summaryRes.statusCode < 200 || summaryRes.statusCode >= 300) {
+      // HTTP 405 is a deployment mismatch signal, so return a message that
+      // points to the backend endpoint instead of a generic sync failure.
       if (summaryRes.statusCode == 405) {
         throw TripHttpException(
           'Backend unter $_baseUrl unterstuetzt POST /api/trips/summary nicht (HTTP 405). Bitte Backend neu deployen/neustarten oder die richtige Instanz verwenden.',
@@ -90,6 +97,8 @@ class TripService {
         jsonDecode(summaryRes.body) as Map<String, dynamic>;
     final TripSummary createdTrip = TripSummary.fromJson(createdTripJson);
 
+    // Tracking points are stored under the server-created trip id, not the
+    // temporary local id used while the trip was offline.
     final List<Trackingpoint> trackingPointsWithTripId = trackingPoints
         .map(
           (tp) => Trackingpoint(
@@ -137,8 +146,6 @@ class TripService {
       protocolId: protocolId,
     );
 
-    debugPrint('POST /api/trips/summary payload=$payload');
-
     return http.post(
       Uri.parse('$_baseUrl/api/trips/summary'),
       headers: <String, String>{...RequestHeaders.authenticatedJson()},
@@ -146,6 +153,7 @@ class TripService {
     );
   }
 
+  /// Sends edited table fields for a completed trip back to the backend.
   Future<void> updateTripSummary(TripSummary tripSummary) async {
     if (tripSummary.endTime == null) {
       throw TripHttpException(
@@ -175,8 +183,6 @@ class TripService {
       vehicleId: vehicleId,
       protocolId: protocolId,
     );
-
-    debugPrint('PUT /api/trips/${tripSummary.id} payload=$payload');
 
     final http.Response response = await http.put(
       Uri.parse('$_baseUrl/api/trips/${tripSummary.id}'),
@@ -239,6 +245,8 @@ class TripService {
     }
   }
 
+  /// Loads details from the server when possible, then falls back to cached or
+  /// local Isar data so the detail dialog can still open while offline.
   Future<TripDetailed> fetchTripDetail(
     int tripId, {
     TripSummary? fallbackSummary,
@@ -250,6 +258,8 @@ class TripService {
     }
 
     try {
+      // Server detail data is preferred because it may include normalized
+      // addresses or tracking points that are not yet in the local cache.
       final http.Response response = await http
           .get(
             Uri.parse('$_baseUrl/api/trips/$tripId'),
@@ -427,6 +437,8 @@ class TripService {
       'furthestPoint': tripSummary.furthestPoint,
       'endPoint': tripSummary.endPoint,
       'type': tripSummary.type,
+      // Keep both key styles because older backend builds read snake_case
+      // mileage fields while newer ones use camelCase.
       'startMileage': tripSummary.startMileage,
       'endMileage': tripSummary.endMileage,
       'start_mileage': tripSummary.startMileage,
@@ -493,7 +505,6 @@ class TripService {
   }
 
   Future<int?> _resolveVehicleIdForSync({
-    required int profileId,
     int preferredVehicleId = 0,
   }) async {
     final int? resolved =
@@ -550,8 +561,12 @@ class TripService {
     }
   }
 
+  /// Builds the protocol table data from both Isar and the backend.
+  ///
+  /// Isar is read first so offline trips remain visible. If the backend fetch
+  /// succeeds, synced cache rows are refreshed/pruned while unsynced rows stay
+  /// in the result until they can be uploaded.
   Future<List<TripSummary>> fetchTrips(int profileId, int protocolId) async {
-    // Isar is the source of truth: return local data even when server sync fails.
     final List<Trip> localBeforeSync = await _tripRepository
         .getByProfileAndProtocol(profileId, protocolId);
     final List<TripSummary> serverSummaries = <TripSummary>[];
@@ -571,6 +586,8 @@ class TripService {
         final List<dynamic> jsonList =
             jsonDecode(response.body) as List<dynamic>;
 
+        // Each server row is checked against unsynced local trips so the table
+        // does not show a local draft beside the already-created server trip.
         for (final dynamic item in jsonList) {
           if (item is! Map<String, dynamic>) {
             continue;
@@ -606,6 +623,8 @@ class TripService {
       }
 
       if (serverFetchSucceeded) {
+        // A successful server response is authoritative for synced rows. Local
+        // synced trips missing from the response were deleted or moved remotely.
         await _tripRepository.deleteSyncedByProfileAndProtocolExceptServerIds(
           profileId: profileId,
           protocolId: protocolId,
@@ -622,6 +641,8 @@ class TripService {
         .getByProfileAndProtocol(profileId, protocolId);
 
     if (serverFetchSucceeded) {
+      // Append only unsynced locals that are not represented by a server row.
+      // These are the trips the user expects to see while sync is pending.
       final List<TripSummary> unsyncedLocals = localAfterSync
           .where(
             (Trip trip) =>
@@ -649,6 +670,8 @@ class TripService {
     return source.map((Trip trip) => TripSummary.fromTrip(trip)).toList();
   }
 
+  /// Stores a backend trip in Isar unless it would duplicate an unsynced local
+  /// draft for the same physical drive.
   Future<void> _upsertServerTrip({
     required int profileId,
     required int protocolId,
@@ -658,6 +681,8 @@ class TripService {
     final String serverLocalId = 'server:$accountId:${summary.id}';
     final Trip? existing = await _tripRepository.getByLocalId(serverLocalId);
     if (existing == null) {
+      // Leave matching unsynced locals untouched; the normal sync path will
+      // replace their local ids once upload succeeds.
       final List<Trip> localTrips = await _tripRepository
           .getByProfileAndProtocol(profileId, protocolId);
       if (_findMatchingUnsyncedLocal(localTrips, summary) != null) {
@@ -695,6 +720,8 @@ class TripService {
     await _tripRepository.save(trip);
   }
 
+  /// Searches only unsynced rows because synced rows already have stable
+  /// server-local ids and are handled by direct lookup.
   Trip? _findMatchingUnsyncedLocal(
     List<Trip> localTrips,
     TripSummary serverSummary,
@@ -723,6 +750,8 @@ class TripService {
   }
 
   bool _isSamePhysicalTrip(Trip localTrip, TripSummary serverSummary) {
+    // Server-created trips and local drafts can have different ids; match by
+    // owner fields plus tight time/distance tolerances to avoid duplicates.
     if (serverSummary.profileId > 0 &&
         localTrip.profileId != serverSummary.profileId) {
       return false;
@@ -759,6 +788,8 @@ class TripService {
     return endDeltaMs <= 2500 && distanceDelta <= 0.2;
   }
 
+  /// Fills missing server fields from the local draft while keeping backend
+  /// values when the backend supplied useful data.
   TripSummary _mergeServerSummaryWithLocal(
     TripSummary serverSummary,
     Trip? localTrip,

@@ -8,7 +8,6 @@ import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:drivesense/services/token_storage.dart';
-import 'package:flutter/foundation.dart';
 
 class SignUpResult {
   final bool isSuccess;
@@ -38,6 +37,10 @@ class SignInResult {
     this.profiles = const <Profile>[],
     this.statusCode,
   });
+
+  /// Lets the UI distinguish wrong credentials from network/server failures.
+  bool get isCredentialError =>
+      statusCode == 400 || statusCode == 401 || statusCode == 403;
 }
 
 class SignInAndSignUp {
@@ -69,12 +72,11 @@ class SignInAndSignUp {
     return null;
   }
 
+  /// Registers a new account and normalizes common backend/network failures
+  /// into messages the page can show directly.
   static Future<SignUpResult> signUp(Account account) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account/signUp');
     final Map<String, dynamic> payload = account.toJson();
-
-    debugPrint('SignUp request -> url=$uri');
-    debugPrint('SignUp payload -> $payload');
 
     try {
       final http.Response response = await http
@@ -82,9 +84,6 @@ class SignInAndSignUp {
           .timeout(const Duration(seconds: 10));
 
       final int statusCode = response.statusCode;
-      debugPrint(
-        'SignUp response <- status=$statusCode, body=${response.body}',
-      );
 
       if (statusCode >= 200 && statusCode < 300) {
         return SignUpResult(
@@ -163,6 +162,10 @@ class SignInAndSignUp {
     }
   }
 
+  /// Logs in and persists returned account/profile tokens.
+  ///
+  /// Non-2xx responses are deliberately converted into user-facing categories
+  /// so the page does not need to know backend status-code details.
   static Future<SignInResult> signIn(String email, String password) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account/login');
     final Map<String, String> payload = {'email': email, 'password': password};
@@ -182,6 +185,8 @@ class SignInAndSignUp {
         final String? refreshToken = _extractRefreshToken(body);
         final List<Profile> profiles = _extractProfiles(body);
 
+        // Store tokens before returning so the app can route immediately after
+        // sign-in without a separate persistence step in the page.
         if (accountToken != null && accountToken.isNotEmpty) {
           if (refreshToken != null && refreshToken.isNotEmpty) {
             await TokenStorage.instance.saveLoginTokens(
@@ -203,14 +208,47 @@ class SignInAndSignUp {
           statusCode: response.statusCode,
         );
       } else {
+        // Treat auth failures as one category to avoid leaking whether an
+        // account exists for the entered email address.
+        if (response.statusCode == 400 ||
+            response.statusCode == 401 ||
+            response.statusCode == 403) {
+          return SignInResult(
+            isSuccess: false,
+            message: 'E-Mail oder Passwort ist falsch.',
+            statusCode: response.statusCode,
+          );
+        }
+
+        final String? backendMessage = _extractServerMessage(response.body);
         return SignInResult(
           isSuccess: false,
-          message: 'Login fehlgeschlagen (HTTP ${response.statusCode}).',
+          message:
+              backendMessage ??
+              'Login fehlgeschlagen (HTTP ${response.statusCode}).',
           statusCode: response.statusCode,
         );
       }
-    } catch (e) {
-      return SignInResult(isSuccess: false, message: 'Fehler beim Login: $e');
+    } on TimeoutException {
+      return const SignInResult(
+        isSuccess: false,
+        message: 'Zeitueberschreitung beim Login. Bitte erneut versuchen.',
+      );
+    } on SocketException {
+      return const SignInResult(
+        isSuccess: false,
+        message: 'Keine Netzwerkverbindung. Bitte Internetverbindung pruefen.',
+      );
+    } on http.ClientException {
+      return const SignInResult(
+        isSuccess: false,
+        message: 'Verbindungsfehler beim Login.',
+      );
+    } catch (_) {
+      return const SignInResult(
+        isSuccess: false,
+        message: 'Unerwarteter Fehler beim Login.',
+      );
     }
   }
 

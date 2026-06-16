@@ -29,66 +29,68 @@ class _DsSnycTripsButtonState extends State<DsSnycTripsButton> {
     );
   }
 
+  /// Runs a manual sync request and keeps the button in a loading state until
+  /// the request finishes, fails, or hits the UI timeout.
   Future<void> _handleSync() async {
-    debugPrint('🔄 Sync button pressed');
     setState(() => _isLoading = true);
-    
+
     try {
-      debugPrint('🔄 Starting sync with 10s timeout...');
+      // Keep manual sync bounded so the button cannot stay disabled forever.
       final result = await widget.tripSyncService.syncPendingTrips().timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          debugPrint('⏱️ Sync timeout after 10 seconds');
-          throw TimeoutException('Synchronisierung hat zu lange gedauert (> 10s)');
+          throw TimeoutException(
+            'Synchronisierung hat zu lange gedauert (> 10s)',
+          );
         },
       );
-      debugPrint('🔄 Sync completed: total=${result.total}, successful=${result.successful}, failed=${result.failed}');
 
-      if (context.mounted) {
-        if (result.total == 0) {
-          debugPrint('ℹ️ No pending trips');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Keine ausstehenden Fahrten zum Synchronisieren."),
-            ),
-          );
-        } else if (result.failed == 0) {
-          debugPrint('✅ Sync successful: ${result.successful} trips');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "${result.successful} ausstehende Fahrten wurden synchronisiert.",
-              ),
-            ),
-          );
-        } else {
-          debugPrint('⚠️ Sync partial failure: ${result.successful}/${result.total} successful');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Synchronisierung fehlgeschlagen: ${result.failed} von ${result.total} Fahrten konnten nicht gesendet werden.",
-              ),
-            ),
-          );
-        }
-      } else {
-        debugPrint('⚠️ Context not mounted after sync');
+      if (!context.mounted) {
+        return;
       }
-    } catch (e, st) {
-      debugPrint('❌ Sync error: $e\n$st');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Fehler beim Synchronisieren: ${e.toString()}"),
-          ),
-        );
-      } else {
-        debugPrint('⚠️ Context not mounted after error');
+      _showSyncResult(result);
+    } catch (e) {
+      if (!context.mounted) {
+        return;
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Fehler beim Synchronisieren: ${e.toString()}")),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  /// Converts sync counters into the snackbar text the user sees.
+  void _showSyncResult(TripSyncResult result) {
+    if (result.total == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Keine ausstehenden Fahrten zum Synchronisieren."),
+        ),
+      );
+      return;
+    }
+
+    if (result.failed == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "${result.successful} ausstehende Fahrten wurden synchronisiert.",
+          ),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Synchronisierung fehlgeschlagen: ${result.failed} von ${result.total} Fahrten konnten nicht gesendet werden.",
+        ),
+      ),
+    );
   }
 }

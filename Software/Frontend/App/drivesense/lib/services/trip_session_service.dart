@@ -162,6 +162,10 @@ class TripSessionService extends ChangeNotifier {
 
   TripSessionState get state => _state;
 
+  /// Restores the last completed trip and any active draft saved in Isar.
+  ///
+  /// This lets the UI resume an interrupted trip after app restart, but ignores
+  /// drafts that belong to a different active profile.
   Future<void> initialize() async {
     final TripSummary? lastTrip = await _loadLatestCompletedTrip();
     final ActiveTrip? activeDraft = await activeTripRepository.getActive();
@@ -219,6 +223,10 @@ class TripSessionService extends ChangeNotifier {
     _startUiTicker();
   }
 
+  /// Creates a new active trip draft and starts GPS tracking.
+  ///
+  /// The method resolves missing protocol/vehicle selections before tracking so
+  /// every saved point already belongs to a valid profile/protocol/vehicle.
   Future<void> startTrip() async {
     if (_state.hasActiveTrip) {
       return;
@@ -312,6 +320,7 @@ class TripSessionService extends ChangeNotifier {
     _startUiTicker();
   }
 
+  /// Pauses an active trip after flushing the latest GPS point to storage.
   Future<void> pauseTrip() async {
     await _waitForPendingTrackingUpdate();
     await _refreshActiveDraftFromRepository();
@@ -353,6 +362,7 @@ class TripSessionService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Resumes a paused trip and records how long it stayed paused.
   Future<void> resumeTrip() async {
     await _waitForPendingTrackingUpdate();
     await _refreshActiveDraftFromRepository();
@@ -431,6 +441,8 @@ class TripSessionService extends ChangeNotifier {
     }
   }
 
+  /// Converts the active draft into a completed local trip, then starts async
+  /// server sync while the UI can already display the completed drive.
   Future<TripSessionStopResult> _stopTripInternal() async {
     if (_activeDraft == null) {
       throw const TripSessionException('Es ist keine aktive Fahrt vorhanden.');
@@ -491,6 +503,8 @@ class TripSessionService extends ChangeNotifier {
     );
   }
 
+  /// Handles the post-stop upload and replaces the temporary local summary with
+  /// the backend-confirmed summary when sync succeeds.
   Future<TripSessionSyncResult> _syncFinishedTrip(
     TripSummary finishedTrip,
     List<Trackingpoint> trackingPositions,
@@ -543,6 +557,8 @@ class TripSessionService extends ChangeNotifier {
     return '${vehicle.model} (${vehicle.licensePlate})';
   }
 
+  /// Serializes GPS callbacks so Isar writes happen in order even when the
+  /// location stream emits faster than the repository can persist.
   void _setupTrackingCallbacks() {
     trackingService.onTrackingUpdate =
         (Trackingpoint point, double distanceAdded, bool alreadyPersisted) {
@@ -565,6 +581,10 @@ class TripSessionService extends ChangeNotifier {
     };
   }
 
+  /// Applies a GPS update to the active draft and notifies the UI.
+  ///
+  /// Foreground-service points may already be persisted, so that branch reloads
+  /// Isar state instead of writing the same point again.
   Future<void> _acceptTrackingUpdate(
     Trackingpoint point,
     double distanceAdded,

@@ -34,12 +34,18 @@ class TripSyncService {
   });
 
   String _createLocalId(int accountId, TripSummary trip) {
+    // The local id must stay stable across retries until the backend assigns a
+    // server id and _applySyncedSummary rewrites it to server:<account>:<id>.
     final int localTripId = trip.id > 0
         ? trip.id
         : trip.startTime.microsecondsSinceEpoch;
     return 'local:$accountId:$localTripId';
   }
 
+  /// Saves the finished trip locally first, then attempts immediate upload.
+  ///
+  /// If upload fails, the local row remains unsynced with the error attached so
+  /// the background/manual sync flow can retry without losing the drive.
   Future<TripDetailed> saveTripWithRetry(
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
@@ -57,6 +63,8 @@ class TripSyncService {
     );
     final Trip localTrip = existingLocalTrip ?? Trip();
 
+    // Persist first, then try the network. If the request fails, the trip stays
+    // queued in Isar and syncPendingTrips can retry it later.
     localTrip
       ..localId = localId
       ..accountId = accountId
@@ -99,6 +107,8 @@ class TripSyncService {
     }
   }
 
+  /// Copies backend-confirmed values onto the local row after a successful
+  /// upload, preserving local values when the backend sends empty placeholders.
   Future<void> _applySyncedSummary(
     Trip localTrip,
     TripSummary syncedSummary,
@@ -111,6 +121,8 @@ class TripSyncService {
     final int fallbackEndMileage = localTrip.endMileage;
 
     if (syncedSummary.id > 0) {
+      // Once the backend returns a permanent id, replace any stale cached
+      // server copy so the local queue does not show duplicate trips.
       final String serverLocalId = 'server:$accountId:${syncedSummary.id}';
       final Trip? conflictingServerTrip = await isarTripRepository.getByLocalId(
         serverLocalId,
@@ -151,6 +163,10 @@ class TripSyncService {
         : fallbackEndMileage;
   }
 
+  /// Uploads every unsynced local trip and returns counts for the UI message.
+  ///
+  /// Each row is handled independently so one bad trip does not block the rest
+  /// of the local queue.
   Future<TripSyncResult> syncPendingTrips() async {
     final List<Trip> pendingTrips = await isarTripRepository.getUnsynced();
     int successful = 0;
@@ -162,6 +178,8 @@ class TripSyncService {
             jsonDecode(pendingTrip.trackingPointsJson) as List<dynamic>;
 
         if (trackingList.isEmpty) {
+          // A trip without positions cannot be accepted by the backend and is
+          // not useful locally, so remove it instead of retrying forever.
           await isarTripRepository.deleteById(pendingTrip.id);
           debugPrint(
             'Discarded pending trip without tracking points (localId=${pendingTrip.localId}, dbId=${pendingTrip.id}).',
@@ -169,6 +187,8 @@ class TripSyncService {
           continue;
         }
 
+        // Repair before creating the summary so the backend receives the same
+        // mileage values the local table will display after sync.
         await _repairMileageForPendingTrip(pendingTrip);
         final TripSummary trip = TripSummary.fromTrip(pendingTrip);
         final List<Trackingpoint> trackingPoints = trackingList
@@ -208,10 +228,8 @@ class TripSyncService {
     );
   }
 
-  Future<void> clearLocalTrips() async {
-    await isarTripRepository.deleteAll();
-  }
-
+  /// Pushes the trip's end mileage to the vehicle when the completed trip moved
+  /// the odometer forward.
   Future<void> _syncVehicleMileageForTrip(TripSummary trip) async {
     List<Vehicle> vehicles = RuntimeStore.vehicles;
     if (vehicles.isEmpty) {
@@ -250,6 +268,8 @@ class TripSyncService {
   }
 
   Future<void> _repairMileageForPendingTrip(Trip pendingTrip) async {
+    // Older local drafts may have been saved before mileage repair existed.
+    // Normalize them once before sending to the backend.
     final int startMileage = pendingTrip.startMileage < 0
         ? 0
         : pendingTrip.startMileage;

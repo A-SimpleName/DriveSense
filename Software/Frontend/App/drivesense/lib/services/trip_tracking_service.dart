@@ -102,6 +102,8 @@ class TripTrackingService {
     _lastAcceptedPoint = point;
   }
 
+  /// Starts location tracking using the Android foreground service when
+  /// available, otherwise falls back to an in-process Geolocator stream.
   Future<void> startTracking() async {
     await _ensureTrackingPermissions();
 
@@ -132,6 +134,8 @@ class TripTrackingService {
     unawaited(emitCurrentPoint());
   }
 
+  /// Starts or resyncs the Android foreground service that keeps recording when
+  /// the app is backgrounded.
   Future<void> _startForegroundTaskTracking() async {
     _initForegroundTask();
 
@@ -163,6 +167,8 @@ class TripTrackingService {
     _foregroundTrackingRequested = true;
   }
 
+  /// Stops whichever tracking mechanism is active and clears in-memory GPS
+  /// state so the next trip starts with a clean distance baseline.
   Future<void> stopTracking() async {
     if (_supportsForegroundServiceTracking) {
       _foregroundTrackingRequested = false;
@@ -184,6 +190,8 @@ class TripTrackingService {
     _lastAcceptedPoint = null;
   }
 
+  /// Forces one last point capture, usually before pause/stop, so the trip does
+  /// not lose the most recent position before tracking is suspended.
   Future<void> emitCurrentPoint() async {
     if (_supportsForegroundServiceTracking) {
       if (!await FlutterForegroundTask.isRunningService) {
@@ -219,6 +227,8 @@ class TripTrackingService {
     }
   }
 
+  /// Converts a raw Geolocator position into a filtered tracking point and
+  /// reports accepted points back to TripSessionService.
   void _handlePositionUpdate(Position position) {
     final Trackingpoint trackingpoint = _positionToTrackingPoint(position);
 
@@ -247,6 +257,8 @@ class TripTrackingService {
     return _shouldAcceptTrackingPoint(trackingpoint, _lastAcceptedPoint);
   }
 
+  /// Receives messages from the Android foreground task and mirrors them into
+  /// the same callbacks used by the in-process location stream.
   void _handleForegroundTaskData(Object data) {
     final Map<String, dynamic>? message = _stringKeyedMap(data);
     if (message == null) {
@@ -283,6 +295,8 @@ class TripTrackingService {
     _pendingEmitCurrentPoint = null;
   }
 
+  /// Validates all permissions needed for continuous tracking on the current
+  /// platform before any location stream or foreground service starts.
   Future<void> _ensureTrackingPermissions() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       throw const TripTrackingException(
@@ -452,6 +466,8 @@ class _TripTrackingTaskHandler extends TaskHandler {
     return _pendingPositionWrite;
   }
 
+  /// Foreground-service write path: reloads the active draft, filters the point,
+  /// persists it to Isar, and notifies the main isolate.
   Future<void> _persistPosition(Position position) async {
     final ActiveTrip? activeTrip = await _activeTripRepository.getActive(
       allowUnscoped: true,
@@ -507,6 +523,8 @@ class _TripTrackingTaskHandler extends TaskHandler {
     _updateNotification(activeTrip);
   }
 
+  /// Seeds distance filtering from the persisted active trip so a restarted
+  /// foreground task does not double-count from an empty baseline.
   Future<void> _seedLastAcceptedPoint() async {
     final ActiveTrip? activeTrip = await _activeTripRepository.getActive(
       allowUnscoped: true,
@@ -596,6 +614,8 @@ LocationSettings _trackingLocationSettings() {
   );
 }
 
+/// Filters noisy GPS points and enforces the minimum time/distance spacing
+/// between accepted points.
 bool _shouldAcceptTrackingPoint(
   Trackingpoint trackingpoint,
   Trackingpoint? lastAcceptedPoint,
