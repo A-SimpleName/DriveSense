@@ -3,6 +3,8 @@ import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/trip_detailed.dart';
 import 'package:drivesense/repository/trip_repository.dart';
+import 'package:drivesense/services/jwt_identity.dart';
+import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/trip_service.dart';
 
 class RuntimeStore {
@@ -11,6 +13,7 @@ class RuntimeStore {
   static Map<int, TripDetailed> tripDetailCache = {};
   static String authToken = '';
   static String refreshToken = '';
+  static int? currentAccountId;
   static String? activeProfileToken;
   static String? activeProfileRole;
   static int? currentProfileId;
@@ -74,7 +77,18 @@ class RuntimeStore {
   }
 
   static void setAuthToken(String token) {
+    final int? previousAccountId = currentAccountId;
+    final int? nextAccountId = JwtIdentity.accountIdFromToken(token);
+
     authToken = token;
+    currentAccountId = nextAccountId;
+    LocalAccountScope.accountId = nextAccountId;
+
+    if (previousAccountId != null &&
+        nextAccountId != null &&
+        previousAccountId != nextAccountId) {
+      clearActiveProfile();
+    }
   }
 
   static String? getAuthToken() {
@@ -164,6 +178,8 @@ class RuntimeStore {
   static void clearSession() {
     authToken = '';
     refreshToken = '';
+    currentAccountId = null;
+    LocalAccountScope.accountId = null;
     clearActiveProfile();
   }
 

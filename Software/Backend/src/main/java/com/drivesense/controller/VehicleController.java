@@ -6,6 +6,7 @@ import com.drivesense.dto.request.SaveVehicleRequest;
 import com.drivesense.dto.request.VerifyInviteRequest;
 import com.drivesense.dto.response.ProfileSelectionResponse;
 import com.drivesense.dto.response.VehicleDto;
+import com.drivesense.dto.response.VehicleMemberResponse;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Profile;
 import com.drivesense.model.Vehicle;
@@ -14,6 +15,7 @@ import com.drivesense.service.VehicleService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -89,11 +91,76 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 
+    // ── Mitglieder ───────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/vehicles/{id}/members
+     * Gibt alle Mitglieder zurück. Nur OWNER und CO_OWNER dürfen das aufrufen.
+     */
+    @GetMapping("/{id}/members")
+    public ResponseEntity<List<VehicleMemberResponse>> getVehicleMembers(
+            @PathVariable int id,
+            HttpServletRequest request) {
+
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewaehlt");
+        }
+        return ResponseEntity.ok(vehicleService.getVehicleMembers(id, profileId));
+    }
+
+    /**
+     * DELETE /api/vehicles/{vehicleId}/members/{profileId}
+     * OWNER entfernt CO_OWNER oder DRIVER.
+     * CO_OWNER entfernt nur DRIVER.
+     * Niemand kann den OWNER entfernen. OWNER kann sich nicht selbst entfernen.
+     */
+    @DeleteMapping("/{vehicleId}/members/{targetProfileId}")
+    public ResponseEntity<Void> removeMember(
+            @PathVariable int vehicleId,
+            @PathVariable int targetProfileId,
+            HttpServletRequest request) {
+
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer requesterProfileId)) {
+            throw new UnauthorizedException("Kein aktives Profil ausgewählt");
+        }
+        vehicleService.removeMember(vehicleId, requesterProfileId, targetProfileId);
+        return ResponseEntity.noContent().build();
+    }
+
     // ── Einladungen ──────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/vehicles/invitations/accept-link?code=...
+     * Einladungslink aus der E-Mail – öffnet sich im Browser, kein Login nötig.
+     */
+    @GetMapping(value = "/invitations/accept-link", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> acceptInviteLink(@RequestParam String code) {
+        VehicleDto vehicle = vehicleInvitationService.acceptInviteLink(code);
+        String vehicleName = escapeHtml(vehicle.getModel() + " (" + vehicle.getLicensePlate() + ")");
+        return ResponseEntity.ok("""
+                <!doctype html>
+                <html lang="de">
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                  <title>DriveSense Einladung angenommen</title>
+                </head>
+                <body style="font-family:Arial,sans-serif;margin:40px;line-height:1.5">
+                  <h1>Einladung angenommen</h1>
+                  <p>Du hast jetzt Zugriff auf das Fahrzeug <strong>%s</strong>.</p>
+                  <p>Du kannst DriveSense nun wieder oeffnen.</p>
+                </body>
+                </html>
+                """.formatted(vehicleName));
+    }
 
     /**
      * POST /api/vehicles/{vehicleId}/invitations
      * OWNER / CO_OWNER lädt einen Account per E-Mail ein.
+     * - OWNER kann CO_OWNER oder DRIVER einladen
+     * - CO_OWNER kann nur DRIVER einladen (wird im Service geprüft)
      */
     @PostMapping("/{vehicleId}/invitations")
     public ResponseEntity<Void> inviteToVehicle(
@@ -110,9 +177,21 @@ public class VehicleController {
     }
 
     /**
-     * POST /api/vehicles/{vehicleId}/invitations/verify
-     * Code prüfen → verfügbare Profile des eingeladenen Accounts zurückgeben.
+     * POST /api/vehicles/invitations/accept
+     * Einladung annehmen – nur Code nötig, Profil wird automatisch gewählt.
      */
+    @PostMapping("/invitations/accept")
+    public ResponseEntity<Void> acceptInviteAuto(
+            @RequestBody @Valid VerifyInviteRequest request,
+            HttpServletRequest httpRequest) {
+
+        int accountId = (int) httpRequest.getAttribute("accountId");
+        vehicleInvitationService.acceptInviteAuto(accountId, request.getCode());
+        return ResponseEntity.ok().build();
+    }
+
+    // ── Legacy-Endpoints (vehicle-scoped) ────────────────────────────────────
+
     @PostMapping("/{vehicleId}/invitations/verify")
     public ResponseEntity<List<ProfileSelectionResponse>> verifyInvite(
             @PathVariable int vehicleId,
@@ -121,18 +200,12 @@ public class VehicleController {
 
         int accountId = (int) httpRequest.getAttribute("accountId");
         List<Profile> profiles = vehicleInvitationService.verifyInviteCode(accountId, request.getCode());
-
         List<ProfileSelectionResponse> response = profiles.stream()
                 .map(p -> new ProfileSelectionResponse(p.getId(), p.getName(), p.getRole()))
                 .collect(Collectors.toList());
-
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * POST /api/vehicles/{vehicleId}/invitations/accept
-     * Einladung annehmen: Code + gewähltes Profil übergeben.
-     */
     @PostMapping("/{vehicleId}/invitations/accept")
     public ResponseEntity<Void> acceptInvite(
             @PathVariable int vehicleId,
@@ -142,5 +215,15 @@ public class VehicleController {
         int accountId = (int) httpRequest.getAttribute("accountId");
         vehicleInvitationService.acceptInvite(accountId, request.getCode(), request.getProfileId());
         return ResponseEntity.ok().build();
+    }
+
+    // ── Hilfsmethoden ────────────────────────────────────────────────────────
+
+    private String escapeHtml(String value) {
+        return value == null ? "" : value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 }

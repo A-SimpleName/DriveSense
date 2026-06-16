@@ -1,5 +1,6 @@
 import 'package:drivesense/pages/profile_select_page.dart';
 import 'package:drivesense/pages/sign_in_page.dart';
+import 'package:drivesense/pages/forgot_password_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
@@ -11,20 +12,25 @@ import 'package:drivesense/services/isar_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:drivesense/pages/settings_page.dart';
 import 'package:drivesense/pages/account_page.dart';
+import 'package:drivesense/pages/change_password_page.dart';
+import 'package:drivesense/pages/reset_password_page.dart';
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/auth_http_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   TripTrackingService.initializeForegroundTask();
   await dotenv.load(fileName: '.env');
   await IsarService.getInstance();
-  String token = ""; // TODO: get token from secure storage
+  await AuthHttpClient.restoreSession();
+  final String token = RuntimeStore.getAuthToken() ?? '';
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(MyApp(token: token,));
+  runApp(MyApp(token: token));
 }
 
 class MyApp extends StatelessWidget {
@@ -60,9 +66,16 @@ class MyApp extends StatelessWidget {
         'MainPage': (context) => const MainPage(),
         'SignInPage': (context) => const SignInPage(),
         'SignUpPage': (context) => const SignUpPage(),
+        'ForgotPasswordPage': (context) => const ForgotPasswordPage(),
         'ProfileSelectPage': (context) => const ProfileSelectPage(),
         'SettingsPage': (context) => const SettingsPage(),
         'AccountPage': (context) => const AccountPage(),
+        'ChangePasswordPage': (context) => const ChangePasswordPage(),
+        'ResetPasswordPage': (context) {
+          final Map<String, String> args =
+              ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return ResetPasswordPage(email: args['email']!, code: args['code']!);
+        },
       },
     );
   }

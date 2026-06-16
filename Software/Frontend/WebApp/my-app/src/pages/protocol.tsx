@@ -48,7 +48,7 @@ export default function ProtocolPage() {
                     />
                 )
             }
-            <ProtocolTable ownProtocols={ownProtocols} groupProtocols={groupProtocols} setShowForm={setShowForm} />
+            <ProtocolTable ownProtocols={ownProtocols} groupProtocols={groupProtocols} setShowForm={setShowForm} onDeleted={() => setReloadKey(prev => prev + 1)}/>
         </div>
     );
 }

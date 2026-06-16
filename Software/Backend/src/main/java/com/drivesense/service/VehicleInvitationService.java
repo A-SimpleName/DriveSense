@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,26 +27,20 @@ public class VehicleInvitationService {
 
     /**
      * Ein Profil (mindestens CO_OWNER) lädt einen Account per E-Mail ein.
-     * Nur OWNER darf als Rolle OWNER vergeben; CO_OWNER und DRIVER können
-     * nur DRIVER einladen – Vereinfachung: hier wird die Rolle immer vom
-     * Einlader bestimmt und per Request übergeben, die Validierung erfolgt
-     * im Controller.
-     *
-     * @param vehicleId        ID des Fahrzeugs
-     * @param inviterProfileId Profil des Einladenden (muss OWNER oder CO_OWNER sein)
-     * @param email            E-Mail des einzuladenden Accounts
-     * @param role             Rolle, die dem neuen Mitglied zugewiesen wird (DRIVER | CO_OWNER)
+     * - OWNER  darf CO_OWNER und DRIVER einladen
+     * - CO_OWNER darf nur DRIVER einladen
      */
     public void inviteToVehicle(int vehicleId, int inviterProfileId, String email, String role) {
-        // Fahrzeug existiert und ist aktiv?
+        // Fahrzeug existiert und Einlader hat Zugriff?
         VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(inviterProfileId)
                 .stream()
                 .filter(v -> v.getId() == vehicleId)
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Fahrzeug nicht gefunden oder kein Zugriff"));
 
-        // Einlader muss mindestens CO_OWNER sein
         String inviterRole = vehicle.getMyRole();
+
+        // Nur OWNER und CO_OWNER dürfen einladen
         if (!"OWNER".equals(inviterRole) && !"CO_OWNER".equals(inviterRole)) {
             throw new UnauthorizedException("Nur OWNER und CO_OWNER dürfen einladen");
         }
@@ -53,6 +48,11 @@ public class VehicleInvitationService {
         // CO_OWNER darf keine CO_OWNER erstellen – nur OWNER darf das
         if ("CO_OWNER".equals(role) && !"OWNER".equals(inviterRole)) {
             throw new UnauthorizedException("Nur OWNER darf CO_OWNER einladen");
+        }
+
+        // OWNER-Rolle darf nie per Einladung vergeben werden
+        if ("OWNER".equals(role)) {
+            throw new BadRequestException("Die Rolle OWNER kann nicht per Einladung vergeben werden");
         }
 
         // Eingeladenen Account suchen
@@ -69,7 +69,7 @@ public class VehicleInvitationService {
         // Prüfen ob der Account noch ein freies Profil hat (ohne Zugriff auf das Fahrzeug)
         List<Profile> invitedProfiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
         boolean hasAvailableProfile = invitedProfiles.stream()
-                .anyMatch(p -> vehicleDao.getById(vehicleId, invitedAccount.getId()) == null);
+                .anyMatch(p -> !profileHasVehicle(p.getId(), vehicleId));
         if (!hasAvailableProfile) {
             throw new BadRequestException("Alle Profile dieses Accounts haben bereits Zugriff auf das Fahrzeug");
         }
@@ -104,30 +104,41 @@ public class VehicleInvitationService {
         );
     }
 
-    // ── Code prüfen → Profile zurückgeben ───────────────────────────────────
+    // ── Code annehmen (automatisch erstes freies Profil) ────────────────────
 
     /**
-     * Verifiziert den Einladungs-Code und gibt die verfügbaren Profile zurück,
-     * die noch keinen Zugriff auf das Fahrzeug haben.
+     * Nimmt eine Einladung an – analog zum Group-Flow ohne manuelle Profilauswahl.
+     * Es wird automatisch das erste Profil des Accounts gewählt, das noch keinen
+     * Zugriff auf das Fahrzeug hat.
      */
+    public void acceptInviteAuto(int accountId, String code) {
+        VehicleInvitation invitation = getValidInvitation(accountId, code);
+
+        List<Profile> profiles = profileDao.getAllProfilesByAccountId(accountId);
+        Profile targetProfile = profiles.stream()
+                .filter(p -> !profileHasVehicle(p.getId(), invitation.getVehicleId()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Alle deine Profile haben bereits Zugriff auf das Fahrzeug"));
+
+        vehicleDao.addProfileAssociation(invitation.getVehicleId(), targetProfile.getId(), invitation.getRole());
+        vehicleInvitationDao.updateStatus(invitation.getId(), "ACCEPTED");
+    }
+
+    // ── Code prüfen → Profile zurückgeben (für erweiterte Flows, falls nötig) ──
+
     public List<Profile> verifyInviteCode(int accountId, String code) {
         VehicleInvitation invitation = getValidInvitation(accountId, code);
 
         List<Profile> profiles = profileDao.getAllProfilesByAccountId(accountId);
         if (profiles == null || profiles.isEmpty()) throw new NotFoundException("Keine Profile gefunden");
 
-        // Nur Profile zurückgeben, die noch keinen Zugriff haben
         return profiles.stream()
-                .filter(p -> vehicleDao.getById(invitation.getVehicleId(), accountId) == null)
+                .filter(p -> !profileHasVehicle(p.getId(), invitation.getVehicleId()))
                 .collect(Collectors.toList());
     }
 
-    // ── Profil wählen → Fahrzeug beitreten ──────────────────────────────────
+    // ── Profil wählen → Fahrzeug beitreten (für erweiterte Flows, falls nötig) ─
 
-    /**
-     * Nimmt die Einladung an: validiert Code, prüft Profil-Zugehörigkeit,
-     * legt profile_vehicle-Eintrag an und setzt Status auf ACCEPTED.
-     */
     public void acceptInvite(int accountId, String code, int profileId) {
         VehicleInvitation invitation = getValidInvitation(accountId, code);
 
@@ -137,7 +148,6 @@ public class VehicleInvitationService {
             throw new UnauthorizedException("Dieses Profil gehört nicht zu deinem Account");
         }
 
-        // Doppelten Zugriff verhindern
         List<VehicleDto> existing = vehicleDao.getAllVehiclesByProfile(profileId);
         boolean alreadyLinked = existing.stream().anyMatch(v -> v.getId() == invitation.getVehicleId());
         if (alreadyLinked) {
@@ -146,6 +156,28 @@ public class VehicleInvitationService {
 
         vehicleDao.addProfileAssociation(invitation.getVehicleId(), profileId, invitation.getRole());
         vehicleInvitationDao.updateStatus(invitation.getId(), "ACCEPTED");
+    }
+
+    // ── Einladungslink (E-Mail-Link-Flow) ────────────────────────────────────
+
+    public VehicleDto acceptInviteLink(String code) {
+        VehicleInvitation invitation = getValidInvitationByCode(code);
+
+        Account invitedAccount = accountDao.getById(invitation.getInvitedAccountId());
+        if (invitedAccount == null) {
+            throw new NotFoundException("Eingeladener Account nicht gefunden");
+        }
+
+        List<Profile> profiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
+        Profile targetProfile = profiles.stream()
+                .filter(p -> !profileHasVehicle(p.getId(), invitation.getVehicleId()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Alle Profile dieses Accounts haben bereits Zugriff auf das Fahrzeug"));
+
+        vehicleDao.addProfileAssociation(invitation.getVehicleId(), targetProfile.getId(), invitation.getRole());
+        vehicleInvitationDao.updateStatus(invitation.getId(), "ACCEPTED");
+
+        return vehicleDao.getById(invitation.getVehicleId(), invitedAccount.getId());
     }
 
     // ── Interne Hilfsmethoden ────────────────────────────────────────────────
@@ -161,7 +193,6 @@ public class VehicleInvitationService {
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException("Ungültiger oder abgelaufener Code"));
 
-        // Ablauf-Check (lazy) – Scheduler setzt EXPIRED im Batch
         if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
             vehicleInvitationDao.updateStatus(invitation.getId(), "EXPIRED");
             throw new BadRequestException("Einladungscode ist abgelaufen");
@@ -170,7 +201,34 @@ public class VehicleInvitationService {
         return invitation;
     }
 
+    private VehicleInvitation getValidInvitationByCode(String code) {
+        List<VehicleInvitation> pending = vehicleInvitationDao.getAllPending();
+        if (pending == null || pending.isEmpty()) {
+            throw new BadRequestException("Ungültiger oder abgelaufener Einladungslink");
+        }
+
+        VehicleInvitation invitation = pending.stream()
+                .filter(inv -> BCrypt.checkpw(code, inv.getCodeHash()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Ungültiger oder abgelaufener Einladungslink"));
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            vehicleInvitationDao.updateStatus(invitation.getId(), "EXPIRED");
+            throw new BadRequestException("Einladungslink ist abgelaufen");
+        }
+
+        return invitation;
+    }
+
+    private boolean profileHasVehicle(int profileId, int vehicleId) {
+        return vehicleDao.getAllVehiclesByProfile(profileId)
+                .stream()
+                .anyMatch(v -> v.getId() == vehicleId);
+    }
+
     private String generateCode() {
-        return String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        byte[] bytes = new byte[24];
+        new SecureRandom().nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }

@@ -8,6 +8,7 @@ import 'package:drivesense/services/trip_sync_service.dart';
 import 'package:drivesense/widgets/ds_snyc_trips_button.dart';
 import 'package:drivesense/widgets/protocol_table.dart';
 import 'package:flutter/material.dart';
+import 'package:drivesense/services/pdf_service.dart';
 import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 
 class ProtocolPageBody extends StatefulWidget {
@@ -23,6 +24,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
   List<Protocol> _protocols = <Protocol>[];
   bool _isLoading = true;
   bool _isCreating = false;
+  bool _isExportingPdf = false;
   String? _loadError;
   int? _lastProfileId;
 
@@ -89,9 +91,22 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   children: <Widget>[
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: _handlePdfExportPressed,
-                        icon: const Icon(Icons.picture_as_pdf),
-                        label: const Text('PDF exportieren'),
+                        onPressed:
+                            _isLoading || _protocols.isEmpty || _isExportingPdf
+                            ? null
+                            : _handlePdfExportPressed,
+                        icon: _isExportingPdf
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.picture_as_pdf),
+                        label: Text(
+                          _isExportingPdf ? 'Exportiere...' : 'PDF exportieren',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -121,7 +136,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
             ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _protocols.isEmpty
@@ -201,10 +216,26 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
     }
   }
 
-  void _handlePdfExportPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PDF Export ist noch nicht implementiert.')),
+  Future<void> _handlePdfExportPressed() async {
+    setState(() {
+      _isExportingPdf = true;
+    });
+
+    final PdfExportResult result = await PdfService.generatePdf(
+      protocolId: RuntimeStore.getCurrentProtocolId(),
     );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isExportingPdf = false;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(result.message)));
   }
 
   Future<void> _refreshVisibleTrips() async {

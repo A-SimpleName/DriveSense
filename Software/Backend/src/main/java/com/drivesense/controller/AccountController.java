@@ -37,6 +37,12 @@ public class AccountController {
         return ResponseEntity.status(201).body(accountService.signUp(request));
     }
 
+    @PostMapping("/cancel-signup")
+    public ResponseEntity<Void> cancelSignUp(@Valid @RequestBody CancelSignUpRequest request) {
+        accountService.cancelSignUp(request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
@@ -150,7 +156,7 @@ public class AccountController {
      */
     @PostMapping("/confirm-email-change")
     public ResponseEntity<Void> confirmEmailChange(
-            @Valid @RequestBody VerifyEmailRequest request,
+            @Valid @RequestBody ConfirmEmailChangeRequest request,
             HttpServletRequest httpRequest) {
         int accountId = (int) httpRequest.getAttribute("accountId");
         accountService.confirmEmailChange(accountId, request.getCode());

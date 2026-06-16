@@ -59,12 +59,6 @@ class _CurrentTripCardState extends State<CurrentTripCard> {
               ],
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: Text('Eingebettetes Karten-Widget hier'),
-            ),
-            const SizedBox(height: 12),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
