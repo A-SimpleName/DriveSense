@@ -28,18 +28,12 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         PopupMenuButton<String>(
           itemBuilder: (BuildContext context) {
-            return {'Einstellungen', 'Account', 'Abmelden'}.map((
-              String choice,
-            ) {
+            return {'Account', 'Abmelden'}.map((String choice) {
               return PopupMenuItem<String>(value: choice, child: Text(choice));
             }).toList();
           },
           onSelected: (String choice) {
             switch (choice) {
-              case 'Einstellungen':
-                Navigator.pushNamed(context, 'SettingsPage');
-                break;
-
               case 'Account':
                 Navigator.pushNamed(context, 'AccountPage');
                 break;

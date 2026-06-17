@@ -10,7 +10,6 @@ import 'package:drivesense/config/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:drivesense/services/isar_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:drivesense/pages/settings_page.dart';
 import 'package:drivesense/pages/account_page.dart';
 import 'package:drivesense/pages/change_password_page.dart';
 import 'package:drivesense/pages/reset_password_page.dart';
@@ -54,7 +53,6 @@ class MyApp extends StatelessWidget {
         'SignUpPage': (context) => const SignUpPage(),
         'ForgotPasswordPage': (context) => const ForgotPasswordPage(),
         'ProfileSelectPage': (context) => const ProfileSelectPage(),
-        'SettingsPage': (context) => const SettingsPage(),
         'AccountPage': (context) => const AccountPage(),
         'ChangePasswordPage': (context) => const ChangePasswordPage(),
         'ResetPasswordPage': (context) {
