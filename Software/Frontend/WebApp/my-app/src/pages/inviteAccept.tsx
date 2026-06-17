@@ -15,6 +15,21 @@ function InviteAcceptPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const roleLabel = (role?: string | null) => {
+        switch (role?.trim().toUpperCase()) {
+            case "FAHRSCHUELER":
+                return "Fahrschueler";
+            case "BERUFSFAHRER":
+                return "Berufsfahrer";
+            case "PRIVAT":
+                return "Privat";
+            default:
+                return role?.trim() || "Unbekannt";
+        }
+    };
+
+    const isJoinable = (profile: Profile) => profile.joinable !== false;
+
     const handleAccept = async () => {
         if (!selectedProfileId) return;
         setLoading(true);
@@ -41,6 +56,8 @@ function InviteAcceptPage() {
                         const data = await verifyInvite(codeValue)
                         setCode(codeValue);
                         setProfiles(data)
+                        setSelectedProfileId(null)
+                        setError(null)
                         setStep("profile")
                     }}
                     onSuccess={() => {}}
@@ -54,19 +71,33 @@ function InviteAcceptPage() {
                     {profiles.map(profile => (
                         <div
                             key={profile.id}
-                            onClick={() => setSelectedProfileId(profile.id ?? null)}
+                            onClick={() => {
+                                if (!isJoinable(profile)) {
+                                    setSelectedProfileId(null);
+                                    setError(profile.joinMessage || "Mit diesem Profiltyp ist der Beitritt nicht moeglich.");
+                                    return;
+                                }
+                                setError(null);
+                                setSelectedProfileId(profile.id ?? null);
+                            }}
                             style={{
                                 padding: "12px",
                                 border: selectedProfileId === profile.id ? "2px solid blue" : "1px solid #ccc",
                                 borderRadius: "6px",
-                                cursor: "pointer",
+                                cursor: isJoinable(profile) ? "pointer" : "not-allowed",
+                                opacity: isJoinable(profile) ? 1 : 0.6,
                             }}
                         >
-                            {profile.name}
+                            <strong>{profile.name}</strong>
+                            <div style={{ marginTop: "4px", fontSize: "0.9rem", color: isJoinable(profile) ? "#555" : "#b45309" }}>
+                                {isJoinable(profile)
+                                    ? roleLabel(profile.role)
+                                    : profile.joinMessage || "Mit diesem Profiltyp ist der Beitritt nicht moeglich."}
+                            </div>
                         </div>
                     ))}
                     {error && <p style={{ color: "red" }}>{error}</p>}
-                    <button onClick={handleAccept} disabled={!selectedProfileId || loading}>
+                    <button onClick={handleAccept} disabled={!selectedProfileId || loading || !profiles.some(isJoinable)}>
                         {loading && (
                             <span style={{
                                 display: "inline-block", width: "12px", height: "12px",

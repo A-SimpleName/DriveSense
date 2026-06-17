@@ -4,9 +4,6 @@ import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.GroupMemberResponse;
 import com.drivesense.dto.response.GroupResponse;
 import com.drivesense.dto.response.ProfileSelectionResponse;
-import com.drivesense.dto.response.SelectProfileResponse;
-import com.drivesense.model.Profile;
-import com.drivesense.model.UserGroup;
 import com.drivesense.service.GroupInvitationService;
 import com.drivesense.service.UsergroupService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -86,11 +83,7 @@ public class UsergroupController {
             HttpServletRequest httpRequest) {
 
         int accountId = (int) httpRequest.getAttribute("accountId");
-        List<Profile> profiles = groupInvitationService.verifyInviteCode(accountId, request.getCode());
-        List<ProfileSelectionResponse> response = profiles.stream()
-                .map(p -> new ProfileSelectionResponse(p.getId(), p.getName(),p.getRole()))
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(groupInvitationService.verifyInviteCode(accountId, request.getCode()));
     }
 
     @PostMapping("/accept-invite")

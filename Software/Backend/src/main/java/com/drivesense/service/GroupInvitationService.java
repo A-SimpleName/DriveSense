@@ -1,5 +1,6 @@
 package com.drivesense.service;
 import com.drivesense.db.*;
+import com.drivesense.dto.response.ProfileSelectionResponse;
 import com.drivesense.exceptions.*;
 import com.drivesense.model.*;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -95,7 +96,7 @@ public class GroupInvitationService {
     // CODE PRÜFEN → PROFILE ZURÜCKGEBEN
     // ──────────────────────────────────────────
 
-    public List<Profile> verifyInviteCode(int accountId, String code) {
+    public List<ProfileSelectionResponse> verifyInviteCode(int accountId, String code) {
         GroupInvitation invitation = getValidInvitation(accountId, code);
 
         if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
@@ -108,8 +109,22 @@ public class GroupInvitationService {
         if (profiles == null || profiles.isEmpty()) {
             throw new NotFoundException("Keine Profile gefunden");
         }
+        String requiredRole = usergroupService.getGroupProtocolRole(invitation.getGroupId());
+        String incompatibleMessage = usergroupService.incompatibleProfileMessageForRole(requiredRole);
+
         return profiles.stream()
                 .filter(p -> profileUsergroupDao.getByProfileIdAndGroupId(p.getId(), invitation.getGroupId()) == null)
+                .map(p -> {
+                    boolean joinable = usergroupService.isProfileCompatibleWithRole(p, requiredRole);
+                    return new ProfileSelectionResponse(
+                            p.getId(),
+                            p.getName(),
+                            p.getRole(),
+                            joinable,
+                            joinable ? null : incompatibleMessage,
+                            requiredRole
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -136,6 +151,8 @@ public class GroupInvitationService {
         if (existing != null) {
             throw new BadRequestException("Dieses Profil ist bereits in der Gruppe");
         }
+
+        usergroupService.validateProfileCompatibleWithGroup(invitation.getGroupId(), profileId);
 
         usergroupService.addMember(
                 invitation.getGroupId(),

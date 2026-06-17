@@ -50,6 +50,9 @@ public class ProtocolService {
 
     public String getProtocolRole (int id) {
         Protocol protocol = getById(id);
+        if (protocol.getUsergroupId() != null) {
+            return usergroupService.getGroupProtocolRole(protocol.getUsergroupId());
+        }
         Profile profile = profileService.getById(protocol.getCreatedByProfileId());
         return profile.getRole();
     }

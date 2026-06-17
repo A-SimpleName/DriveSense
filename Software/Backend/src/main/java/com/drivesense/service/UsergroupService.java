@@ -5,14 +5,15 @@ import com.drivesense.db.UserGroupDao;
 import com.drivesense.dto.response.GroupMemberResponse;
 import com.drivesense.dto.response.GroupResponse;
 import com.drivesense.exceptions.*;
+import com.drivesense.model.Profile;
 import com.drivesense.model.ProfileUsergroup;
 import com.drivesense.model.UserGroup;
-import org.hibernate.validator.internal.engine.groups.Group;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UsergroupService {
@@ -64,6 +65,8 @@ public class UsergroupService {
         if (existing != null && existing.getProfileId() != 0) {
             throw new BadRequestException("Profil ist bereits in der Gruppe");
         }
+
+        validateProfileCompatibleWithGroup(groupId, profileId);
 
         ProfileUsergroup pug = new ProfileUsergroup();
         pug.setProfileId(profileId);
@@ -212,6 +215,38 @@ public class UsergroupService {
         return isGroupOwner(groupId, profileId) || isGroupAdmin(groupId, profileId);
     }
 
+    public String getGroupProtocolRole(int groupId) {
+        UserGroup group = userGroupDao.getById(groupId);
+        if (group == null) {
+            throw new NotFoundException("Gruppe nicht gefunden");
+        }
+
+        Profile ownerProfile = profileService.getById(group.getOwner_id());
+        return normalizeRole(ownerProfile.getRole());
+    }
+
+    public boolean isProfileCompatibleWithRole(Profile profile, String requiredRole) {
+        return normalizeRole(profile.getRole()).equals(normalizeRole(requiredRole));
+    }
+
+    public void validateProfileCompatibleWithGroup(int groupId, int profileId) {
+        Profile profile = profileService.getById(profileId);
+        String requiredRole = getGroupProtocolRole(groupId);
+        String profileRole = normalizeRole(profile.getRole());
+
+        if (!profileRole.equals(requiredRole)) {
+            throw new BadRequestException(
+                    "Mit diesem Profiltyp kannst du dieser Gruppe nicht beitreten. Erforderlicher Profiltyp: "
+                            + roleLabel(requiredRole)
+            );
+        }
+    }
+
+    public String incompatibleProfileMessageForRole(String requiredRole) {
+        return "Mit diesem Profiltyp kannst du dieser Gruppe nicht beitreten. Erforderlicher Profiltyp: "
+                + roleLabel(requiredRole);
+    }
+
     private String getGroupRole(int groupId, int profileId) {
         ProfileUsergroup pug = profileUserGroupDao.getByProfileIdAndGroupId(profileId, groupId);
         if (pug == null || pug.getProfileId() == 0) return "NONE";
@@ -233,5 +268,18 @@ public class UsergroupService {
             responses.add(mapToGroupResponse(group));
         }
         return responses;
+    }
+
+    private String normalizeRole(String role) {
+        return role == null ? "" : role.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String roleLabel(String role) {
+        return switch (normalizeRole(role)) {
+            case "FAHRSCHUELER" -> "Fahrschueler";
+            case "BERUFSFAHRER" -> "Berufsfahrer";
+            case "PRIVAT" -> "Privat";
+            default -> role;
+        };
     }
 }

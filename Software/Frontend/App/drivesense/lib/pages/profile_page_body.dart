@@ -700,14 +700,18 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
   void initState() {
     super.initState();
     for (final Profile profile in widget.profiles) {
-      if (profile.id == widget.preferredProfileId) {
+      if (profile.joinable && profile.id == widget.preferredProfileId) {
         _selectedProfileId = profile.id;
         return;
       }
     }
-    _selectedProfileId = widget.profiles.isNotEmpty
-        ? widget.profiles.first.id
-        : null;
+    for (final Profile profile in widget.profiles) {
+      if (profile.joinable) {
+        _selectedProfileId = profile.id;
+        return;
+      }
+    }
+    _selectedProfileId = null;
   }
 
   void _submit() {
@@ -717,7 +721,7 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
     }
 
     for (final Profile profile in widget.profiles) {
-      if (profile.id == selectedProfileId) {
+      if (profile.joinable && profile.id == selectedProfileId) {
         Navigator.of(context).pop(profile);
         return;
       }
@@ -727,6 +731,9 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final bool hasProfiles = widget.profiles.isNotEmpty;
+    final bool hasJoinableProfiles = widget.profiles.any(
+      (Profile profile) => profile.joinable,
+    );
 
     return AlertDialog(
       title: const Text('Profil auswaehlen'),
@@ -749,18 +756,37 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
                       itemBuilder: (BuildContext context, int index) {
                         final Profile profile = widget.profiles[index];
                         final bool selected = profile.id == _selectedProfileId;
+                        final bool joinable = profile.joinable;
                         return ListTile(
+                          enabled: joinable,
                           selected: selected,
                           leading: Icon(
-                            selected
+                            !joinable
+                                ? Icons.info_outline
+                                : selected
                                 ? Icons.check_circle
                                 : Icons.circle_outlined,
                           ),
                           title: Text(profile.name),
-                          subtitle: profile.role == null
-                              ? null
-                              : Text(_profileRoleLabel(profile.role)),
+                          subtitle: Text(
+                            joinable
+                                ? _profileRoleLabel(profile.role)
+                                : profile.joinMessage ??
+                                      'Mit diesem Profiltyp ist der Beitritt nicht moeglich.',
+                          ),
                           onTap: () {
+                            if (!joinable) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    profile.joinMessage ??
+                                        'Mit diesem Profiltyp ist der Beitritt nicht moeglich.',
+                                  ),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                              return;
+                            }
                             setState(() => _selectedProfileId = profile.id);
                           },
                         );
@@ -779,7 +805,9 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
           child: const Text('Abbrechen'),
         ),
         ElevatedButton(
-          onPressed: hasProfiles && _selectedProfileId != null ? _submit : null,
+          onPressed: hasJoinableProfiles && _selectedProfileId != null
+              ? _submit
+              : null,
           child: const Text('Beitreten'),
         ),
       ],
