@@ -115,10 +115,6 @@ class ProfileService {
     return null;
   }
 
-  static Future<Profile?> createDefaultStudentProfile() {
-    return createProfile(name: 'Fahrschueler', role: 'FAHRSCHUELER');
-  }
-
   static Future<ProfileMutationResponse> updateProfileName({
     required Profile profile,
     required String name,
@@ -326,36 +322,6 @@ class ProfileService {
         message: 'Unerwarteter Fehler beim Profilwechsel: $e',
       );
     }
-  }
-
-  static Future<SelectProfileResponse> selectFirstProfileAsDefault() async {
-    final List<Profile> profiles = await fetchProfiles();
-    if (profiles.isEmpty) {
-      return const SelectProfileResponse(
-        isSuccess: false,
-        message: 'Kein Profil verfuegbar.',
-      );
-    }
-
-    final Profile first = profiles.first;
-    return selectProfile(first.id);
-  }
-
-  static Future<SelectProfileResponse> ensureDefaultStudentProfile() async {
-    final List<Profile> existingProfiles = await fetchProfiles();
-    if (existingProfiles.isNotEmpty) {
-      return selectProfile(existingProfiles.first.id);
-    }
-
-    final Profile? createdProfile = await createDefaultStudentProfile();
-    if (createdProfile == null) {
-      return const SelectProfileResponse(
-        isSuccess: false,
-        message: 'Default-Fahrschüler-Profil konnte nicht erstellt werden.',
-      );
-    }
-
-    return selectProfile(createdProfile.id);
   }
 
   static dynamic _decodeJson(String rawBody) {
