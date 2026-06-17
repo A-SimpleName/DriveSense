@@ -169,7 +169,6 @@ String normalizeProtocolRole(String role) {
 
   switch (normalized) {
     case 'FAHRSCHUELER':
-    case 'FAHRSCHULER':
       return 'FAHRSCHUELER';
     case 'BERUFSFAHRER':
       return 'BERUFSFAHRER';

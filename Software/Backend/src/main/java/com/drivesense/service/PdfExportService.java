@@ -159,7 +159,7 @@ public class PdfExportService {
                     .toUpperCase(Locale.ROOT);
 
             return switch (normalizedRole) {
-                case "FAHRSCHULER", "FAHRSCHUELER" -> FAHRSCHUELER;
+                case "FAHRSCHUELER" -> FAHRSCHUELER;
                 case "BERUFSFAHRER" -> BERUFSFAHRER;
                 default -> PRIVAT;
             };

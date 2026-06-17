@@ -62,7 +62,7 @@ public class ProfileService {
         }
 
         return switch (role.trim().toUpperCase(Locale.ROOT)) {
-            case "FAHRSCHÜLER", "FAHRSCHULER", "FAHRSCHUELER" -> "FAHRSCHUELER";
+            case "FAHRSCHUELER" -> "FAHRSCHUELER";
             case "BERUFSFAHRER" -> "BERUFSFAHRER";
             case "PRIVAT" -> "PRIVAT";
             default -> throw new BadRequestException("Ungueltige Profilrolle");

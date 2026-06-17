@@ -734,8 +734,6 @@ String _vehicleRoleLabel(String? role) {
 String _profileRoleLabel(String? role) {
   switch (role?.trim().toUpperCase()) {
     case 'FAHRSCHUELER':
-    case 'FAHRSCHULER':
-    case 'FAHRSCH\u00dcLER':
       return 'Fahrschueler';
     case 'BERUFSFAHRER':
       return 'Berufsfahrer';
