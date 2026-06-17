@@ -7,24 +7,56 @@ import 'package:drivesense/services/jwt_identity.dart';
 import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/trip_service.dart';
 
+/// Process-wide runtime state for the active account/profile session.
+///
+/// This store intentionally holds only short-lived UI/session data. Durable
+/// tokens live in [TokenStorage], and durable trip drafts/caches live in Isar.
+/// Changing account or profile clears scoped values so selections and cached
+/// lists cannot leak across user boundaries.
 class RuntimeStore {
+  /// Vehicles available to the selected profile.
   static List<Vehicle> vehicles = [];
+
+  /// Protocols available to the selected profile.
   static List<Protocol> protocols = [];
+
+  /// Visible trip summaries for the selected profile/protocol.
   static List<TripSummary> trips = [];
+
+  /// In-memory cache of fetched trip details by visible trip id.
   static Map<int, TripDetailed> tripDetailCache = {};
+
+  /// Current account JWT used for backend authentication.
   static String authToken = '';
+
+  /// Refresh JWT used to renew [authToken].
   static String refreshToken = '';
+
+  /// Account id decoded from [authToken].
   static int? currentAccountId;
+
+  /// JWT for the selected profile, when profile-scoped API access is active.
   static String? activeProfileToken;
+
+  /// Role of the selected profile, for UI and trip-purpose rules.
   static String? activeProfileRole;
+
+  /// Id of the selected profile.
   static int? currentProfileId;
+
+  /// Id of the selected vehicle, or `0` when no valid vehicle is selected.
   static int currentVehicleId = 0;
+
+  /// Id of the selected protocol, or `0` when no valid protocol is selected.
   static int currentProtocolId = 0;
+
+  /// Trip purpose selected for professional-driver profiles.
   static String currentTripPurpose = '';
+
+  /// Shared trip service used by simple UI refresh paths.
   static final TripService tripService = TripService();
 
-  // Keep one visible entry per physical trip when a local draft later receives
-  // its server id after sync.
+  /// Adds a trip summary while keeping one visible entry per physical trip.
   static void addTrip(TripSummary trip) {
     upsertTrip(trip);
   }
@@ -84,6 +116,7 @@ class RuntimeStore {
     }
   }
 
+  /// Inserts or replaces a vehicle by id.
   static void upsertVehicle(Vehicle vehicle) {
     bool replaced = false;
     vehicles = vehicles.map((Vehicle existing) {
@@ -99,6 +132,7 @@ class RuntimeStore {
     }
   }
 
+  /// Inserts or replaces a protocol by id.
   static void upsertProtocol(Protocol protocol) {
     if (protocol.id <= 0) {
       return;
@@ -122,6 +156,7 @@ class RuntimeStore {
     }
   }
 
+  /// Removes a protocol and moves the current selection to a valid fallback.
   static void removeProtocol(int protocolId) {
     protocols = protocols
         .where((Protocol protocol) => protocol.id != protocolId)
@@ -135,6 +170,7 @@ class RuntimeStore {
     }
   }
 
+  /// Returns the selected vehicle, or the first available vehicle as fallback.
   static Vehicle? getCurrentVehicle() {
     for (final Vehicle vehicle in vehicles) {
       if (vehicle.id == currentVehicleId) {
@@ -145,6 +181,7 @@ class RuntimeStore {
     return vehicles.isNotEmpty ? vehicles.first : null;
   }
 
+  /// Returns the selected protocol, or the first available protocol as fallback.
   static Protocol? getCurrentProtocol() {
     for (final Protocol protocol in protocols) {
       if (protocol.id == currentProtocolId) {
@@ -155,14 +192,17 @@ class RuntimeStore {
     return protocols.isNotEmpty ? protocols.first : null;
   }
 
+  /// Caches a fetched trip detail.
   static void addTripDetail(int tripId, TripDetailed detail) {
     tripDetailCache[tripId] = detail;
   }
 
+  /// Returns a cached trip detail, if one has already been fetched.
   static TripDetailed? getTripDetail(int tripId) {
     return tripDetailCache[tripId];
   }
 
+  /// Replaces the trip list after removing local/server duplicates.
   static void setTrips(List<TripSummary> newTrips) {
     // Server and local Isar data can overlap during sync; prefer the most
     // complete version without showing duplicates in the protocol table.
@@ -266,6 +306,7 @@ class RuntimeStore {
     return authToken;
   }
 
+  /// Stores the refresh token used by AuthHttpClient.
   static void setRefreshToken(String token) {
     refreshToken = token;
   }
@@ -300,22 +341,27 @@ class RuntimeStore {
     return activeProfileToken;
   }
 
+  /// Returns the selected profile role, defaulting to a private driver profile.
   static String getActiveProfileRole() {
     return activeProfileRole ?? 'PRIVAT';
   }
 
+  /// Selects the current vehicle id.
   static void setCurrentVehicleId(int vehicleId) {
     currentVehicleId = vehicleId;
   }
 
+  /// Returns the selected vehicle id, or `0` when none is selected.
   static int getCurrentVehicleId() {
     return currentVehicleId;
   }
 
+  /// Selects the current protocol id.
   static void setCurrentProtocolId(int protocolId) {
     currentProtocolId = protocolId;
   }
 
+  /// Returns the selected protocol id, or `0` when none is selected.
   static int getCurrentProtocolId() {
     return currentProtocolId;
   }
@@ -356,6 +402,7 @@ class RuntimeStore {
     clearActiveProfile();
   }
 
+  /// Clears profile-scoped selections, lists, and caches.
   static void clearActiveProfile() {
     activeProfileToken = null;
     activeProfileRole = null;
@@ -400,6 +447,7 @@ class RuntimeStore {
     currentTripPurpose = value;
   }
 
+  /// Returns the selected trip purpose for the next professional-driver trip.
   static String getCurrentTripPurpose() {
     return currentTripPurpose;
   }

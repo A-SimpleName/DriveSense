@@ -10,10 +10,12 @@ import 'package:http/http.dart' as package_http;
 typedef Response = package_http.Response;
 typedef ClientException = package_http.ClientException;
 
+/// Sends an authenticated-aware GET request through the shared client.
 Future<Response> get(Uri url, {Map<String, String>? headers}) {
   return _AuthHttpClient.instance.request('GET', url, headers: headers);
 }
 
+/// Sends a GET request and returns a byte response body.
 Future<Response> getBytes(Uri url, {Map<String, String>? headers}) {
   return _AuthHttpClient.instance.request(
     'GET',
@@ -23,6 +25,7 @@ Future<Response> getBytes(Uri url, {Map<String, String>? headers}) {
   );
 }
 
+/// Sends an authenticated-aware POST request through the shared client.
 Future<Response> post(Uri url, {Map<String, String>? headers, Object? body}) {
   return _AuthHttpClient.instance.request(
     'POST',
@@ -32,6 +35,7 @@ Future<Response> post(Uri url, {Map<String, String>? headers, Object? body}) {
   );
 }
 
+/// Sends an authenticated-aware PUT request through the shared client.
 Future<Response> put(Uri url, {Map<String, String>? headers, Object? body}) {
   return _AuthHttpClient.instance.request(
     'PUT',
@@ -41,23 +45,33 @@ Future<Response> put(Uri url, {Map<String, String>? headers, Object? body}) {
   );
 }
 
+/// Sends an authenticated-aware DELETE request through the shared client.
 Future<Response> delete(Uri url, {Map<String, String>? headers}) {
   return _AuthHttpClient.instance.request('DELETE', url, headers: headers);
 }
 
+/// Session facade for startup restore and logout cleanup.
 class AuthHttpClient {
   AuthHttpClient._();
 
+  /// Loads persisted tokens into RuntimeStore and refreshes the account token
+  /// if it is missing or close to expiry.
   static Future<void> restoreSession() async {
     await TokenStorage.instance.loadIntoRuntimeStore();
     await _AuthHttpClient.instance.ensureAccountToken();
   }
 
+  /// Clears persisted tokens and in-memory session state.
   static Future<void> clearSession() {
     return TokenStorage.instance.clearSession();
   }
 }
 
+/// Dio-backed implementation that exposes package:http compatible responses.
+///
+/// Existing services use the top-level functions in this file as a small
+/// compatibility layer while token refresh, profile selection, and cookie
+/// rebuilding are centralized here.
 class _AuthHttpClient {
   _AuthHttpClient._()
     : _dio = Dio(
@@ -78,10 +92,14 @@ class _AuthHttpClient {
   final Dio _dio;
   Future<bool>? _refreshInFlight;
 
+  /// Ensures the account token in RuntimeStore is usable before route decisions
+  /// or account-only API calls.
   Future<void> ensureAccountToken() async {
     await _ensureTokens(includeProfileToken: false);
   }
 
+  /// Sends a request, refreshing tokens first when the caller supplied an auth
+  /// cookie or the profile-token marker header.
   Future<Response> request(
     String method,
     Uri url, {

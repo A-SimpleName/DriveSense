@@ -15,7 +15,9 @@ typedef TrackingUpdateCallback =
       bool alreadyPersisted,
     );
 
+/// Error raised when tracking cannot start or continue on the current device.
 class TripTrackingException implements Exception {
+  /// Localized message safe to show in the UI.
   final String message;
 
   const TripTrackingException(this.message);
@@ -38,12 +40,16 @@ const String _resyncCommand = 'resync';
 bool get _supportsForegroundServiceTracking =>
     !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
+/// Entrypoint used by flutter_foreground_task in the Android background isolate.
 @pragma('vm:entry-point')
 void startTripTrackingForegroundTask() {
   FlutterForegroundTask.setTaskHandler(_TripTrackingTaskHandler());
 }
 
-/// GPS tracking service while a trip is active.
+/// GPS tracking service used while a trip is active.
+///
+/// Android uses a foreground service so location recording can continue while
+/// the app is backgrounded. Other platforms use an in-process Geolocator stream.
 class TripTrackingService {
   StreamSubscription<Position>? _positionSubscription;
   Trackingpoint? _lastAcceptedPoint;
@@ -51,7 +57,13 @@ class TripTrackingService {
   bool _foregroundCallbackRegistered = false;
   Completer<void>? _pendingEmitCurrentPoint;
 
+  /// Called for each accepted GPS point.
+  ///
+  /// The `alreadyPersisted` callback argument is true when the foreground
+  /// service already wrote the point to Isar before sending it to the UI isolate.
   TrackingUpdateCallback? onTrackingUpdate;
+
+  /// Called when tracking emits a recoverable platform or GPS error.
   Function(String error)? onError;
 
   TripTrackingService() {
@@ -98,6 +110,7 @@ class TripTrackingService {
   bool get isTracking =>
       _positionSubscription != null || _foregroundTrackingRequested;
 
+  /// Seeds distance calculations after restoring an interrupted active trip.
   void seedLastAcceptedPoint(Trackingpoint? point) {
     _lastAcceptedPoint = point;
   }

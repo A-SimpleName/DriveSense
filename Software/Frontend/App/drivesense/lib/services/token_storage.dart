@@ -3,6 +3,11 @@ import 'package:drivesense/services/isar_service.dart';
 import 'package:drivesense/services/jwt_identity.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Persists authentication tokens and mirrors them into RuntimeStore.
+///
+/// Secure storage is the source of truth across app restarts. RuntimeStore is
+/// updated whenever tokens or the selected profile change so services can build
+/// request headers without reading secure storage on every call.
 class TokenStorage {
   TokenStorage._();
 
@@ -62,12 +67,15 @@ class TokenStorage {
     return int.tryParse(raw);
   }
 
+  /// Saves the account token and clears local trip data when the account
+  /// changes on the same device.
   Future<void> saveAccountToken(String token) async {
     await _clearLocalTripsIfAccountChanged(token);
     RuntimeStore.setAuthToken(token);
     await _storage.write(key: _accountTokenKey, value: token);
   }
 
+  /// Saves the refresh token used to renew the account token.
   Future<void> saveRefreshToken(String token) async {
     RuntimeStore.setRefreshToken(token);
     await _storage.write(key: _refreshTokenKey, value: token);
@@ -108,6 +116,7 @@ class TokenStorage {
     ]);
   }
 
+  /// Clears only the profile token and selection, leaving the account session.
   Future<void> clearProfile() async {
     RuntimeStore.clearActiveProfile();
     await Future.wait(<Future<void>>[

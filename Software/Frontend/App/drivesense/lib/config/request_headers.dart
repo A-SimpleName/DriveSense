@@ -1,11 +1,18 @@
 import 'package:drivesense/runtime_store.dart';
 
+/// Builds backend request headers with the cookies expected by auth filters.
+///
+/// Authenticated requests include the app's internal profile-token marker so
+/// AuthHttpClient can refresh and rebuild cookie headers immediately before
+/// the request is sent.
 class RequestHeaders {
   RequestHeaders._();
 
+  /// Internal marker consumed by AuthHttpClient before the request is sent.
   static const String includeProfileTokenHeader =
       'X-DriveSense-Include-Profile-Token';
 
+  /// Headers for authenticated requests without a JSON body.
   static Map<String, String> authenticated({
     String? clientType,
     bool includeProfileToken = true,
@@ -18,6 +25,7 @@ class RequestHeaders {
     );
   }
 
+  /// Headers for authenticated requests with a JSON body.
   static Map<String, String> authenticatedJson({
     String? clientType,
     bool includeProfileToken = true,
@@ -31,6 +39,7 @@ class RequestHeaders {
     );
   }
 
+  /// Headers for unauthenticated JSON requests.
   static Map<String, String> json({String? clientType}) {
     return _build(
       contentType: 'application/json',

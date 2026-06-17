@@ -17,7 +17,9 @@ import 'package:drivesense/services/trip_tracking_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
 
+/// User-facing error raised by trip session operations.
 class TripSessionException implements Exception {
+  /// Localized message safe to show in the UI.
   final String message;
 
   const TripSessionException(this.message);
@@ -26,9 +28,18 @@ class TripSessionException implements Exception {
   String toString() => message;
 }
 
+/// Immediate result returned when a trip is stopped.
+///
+/// The stopped trip is already available locally. [syncFuture] completes later
+/// with the backend-confirmed trip detail or fails if upload must be retried.
 class TripSessionStopResult {
+  /// Local trip summary shown immediately after stopping.
   final TripSummary trip;
+
+  /// Local detail assembled from the accepted tracking points.
   final TripDetailed localDetail;
+
+  /// Asynchronous upload and server-confirmation result.
   final Future<TripSessionSyncResult> syncFuture;
 
   const TripSessionStopResult({
@@ -38,8 +49,12 @@ class TripSessionStopResult {
   });
 }
 
+/// Backend sync result for a stopped trip.
 class TripSessionSyncResult {
+  /// Backend-confirmed trip detail, merged with local fallback values.
   final TripDetailed detail;
+
+  /// Whether the vehicle odometer update was persisted on the backend.
   final bool vehicleMileageSaved;
 
   const TripSessionSyncResult({
@@ -48,18 +63,42 @@ class TripSessionSyncResult {
   });
 }
 
+/// Immutable UI state for the active trip card and related trip controls.
 class TripSessionState {
+  /// Whether an active trip draft exists.
   final bool hasActiveTrip;
+
+  /// Whether the active draft is paused.
   final bool isPaused;
+
+  /// Accepted GPS distance for the active trip.
   final double totalDistanceMeters;
+
+  /// Active duration excluding paused time.
   final Duration currentTripDuration;
+
+  /// Number of accepted tracking points.
   final int eventCount;
+
+  /// Distance contributed by the last accepted point.
   final double lastAddedMeters;
+
+  /// Accuracy of the last accepted GPS point.
   final double? lastAccuracy;
+
+  /// Speed of the last accepted GPS point.
   final double? lastSpeed;
+
+  /// Latitude of the last accepted GPS point.
   final double? currentLatitude;
+
+  /// Longitude of the last accepted GPS point.
   final double? currentLongitude;
+
+  /// Summary of the active trip draft for UI display.
   final TripSummary? activeTrip;
+
+  /// Last completed trip known to the session.
   final TripSummary? lastTrip;
 
   const TripSessionState({
@@ -77,6 +116,7 @@ class TripSessionState {
     required this.lastTrip,
   });
 
+  /// Empty state used before a trip starts or after it is cleared.
   factory TripSessionState.inactive({TripSummary? lastTrip}) {
     return TripSessionState(
       hasActiveTrip: false,
@@ -94,6 +134,8 @@ class TripSessionState {
     );
   }
 
+  /// Creates a modified copy while allowing nullable fields to be explicitly
+  /// reset through sentinel-backed parameters.
   TripSessionState copyWith({
     bool? hasActiveTrip,
     bool? isPaused,
@@ -139,10 +181,22 @@ class TripSessionState {
 
 const Object _sentinel = Object();
 
+/// Coordinates trip lifecycle, local active draft persistence, and sync.
+///
+/// This service is the UI-facing layer over GPS tracking and offline-first trip
+/// storage. It serializes GPS updates, keeps Isar and RuntimeStore aligned, and
+/// lets stop-trip return immediately while upload continues in the background.
 class TripSessionService extends ChangeNotifier {
+  /// Service used to save finished trips and retry queued uploads.
   final TripSyncService tripSyncService;
+
+  /// Repository for the single active trip draft.
   final ActiveTripRepository activeTripRepository;
+
+  /// Repository for completed local trips.
   final TripRepository tripRepository;
+
+  /// GPS tracking service for in-process or foreground-service updates.
   final TripTrackingService trackingService;
 
   TripSessionState _state = TripSessionState.inactive();
@@ -541,6 +595,7 @@ class TripSessionService extends ChangeNotifier {
     }
   }
 
+  /// Discards the active trip draft and stops tracking without creating a trip.
   Future<void> abortTrip() async {
     await trackingService.stopTracking();
     await _waitForPendingTrackingUpdate();
@@ -549,6 +604,7 @@ class TripSessionService extends ChangeNotifier {
     _clearActiveState(lastTrip: _state.lastTrip);
   }
 
+  /// Formats a nullable vehicle for compact UI labels.
   String formatVehicleName(Vehicle? vehicle) {
     if (vehicle == null) {
       return 'Kein Fahrzeug';

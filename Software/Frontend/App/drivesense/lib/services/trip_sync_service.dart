@@ -12,9 +12,15 @@ import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
 
+/// Aggregate result of a manual/background pending-trip sync attempt.
 class TripSyncResult {
+  /// Number of queued trips considered for syncing.
   final int total;
+
+  /// Number of trips uploaded successfully.
   final int successful;
+
+  /// Number of trips that failed and remain queued.
   final int failed;
 
   const TripSyncResult({
@@ -24,8 +30,16 @@ class TripSyncResult {
   });
 }
 
+/// Coordinates offline-first trip persistence and backend upload.
+///
+/// Finished trips are saved to Isar before the network request is attempted.
+/// This keeps recorded drives recoverable when the app closes or connectivity
+/// fails during stop-trip handling.
 class TripSyncService {
+  /// Local trip repository that stores queued and synced trip rows.
   final TripRepository isarTripRepository;
+
+  /// Backend trip service used to upload queued trips.
   final TripService tripService;
 
   TripSyncService({

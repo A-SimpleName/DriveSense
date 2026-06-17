@@ -3,10 +3,19 @@ import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/isar_service.dart';
 import 'package:isar/isar.dart';
 
+/// Account-scoped Isar repository for completed trip drafts and cached trips.
+///
+/// Finished trips are written locally before upload. Unsynced rows remain here
+/// until TripSyncService can upload them and replace their local id with the
+/// server-backed identity.
 class TripRepository {
+  /// Temporary marker used while a newly finished trip is being uploaded.
   static const String syncInProgressMarker = '__sync_in_progress__';
+
+  /// Age after which an interrupted in-progress sync may be retried.
   static const Duration syncInProgressTimeout = Duration(minutes: 5);
 
+  /// Saves a new trip for the active account.
   Future<void> save(Trip trip) async {
     final isar = await IsarService.getInstance();
     trip.accountId = _requireAccountId(trip.accountId);
@@ -15,6 +24,7 @@ class TripRepository {
     });
   }
 
+  /// Returns all trips belonging to the active account.
   Future<List<Trip>> getAll() async {
     final int? accountId = _currentAccountId();
     if (accountId == null) {
@@ -25,6 +35,7 @@ class TripRepository {
     return isar.trips.filter().accountIdEqualTo(accountId).findAll();
   }
 
+  /// Returns the newest completed trip, optionally filtered by profile/protocol.
   Future<Trip?> getLatestCompleted({int? profileId, int? protocolId}) async {
     final List<Trip> trips = await getAll();
     final List<Trip> completedTrips = trips.where((Trip trip) {
@@ -54,6 +65,7 @@ class TripRepository {
     return completedTrips.first;
   }
 
+  /// Returns trips for one profile/protocol pair in the active account.
   Future<List<Trip>> getByProfileAndProtocol(
     int profileId,
     int protocolId,
@@ -74,6 +86,7 @@ class TripRepository {
         .findAll();
   }
 
+  /// Returns unsynced trips that are ready for retry.
   Future<List<Trip>> getUnsynced() async {
     final int? accountId = _currentAccountId();
     if (accountId == null) {
@@ -98,6 +111,7 @@ class TripRepository {
     }).toList();
   }
 
+  /// Looks up a trip by its stable local/server identity string.
   Future<Trip?> getByLocalId(String localId) async {
     final int? accountId = _currentAccountId();
     if (accountId == null) {
@@ -113,6 +127,7 @@ class TripRepository {
         .findFirst();
   }
 
+  /// Reads a trip by Isar id, rejecting rows from another account.
   Future<Trip?> getById(Id id) async {
     final int? accountId = _currentAccountId();
     if (accountId == null) {
@@ -127,6 +142,7 @@ class TripRepository {
     return trip;
   }
 
+  /// Deletes a trip by Isar id when it belongs to the active account.
   Future<void> deleteById(Id id) async {
     final isar = await IsarService.getInstance();
     final Trip? trip = await getById(id);
@@ -139,6 +155,7 @@ class TripRepository {
     });
   }
 
+  /// Persists updates to a trip for the active account.
   Future<void> update(Trip trip) async {
     final isar = await IsarService.getInstance();
     trip.accountId = _requireAccountId(trip.accountId);
@@ -147,6 +164,7 @@ class TripRepository {
     });
   }
 
+  /// Removes stale synced cache rows that are no longer present on the server.
   Future<void> deleteSyncedByProfileAndProtocolExceptServerIds({
     required int profileId,
     required int protocolId,
@@ -186,6 +204,7 @@ class TripRepository {
     });
   }
 
+  /// Clears all locally stored trips.
   Future<void> deleteAll() async {
     final isar = await IsarService.getInstance();
     await isar.writeTxn(() async {
