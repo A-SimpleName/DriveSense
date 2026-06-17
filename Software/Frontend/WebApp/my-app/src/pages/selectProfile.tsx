@@ -27,7 +27,14 @@ export default function SelectProfilePage({
     const [creating, setCreating] = useState(false);
     const [confirmLogout, setConfirmLogout] = useState(false);
 
-    const ROLE_OPTIONS = ["PRIVAT", "FAHRSCHÜLER", "BERUFSFAHRER"];
+    // Werte müssen exakt den drei vom Backend erwarteten Rollen entsprechen:
+    // PRIVAT, FAHRSCHUELER, BERUFSFAHRER (ohne Umlaut, da sonst Rollenvergleiche
+    // an anderer Stelle im Code fehlschlagen)
+    const ROLE_OPTIONS = [
+        { value: "PRIVAT", label: "Privat" },
+        { value: "FAHRSCHUELER", label: "Fahrschüler" },
+        { value: "BERUFSFAHRER", label: "Berufsfahrer" }
+    ];
 
     const handleSelect = async (id: number) => {
         setSelectError(null);
@@ -105,8 +112,8 @@ export default function SelectProfilePage({
                 onCancel={() => setConfirmLogout(false)}
             />
 
-            {logoutError && <p style={{ color: "#dc2626" }}>{logoutError}</p>}
-            {selectError && <p style={{ color: "#dc2626" }}>{selectError}</p>}
+            {logoutError && <p className="error-text">{logoutError}</p>}
+            {selectError && <p className="error-text">{selectError}</p>}
 
             <section className="selectProfile-section">
                 <h3>Bestehende Profile</h3>
@@ -136,11 +143,11 @@ export default function SelectProfilePage({
                         style={{ borderColor: createError ? "#dc2626" : undefined }}
                     />
                     <select value={newRole} onChange={e => setNewRole(e.target.value)}>
-                        {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                        {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                     </select>
 
                     {createError && (
-                        <p style={{ color: "#dc2626", fontSize: "0.875rem", margin: 0 }}>{createError}</p>
+                        <p className="error-text" style={{ fontSize: "0.875rem", margin: 0 }}>{createError}</p>
                     )}
 
                     <button className="selectProfile-btn" onClick={handleCreate} disabled={creating}>

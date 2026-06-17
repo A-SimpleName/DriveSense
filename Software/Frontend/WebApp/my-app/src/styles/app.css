@@ -20,6 +20,21 @@
   --radius: 16px;
   --radius-sm: 10px;
   --radius-lg: 24px;
+
+  /* Aliase für Komponenten, die das "--color-*" Namensschema verwenden
+     (dashboard.css, pageLayout.css, loadingSkeleton.tsx). Beide Systeme
+     zeigen so auf dieselben Werte, bis sie vereinheitlicht werden. */
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--muted);
+  --color-text-success: #059669;
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--surface-strong);
+  --color-background-success: rgba(16, 185, 129, 0.1);
+  --color-border-tertiary: var(--border);
+  --border-radius-sm: var(--radius-sm);
+  --border-radius-md: var(--radius-sm);
+  --border-radius-lg: var(--radius-lg);
 }
 
 *, *::before, *::after {

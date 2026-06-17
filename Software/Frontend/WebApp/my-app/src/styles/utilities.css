@@ -59,6 +59,12 @@
   color: #7f1d1d;
 }
 
+/* Reiner Fehlertext ohne Banner/Hintergrund, z.B. unter Formularen,
+   Tabellenzeilen oder als einzige Fehlermeldung einer Seite */
+.error-text {
+  color: #dc2626;
+}
+
 /* STAT CARDS */
 .stat-card {
   display: flex;
@@ -103,6 +109,35 @@
 .stat-card-meta {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+/* INFO ROWS - für reine, nicht-interaktive Anzeige von Werten
+   (z.B. Account-Stammdaten), optisch verwandt mit .stat-card aber
+   ohne Hover-Lift/Pointer, da hier nichts klickbar ist */
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 15px;
+  margin: 5px 5px 5px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.info-row-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.info-row-value {
+  margin-left: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* LOADING STATES */

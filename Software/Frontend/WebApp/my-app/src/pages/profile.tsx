@@ -4,7 +4,18 @@ import { Button } from "../components/button";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { useAuth } from "../context/authContext";
 import { updateProfile, deleteProfile } from "../services/profileService";
-import StatCard from "../components/statCard";
+import InfoRow from "../components/infoRow";
+
+const ROLE_LABELS: Record<string, string> = {
+    PRIVAT: "Privat",
+    FAHRSCHUELER: "Fahrschüler",
+    BERUFSFAHRER: "Berufsfahrer"
+};
+
+function roleLabel(role?: string) {
+    if (!role) return "Nicht verfügbar";
+    return ROLE_LABELS[role] || role;
+}
 
 export default function ProfilePage() {
     const navigate = useNavigate();
@@ -64,7 +75,7 @@ export default function ProfilePage() {
             <h1>Mein Profil</h1>
 
             {deleteError && (
-                <p style={{ color: "#dc2626", marginBottom: "1rem" }}>{deleteError}</p>
+                <p className="error-text" style={{ marginBottom: "1rem" }}>{deleteError}</p>
             )}
 
             <div style={{ marginBottom: "2rem" }}>
@@ -87,15 +98,15 @@ export default function ProfilePage() {
                                     onChange={e => setEditRole(e.target.value)}
                                     style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--border)" }}
                                 >
-                                    <option value="PRIVAT">PRIVAT</option>
-                                    <option value="FAHRSCHÜLER">FAHRSCHÜLER</option>
-                                    <option value="BERUFSFAHRER">BERUFSFAHRER</option>
+                                    <option value="PRIVAT">Privat</option>
+                                    <option value="FAHRSCHUELER">Fahrschüler</option>
+                                    <option value="BERUFSFAHRER">Berufsfahrer</option>
                                 </select>
                             </label>
 
                             {/* Speichern-Fehler direkt unter den Feldern */}
                             {saveError && (
-                                <p style={{ color: "#dc2626", fontSize: "0.875rem", margin: 0 }}>{saveError}</p>
+                                <p className="error-text" style={{ fontSize: "0.875rem", margin: 0 }}>{saveError}</p>
                             )}
 
                             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
@@ -105,8 +116,8 @@ export default function ProfilePage() {
                         </>
                     ) : (
                         <>
-                            <StatCard title="Profilname:" value={profile?.name || "Nicht verfügbar"}/>
-                            <StatCard title="Rolle:" value={profile?.role || "Nicht verfügbar"}/>
+                            <InfoRow label="Profilname" value={profile?.name || "Nicht verfügbar"}/>
+                            <InfoRow label="Rolle" value={roleLabel(profile?.role)}/>
                         </>
                     )}
                 </div>
@@ -115,9 +126,9 @@ export default function ProfilePage() {
             <div style={{ marginBottom: "2rem" }}>
                 <h2>Konto-Informationen</h2>
                 <div style={{ display: "grid", gap: "0.5rem", maxWidth: "400px" }}>
-                    <StatCard title="Vorname:" value={account?.firstName || "Nicht verfügbar"}/>
-                    <StatCard title="Nachname:" value={account?.lastName || "Nicht verfügbar"}/>
-                    <StatCard title="E-Mail:" value={account?.email || "Nicht verfügbar"}/>
+                    <InfoRow label="Vorname" value={account?.firstName || "Nicht verfügbar"}/>
+                    <InfoRow label="Nachname" value={account?.lastName || "Nicht verfügbar"}/>
+                    <InfoRow label="E-Mail" value={account?.email || "Nicht verfügbar"}/>
                 </div>
             </div>
 

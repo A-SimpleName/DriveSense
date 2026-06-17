@@ -95,7 +95,7 @@ function GroupDetailPage() {
             <div className="page-header">
                 <h1>Gruppe</h1>
             </div>
-            <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
+            <p className="error-text">Fehler: {loadError}</p>
             <Button label="Erneut versuchen" onClick={() => window.location.reload()} />
         </div>
     );
@@ -115,8 +115,8 @@ function GroupDetailPage() {
                 </div>
             </div>
 
-            {removeError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{removeError}</p>}
-            {roleError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{roleError}</p>}
+            {removeError && <p className="error-text" style={{ marginBottom: "8px" }}>{removeError}</p>}
+            {roleError && <p className="error-text" style={{ marginBottom: "8px" }}>{roleError}</p>}
 
             <div className="page-toolbar">
                 <span className="page-toolbar-left" style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>

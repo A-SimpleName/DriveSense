@@ -10,7 +10,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 
 import { deleteAccount, updateAccount, requestEmailChange } from "../services/accountService";
 import { changePassword } from "../services/auth";
-import StatCard from "../components/statCard";
+import InfoRow from "../components/infoRow";
 
 export default function Settings() {
     const { account, setAccount,setProfile } = useAuth();
@@ -23,26 +23,17 @@ export default function Settings() {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     async function handleUpdateAccount(values: Record<string, string | number>) {
-        try {
-            await updateAccount(
-                String(values.firstName),
-                String(values.lastName)
-            );
-            window.location.reload();
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Aktualisieren des Accounts");
-        }
+        const firstName = String(values.firstName);
+        const lastName = String(values.lastName);
+        await updateAccount(firstName, lastName);
+        setAccount((prev: any) => prev ? { ...prev, firstName, lastName } : prev);
     }
 
     async function handleRequestEmailChange(values: Record<string, string | number>) {
         const newEmail = String(values.email);
-        try {
-            await requestEmailChange(newEmail);
-            sessionStorage.setItem("pendingEmailChange", newEmail);
-            navigate("/confirm-email-change");
-        } catch (err: any) {
-            setError(err?.message || "Fehler beim Ändern der E-Mail");
-        }
+        await requestEmailChange(newEmail);
+        sessionStorage.setItem("pendingEmailChange", newEmail);
+        navigate("/confirm-email-change");
     }
 
     async function handleDelete() {
@@ -74,7 +65,7 @@ export default function Settings() {
         setShowPasswordForm(false);
     }
 
-    if (error) return <p style={{ color: "#dc2626" }}>Fehler: {error}</p>;
+    if (error) return <p className="error-text">Fehler: {error}</p>;
 
     return (
         <>
@@ -82,8 +73,8 @@ export default function Settings() {
 
             <h2>Account</h2>
 
-            <StatCard title="Angemeldeter Account:" value={`${account?.firstName} ${account?.lastName}`} />
-            <StatCard title="Email:" value={account?.email} />
+            <InfoRow label="Angemeldeter Account" value={`${account?.firstName} ${account?.lastName}`} />
+            <InfoRow label="Email" value={account?.email} />
             <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
                 <Button
                     label="Name bearbeiten"

@@ -12,7 +12,7 @@ interface Props {
 function FieldError({ errors, field }: { errors: Record<string, string> | null; field: string }) {
     if (!errors?.[field]) return null;
     return (
-        <span style={{ fontSize: "0.8rem", color: "#dc2626", display: "block", marginTop: "4px" }}>
+        <span className="error-text" style={{ fontSize: "0.8rem", display: "block", marginTop: "4px" }}>
             {errors[field]}
         </span>
     );

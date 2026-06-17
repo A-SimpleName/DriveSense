@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { getVehicleMembers, removeVehicleMember } from "../../services/vehicleService"
 import { Button } from "../button"
 import { ConfirmationDialog } from "../ConfirmationDialog"
@@ -56,63 +57,72 @@ export function VehicleMembers({ vehicle, onClose }: Props) {
         }
     }
 
-    return (
-        <div className="modal">
-            <h3>Mitglieder – {vehicle.model} ({vehicle.licensePlate})</h3>
+    if (typeof document === "undefined") return null
 
-            {removeError && (
-                <p style={{ color: "#dc2626", marginBottom: 12 }}>{removeError}</p>
-            )}
+    return createPortal(
+        <div className="modal-overlay" onClick={onClose}>
+            <div
+                className="modal"
+                onClick={(event) => event.stopPropagation()}
+                style={{ width: "min(640px, 90vw)", padding: "24px", borderRadius: "24px" }}
+            >
+                <h3>Mitglieder – {vehicle.model} ({vehicle.licensePlate})</h3>
 
-            {loading && <p>Laden...</p>}
-            {loadError && <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>}
+                {removeError && (
+                    <p className="error-text" style={{ marginBottom: 12 }}>{removeError}</p>
+                )}
 
-            {!loading && !loadError && (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Profil</th>
-                            <th>Account</th>
-                            <th>E-Mail</th>
-                            <th>Rolle</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {members.map(member => (
-                            <tr key={member.profileId}>
-                                <td>{member.profileName}</td>
-                                <td>{member.accountName}</td>
-                                <td>{member.accountEmail}</td>
-                                <td>{roleLabel(member.vehicleRole)}</td>
-                                <td>
-                                    {canRemove(member.vehicleRole) && (
-                                        <Button
-                                            label="Entfernen"
-                                            stopPropagation
-                                            onClick={() => setConfirmRemoveId(member.profileId)}
-                                        />
-                                    )}
-                                </td>
+                {loading && <p>Laden...</p>}
+                {loadError && <p className="error-text">Fehler: {loadError}</p>}
+
+                {!loading && !loadError && (
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Profil</th>
+                                <th>Account</th>
+                                <th>E-Mail</th>
+                                <th>Rolle</th>
+                                <th>Aktionen</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody>
+                            {members.map(member => (
+                                <tr key={member.profileId}>
+                                    <td>{member.profileName}</td>
+                                    <td>{member.accountName}</td>
+                                    <td>{member.accountEmail}</td>
+                                    <td>{roleLabel(member.vehicleRole)}</td>
+                                    <td>
+                                        {canRemove(member.vehicleRole) && (
+                                            <Button
+                                                label="Entfernen"
+                                                stopPropagation
+                                                onClick={() => setConfirmRemoveId(member.profileId)}
+                                            />
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
 
-            <div style={{ marginTop: 16 }}>
-                <Button label="Schließen" onClick={onClose} />
+                <div style={{ marginTop: 16 }}>
+                    <Button label="Schließen" onClick={onClose} />
+                </div>
+
+                <ConfirmationDialog
+                    open={confirmRemoveId !== null}
+                    title="Mitglied entfernen"
+                    message="Möchtest du dieses Mitglied wirklich vom Fahrzeug entfernen?"
+                    confirmLabel="Entfernen"
+                    cancelLabel="Abbrechen"
+                    onConfirm={confirmRemove}
+                    onCancel={() => setConfirmRemoveId(null)}
+                />
             </div>
-
-            <ConfirmationDialog
-                open={confirmRemoveId !== null}
-                title="Mitglied entfernen"
-                message="Möchtest du dieses Mitglied wirklich vom Fahrzeug entfernen?"
-                confirmLabel="Entfernen"
-                cancelLabel="Abbrechen"
-                onConfirm={confirmRemove}
-                onCancel={() => setConfirmRemoveId(null)}
-            />
-        </div>
+        </div>,
+        document.body
     )
 }

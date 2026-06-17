@@ -27,7 +27,7 @@ export default function ProtocolDetailPage() {
 
     if (error) return (
         <div>
-            <p style={{ color: "#dc2626" }}>{error}</p>
+            <p className="error-text">{error}</p>
             <button onClick={load}>Erneut versuchen</button>
         </div>
     );

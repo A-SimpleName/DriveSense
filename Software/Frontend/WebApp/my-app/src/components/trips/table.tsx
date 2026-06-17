@@ -12,6 +12,7 @@ import "../../styles/pageLayout.css";
 import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 import { TableSkeleton } from "../loadingSkeleton";
+import { useDragScroll } from "../../hooks/useDragScroll";
 
 interface EditValues {
     startTime: string;
@@ -52,6 +53,7 @@ function TripsTable() {
     const [sortField, setSortField] = useState<SortField>("date");
     const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+    const dragScroll = useDragScroll<HTMLDivElement>();
     const role = profile?.role;
 
     useEffect(() => {
@@ -240,7 +242,7 @@ function TripsTable() {
     };
 
     if (loading) return <TableSkeleton rows={5} cols={9} />;
-    if (loadError) return <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>;
+    if (loadError) return <p className="error-text">Fehler: {loadError}</p>;
 
     const isEditing = (id: number) => editingTripId === id;
     const roadConditions = ["Trocken", "Nass", "Schnee", "Eis"];
@@ -248,7 +250,7 @@ function TripsTable() {
 
     return (
         <>
-            {deleteError && <p style={{ color: "#dc2626", marginBottom: "12px" }}>{deleteError}</p>}
+            {deleteError && <p className="error-text" style={{ marginBottom: "12px" }}>{deleteError}</p>}
 
             {/* Toolbar */}
             <div
@@ -344,52 +346,9 @@ function TripsTable() {
             )}
 
             <div
+                ref={dragScroll.ref}
                 className="ridesTable"
-                onWheel={(e) => {
-                    const el = e.currentTarget;
-                    const delta = e.deltaY || e.deltaX;
-
-                    if (delta !== 0) {
-                        e.preventDefault();
-                        el.scrollLeft += delta;
-                    }
-                }}
-                onMouseDown={(e) => {
-                    const el = e.currentTarget;
-                    const startX = e.pageX;
-                    const startScrollLeft = el.scrollLeft;
-
-                    const onMouseMove = (moveEvent: MouseEvent) => {
-                        el.scrollLeft = startScrollLeft - (moveEvent.pageX - startX);
-                    };
-
-                    const onMouseUp = () => {
-                        document.removeEventListener("mousemove", onMouseMove);
-                        document.removeEventListener("mouseup", onMouseUp);
-                    };
-
-                    document.addEventListener("mousemove", onMouseMove);
-                    document.addEventListener("mouseup", onMouseUp);
-                }}
-                onTouchStart={(e) => {
-                    const el = e.currentTarget;
-                    const touch = e.touches[0];
-                    const startX = touch.pageX;
-                    const startScrollLeft = el.scrollLeft;
-
-                    const onTouchMove = (moveEvent: TouchEvent) => {
-                        const currentTouch = moveEvent.touches[0];
-                        el.scrollLeft = startScrollLeft - (currentTouch.pageX - startX);
-                    };
-
-                    const onTouchEnd = () => {
-                        el.removeEventListener("touchmove", onTouchMove);
-                        el.removeEventListener("touchend", onTouchEnd);
-                    };
-
-                    el.addEventListener("touchmove", onTouchMove, { passive: true });
-                    el.addEventListener("touchend", onTouchEnd, { passive: true });
-                }}
+                {...dragScroll.handlers}
             >
               <table>
                 <thead>
@@ -422,27 +381,22 @@ function TripsTable() {
                         </th>
                         <th>Strecke</th>
                         <th>Protokoll</th>
-                        {(role === "PRIVAT" || role === "FAHRSCHUELER" || role === "FAHRSCHÜLER") && (
+                        {(role === "PRIVAT" || role === "FAHRSCHUELER") && (
                             <>
-                                <th colSpan={2}>Kilometerstand</th>
+                                <th>Kilometerstand von</th>
+                                <th>Kilometerstand bis</th>
                                 <th>Fahrbahnzustand</th>
                             </>
                         )}
                         {role === "BERUFSFAHRER" && (
                             <>
-                                <th colSpan={2}>Kilometerstand</th>
+                                <th>Kilometerstand von</th>
+                                <th>Kilometerstand bis</th>
                                 <th>Tätigkeit</th>
                                 <th>Fahrbahnzustand</th>
                             </>
                         )}
                         <th>Aktionen</th>
-                    </tr>
-                    <tr>
-                        <th></th><th></th><th></th><th></th><th></th>
-                        <th></th><th></th><th></th><th></th>
-                        <th>Von</th><th>Bis</th>
-                        {role === "BERUFSFAHRER" && <th></th>}
-                        <th></th><th></th>
                     </tr>
                 </thead>
 
@@ -540,7 +494,7 @@ function TripsTable() {
 
                             {saveError?.tripId === trip.id && (
                                 <tr>
-                                    <td colSpan={99} style={{ color: "#dc2626", fontSize: "0.85rem", padding: "4px 8px" }}>
+                                    <td colSpan={99} className="error-text" style={{ fontSize: "0.85rem", padding: "4px 8px" }}>
                                         {saveError.message}
                                     </td>
                                 </tr>

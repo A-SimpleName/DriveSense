@@ -34,7 +34,7 @@ export function PageSpinner() {
 export function TableSkeleton({ rows = 5, cols = 4, title }: { rows?: number; cols?: number; title?: string }) {
     return (
         <div>
-            {title && <h2>{title}</h2>}
+            {title && <h3>{title}</h3>}
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
                 <tr>
