@@ -24,7 +24,7 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const DsAppBar(title: 'Profil auswaehlen'),
+      appBar: const DsAppBar(title: 'Profil auswählen'),
       body: SafeArea(
         child: ColoredBox(
           color: AppColors.primaryBlue,
@@ -191,7 +191,7 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
 
 const List<_ProfileRoleOption> _profileRoleOptions = <_ProfileRoleOption>[
   _ProfileRoleOption(value: 'PRIVAT', label: 'Privat'),
-  _ProfileRoleOption(value: 'FAHRSCHUELER', label: 'Fahrschueler'),
+  _ProfileRoleOption(value: 'FAHRSCHUELER', label: 'Fahrschüler'),
   _ProfileRoleOption(value: 'BERUFSFAHRER', label: 'Berufsfahrer'),
 ];
 

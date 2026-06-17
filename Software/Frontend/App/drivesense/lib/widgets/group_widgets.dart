@@ -159,11 +159,11 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Gruppe loeschen',
+        title: 'Gruppe löschen',
         content:
-            'Gruppe "${group.name}" wirklich loeschen? '
+            'Gruppe "${group.name}" wirklich löschen? '
             'Mitglieder verlieren dadurch Zugriff auf Gruppenprotokolle.',
-        confirmText: 'Endgueltig loeschen',
+        confirmText: 'Endgültig löschen',
         delaySeconds: 0,
         confirmButtonColor: Colors.red,
       ),
@@ -202,7 +202,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
   Future<void> _inviteMember(UserGroup group) async {
     final String myRole = _myRoleForGroup(group);
     if (!_canInvite(myRole) || _busyGroupId != null) {
-      _showResult(false, 'Nur Owner und Admins duerfen Mitglieder einladen.');
+      _showResult(false, 'Nur Owner und Admins dürfen Mitglieder einladen.');
       return;
     }
 
@@ -421,7 +421,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.add, size: 18),
-              label: Text(_isCreatingGroup ? 'Erstelle...' : 'Hinzufuegen'),
+              label: Text(_isCreatingGroup ? 'Erstelle...' : 'Hinzufügen'),
             ),
           ],
         ),
@@ -810,7 +810,7 @@ class _GroupInviteDialogState extends State<_GroupInviteDialog> {
                   return 'E-Mail darf nicht leer sein.';
                 }
                 if (!email.contains('@') || !email.contains('.')) {
-                  return 'Bitte eine gueltige E-Mail eingeben.';
+                  return 'Bitte eine gültige E-Mail eingeben.';
                 }
                 return null;
               },

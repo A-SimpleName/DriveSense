@@ -381,7 +381,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Text('Kein Profil ausgewaehlt.'),
+          child: Text('Kein Profil ausgewählt.'),
         ),
       );
     }
@@ -511,7 +511,7 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.delete_outline),
-                  label: const Text('Profil loeschen'),
+                  label: const Text('Profil löschen'),
                 ),
               ],
             ),
@@ -540,7 +540,7 @@ String _extractInviteCode(String input) {
 String _profileRoleLabel(String? role) {
   switch (role?.trim().toUpperCase()) {
     case 'FAHRSCHUELER':
-      return 'Fahrschueler';
+      return 'Fahrschüler';
 
     case 'BERUFSFAHRER':
       return 'Berufsfahrer';

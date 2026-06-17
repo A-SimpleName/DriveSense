@@ -72,12 +72,12 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: isOwner ? 'Fahrzeug loeschen' : 'Fahrzeug entfernen',
+        title: isOwner ? 'Fahrzeug löschen' : 'Fahrzeug entfernen',
         content: isOwner
-            ? 'Fahrzeug mit Kennzeichen "${vehicle.licensePlate}" wirklich loeschen? '
+            ? 'Fahrzeug mit Kennzeichen "${vehicle.licensePlate}" wirklich löschen? '
                   'Alle Freigaben werden dadurch entfernt.'
             : 'Fahrzeug mit Kennzeichen "${vehicle.licensePlate}" aus diesem Profil entfernen?',
-        confirmText: isOwner ? 'Endgueltig loeschen' : 'Entfernen',
+        confirmText: isOwner ? 'Endgültig löschen' : 'Entfernen',
         delaySeconds: 0,
         confirmButtonColor: Colors.red,
       ),
@@ -110,7 +110,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
     if (!_canInvite(vehicle)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Nur Owner und Co-Owner duerfen Fahrzeuge teilen.'),
+          content: Text('Nur Owner und Co-Owner dürfen Fahrzeuge teilen.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -161,7 +161,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
             ElevatedButton.icon(
               onPressed: () => _openVehicleDialog(),
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Hinzufuegen'),
+              label: const Text('Hinzufügen'),
             ),
           ],
         ),
@@ -244,7 +244,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
                 onPressed: () => _deleteVehicle(vehicle),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
                 icon: const Icon(Icons.delete_outline, size: 18),
-                label: Text(canEdit ? 'Loeschen' : 'Entfernen'),
+                label: Text(canEdit ? 'Löschen' : 'Entfernen'),
               ),
             ],
           ),
@@ -482,7 +482,7 @@ class _VehicleDialogState extends State<_VehicleDialog> {
 
     if (model.isEmpty || plate.isEmpty || mileage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte alle Felder korrekt ausfuellen.')),
+        const SnackBar(content: Text('Bitte alle Felder korrekt ausfüllen.')),
       );
       return;
     }
@@ -535,7 +535,7 @@ class _VehicleDialogState extends State<_VehicleDialog> {
     final bool isNew = widget.vehicle == null;
 
     return AlertDialog(
-      title: Text(isNew ? 'Fahrzeug hinzufuegen' : 'Fahrzeug bearbeiten'),
+      title: Text(isNew ? 'Fahrzeug hinzufügen' : 'Fahrzeug bearbeiten'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -659,7 +659,7 @@ class _VehicleInviteDialogState extends State<_VehicleInviteDialog> {
                   return 'E-Mail darf nicht leer sein.';
                 }
                 if (!email.contains('@') || !email.contains('.')) {
-                  return 'Bitte eine gueltige E-Mail eingeben.';
+                  return 'Bitte eine gültige E-Mail eingeben.';
                 }
                 return null;
               },
@@ -734,7 +734,7 @@ String _vehicleRoleLabel(String? role) {
 String _profileRoleLabel(String? role) {
   switch (role?.trim().toUpperCase()) {
     case 'FAHRSCHUELER':
-      return 'Fahrschueler';
+      return 'Fahrschüler';
     case 'BERUFSFAHRER':
       return 'Berufsfahrer';
     case 'PRIVAT':

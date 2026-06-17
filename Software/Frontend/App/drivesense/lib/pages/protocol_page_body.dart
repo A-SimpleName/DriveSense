@@ -53,13 +53,13 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   initialValue: _resolveDropdownValue(selectedProtocolId),
                   isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Ausgewaehltes Protokoll',
+                    labelText: 'Ausgewähltes Protokoll',
                     border: OutlineInputBorder(),
                   ),
                   hint: Text(
                     _isLoading
                         ? 'Protokolle werden geladen...'
-                        : 'Protokoll auswaehlen',
+                        : 'Protokoll auswählen',
                   ),
                   items: _protocols
                       .map(
@@ -398,7 +398,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kein aktives Profil verfuegbar.')),
+        const SnackBar(content: Text('Kein aktives Profil verfügbar.')),
       );
       return;
     }

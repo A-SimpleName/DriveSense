@@ -130,10 +130,10 @@ class _AccountPageState extends State<AccountPage> {
 
     final bool? verified = await VerificationCodeDialog.show(
       context: context,
-      title: 'E-Mail bestaetigen',
+      title: 'E-Mail bestätigen',
       description:
-          'Wir haben einen Code an $nextEmail geschickt. Bitte gib ihn ein, damit die neue Adresse uebernommen wird.',
-      submitLabel: 'Code bestaetigen',
+          'Wir haben einen Code an $nextEmail geschickt. Bitte gib ihn ein, damit die neue Adresse übernommen wird.',
+      submitLabel: 'Code bestätigen',
       resendLabel: 'Code erneut senden',
       onSubmit: (String code) =>
           EmailVerificationService.confirmEmailChange(code),
@@ -150,7 +150,7 @@ class _AccountPageState extends State<AccountPage> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('E-Mail-Adresse bestaetigt')),
+        const SnackBar(content: Text('E-Mail-Adresse bestätigt')),
       );
       return;
     }
@@ -158,7 +158,7 @@ class _AccountPageState extends State<AccountPage> {
     if (emailChanged) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Die neue E-Mail ist noch nicht bestaetigt.'),
+          content: Text('Die neue E-Mail ist noch nicht bestätigt.'),
         ),
       );
     }
@@ -173,11 +173,11 @@ class _AccountPageState extends State<AccountPage> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Account loeschen',
+        title: 'Account löschen',
         content:
-            'Willst du deinen Account wirklich endgueltig loeschen?\n\n'
-            'Dieser Vorgang kann nicht rueckgaengig gemacht werden.',
-        confirmText: 'Endgueltig loeschen',
+            'Willst du deinen Account wirklich endgültig löschen?\n\n'
+            'Dieser Vorgang kann nicht rückgängig gemacht werden.',
+        confirmText: 'Endgültig löschen',
         delaySeconds: 5,
         confirmButtonColor: Colors.red,
       ),
@@ -373,7 +373,7 @@ class _AccountPageState extends State<AccountPage> {
                       const SizedBox(height: 24),
                       _buildActionButton(
                         label: _isEditing
-                            ? 'Aenderungen speichern'
+                            ? 'Änderungen speichern'
                             : 'Account bearbeiten',
                         icon: _isEditing
                             ? Icons.save_outlined
@@ -392,7 +392,7 @@ class _AccountPageState extends State<AccountPage> {
                       ),
                       const SizedBox(height: 12),
                       _buildActionButton(
-                        label: 'Passwort aendern',
+                        label: 'Passwort ändern',
                         icon: Icons.lock_outline,
                         onPressed: () async {
                           final Object? changed = await Navigator.pushNamed(
@@ -413,7 +413,7 @@ class _AccountPageState extends State<AccountPage> {
                       ),
                       const SizedBox(height: 12),
                       _buildActionButton(
-                        label: 'Account loeschen',
+                        label: 'Account löschen',
                         icon: Icons.delete_outline,
                         destructive: true,
                         onPressed: _isDeletingAccount
