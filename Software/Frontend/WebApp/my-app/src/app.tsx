@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { checkAuth } from "./services/auth";
-import { getProfilesByAccount } from "./services/profileService";
+import { getCurrentProfile, getProfilesByAccount } from "./services/profileService";
 import { getCurrentAccount } from "./services/accountService";
 
 import { AuthProvider, useAuth } from "./context/authContext";
@@ -42,6 +42,7 @@ function AppContent() {
     isAuth,
     setIsAuth,
     setAccount,
+    setProfile,
     profileSelected,
     setProfileSelected
   } = useAuth();
@@ -64,14 +65,23 @@ function AppContent() {
           const profilesData = await getProfilesByAccount();
           setProfiles(profilesData);
 
-          setProfileSelected(false);
+          try {
+            const profileData = await getCurrentProfile();
+            setProfile(profileData);
+            setProfileSelected(true);
+          } catch {
+            setProfile(null);
+            setProfileSelected(false);
+          }
         } else {
           setProfiles([]);
+          setProfile(null);
           setProfileSelected(false);
         }
       } catch (err) {
         console.error("initAuth ERROR:", err);
         setIsAuth(false);
+        setProfile(null);
         setProfileSelected(false);
         setProfiles([]);
       } finally {

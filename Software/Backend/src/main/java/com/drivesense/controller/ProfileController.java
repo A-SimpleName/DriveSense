@@ -27,7 +27,10 @@ public class ProfileController {
 
     @GetMapping("/me")
     public ResponseEntity<Profile> getById(HttpServletRequest request) {
-        int profileId = (int) request.getAttribute("profileId");
+        Object profileIdAttribute = request.getAttribute("profileId");
+        if (!(profileIdAttribute instanceof Integer profileId)) {
+            throw new UnauthorizedException("Kein Profil ausgewaehlt");
+        }
         return ResponseEntity.ok(profileService.getById(profileId));
     }
 
