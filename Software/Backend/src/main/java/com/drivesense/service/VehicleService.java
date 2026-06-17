@@ -3,6 +3,7 @@ package com.drivesense.service;
 import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.dto.response.VehicleMemberResponse;
+import com.drivesense.exceptions.BadRequestException;
 import com.drivesense.exceptions.NotFoundException;
 import com.drivesense.exceptions.UnauthorizedException;
 import com.drivesense.model.Vehicle;
@@ -56,22 +57,73 @@ public class VehicleService {
 
     /**
      * Löscht ein Vehicle oder entfernt eine Profilverknüpfung, je nach Rolle:
-     * - OWNER: Soft-Delete des gesamten Vehicles (deleted_at setzen).
-     *   Existierende Trips bleiben durch Snapshots erhalten.
-     * - CO_OWNER / DRIVER: Nur die profile_vehicle-Verknüpfung wird entfernt.
-     *
-     * Die Unterscheidung passiert im DAO: softDelete prüft per JOIN ob der
-     * Account OWNER ist; removeProfileAssociation entfernt nur den Eintrag.
+     * - OWNER: Soft-Delete des gesamten Vehicles – keine Rollenweiterleitung.
+     * - CO_OWNER / DRIVER: Nur die eigene profile_vehicle-Verknüpfung wird entfernt.
+     * OWNER kann sich selbst nicht über diesen Weg entfernen (nur soft-delete des Vehicles).
      */
     public void deleteVehicle(int vehicleId, int accountId, int profileId) {
-        // Zuerst versuchen, als OWNER soft zu löschen
         boolean softDeleted = vehicleDao.softDelete(vehicleId, accountId);
         if (!softDeleted) {
-            // Kein OWNER → Verknüpfung als CO_OWNER / DRIVER entfernen
             boolean removed = vehicleDao.removeProfileAssociation(vehicleId, profileId, accountId);
             if (!removed) {
                 throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
             }
+        }
+    }
+
+    /**
+     * OWNER oder CO_OWNER wirft ein anderes Mitglied raus.
+     *
+     * Regeln:
+     * - OWNER   kann CO_OWNER und DRIVER entfernen, aber nicht sich selbst
+     * - CO_OWNER kann nur DRIVER entfernen
+     * - Niemand kann den OWNER entfernen
+     *
+     * @param vehicleId          ID des Fahrzeugs
+     * @param requesterProfileId Profil des Anfragenden (muss OWNER oder CO_OWNER sein)
+     * @param targetProfileId    Profil das entfernt werden soll
+     */
+    public void removeMember(int vehicleId, int requesterProfileId, int targetProfileId) {
+        // Eigene Rolle des Anfragers laden
+        VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(requesterProfileId)
+                .stream()
+                .filter(v -> v.getId() == vehicleId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Vehicle nicht gefunden oder kein Zugriff"));
+
+        String requesterRole = vehicle.getMyRole();
+
+        if (!"OWNER".equals(requesterRole) && !"CO_OWNER".equals(requesterRole)) {
+            throw new UnauthorizedException("Nur OWNER und CO_OWNER dürfen Mitglieder entfernen");
+        }
+
+        // Sich selbst entfernen ist über diesen Endpoint nicht erlaubt
+        if (requesterProfileId == targetProfileId) {
+            throw new BadRequestException("Du kannst dich selbst nicht über diesen Weg entfernen");
+        }
+
+        // Rolle des Zielprofils laden
+        List<VehicleMemberResponse> members = vehicleDao.getMembersByVehicleId(vehicleId);
+        VehicleMemberResponse target = members.stream()
+                .filter(m -> m.getProfileId() == targetProfileId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Mitglied nicht gefunden"));
+
+        String targetRole = target.getVehicleRole();
+
+        // OWNER kann nie entfernt werden
+        if ("OWNER".equals(targetRole)) {
+            throw new BadRequestException("Der OWNER des Fahrzeugs kann nicht entfernt werden");
+        }
+
+        // CO_OWNER darf nur DRIVER entfernen
+        if ("CO_OWNER".equals(requesterRole) && !"DRIVER".equals(targetRole)) {
+            throw new UnauthorizedException("CO_OWNER darf nur DRIVER entfernen");
+        }
+
+        boolean removed = vehicleDao.removeMemberAssociation(vehicleId, targetProfileId);
+        if (!removed) {
+            throw new NotFoundException("Mitglied konnte nicht entfernt werden");
         }
     }
 

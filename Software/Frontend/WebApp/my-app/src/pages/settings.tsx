@@ -6,39 +6,50 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { Button } from "../components/button";
 import { AddForm } from "../components/addForm";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 
-import { updateAccount } from "../services/accountService";
+import { deleteAccount, updateAccount, requestEmailChange } from "../services/accountService";
 import { changePassword } from "../services/auth";
+import InfoRow from "../components/infoRow";
 
 export default function Settings() {
-    const { account } = useAuth();
+    const { account, setAccount,setProfile } = useAuth();
     const navigate = useNavigate();
-    const [error, setError] =useState<string | null>(null);
-
+    const [error, setError] = useState<string | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
+    const [editEmailOpen, setEditEmailOpen] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     async function handleUpdateAccount(values: Record<string, string | number>) {
-        await updateAccount(
-            String(values.firstName),
-            String(values.lastName),
-            String(values.email)
-        ).then(() => {
-            // Email geändert
-            if (String(values.email) !== account?.email) {
-                sessionStorage.setItem(
-                    "pendingEmailChange",
-                    String(values.email)
-                )
+        const firstName = String(values.firstName);
+        const lastName = String(values.lastName);
+        await updateAccount(firstName, lastName);
+        setAccount((prev: any) => prev ? { ...prev, firstName, lastName } : prev);
+    }
 
-                navigate("/confirm-email-change")
-            } else {
-                window.location.reload()
-            }
-        })
-        .catch(err => {
-            setError(err?.message || "Fehler beim Aktualisieren des Accounts");
-        })
+    async function handleRequestEmailChange(values: Record<string, string | number>) {
+        const newEmail = String(values.email);
+        await requestEmailChange(newEmail);
+        sessionStorage.setItem("pendingEmailChange", newEmail);
+        navigate("/confirm-email-change");
+    }
+
+    async function handleDelete() {
+        setError(null);
+        setDeleting(true);
+        try {
+            await deleteAccount();
+            setAccount(null);
+            setProfile(null);
+            navigate("/login");
+        } catch (err: any) {
+            setError(err?.message || "Löschen fehlgeschlagen");
+            setConfirmDelete(false);
+        } finally {
+            setDeleting(false);
+        }
     }
 
     async function handleChangePassword(values: Record<string, string | number>) {
@@ -51,43 +62,48 @@ export default function Settings() {
         }
 
         await changePassword(oldPassword, newPassword);
-
         setShowPasswordForm(false);
     }
 
-    if (error) return <p style={{ color: "#dc2626" }}>Fehler: {error}</p>
-    
+    if (error) return <p className="error-text">Fehler: {error}</p>;
+
     return (
         <>
             <h1>Einstellungen</h1>
 
             <h2>Account</h2>
 
-            <p>
-                Angemeldeter Account: {account?.firstName} {account?.lastName}
-            </p>
-            <p>Email: {account?.email}</p>
+            <InfoRow label="Angemeldeter Account" value={`${account?.firstName} ${account?.lastName}`} />
+            <InfoRow label="Email" value={account?.email} />
+            <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+                <Button
+                    label="Name bearbeiten"
+                    type="button"
+                    onClick={() => setEditOpen(true)}
+                />
 
-            <Button
-                label="Passwort ändern"
-                type="button"
-                onClick={() => setShowPasswordForm(true)}
-            />
+                <Button
+                    label="E-Mail ändern"
+                    type="button"
+                    onClick={() => setEditEmailOpen(true)}
+                />
 
-            <Button
-                label="Account löschen"
-                type="button"
-            />
+                <Button
+                    label="Passwort ändern"
+                    type="button"
+                    onClick={() => setShowPasswordForm(true)}
+                />
 
-            <Button
-                label="Account bearbeiten"
-                type="button"
-                onClick={() => setEditOpen(true)}
-            />
+                <Button
+                    label="Account löschen"
+                    type="button"
+                    onClick={() => setConfirmDelete(true)}
+                />
+            </div>
 
             {editOpen && (
                 <AddForm
-                    title="Account bearbeiten"
+                    title="Name bearbeiten"
                     submitLabel="Speichern"
                     onClose={() => setEditOpen(false)}
                     onSubmit={handleUpdateAccount}
@@ -103,16 +119,28 @@ export default function Settings() {
                             key: "lastName",
                             label: "Nachname",
                             defaultValue: account?.lastName
-                        },
-                        {
-                            type: "text",
-                            key: "email",
-                            label: "Email",
-                            defaultValue: account?.email
                         }
                     ]}
                 />
             )}
+
+            {editEmailOpen && (
+                <AddForm
+                    title="E-Mail ändern"
+                    submitLabel="Code senden"
+                    onClose={() => setEditEmailOpen(false)}
+                    onSubmit={handleRequestEmailChange}
+                    fields={[
+                        {
+                            type: "text",
+                            key: "email",
+                            label: "Neue E-Mail",
+                            defaultValue: ""
+                        }
+                    ]}
+                />
+            )}
+
             {showPasswordForm && (
                 <AddForm
                     title="Passwort ändern"
@@ -138,6 +166,17 @@ export default function Settings() {
                     ]}
                 />
             )}
+
+            <ConfirmationDialog
+                open={confirmDelete}
+                title="Account löschen"
+                message="Möchtest du diesen Account wirklich löschen?"
+                confirmLabel="Ja, löschen"
+                cancelLabel="Abbrechen"
+                confirmLoading={deleting}
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmDelete(false)}
+            />
         </>
     );
 }

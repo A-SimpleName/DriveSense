@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { GroupMember, UserGroup } from "../model/usergroup";
 import { deleteMember, getGroupById, getGroupMembers, updateMemberRole } from "../services/groupService";
 import { getCurrentProfile } from "../services/profileService";
@@ -7,6 +7,8 @@ import { Button } from "../components/button";
 import { InviteMemberForm } from "../components/group/InviteMemberForm";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { TableSkeleton } from "../components/loadingSkeleton";
+import "../styles/pageLayout.css";
 
 const canRemove = (myRole: string, targetRole: string): boolean => {
     if (targetRole === "OWNER") return false;
@@ -22,11 +24,11 @@ const canChangeRole = (myRole: string, targetRole: string): boolean => {
 
 function GroupDetailPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const groupId = Number(id);
 
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
-    // Separate Fehler-States für Remove und RoleUpdate
     const [removeError, setRemoveError] = useState<string | null>(null);
     const [roleError, setRoleError] = useState<string | null>(null);
 
@@ -73,6 +75,7 @@ function GroupDetailPage() {
         setConfirmRemoveMember(null);
     };
 
+
     const handleUpdateRole = (profileId: number, currentRole: string) => {
         const groupRole = currentRole === "ADMIN" ? "MEMBER" : "ADMIN";
         setRoleError(null);
@@ -85,25 +88,94 @@ function GroupDetailPage() {
             .catch(err => setRoleError(err?.message || "Rolle konnte nicht geändert werden"));
     };
 
-    if (loading) return <p>Laden...</p>;
+    if (loading) return <TableSkeleton rows={4} cols={3} />;
 
     if (loadError) return (
         <div>
-            <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
-            <Button label="Erneut versuchen" type="button" onClick={() => window.location.reload()} />
+            <div className="page-header">
+                <h1>Gruppe</h1>
+            </div>
+            <p className="error-text">Fehler: {loadError}</p>
+            <Button label="Erneut versuchen" onClick={() => window.location.reload()} />
         </div>
     );
 
     return (
         <div>
-            <h2>{group?.name} - Mitglieder</h2>
+            <div className="page-header">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Button label="←" onClick={() => navigate("/groups")} title="Zurück zu Gruppen" />
+                    <h1 style={{ margin: 0 }}>{group?.name}</h1>
+                </div>
+                <div className="page-header-actions">
+                    {(myRole === "OWNER" || myRole === "ADMIN") && (
+                        <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
+                    )}
+                    <Button label="+ Gruppenprotokoll" onClick={() => setShowProtocolForm(true)} />
+                </div>
+            </div>
 
-            {removeError && <p style={{ color: "#dc2626" }}>{removeError}</p>}
-            {roleError && <p style={{ color: "#dc2626" }}>{roleError}</p>}
+            {removeError && <p className="error-text" style={{ marginBottom: "8px" }}>{removeError}</p>}
+            {roleError && <p className="error-text" style={{ marginBottom: "8px" }}>{roleError}</p>}
 
-            {(myRole === "OWNER" || myRole === "ADMIN") && (
-                <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
-            )}
+            <div className="page-toolbar">
+                <span className="page-toolbar-left" style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
+                    {members.length} {members.length === 1 ? "Mitglied" : "Mitglieder"}
+                </span>
+            </div>
+
+            <div className="page-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Rolle</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {members.length === 0 ? (
+                            <tr>
+                                <td colSpan={3} className="page-empty">Keine Mitglieder vorhanden</td>
+                            </tr>
+                        ) : members.map(member => (
+                            <tr key={member.profileId}>
+                                <td>{member.name}</td>
+                                <td>{member.groupRole}</td>
+                                <td>
+                                    <div style={{ display: "flex", gap: "8px" }}>
+                                        {member.profileId !== currentProfileId && (
+                                            <>
+                                                {canRemove(myRole, member.groupRole) && (
+                                                    <Button
+                                                        label="Entfernen"
+                                                        onClick={() => requestRemove(member.profileId, `Mitglied ${member.name} wirklich entfernen?`)}
+                                                        stopPropagation
+                                                    />
+                                                )}
+                                                {canChangeRole(myRole, member.groupRole) && (
+                                                    <Button
+                                                        label={member.groupRole === "ADMIN" ? "Zu Member" : "Zu Admin"}
+                                                        onClick={() => handleUpdateRole(member.profileId, member.groupRole)}
+                                                        stopPropagation
+                                                    />
+                                                )}
+                                            </>
+                                        )}
+                                        {member.profileId === currentProfileId && myRole !== "OWNER" && (
+                                            <Button
+                                                label="Gruppe verlassen"
+                                                onClick={() => requestRemove(member.profileId, "Gruppe wirklich verlassen?")}
+                                                stopPropagation
+                                            />
+                                        )}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             {showInviteForm && (
                 <div
@@ -116,8 +188,6 @@ function GroupDetailPage() {
                 </div>
             )}
 
-            <Button label="+ Protokoll hinzufügen" onClick={() => setShowProtocolForm(true)} />
-
             {showProtocolForm && (
                 <ProtocolAddForm
                     onClose={() => setShowProtocolForm(false)}
@@ -125,51 +195,6 @@ function GroupDetailPage() {
                     usergroupId={groupId}
                 />
             )}
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Rolle</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {members.map(member => (
-                        <tr key={member.profileId}>
-                            <td>{member.name}</td>
-                            <td>{member.groupRole}</td>
-                            <td style={{ display: "flex", gap: "8px" }}>
-                                {member.profileId !== currentProfileId && (
-                                    <>
-                                        {canRemove(myRole, member.groupRole) && (
-                                            <Button
-                                                label="Entfernen"
-                                                onClick={() => requestRemove(member.profileId, `Mitglied ${member.name} wirklich entfernen?`)}
-                                                stopPropagation
-                                            />
-                                        )}
-                                        {canChangeRole(myRole, member.groupRole) && (
-                                            <Button
-                                                label={member.groupRole === "ADMIN" ? "Zu Member" : "Zu Admin"}
-                                                onClick={() => handleUpdateRole(member.profileId, member.groupRole)}
-                                                stopPropagation
-                                            />
-                                        )}
-                                    </>
-                                )}
-                                {member.profileId === currentProfileId && myRole !== "OWNER" && (
-                                    <Button
-                                        label="Gruppe verlassen"
-                                        onClick={() => requestRemove(member.profileId, "Gruppe wirklich verlassen?")}
-                                        stopPropagation
-                                    />
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
 
             <ConfirmationDialog
                 open={confirmRemoveMember !== null}

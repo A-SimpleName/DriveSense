@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { verifyInvite, acceptInvite } from "../services/groupService";
 import type { Profile } from "../model/profile";
+import { InviteCodeForm } from "../components/inviteCodeForm";
 
 function InviteAcceptPage() {
     const [searchParams] = useSearchParams();
@@ -13,22 +14,6 @@ function InviteAcceptPage() {
     const [step, setStep] = useState<"code" | "profile" | "success">("code");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const handleVerify = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!code.trim()) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await verifyInvite(code.trim());
-            setProfiles(data);
-            setStep("profile");
-        } catch (err: any) {
-            setError(err?.message || "Ungültiger oder abgelaufener Code");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAccept = async () => {
         if (!selectedProfileId) return;
@@ -46,25 +31,21 @@ function InviteAcceptPage() {
 
     return (
         <div style={{ maxWidth: "400px", margin: "40px auto", display: "flex", flexDirection: "column", gap: "16px" }}>
-            <h2>Einladung annehmen</h2>
 
             {step === "code" && (
-                <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    <p>Gib deinen Einladungscode ein:</p>
-                    <input
-                        type="text"
-                        value={code}
-                        onChange={e => setCode(e.target.value)}
-                        placeholder="6-stelliger Code"
-                        maxLength={6}
-                        autoFocus
-                        style={{ padding: "8px", fontSize: "1.2rem", letterSpacing: "4px", textAlign: "center" }}
-                    />
-                    {error && <p style={{ color: "red" }}>{error}</p>}
-                    <button type="submit" disabled={loading}>
-                        {loading ? "Wird geprüft..." : "Code prüfen"}
-                    </button>
-                </form>
+                <InviteCodeForm
+                    title="Einladung annehmen"
+                    placeholder="6-stelliger Code"
+                    maxLength={6}
+                    onVerify={async codeValue => {
+                        const data = await verifyInvite(codeValue)
+                        setCode(codeValue);
+                        setProfiles(data)
+                        setStep("profile")
+                    }}
+                    onSuccess={() => {}}
+                    onClose={() => navigate("/groups")}
+                />
             )}
 
             {step === "profile" && (
@@ -86,6 +67,14 @@ function InviteAcceptPage() {
                     ))}
                     {error && <p style={{ color: "red" }}>{error}</p>}
                     <button onClick={handleAccept} disabled={!selectedProfileId || loading}>
+                        {loading && (
+                            <span style={{
+                                display: "inline-block", width: "12px", height: "12px",
+                                border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                verticalAlign: "middle", marginRight: "6px",
+                            }} />
+                        )}
                         {loading ? "Wird beigetreten..." : "Beitreten"}
                     </button>
                 </div>

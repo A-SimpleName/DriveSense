@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { useAuth } from "../context/authContext";
 import type { Profile } from "../model/profile";
 import { logout, selectProfile } from "../services/auth";
@@ -24,8 +25,16 @@ export default function SelectProfilePage({
     const [logoutError, setLogoutError] = useState<string | null>(null);
     const [selectError, setSelectError] = useState<string | null>(null);
     const [creating, setCreating] = useState(false);
+    const [confirmLogout, setConfirmLogout] = useState(false);
 
-    const ROLE_OPTIONS = ["PRIVAT", "FAHRSCHÜLER", "BERUFSFAHRER"];
+    // Werte müssen exakt den drei vom Backend erwarteten Rollen entsprechen:
+    // PRIVAT, FAHRSCHUELER, BERUFSFAHRER (ohne Umlaut, da sonst Rollenvergleiche
+    // an anderer Stelle im Code fehlschlagen)
+    const ROLE_OPTIONS = [
+        { value: "PRIVAT", label: "Privat" },
+        { value: "FAHRSCHUELER", label: "Fahrschüler" },
+        { value: "BERUFSFAHRER", label: "Berufsfahrer" }
+    ];
 
     const handleSelect = async (id: number) => {
         setSelectError(null);
@@ -70,8 +79,10 @@ export default function SelectProfilePage({
         setLogoutError(null);
         try {
             await logout();
+            setProfile(null);
             setIsAuth(false);
             setProfileSelected(false);
+            setConfirmLogout(false);
             navigate("/login");
         } catch (err: any) {
             setLogoutError(err?.message || "Logout fehlgeschlagen");
@@ -87,12 +98,22 @@ export default function SelectProfilePage({
                     <p>Wähle ein Profil für deine Fahrt, oder erstelle ein neues.</p>
                 </div>
                 <div className="selectProfile-heroActions">
-                    <Button className="secondary" label="Logout" type="button" onClick={handleLogout} />
+                    <Button className="secondary" label="Logout" type="button" onClick={() => setConfirmLogout(true)} />
                 </div>
             </div>
 
-            {logoutError && <p style={{ color: "#dc2626" }}>{logoutError}</p>}
-            {selectError && <p style={{ color: "#dc2626" }}>{selectError}</p>}
+            <ConfirmationDialog
+                open={confirmLogout}
+                title="Logout bestätigen"
+                message="Möchtest du dich wirklich abmelden?"
+                confirmLabel="Ja, abmelden"
+                cancelLabel="Abbrechen"
+                onConfirm={handleLogout}
+                onCancel={() => setConfirmLogout(false)}
+            />
+
+            {logoutError && <p className="error-text">{logoutError}</p>}
+            {selectError && <p className="error-text">{selectError}</p>}
 
             <section className="selectProfile-section">
                 <h3>Bestehende Profile</h3>
@@ -122,14 +143,22 @@ export default function SelectProfilePage({
                         style={{ borderColor: createError ? "#dc2626" : undefined }}
                     />
                     <select value={newRole} onChange={e => setNewRole(e.target.value)}>
-                        {ROLE_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                        {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                     </select>
 
                     {createError && (
-                        <p style={{ color: "#dc2626", fontSize: "0.875rem", margin: 0 }}>{createError}</p>
+                        <p className="error-text" style={{ fontSize: "0.875rem", margin: 0 }}>{createError}</p>
                     )}
 
                     <button className="selectProfile-btn" onClick={handleCreate} disabled={creating}>
+                        {creating && (
+                            <span style={{
+                                display: "inline-block", width: "12px", height: "12px",
+                                border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
+                                borderRadius: "50%", animation: "spin 0.6s linear infinite",
+                                verticalAlign: "middle", marginRight: "6px",
+                            }} />
+                        )}
                         {creating ? "Wird erstellt..." : "Profil erstellen"}
                     </button>
                 </div>

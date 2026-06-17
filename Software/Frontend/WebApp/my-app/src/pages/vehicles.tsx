@@ -1,24 +1,39 @@
-import { useState } from "react"
-import { Button } from "../components/button"
-import VehiclesTable from "../components/vehicles/table"
-import { VehicleAddForm } from "../components/vehicles/vehicleAddForm"
+import { useState } from "react";
+import { Button } from "../components/button";
+import VehiclesTable from "../components/vehicles/table";
+import { VehicleAddForm } from "../components/vehicles/vehicleAddForm";
+import { acceptVehicleInvite } from "../services/vehicleService";
+import { InviteCodeForm } from "../components/inviteCodeForm";
+import "../styles/pageLayout.css";
 
 function Vehicles() {
     const [showForm, setShowForm] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
+    const [acceptOpen, setAcceptOpen] = useState(false);
 
     return (
         <div>
-            <h1>Fahrzeuge</h1>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-                <Button
-                    label="+"
-                    className="small icon"
-                    title="Fahrzeug hinzufügen"
-                    onClick={() => setShowForm(true)}
-                />
+            <div className="page-header">
+                <h1>Fahrzeuge</h1>
+                <div className="page-header-actions">
+                    <Button label="Einladung annehmen" onClick={() => setAcceptOpen(true)} />
+                    <Button label="+" className="small icon" title="Fahrzeug hinzufügen" onClick={() => setShowForm(true)} />
+                </div>
             </div>
+
+            {acceptOpen && (
+                <InviteCodeForm
+                    title="Fahrzeug-Einladung annehmen"
+                    placeholder="Einladungscode"
+                    maxLength={6}
+                    onVerify={async code => { await acceptVehicleInvite(code); }}
+                    onSuccess={() => {
+                        setAcceptOpen(false);
+                        setReloadKey(prev => prev + 1);
+                    }}
+                    onClose={() => setAcceptOpen(false)}
+                />
+            )}
 
             {showForm && (
                 <VehicleAddForm
@@ -29,7 +44,7 @@ function Vehicles() {
 
             <VehiclesTable key={reloadKey} />
         </div>
-    )
+    );
 }
 
-export default Vehicles
+export default Vehicles;

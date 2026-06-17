@@ -1,10 +1,8 @@
 package com.drivesense.service;
 
 
-import com.drivesense.db.TrackingpointDao;
 import com.drivesense.db.ProtocolDao;
 import com.drivesense.db.TripDao;
-import com.drivesense.db.VehicleDao;
 import com.drivesense.dto.response.TripDetailedDto;
 import com.drivesense.exceptions.*;
 import com.drivesense.dto.response.TripSummaryDto;
@@ -14,6 +12,7 @@ import com.drivesense.model.Trackingpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -166,6 +165,17 @@ public class TripService {
                 .sum();
     }
 
+    public long getTotalDuration(int profileId) {
+        List<TripSummary> tripSummaries = tripDao.getByProfileId(profileId);
+        if (tripSummaries == null) {
+            return 0;
+        }
+        return tripSummaries.stream()
+                .filter(trip -> trip.getEndTime() != null && trip.getStartTime() != null)
+                .mapToLong(trip -> Duration.between(trip.getStartTime(), trip.getEndTime()).toMinutes())
+                .sum();
+    }
+
     public TripDetailedDto getDetailedById(int id, int profileId) {
         TripSummaryDto trip = tripDao.getDtoByIdAccessibleByProfile(id, profileId);
         if (trip == null) {
@@ -274,5 +284,18 @@ public class TripService {
         if (tripSummary.getEndMileage() < tripSummary.getStartMileage()) {
             throw new BadRequestException("End-Kilometerstand darf nicht vor dem Start-Kilometerstand liegen");
         }
+    }
+
+    private TripSummaryDto mapToDto(TripSummary t) {
+        TripSummaryDto dto = new TripSummaryDto();
+        dto.setId(t.getId());
+        dto.setVehicleId(t.getVehicleId());
+        dto.setProtocolId(t.getProtocolId());
+        dto.setStartTime(t.getStartTime());
+        dto.setEndTime(t.getEndTime());
+        dto.setDistance(t.getDistance());
+        dto.setRoadSurfaceConditions(t.getRoadSurfaceConditions());
+        dto.setType(t.getType());
+        return dto;
     }
 }

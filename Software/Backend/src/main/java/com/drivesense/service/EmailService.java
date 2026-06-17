@@ -213,7 +213,7 @@ public class EmailService {
     }
 
     private String buildLogoTag() {
-        return "<img src=\"https://raw.githubusercontent.com/A-SimpleName/DriveSense/main/Design/Logos/DS_Logo.png\" " +
+        return "<img src=\"https://raw.githubusercontent.com/A-SimpleName/DriveSense/main/Design/Logos/DS_Logo_weißer-Hintergrund.png\" " +
                 "alt=\"DriveSense\" style=\"height:70px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;\">";
     }
 }

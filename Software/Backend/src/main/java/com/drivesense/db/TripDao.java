@@ -23,6 +23,9 @@ public class TripDao {
         this.dbConnection = dbConnection;
     }
 
+    // ─────────────────────────────────────────────
+    // INSERT
+    // ─────────────────────────────────────────────
     public int insert(TripSummary tripSummary) {
         String sql = """
             INSERT INTO trip (
@@ -103,6 +106,9 @@ public class TripDao {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // READ SINGLE
+    // ─────────────────────────────────────────────
     public TripSummary getById(int id) {
         String sql = "SELECT * FROM trip WHERE id = ?";
 
@@ -111,6 +117,7 @@ public class TripDao {
 
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
+
             return rs.next() ? map(rs) : null;
 
         } catch (SQLException e) {
@@ -307,6 +314,9 @@ public class TripDao {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // DTO QUERIES (ACCESS CONTROL)
+    // ─────────────────────────────────────────────
     public TripSummaryDto getDtoByIdAccessibleByProfile(int id, int profileId) {
         String sql = """
             SELECT
@@ -472,6 +482,9 @@ public class TripDao {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // MAPPERS
+    // ─────────────────────────────────────────────
     private TripSummary map(ResultSet rs) throws SQLException {
         TripSummary t = new TripSummary();
         t.setId(rs.getInt("id"));

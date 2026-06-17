@@ -1,14 +1,8 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.response.AccountResponse;
 import com.drivesense.dto.response.ProtocolDto;
-import com.drivesense.model.Account;
-import com.drivesense.model.Profile;
-import com.drivesense.service.AccountService;
 import com.drivesense.service.PdfExportService;
-import com.drivesense.service.ProfileService;
 import com.drivesense.service.ProtocolService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,9 +32,10 @@ public class ExportController {
         byte[] pdf = pdfExportService.generateProtocolPdf(
                 protocol, isGroup);
 
-        String filename = isGroup
-                ? "gruppenprotokoll_" + protocolId
-                : "einzelprotokoll_"  + protocolId;
+        String protocolName = protocol.getName();
+        String filename = protocolName != null && !protocolName.isBlank()
+                ? protocolName
+                : (isGroup ? "gruppenprotokoll_" : "einzelprotokoll_") + protocolId;
 
         return buildResponse(pdf, filename);
     }

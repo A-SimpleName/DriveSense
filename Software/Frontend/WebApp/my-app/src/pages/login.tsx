@@ -14,38 +14,58 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     setError(null);
+    setLoading(true);
     try {
       await login(email, password);
+
       sessionStorage.removeItem("profileSelected");
+
       onLoginSuccess();
       navigate("/select-profile");
     } catch (err: any) {
-      if (err?.status === 403) {
+      if (err?.status === 406) {
         sessionStorage.setItem("pendingVerificationEmail", email);
         onNeedsVerification();
       } else {
         setError(err?.message || "Login fehlgeschlagen");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="login-header">
-          <span className="login-title">Drive Sense</span>
+        <div className="login-hero">
+          <span className="login-kicker">Drive Sense</span>
           <h1 className="login-heading">Melde dich an</h1>
-          <p className="login-subtitle">
+          <p className="login-copy">
             Nutze dein Profil, um auf deine Fahrzeuge, Fahrten und Protokolle zuzugreifen.
           </p>
+          <ul className="login-bullets">
+            <li>Fahrten, Fahrzeuge und Protokolle zentral verwalten</li>
+            <li>Überblick über deine Mobilität jederzeit behalten</li>
+            <li>Schnell und einfach in deinen Bereich zurückkehren</li>
+          </ul>
         </div>
 
-        <div className="login-form">
+        <div className="login-panel">
+          <div className="login-header">
+            <span className="login-title">Willkommen</span>
+            <h2 className="login-panel-title">Mit DriveSense starten</h2>
+            <p className="login-subtitle">
+              Melde dich an, um deine Daten zu sehen und direkt weiterzuarbeiten.
+            </p>
+          </div>
+
+          <div className="login-form">
           <input
             className="login-input"
             type="email"
@@ -88,14 +108,15 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
           {error && <p className="login-error">{error}</p>}
 
           <div className="login-actions">
-            <Button className="login-submit" label="Login" type="button" onClick={handleLogin} />
+            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} />
           </div>
 
           <Link to="/forgot-password">Passwort vergessen?</Link>
         </div>
 
-        <div className="login-footer">
-          Noch keinen Account? <Link to="/signUp">Registrieren</Link>
+          <div className="login-footer">
+            Noch keinen Account? <Link to="/signup">Registrieren</Link>
+          </div>
         </div>
       </div>
     </div>

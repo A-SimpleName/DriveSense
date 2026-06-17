@@ -284,6 +284,10 @@ public class VehicleDao {
         }
     }
 
+    /**
+     * Entfernt die eigene Profilverknüpfung (CO_OWNER / DRIVER verlässt das Fahrzeug).
+     * Prüft via JOIN dass das Profil wirklich zum angegebenen Account gehört.
+     */
     public boolean removeProfileAssociation(int vehicleId, int profileId, int accountId) {
         String sql = """
             DELETE pv FROM profile_vehicle pv
@@ -302,6 +306,29 @@ public class VehicleDao {
 
         } catch (SQLException e) {
             throw new DatabaseException("Fehler beim Entfernen der Fahrzeug-Verknüpfung", e);
+        }
+    }
+
+    /**
+     * OWNER entfernt ein beliebiges Mitglied (außer OWNER selbst – verhindert durch Service).
+     * CO_OWNER entfernt nur DRIVER – wird durch Service sichergestellt, hier kein Extra-Check nötig.
+     */
+    public boolean removeMemberAssociation(int vehicleId, int targetProfileId) {
+        String sql = """
+            DELETE FROM profile_vehicle
+            WHERE vehicle_id = ? AND profile_id = ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, vehicleId);
+            ps.setInt(2, targetProfileId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Entfernen des Mitglieds", e);
         }
     }
 

@@ -59,12 +59,19 @@
   color: #7f1d1d;
 }
 
+/* Reiner Fehlertext ohne Banner/Hintergrund, z.B. unter Formularen,
+   Tabellenzeilen oder als einzige Fehlermeldung einer Seite */
+.error-text {
+  color: #dc2626;
+}
+
 /* STAT CARDS */
 .stat-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 24px;
+  gap: 4px;
+  padding: 15px;
+  margin: 5px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -82,13 +89,18 @@
 .stat-card-label {
   font-size: 0.85rem;
   font-weight: 700;
+  padding: 0px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 .stat-card-value {
-  font-size: 1.8rem;
+  padding: 0px;
+  margin: 0px;
+  margin-left: 4px;
+  margin-bottom: 4px;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--text);
   line-height: 1;
@@ -97,6 +109,35 @@
 .stat-card-meta {
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+/* INFO ROWS - für reine, nicht-interaktive Anzeige von Werten
+   (z.B. Account-Stammdaten), optisch verwandt mit .stat-card aber
+   ohne Hover-Lift/Pointer, da hier nichts klickbar ist */
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 15px;
+  margin: 5px 5px 5px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.info-row-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.info-row-value {
+  margin-left: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* LOADING STATES */
@@ -244,10 +285,4 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: center;
-  margin: 24px 0;
-}
-
-.pagination button {
-  min-width: 40px;
 }

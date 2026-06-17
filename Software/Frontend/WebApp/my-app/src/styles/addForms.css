@@ -146,4 +146,49 @@
   transition: all 0.2s ease;
 }
 
+.addForm-cancel:hover {
+  background: var(--surface-strong);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.addForm-submit {
+  font-size: 0.875rem;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.addForm-submit:hover:not(:disabled) {
+  background: var(--primary-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.addForm-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.addForm-field--error label {
+  color: #dc2626;
+}
+
+.addForm-field--error input,
+.addForm-field--error select,
+.addForm-field--error textarea {
+  color: #dc2626;
+}
+
+.addForm-field--error:focus-within label {
+  color: #dc2626;
+}
+
+.addForm-field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 2px;
 }

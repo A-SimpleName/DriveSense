@@ -6,7 +6,7 @@ public class UpdatePasswordRequest {
     @NotBlank(message = "Altes Passwort darf nicht leer sein")
     private String oldPassword;
     @NotBlank(message = "Neues Passwort darf nicht leer sein")
-    @Size(min = 8, message = "Passwort muss mindestens 8 Zeichen haben")
+    @Size(min = 8, max=50, message = "Passwort muss mindestens 8 Zeichen und maximal 50 haben")
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
             message = "Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"

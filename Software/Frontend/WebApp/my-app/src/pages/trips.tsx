@@ -1,9 +1,12 @@
 import TripsTable from "../components/trips/table";
-function Trips() {
+import "../styles/pageLayout.css";
 
+function Trips() {
     return (
         <div>
-            <h1>Fahrten</h1>
+            <div className="page-header">
+                <h1>Fahrten</h1>
+            </div>
             <TripsTable />
         </div>
     );
