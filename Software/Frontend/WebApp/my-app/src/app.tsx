@@ -124,6 +124,7 @@ function AppContent() {
         {/* NICHT EINGELOGGT */}
         {!isAuth && !needsVerification && (
             <>
+                <Route path="/invite" element={<InviteAcceptPage />} />
                 <Route path="/login" element={
                     <LoginPage
                         onLoginSuccess={() => { setIsAuth(true); setReloadAuth(prev => prev + 1); }}
@@ -141,16 +142,19 @@ function AppContent() {
 
         {/* EINGELOGGT, ABER KEIN PROFIL */}
         {isAuth && !profileSelected && (
-          <Route
-            path="*"
-            element={
-              <SelectProfilePage
-                profiles={profiles}
-                setProfiles={setProfiles}
-                onSelect={() => setProfileSelected(true)}
-              />
-            }
-          />
+          <>
+            <Route path="/invite" element={<InviteAcceptPage />} />
+            <Route
+              path="*"
+              element={
+                <SelectProfilePage
+                  profiles={profiles}
+                  setProfiles={setProfiles}
+                  onSelect={() => setProfileSelected(true)}
+                />
+              }
+            />
+          </>
         )}
 
         {!isAuth && needsVerification && (

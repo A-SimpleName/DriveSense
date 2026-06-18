@@ -3,6 +3,7 @@ import 'package:drivesense/pages/forgot_password_page.dart';
 import 'package:drivesense/widgets/auth_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/services/sign_in_and_sign_up.dart';
+import 'package:drivesense/services/deep_link_service.dart';
 
 class SignInPage extends StatefulWidget {
   final bool? token;
@@ -169,6 +170,15 @@ class _SignInPageState extends State<SignInPage> {
       }
 
       if (result.isSuccess) {
+        final bool handledPendingInvite =
+            await DeepLinkService.processPendingInvite();
+        if (handledPendingInvite) {
+          return;
+        }
+        if (!mounted) {
+          return;
+        }
+
         // Success keeps the existing flow: show a short confirmation and move
         // into profile selection/main routing based on the returned token.
         ScaffoldMessenger.of(

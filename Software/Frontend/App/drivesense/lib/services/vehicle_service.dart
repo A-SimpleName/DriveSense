@@ -295,6 +295,47 @@ class VehicleService {
     }
   }
 
+  static Future<VehicleActionResult> acceptVehicleInviteAuto({
+    required String code,
+  }) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/invitations/accept',
+    );
+
+    try {
+      final http.Response response = await http
+          .post(
+            uri,
+            headers: RequestHeaders.authenticatedJson(
+              clientType: 'mobile',
+              includeProfileToken: false,
+            ),
+            body: jsonEncode(<String, dynamic>{'code': code}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Fahrzeugeinladung wurde angenommen.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message:
+            _extractServerMessage(response.body) ??
+            'Fahrzeugeinladung konnte nicht angenommen werden.',
+      );
+    } catch (e) {
+      debugPrint('AcceptVehicleInviteAuto failed at $uri: $e');
+      return const VehicleActionResult(
+        isSuccess: false,
+        message: 'Fahrzeugeinladung konnte nicht angenommen werden.',
+      );
+    }
+  }
+
   static Future<Vehicle?> createVehicle({
     required String model,
     required String licensePlate,

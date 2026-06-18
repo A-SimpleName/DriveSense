@@ -15,6 +15,7 @@ import 'package:drivesense/pages/change_password_page.dart';
 import 'package:drivesense/pages/reset_password_page.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/auth_http_client.dart';
+import 'package:drivesense/services/deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,11 +34,30 @@ void main() async {
 }
 
 /// Root widget that wires restored session state into the initial route.
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   /// Restored account token, if a previous session is available.
   final String? token;
 
   const MyApp({super.key, this.token});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.initialize();
+    });
+  }
+
+  @override
+  void dispose() {
+    DeepLinkService.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +66,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
       ),
-      initialRoute: SignInAndSignUp.redirectToProfileSelectPage(token: token),
+      initialRoute: SignInAndSignUp.redirectToProfileSelectPage(
+        token: widget.token,
+      ),
+      onGenerateRoute: _generateRoute,
       routes: {
         'MainPage': (context) => const MainPage(),
         'SignInPage': (context) => const SignInPage(),
@@ -62,5 +85,44 @@ class MyApp extends StatelessWidget {
         },
       },
     );
+  }
+
+  Route<dynamic>? _generateRoute(RouteSettings settings) {
+    final String routeName = settings.name ?? '';
+    final Uri? uri = Uri.tryParse(routeName);
+
+    if (uri != null && _isInviteRoute(uri)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        DeepLinkService.handleUri(uri);
+      });
+
+      return MaterialPageRoute<void>(
+        settings: RouteSettings(
+          name: SignInAndSignUp.redirectToProfileSelectPage(
+            token: widget.token,
+          ),
+        ),
+        builder: (BuildContext context) {
+          if ((widget.token ?? '').isEmpty) {
+            return const SignInPage();
+          }
+          return const ProfileSelectPage();
+        },
+      );
+    }
+
+    return null;
+  }
+
+  bool _isInviteRoute(Uri uri) {
+    final bool isRelativeInvite = uri.path == '/invite';
+    final bool isWebInvite =
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host == 'drivesense.htl-perg.ac.at' &&
+        uri.path == '/invite';
+    final bool isCustomInvite =
+        uri.scheme == 'drivesense' && uri.host == 'invite';
+
+    return isRelativeInvite || isWebInvite || isCustomInvite;
   }
 }

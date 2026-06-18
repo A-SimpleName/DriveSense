@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "at.ac.htlperg.drivesense",
+            "sha256_cert_fingerprints": [
+                "A0:AC:1E:93:C4:88:9E:88:93:FD:15:A8:24:5E:26:5D:C8:E0:E2:88:FE:23:41:94:F1:56:BF:89:FE:B7:BA:CF"
+            ]
+        }
+    }
+]

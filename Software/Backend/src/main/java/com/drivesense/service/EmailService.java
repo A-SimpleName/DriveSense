@@ -26,8 +26,8 @@ public class EmailService {
     @Value("${app.mail.from-name}")
     private String fromName;
 
-    @Value("${app.vehicle-invite.accept-url}")
-    private String vehicleInviteAcceptUrl;
+    @Value("${app.invite.accept-url}")
+    private String inviteAcceptUrl;
 
     // ──────────────────────────────────────────
     // PUBLIC METHODEN
@@ -63,10 +63,10 @@ public class EmailService {
                                       String code) {
 
         String subject = inviterName + " hat dich zu einem Fahrzeug eingeladen";
-        String inviteUrl = vehicleInviteAcceptUrl.formatted(
+        String inviteUrl = inviteAcceptUrl.formatted(
+                URLEncoder.encode("vehicle", StandardCharsets.UTF_8),
                 URLEncoder.encode(code, StandardCharsets.UTF_8)
         );
-
         String html = baseTemplate(
                 "Fahrzeugeinladung",
                 "Du wurdest eingeladen!",
@@ -127,14 +127,17 @@ public class EmailService {
     }
 
     private String buildGroupInviteEmail(String inviterName, String groupName, String code) {
-        String inviteUrl = "http://localhost:5173/invite?code=" + code;
+        String inviteUrl = inviteAcceptUrl.formatted(
+                URLEncoder.encode("group", StandardCharsets.UTF_8),
+                URLEncoder.encode(code, StandardCharsets.UTF_8)
+        );
         return baseTemplate(
                 "Gruppeneinladung",
                 "Du wurdest eingeladen!",
                 "<strong>" + escapeHtml(inviterName) + "</strong> hat dich zur Gruppe " +
                         "<strong>" + escapeHtml(groupName) + "</strong> eingeladen. " +
                         "Klicke auf den Button oder gib den Code manuell ein." +
-                        "<br><br><a href=\"" + inviteUrl + "\" style=\"display:inline-block;background:#4f8ef7;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;\">Einladung annehmen</a>",
+                        "<br><br><a href=\"" + escapeHtml(inviteUrl) + "\" style=\"display:inline-block;background:#4f8ef7;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;\">Einladung annehmen</a>",
                 code,
                 "Der Code ist 48 Stunden gültig."
         );

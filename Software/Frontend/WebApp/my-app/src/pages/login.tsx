@@ -26,8 +26,14 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
 
       sessionStorage.removeItem("profileSelected");
 
+      const pendingInviteUrl = sessionStorage.getItem("pendingInviteUrl");
       onLoginSuccess();
-      navigate("/select-profile");
+      if (pendingInviteUrl) {
+        sessionStorage.removeItem("pendingInviteUrl");
+        navigate(pendingInviteUrl);
+      } else {
+        navigate("/select-profile");
+      }
     } catch (err: any) {
       if (err?.status === 406) {
         sessionStorage.setItem("pendingVerificationEmail", email);

@@ -51,11 +51,16 @@ public class GroupInvitationService {
                 .anyMatch(p -> p.getId() == inviterProfileId);
         if (isSelf) throw new BadRequestException("Du kannst dich nicht selbst einladen");
 
-        // Prüfen ob noch ein Profil verfügbar ist das nicht schon in der Gruppe ist
+        String requiredRole = usergroupService.getGroupProtocolRole(groupId);
+
+        // Prüfen ob noch ein kompatibles Profil verfügbar ist das nicht schon in der Gruppe ist
         boolean hasAvailableProfile = invitedProfiles.stream()
-                .anyMatch(p -> profileUsergroupDao.getByProfileIdAndGroupId(p.getId(), groupId) == null);
+                .anyMatch(p ->
+                        profileUsergroupDao.getByProfileIdAndGroupId(p.getId(), groupId) == null
+                                && usergroupService.isProfileCompatibleWithRole(p, requiredRole)
+                );
         if (!hasAvailableProfile) {
-            throw new BadRequestException("Alle Profile dieses Accounts sind bereits in der Gruppe");
+            throw new BadRequestException("Dieser Account hat kein kompatibles Profil fuer diese Gruppe");
         }
 
         // Code generieren

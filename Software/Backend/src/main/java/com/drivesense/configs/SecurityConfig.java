@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/account/forgot-password").permitAll()
                         .requestMatchers("/api/account/reset-password").permitAll()
                         .requestMatchers("/api/vehicles/invitations/accept-link").permitAll()
+                        .requestMatchers("/.well-known/assetlinks.json").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
