@@ -30,9 +30,16 @@ export const deleteVehicle = (id: number) =>
 export const getVehicleMembers = (vehicleId: number) =>
     handleRequest<VehicleMember[]>(http.get<VehicleMember[]>(`/vehicles/${vehicleId}/members`));
 
-// Mitglied entfernen (OWNER entfernt CO_OWNER/DRIVER, CO_OWNER entfernt nur DRIVER)
+// Mitglied entfernen: OWNER entfernt CO_OWNER/DRIVER, CO_OWNER entfernt nur DRIVER.
+// Self-Removal ist hier vom Backend explizit gesperrt – zum Verlassen eines
+// Fahrzeugs muss deleteVehicle() genutzt werden (siehe unten).
 export const removeVehicleMember = (vehicleId: number, targetProfileId: number) =>
     handleRequest<void>(http.delete(`/vehicles/${vehicleId}/members/${targetProfileId}`));
+
+// Mitgliedsrolle ändern, z.B. DRIVER zu CO_OWNER befördern (nur OWNER darf das).
+// Analog zu updateMemberRole bei Gruppen (PUT .../members/{id}/role).
+export const updateVehicleMemberRole = (vehicleId: number, targetProfileId: number, newRole: "CO_OWNER" | "DRIVER") =>
+    handleRequest<void>(http.put(`/vehicles/${vehicleId}/members/${targetProfileId}/role`, { role: newRole }));
 
 // Einladung per E-Mail verschicken
 // role: "CO_OWNER" | "DRIVER" – wird vom Backend gegen die Rolle des Einladers geprüft
