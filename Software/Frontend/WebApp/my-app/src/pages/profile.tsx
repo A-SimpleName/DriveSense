@@ -19,7 +19,7 @@ function roleLabel(role?: string) {
 
 export default function ProfilePage() {
     const navigate = useNavigate();
-    const { profile, account, setProfile, setProfileSelected, switchProfile } = useAuth();
+    const { profile, setProfile, setProfileSelected, switchProfile } = useAuth();
 
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState(profile?.name || "");
@@ -120,15 +120,6 @@ export default function ProfilePage() {
                             <InfoRow label="Rolle" value={roleLabel(profile?.role)}/>
                         </>
                     )}
-                </div>
-            </div>
-
-            <div style={{ marginBottom: "2rem" }}>
-                <h2>Konto-Informationen</h2>
-                <div style={{ display: "grid", gap: "0.5rem", maxWidth: "400px" }}>
-                    <InfoRow label="Vorname" value={account?.firstName || "Nicht verfügbar"}/>
-                    <InfoRow label="Nachname" value={account?.lastName || "Nicht verfügbar"}/>
-                    <InfoRow label="E-Mail" value={account?.email || "Nicht verfügbar"}/>
                 </div>
             </div>
 
