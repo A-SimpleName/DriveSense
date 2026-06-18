@@ -26,7 +26,7 @@ export const updateVehicle = (id: number, vehicle: CreateVehicle) =>
 export const deleteVehicle = (id: number) =>
     handleRequest<void>(http.delete(`/vehicles/${id}`));
 
-// Mitglieder eines Fahrzeugs laden (nur OWNER und CO_OWNER)
+// Mitglieder eines Fahrzeugs laden
 export const getVehicleMembers = (vehicleId: number) =>
     handleRequest<VehicleMember[]>(http.get<VehicleMember[]>(`/vehicles/${vehicleId}/members`));
 

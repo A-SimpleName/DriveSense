@@ -112,7 +112,7 @@ export function VehicleMembers({ vehicle, onClose, onLeft, reloadToken = 0 }: Pr
             <div
                 className="modal"
                 onClick={(event) => event.stopPropagation()}
-                style={{ width: "min(640px, 90vw)", padding: "24px", borderRadius: "24px" }}
+                style={{ width: "min(880px, 90vw)", padding: "24px", borderRadius: "24px" }}
             >
                 <h3>Mitglieder – {vehicle.model} ({vehicle.licensePlate})</h3>
 

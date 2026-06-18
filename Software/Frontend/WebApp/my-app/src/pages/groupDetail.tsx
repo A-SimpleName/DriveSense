@@ -124,7 +124,7 @@ function GroupDetailPage() {
                 </span>
             </div>
 
-            <div className="page-table-wrapper">
+            <div>
                 <table>
                     <thead>
                         <tr>

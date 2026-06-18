@@ -102,7 +102,7 @@ function Dashboard() {
                     <span className="dashboard-empty-icon" aria-hidden="true">🚗</span>
                     <p className="dashboard-empty-title">Noch keine Fahrten aufgezeichnet</p>
                     <p className="dashboard-empty-subtitle">
-                        lade dir die App herunter und starte deine erste Fahrt, um deine gefahrenen Kilometer hier im Überblick zu sehen.
+                        Lade dir unsere App herunter und starte deine erste Fahrt, um deine gefahrenen Kilometer hier im Überblick zu sehen.
                     </p>
                 </div>
             ) : (

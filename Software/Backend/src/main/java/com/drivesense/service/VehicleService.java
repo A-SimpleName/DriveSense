@@ -32,18 +32,7 @@ public class VehicleService {
         return vehicle;
     }
 
-    public List<VehicleMemberResponse> getVehicleMembers(int vehicleId, int requesterProfileId) {
-        VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(requesterProfileId)
-                .stream()
-                .filter(v -> v.getId() == vehicleId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Vehicle nicht gefunden oder kein Zugriff"));
-
-        String role = vehicle.getMyRole();
-        if (!"OWNER".equals(role) && !"CO_OWNER".equals(role)) {
-            throw new UnauthorizedException("Nur Owner und Co-Owner duerfen Fahrzeug-Freigaben sehen");
-        }
-
+    public List<VehicleMemberResponse> getVehicleMembers(int vehicleId) {
         return vehicleDao.getMembersByVehicleId(vehicleId);
     }
 

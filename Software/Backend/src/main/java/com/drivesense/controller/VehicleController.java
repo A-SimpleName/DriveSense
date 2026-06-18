@@ -96,14 +96,8 @@ public class VehicleController {
      */
     @GetMapping("/{id}/members")
     public ResponseEntity<List<VehicleMemberResponse>> getVehicleMembers(
-            @PathVariable int id,
-            HttpServletRequest request) {
-
-        Object profileIdAttribute = request.getAttribute("profileId");
-        if (!(profileIdAttribute instanceof Integer profileId)) {
-            throw new UnauthorizedException("Kein aktives Profil ausgewaehlt");
-        }
-        return ResponseEntity.ok(vehicleService.getVehicleMembers(id, profileId));
+            @PathVariable int id) {
+        return ResponseEntity.ok(vehicleService.getVehicleMembers(id));
     }
 
     /**
