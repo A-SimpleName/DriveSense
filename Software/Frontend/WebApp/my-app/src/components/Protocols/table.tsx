@@ -79,7 +79,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                     {protocols.map(protocol => (
                         <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
                             <td>{protocol.name}</td>
-                            <td style={{ textAlign: "center" }}>
+                            <td style={{ textAlign: "center", gap: "8px" }}>
                                 <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
                                 <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
                             </td>

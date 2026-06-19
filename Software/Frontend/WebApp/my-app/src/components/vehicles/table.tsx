@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useState } from "react";
-import { getAllVehicles, deleteVehicle, updateVehicle, inviteToVehicle } from "../../services/vehicleService";
+import { getAllVehicles, deleteVehicle, updateVehicle } from "../../services/vehicleService";
 import type { CreateVehicle, Vehicle } from "../../model/vehicle";
 import "../../styles/pageLayout.css";
 import { Button } from "../button";
+import { ActionMenu, type ActionMenuItem } from "../ActionMenu";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 import { VehicleMembers } from "./VehicleMembers";
-import { AddForm } from "../addForm";
+import { InviteVehicleMemberForm } from "./InviteVehicleMemberForm";
 import { TableSkeleton } from "../loadingSkeleton";
 
 function VehiclesTable() {
@@ -22,9 +23,9 @@ function VehiclesTable() {
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
     const [invitingVehicle, setInvitingVehicle] = useState<Vehicle | null>(null);
-    const [inviteError, setInviteError] = useState<{ id: number; message: string } | null>(null);
 
     const [membersVehicle, setMembersVehicle] = useState<Vehicle | null>(null);
+    const [membersReloadKey, setMembersReloadKey] = useState(0);
 
     useEffect(() => {
         setLoading(true);
@@ -83,17 +84,6 @@ function VehiclesTable() {
         setEditingId(null);
         setDeleteError(null);
         setInvitingVehicle(vehicle);
-        setInviteError(null);
-    };
-
-    const handleInviteSend = async (vehicle: Vehicle, email: string, role: "DRIVER" | "CO_OWNER") => {
-        if (!email.trim()) return;
-        try {
-            await inviteToVehicle(vehicle.id, email, role);
-            setInvitingVehicle(null);
-        } catch (err: any) {
-            setInviteError({ id: vehicle.id, message: err?.message || "Einladung fehlgeschlagen" });
-        }
     };
 
     if (loading) return <TableSkeleton rows={3} cols={6} />;
@@ -109,7 +99,7 @@ function VehiclesTable() {
                 </span>
             </div>
 
-            <div className="page-table-wrapper">
+            <div>
                 <table>
                     <thead>
                         <tr>
@@ -166,44 +156,36 @@ function VehiclesTable() {
                                             ) : `${vehicle.mileage} km`}
                                         </td>
                                         <td>
-                                            <div style={{ display: "flex", gap: "8px" }}>
-                                                {editingId === vehicle.id ? (
-                                                    <>
-                                                        <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} />
-                                                        <Button label="Abbrechen" onClick={handleCancel} />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        {canEdit && <Button label="Bearbeiten" onClick={() => handleEdit(vehicle)} />}
-                                                        {canInvite && <Button label="Einladen" onClick={() => openInvite(vehicle)} />}
-                                                        <Button label="Mitglieder" onClick={() => setMembersVehicle(vehicle)} />
-                                                        {canDelete && <Button label="Löschen" onClick={() => setConfirmDeleteId(vehicle.id)} />}
-                                                    </>
-                                                )}
-                                            </div>
+                                            {editingId === vehicle.id ? (
+                                                <div style={{ display: "flex", gap: "8px" }}>
+                                                    <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} />
+                                                    <Button label="Abbrechen" onClick={handleCancel} />
+                                                </div>
+                                            ) : (() => {
+                                                const actions: ActionMenuItem[] = [
+                                                    ...(canEdit ? [{ label: "Bearbeiten", onClick: () => handleEdit(vehicle) }] : []),
+                                                    ...(canInvite ? [{ label: "Einladen", onClick: () => openInvite(vehicle) }] : []),
+                                                    { label: "Mitglieder", onClick: () => setMembersVehicle(vehicle) },
+                                                    ...(canDelete ? [{ label: "Löschen", onClick: () => setConfirmDeleteId(vehicle.id), danger: true }] : [])
+                                                ];
+                                                return <ActionMenu items={actions} />;
+                                            })()}
                                         </td>
                                     </tr>
 
                                     {invitingVehicle?.id === vehicle.id && (
-                                        <AddForm
-                                            title={`Mitglied zu ${vehicle.model} einladen`}
-                                            submitLabel="Einladung senden"
+                                        <InviteVehicleMemberForm
+                                            vehicleId={vehicle.id}
+                                            vehicleLabel={vehicle.model}
+                                            canInviteCoOwner={canInviteCoOwner}
                                             onClose={() => setInvitingVehicle(null)}
-                                            fields={[
-                                                { type: "text", key: "email", label: "E-Mail", defaultValue: "" },
-                                                ...(canInviteCoOwner ? [{
-                                                    type: "select" as const,
-                                                    key: "role",
-                                                    label: "Rolle",
-                                                    defaultValue: "DRIVER",
-                                                    options: [
-                                                        { label: "Driver", value: "DRIVER" },
-                                                        { label: "Co Owner", value: "CO_OWNER" }
-                                                    ]
-                                                }] : [])
-                                            ]}
-                                            onSubmit={async values => {
-                                                await handleInviteSend(vehicle, String(values.email), (values.role as "DRIVER" | "CO_OWNER") ?? "DRIVER");
+                                            onInvited={() => {
+                                                // Falls die Mitgliederliste für genau dieses Fahrzeug
+                                                // gerade offen ist, sofort neu laden statt erst beim
+                                                // nächsten Öffnen
+                                                if (membersVehicle?.id === vehicle.id) {
+                                                    setMembersReloadKey(prev => prev + 1);
+                                                }
                                             }}
                                         />
                                     )}
@@ -212,14 +194,6 @@ function VehiclesTable() {
                                         <tr key={`${vehicle.id}-error`}>
                                             <td colSpan={6} className="error-text" style={{ fontSize: "0.85rem", padding: "4px 8px" }}>
                                                 {saveError.message}
-                                            </td>
-                                        </tr>
-                                    )}
-
-                                    {inviteError?.id === vehicle.id && (
-                                        <tr key={`${vehicle.id}-invite-error`}>
-                                            <td colSpan={6} className="error-text" style={{ fontSize: "0.85rem", padding: "4px 8px" }}>
-                                                {inviteError.message}
                                             </td>
                                         </tr>
                                     )}
@@ -241,7 +215,12 @@ function VehiclesTable() {
             />
 
             {membersVehicle && (
-                <VehicleMembers vehicle={membersVehicle} onClose={() => setMembersVehicle(null)} />
+                <VehicleMembers
+                    vehicle={membersVehicle}
+                    onClose={() => setMembersVehicle(null)}
+                    onLeft={() => setVehicles(prev => prev.filter(v => v.id !== membersVehicle.id))}
+                    reloadToken={membersReloadKey}
+                />
             )}
         </div>
     );

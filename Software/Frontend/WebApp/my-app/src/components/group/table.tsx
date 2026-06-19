@@ -98,7 +98,7 @@ function GroupTable({ newGroup }: Props) {
                 </span>
             </div>
 
-            <div className="page-table-wrapper">
+            <div>
                 <table>
                     <thead>
                         <tr>
