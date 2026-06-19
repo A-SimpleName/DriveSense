@@ -5,6 +5,9 @@ interface Props {
     title: string
     placeholder?: string
     maxLength?: number
+    initialCode?: string
+    error?: string | null
+    onErrorClear?: () => void
 
     onVerify: (code: string) => Promise<void>
     onSuccess: () => void
@@ -15,13 +18,17 @@ export function InviteCodeForm({
     title,
     placeholder = "Code eingeben",
     maxLength,
+    initialCode = "",
+    error: externalError,
+    onErrorClear,
     onVerify,
     onSuccess,
     onClose
 }: Props) {
-    const [code, setCode] = useState("")
+    const [code, setCode] = useState(initialCode)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const visibleError = externalError ?? error
 
     const handleSubmit = async () => {
         if (!code.trim()) return
@@ -89,13 +96,17 @@ export function InviteCodeForm({
 
                 <h3>{title}</h3>
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {visibleError && <p style={{ color: "red" }}>{visibleError}</p>}
 
                 <input
                     value={code}
                     placeholder={placeholder}
                     maxLength={maxLength}
-                    onChange={e => setCode(e.target.value)}
+                    onChange={e => {
+                        setCode(e.target.value)
+                        setError(null)
+                        onErrorClear?.()
+                    }}
                     onKeyDown={e => e.key === "Enter" && handleSubmit()}
                     style={{
                         padding: "10px",

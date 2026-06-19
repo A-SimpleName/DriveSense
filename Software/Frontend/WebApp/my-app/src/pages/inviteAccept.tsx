@@ -50,7 +50,7 @@ function InviteAcceptPage() {
         }
 
         handledInitialCode.current = true;
-        void handleCode(initialCode);
+        void handleCode(initialCode).catch(() => {});
     }, [isAuth, initialCode]);
 
     const handleLoginRedirect = () => {
@@ -79,7 +79,9 @@ function InviteAcceptPage() {
             setSelectedProfileId(null);
             setStep("profile");
         } catch (err: any) {
-            setError(err?.message || "Einladung konnte nicht geprueft werden");
+            const message = err?.message || "Einladung konnte nicht geprueft werden";
+            setError(message);
+            throw new Error(message);
         } finally {
             setLoading(false);
         }
@@ -123,12 +125,14 @@ function InviteAcceptPage() {
                             title={inviteType === "vehicle" ? "Fahrzeug-Einladung annehmen" : "Gruppeneinladung annehmen"}
                             placeholder={inviteType === "vehicle" ? "Einladungscode" : "6-stelliger Code"}
                             maxLength={inviteType === "group" ? 6 : undefined}
+                            initialCode={code}
+                            error={error}
+                            onErrorClear={() => setError(null)}
                             onVerify={handleCode}
                             onSuccess={() => {}}
                             onClose={() => navigate(inviteType === "vehicle" ? "/vehicles" : "/groups")}
                         />
                     )}
-                    {error && <p style={{ color: "red" }}>{error}</p>}
                 </>
             )}
 
