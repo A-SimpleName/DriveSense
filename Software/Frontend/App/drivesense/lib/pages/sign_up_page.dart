@@ -51,11 +51,7 @@ class _SignUpPageState extends State<SignUpPage> {
       return _VerificationResult.verified;
     }
 
-    if (verified == false) {
-      return _VerificationResult.cancelled;
-    }
-
-    return _VerificationResult.failed;
+    return _VerificationResult.cancelled;
   }
 
   Future<_VerificationResult> _recoverVerificationAfterServerError(

@@ -1,6 +1,7 @@
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/services/account_service.dart';
 import 'package:drivesense/services/email_verification_service.dart';
+import 'package:drivesense/services/token_storage.dart';
 import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
 import 'package:drivesense/widgets/verification_code_dialog.dart';
 import 'package:flutter/material.dart';
@@ -191,11 +192,27 @@ class _AccountPageState extends State<AccountPage> {
 
     setState(() => _isDeletingAccount = true);
 
-    Navigator.pushNamed(context, 'DeleteAccountPage');
+    final String? error = await AccountService.deleteAccount();
 
     if (!mounted) return;
 
-    setState(() => _isDeletingAccount = false);
+    if (error != null) {
+      setState(() => _isDeletingAccount = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+
+    await TokenStorage.instance.clearSession();
+
+    if (!mounted) return;
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      'SignInPage',
+      (Route<dynamic> route) => false,
+    );
   }
 
   Widget _buildAccountField({

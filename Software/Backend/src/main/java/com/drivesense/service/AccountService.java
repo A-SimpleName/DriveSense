@@ -31,7 +31,15 @@ public class AccountService {
 
     public AccountResponse signUp(SignUpRequest request) {
         // Inline-Feldfehler → erscheint direkt beim E-Mail-Feld im Frontend
-        if (accountDao.getByEmail(request.getEmail()) != null || accountDao.existsByPendingEmail(request.getEmail())) {
+        Account existingAccount = accountDao.getByEmail(request.getEmail());
+        if (existingAccount != null) {
+            if (existingAccount.isEmailVerified()) {
+                throw new FieldValidationException("email", "Email ist bereits vergeben");
+            }
+            emailVerificationDao.deleteByAccountId(existingAccount.getId());
+            accountDao.deleteUnverifiedById(existingAccount.getId());
+        }
+        if (accountDao.existsByPendingEmail(request.getEmail())) {
             throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
         String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());

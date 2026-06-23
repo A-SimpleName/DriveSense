@@ -116,6 +116,33 @@ class AccountService {
     }
   }
 
+  static Future<String?> deleteAccount() async {
+    final headers = RequestHeaders.authenticated(
+      clientType: 'mobile',
+      includeProfileToken: false,
+    );
+
+    if (!headers.containsKey('Cookie')) return 'Keine aktive Sitzung gefunden';
+
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/account');
+
+    try {
+      final response = await http.delete(uri, headers: headers);
+
+      debugPrint('Account delete <- ${response.statusCode}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return null;
+      }
+
+      return _extractErrorMessage(response.body) ??
+          'Account konnte nicht geloescht werden';
+    } catch (e) {
+      debugPrint('Account delete failed: $e');
+      return 'Account konnte nicht geloescht werden';
+    }
+  }
+
   static Future<String?> requestPasswordReset(String email) async {
     final Uri uri = Uri.parse(
       '${ApiConfig.baseUrl}/api/account/forgot-password',
