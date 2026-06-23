@@ -270,6 +270,7 @@ function SignUpPage({ onNeedsVerification }: Props) {
                     <div className="signup-footer">
                         <span>Bereits registriert?</span>
                         <Link to="/login">Zur Anmeldung</Link>
+                        <Link to="/datenschutz">Datenschutzerklärung</Link>
                     </div>
                 </div>
             </div>

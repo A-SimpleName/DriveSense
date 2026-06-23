@@ -106,6 +106,8 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
 
         <div className="login-footer">
           Noch keinen Account? <Link to="/signup">Registrieren</Link>
+          <br />
+          <Link to="/datenschutz">Datenschutzerklärung</Link>
         </div>
       </div>
     </div>

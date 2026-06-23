@@ -28,6 +28,8 @@ import ForgotPasswordPage from "./pages/forgotPassword";
 import ResetPasswordPage from "./pages/resetPassword";
 import AdminPage from "./pages/admin";
 import ConfirmEmailChangePage from "./pages/confirmEmailChangePage";
+import DatenschutzPage from "./pages/datenschutz";
+import ImpressumPage from "./pages/impressum";
 
 export default function App() {
   return (
@@ -120,6 +122,8 @@ function AppContent() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/datenschutz" element={<DatenschutzPage />} />
+        <Route path="/impressum" element={<ImpressumPage />} />
 
         {/* NICHT EINGELOGGT */}
         {!isAuth && !needsVerification && (

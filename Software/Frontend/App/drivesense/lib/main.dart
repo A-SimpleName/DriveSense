@@ -1,4 +1,6 @@
 import 'package:drivesense/pages/profile_select_page.dart';
+import 'package:drivesense/pages/imprint_page.dart';
+import 'package:drivesense/pages/privacy_policy_page.dart';
 import 'package:drivesense/pages/sign_in_page.dart';
 import 'package:drivesense/pages/forgot_password_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
@@ -78,6 +80,8 @@ class _MyAppState extends State<MyApp> {
         'ProfileSelectPage': (context) => const ProfileSelectPage(),
         'AccountPage': (context) => const AccountPage(),
         'ChangePasswordPage': (context) => const ChangePasswordPage(),
+        'ImprintPage': (context) => const ImprintPage(),
+        'PrivacyPolicyPage': (context) => const PrivacyPolicyPage(),
         'ResetPasswordPage': (context) {
           final Map<String, String> args =
               ModalRoute.of(context)!.settings.arguments as Map<String, String>;
