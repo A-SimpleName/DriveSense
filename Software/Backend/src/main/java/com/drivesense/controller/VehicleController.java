@@ -1,9 +1,6 @@
 package com.drivesense.controller;
 
-import com.drivesense.dto.request.AcceptInviteRequest;
-import com.drivesense.dto.request.InviteToVehicleRequest;
-import com.drivesense.dto.request.SaveVehicleRequest;
-import com.drivesense.dto.request.VerifyInviteRequest;
+import com.drivesense.dto.request.*;
 import com.drivesense.dto.response.ProfileSelectionResponse;
 import com.drivesense.dto.response.VehicleDto;
 import com.drivesense.dto.response.VehicleMemberResponse;
@@ -99,14 +96,8 @@ public class VehicleController {
      */
     @GetMapping("/{id}/members")
     public ResponseEntity<List<VehicleMemberResponse>> getVehicleMembers(
-            @PathVariable int id,
-            HttpServletRequest request) {
-
-        Object profileIdAttribute = request.getAttribute("profileId");
-        if (!(profileIdAttribute instanceof Integer profileId)) {
-            throw new UnauthorizedException("Kein aktives Profil ausgewaehlt");
-        }
-        return ResponseEntity.ok(vehicleService.getVehicleMembers(id, profileId));
+            @PathVariable int id) {
+        return ResponseEntity.ok(vehicleService.getVehicleMembers(id));
     }
 
     /**
@@ -215,6 +206,20 @@ public class VehicleController {
         int accountId = (int) httpRequest.getAttribute("accountId");
         vehicleInvitationService.acceptInvite(accountId, request.getCode(), request.getProfileId());
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{vehicleId}/members/{profileId}/role")
+    public ResponseEntity<Void> updateMemberRole(
+            @PathVariable int vehicleId,
+            @PathVariable int profileId,
+            @RequestBody UpdateMemberRoleRequest body,
+            HttpServletRequest request) {
+
+        int requesterProfileId = (int) request.getAttribute("profileId");
+
+        vehicleService.updateMemberRole(vehicleId, requesterProfileId, profileId, body.getRole());
+
+        return ResponseEntity.noContent().build();
     }
 
     // ── Hilfsmethoden ────────────────────────────────────────────────────────

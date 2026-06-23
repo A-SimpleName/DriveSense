@@ -227,8 +227,6 @@ public class VehicleInvitationService {
     }
 
     private String generateCode() {
-        byte[] bytes = new byte[24];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        return String.format("%06d", new SecureRandom().nextInt(1_000_000));
     }
 }

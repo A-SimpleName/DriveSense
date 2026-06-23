@@ -332,6 +332,31 @@ public class VehicleDao {
         }
     }
 
+    /**
+     * Ändert die Rolle eines bestehenden Mitglieds (z.B. DRIVER -> CO_OWNER).
+     * Berechtigung wird im Service geprüft, hier kein Extra-Check nötig.
+     */
+    public boolean updateMemberRole(int vehicleId, int targetProfileId, String newRole) {
+        String sql = """
+        UPDATE profile_vehicle
+        SET role = ?
+        WHERE vehicle_id = ? AND profile_id = ?
+    """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newRole);
+            ps.setInt(2, vehicleId);
+            ps.setInt(3, targetProfileId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Aktualisieren der Mitgliedsrolle", e);
+        }
+    }
+
     public void addProfileAssociation(int vehicleId, int profileId, String role) {
         String sql = """
             INSERT INTO profile_vehicle (profile_id, vehicle_id, role)

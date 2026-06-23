@@ -32,18 +32,7 @@ public class VehicleService {
         return vehicle;
     }
 
-    public List<VehicleMemberResponse> getVehicleMembers(int vehicleId, int requesterProfileId) {
-        VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(requesterProfileId)
-                .stream()
-                .filter(v -> v.getId() == vehicleId)
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Vehicle nicht gefunden oder kein Zugriff"));
-
-        String role = vehicle.getMyRole();
-        if (!"OWNER".equals(role) && !"CO_OWNER".equals(role)) {
-            throw new UnauthorizedException("Nur Owner und Co-Owner duerfen Fahrzeug-Freigaben sehen");
-        }
-
+    public List<VehicleMemberResponse> getVehicleMembers(int vehicleId) {
         return vehicleDao.getMembersByVehicleId(vehicleId);
     }
 
@@ -68,6 +57,62 @@ public class VehicleService {
             if (!removed) {
                 throw new NotFoundException("Vehicle nicht gefunden oder kein Zugriff");
             }
+        }
+    }
+
+    /**
+     * OWNER befördert/degradiert ein Mitglied zwischen DRIVER und CO_OWNER.
+     *
+     * Regeln:
+     * - Nur OWNER darf Rollen ändern
+     * - OWNER kann sich selbst nicht umbenennen
+     * - Der OWNER selbst kann nicht zum Ziel einer Rollenänderung werden
+     * - Erlaubte Zielrollen sind ausschließlich CO_OWNER und DRIVER
+     *
+     * @param vehicleId          ID des Fahrzeugs
+     * @param requesterProfileId Profil des Anfragenden (muss OWNER sein)
+     * @param targetProfileId    Profil dessen Rolle geändert werden soll
+     * @param newRole            neue Rolle (CO_OWNER oder DRIVER)
+     */
+    public void updateMemberRole(int vehicleId, int requesterProfileId, int targetProfileId, String newRole) {
+        // Eigene Rolle des Anfragers laden
+        VehicleDto vehicle = vehicleDao.getAllVehiclesByProfile(requesterProfileId)
+                .stream()
+                .filter(v -> v.getId() == vehicleId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Vehicle nicht gefunden oder kein Zugriff"));
+
+        String requesterRole = vehicle.getMyRole();
+
+        if (!"OWNER".equals(requesterRole)) {
+            throw new UnauthorizedException("Nur OWNER darf Mitgliedsrollen ändern");
+        }
+
+        // Sich selbst umbenennen ist über diesen Endpoint nicht erlaubt
+        if (requesterProfileId == targetProfileId) {
+            throw new BadRequestException("Du kannst deine eigene Rolle nicht über diesen Weg ändern");
+        }
+
+        // Nur CO_OWNER und DRIVER sind gültige Zielrollen
+        if (!"CO_OWNER".equals(newRole) && !"DRIVER".equals(newRole)) {
+            throw new BadRequestException("Ungültige Zielrolle");
+        }
+
+        // Rolle des Zielprofils laden
+        List<VehicleMemberResponse> members = vehicleDao.getMembersByVehicleId(vehicleId);
+        VehicleMemberResponse target = members.stream()
+                .filter(m -> m.getProfileId() == targetProfileId)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Mitglied nicht gefunden"));
+
+        // OWNER kann nie zum Ziel einer Rollenänderung werden
+        if ("OWNER".equals(target.getVehicleRole())) {
+            throw new BadRequestException("Der OWNER des Fahrzeugs kann nicht umbenannt werden");
+        }
+
+        boolean updated = vehicleDao.updateMemberRole(vehicleId, targetProfileId, newRole);
+        if (!updated) {
+            throw new NotFoundException("Rolle konnte nicht geändert werden");
         }
     }
 

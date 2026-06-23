@@ -37,7 +37,7 @@ function GroupDetailPage() {
     const [currentProfileId, setCurrentProfileId] = useState<number | null>(null);
     const [showInviteForm, setShowInviteForm] = useState(false);
     const [showProtocolForm, setShowProtocolForm] = useState(false);
-    const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ profileId: number; message: string } | null>(null);
+    const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ profileId: number; message: string, action: string } | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -65,8 +65,8 @@ function GroupDetailPage() {
             .catch(err => setRemoveError(err?.message || "Mitglied konnte nicht entfernt werden"));
     };
 
-    const requestRemove = (profileId: number, message: string) => {
-        setConfirmRemoveMember({ profileId, message });
+    const requestRemove = (profileId: number, message: string, action: string) => {
+        setConfirmRemoveMember({ profileId, message, action });
     };
 
     const confirmRemove = () => {
@@ -95,7 +95,7 @@ function GroupDetailPage() {
             <div className="page-header">
                 <h1>Gruppe</h1>
             </div>
-            <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
+            <p className="error-text">Fehler: {loadError}</p>
             <Button label="Erneut versuchen" onClick={() => window.location.reload()} />
         </div>
     );
@@ -115,8 +115,8 @@ function GroupDetailPage() {
                 </div>
             </div>
 
-            {removeError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{removeError}</p>}
-            {roleError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{roleError}</p>}
+            {removeError && <p className="error-text" style={{ marginBottom: "8px" }}>{removeError}</p>}
+            {roleError && <p className="error-text" style={{ marginBottom: "8px" }}>{roleError}</p>}
 
             <div className="page-toolbar">
                 <span className="page-toolbar-left" style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
@@ -124,7 +124,7 @@ function GroupDetailPage() {
                 </span>
             </div>
 
-            <div className="page-table-wrapper">
+            <div>
                 <table>
                     <thead>
                         <tr>
@@ -149,7 +149,7 @@ function GroupDetailPage() {
                                                 {canRemove(myRole, member.groupRole) && (
                                                     <Button
                                                         label="Entfernen"
-                                                        onClick={() => requestRemove(member.profileId, `Mitglied ${member.name} wirklich entfernen?`)}
+                                                        onClick={() => requestRemove(member.profileId, `Mitglied ${member.name} wirklich entfernen?`,"Entfernen")}
                                                         stopPropagation
                                                     />
                                                 )}
@@ -165,7 +165,7 @@ function GroupDetailPage() {
                                         {member.profileId === currentProfileId && myRole !== "OWNER" && (
                                             <Button
                                                 label="Gruppe verlassen"
-                                                onClick={() => requestRemove(member.profileId, "Gruppe wirklich verlassen?")}
+                                                onClick={() => requestRemove(member.profileId, "Gruppe wirklich verlassen?", "Verlassen")}
                                                 stopPropagation
                                             />
                                         )}
@@ -198,9 +198,9 @@ function GroupDetailPage() {
 
             <ConfirmationDialog
                 open={confirmRemoveMember !== null}
-                title="Löschen bestätigen"
+                title= { confirmRemoveMember?.action + " bestätigen"}
                 message={confirmRemoveMember?.message ?? "Soll die Aktion wirklich ausgeführt werden?"}
-                confirmLabel="Ja, löschen"
+                confirmLabel={"Ja, " + confirmRemoveMember?.action.toLowerCase()}
                 cancelLabel="Abbrechen"
                 onConfirm={confirmRemove}
                 onCancel={() => setConfirmRemoveMember(null)}

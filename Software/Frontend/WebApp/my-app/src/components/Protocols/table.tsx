@@ -79,7 +79,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                     {protocols.map(protocol => (
                         <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
                             <td>{protocol.name}</td>
-                            <td style={{ textAlign: "center" }}>
+                            <td style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
                                 <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
                                 <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
                             </td>
@@ -93,8 +93,8 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
     return (
         <div>
             {/* Getrennte Fehlermeldungen für Export und Löschen */}
-            {exportError && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{exportError}</p>}
-            {error && <p style={{ color: "#dc2626", marginBottom: "8px" }}>{error}</p>}
+            {exportError && <p className="error-text" style={{ marginBottom: "8px" }}>{exportError}</p>}
+            {error && <p className="error-text" style={{ marginBottom: "8px" }}>{error}</p>}
 
             {renderTable(ownProtocols, "Eigene Protokolle",true)}
             {renderTable(groupProtocols, "Gruppenprotokolle",false)}

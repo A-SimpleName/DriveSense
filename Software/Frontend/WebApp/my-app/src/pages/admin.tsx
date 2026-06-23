@@ -12,6 +12,8 @@ import type { AccountResponse } from "../model/account";
 import type { Profile } from "../model/profile";
 import type { UserGroup, GroupMember } from "../model/usergroup";
 import "../styles/admin.css";
+import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { TableSkeleton } from "../components/loadingSkeleton";
 
 type Tab = "accounts" | "profile" | "gruppen";
 
@@ -93,7 +95,7 @@ function AdminPage() {
     if (loading) return <TableSkeleton rows={5} cols={4} />;
     if (loadError) return (
         <div>
-            <p style={{ color: "#dc2626" }}>Fehler: {loadError}</p>
+            <p className="error-text">Fehler: {loadError}</p>
             <button onClick={() => setActiveTab(activeTab)}>Erneut versuchen</button>
         </div>
     );
@@ -104,7 +106,7 @@ function AdminPage() {
 
             {/* Aktionsfehler — bleibt sichtbar bis nächste Aktion */}
             {actionError && (
-                <p style={{ color: "#dc2626", marginBottom: "1rem" }}>{actionError}</p>
+                <p className="error-text" style={{ marginBottom: "1rem" }}>{actionError}</p>
             )}
 
             <div className="admin-tabs">

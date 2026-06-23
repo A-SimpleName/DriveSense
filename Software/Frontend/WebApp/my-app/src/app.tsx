@@ -99,7 +99,13 @@ function AppContent() {
     refreshProfiles();
   }, [isAuth, profileSelected]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <span className="spinner" />
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -149,36 +155,22 @@ function AppContent() {
 
         {/* VOLLSTÄNDIG EINGELOGGT */}
         {isAuth && profileSelected && (
-          <>
-            <Route path="/*" element={<AuthLayout />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="trips" element={<TripsPage />} />
-              <Route path="trips/:id" element={<TripDetailPage />} />
-              <Route path="protocols/:id" element={<ProtocolDetail />} />
-              <Route path="vehicles" element={<Vehicles />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="protocols" element={<ProtocolPage />} />
-              <Route path="groups" element={<GroupPage />} />
-              <Route path="groups/:id" element={<GroupDetailPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="invite" element={<InviteAcceptPage />} />
-              <Route path="admin" element={<AdminPage />} />
-              <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
-            </Route>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/trips" element={<TripsPage />} />
-            <Route path="/trips/:id" element={<TripDetailPage />} />
-            <Route path="/protocols/:id" element={<ProtocolDetail />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/settings" element={<Settings/>}/>
-            <Route path="/protocols" element={<ProtocolPage />} />
-            <Route path="/groups" element={<GroupPage />} />
-            <Route path="/groups/:id" element={<GroupDetailPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/invite" element={<InviteAcceptPage />} />
-          </>
+          <Route path="/" element={<AuthLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="trips" element={<TripsPage />} />
+            <Route path="trips/:id" element={<TripDetailPage />} />
+            <Route path="protocols/:id" element={<ProtocolDetail />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="protocols" element={<ProtocolPage />} />
+            <Route path="groups" element={<GroupPage />} />
+            <Route path="groups/:id" element={<GroupDetailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="invite" element={<InviteAcceptPage />} />
+            <Route path="admin" element={<AdminPage />} />
+            <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
+          </Route>
         )}
-        
       </Routes>
     </BrowserRouter>
   );

@@ -1,0 +1,29 @@
+.mobile-warning-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--primary-dark);
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.mobile-warning-text {
+    flex: 1;
+}
+
+.mobile-warning-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.mobile-warning-close:hover {
+    opacity: 0.75;
+}

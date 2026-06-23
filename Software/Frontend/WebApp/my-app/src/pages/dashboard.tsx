@@ -16,6 +16,7 @@ function Dashboard() {
     const [totalKm, setTotalKm] = useState<string>("0 km");
     const [tripAmount, setTripAmount] = useState<number>(0);
     const [recentTrips, setRecentTrips] = useState<TripSummaryDto[]>([]);
+    const [weekTrips, setWeekTrips] = useState<TripSummaryDto[]>([]);
     const [totalDuration, setTotalDuration] = useState<number>(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,12 @@ function Dashboard() {
                 setTotalDuration(duration);
                 setTripAmount(all.length);
                 setRecentTrips(all.slice(0, 5));
+
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+                sevenDaysAgo.setHours(0, 0, 0, 0);
+                setWeekTrips(all.filter(t => new Date(t.startTime) >= sevenDaysAgo));
+
                 if (latest) return getTripById(latest.id);
                 return null;
             })
@@ -55,13 +62,27 @@ function Dashboard() {
     const lastTrip = lastTripDetailed?.tripSummary;
     const route = lastTripDetailed?.trackingpoints?.map(p => ({ lat: p.lat, lng: p.lng })) ?? [];
 
-    const weekDays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-    const kmPerDay = recentTrips.reduce<Record<number, number>>((acc, t) => {
-        const day = new Date(t.startTime).getDay();
-        acc[day] = (acc[day] ?? 0) + (parseFloat(String(t.distance)) || 0);
-        return acc;
-    }, {});
-    const maxKm = Math.max(...Object.values(kmPerDay), 1);
+    const weekDayShort = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    // Chronologische Liste der letzten 7 Kalendertage (älteste zuerst), damit
+    // die Achse immer "heute und die letzten 6 Tage" zeigt statt einer fixen
+    // So-Sa-Reihenfolge, die bei älteren/lückenhaften Daten irreführend wäre.
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        d.setHours(0, 0, 0, 0);
+        return d;
+    });
+    const kmPerDay = last7Days.map(day => {
+        const km = weekTrips
+            .filter(t => {
+                const tripDay = new Date(t.startTime);
+                tripDay.setHours(0, 0, 0, 0);
+                return tripDay.getTime() === day.getTime();
+            })
+            .reduce((sum, t) => sum + (parseFloat(String(t.distance)) || 0), 0);
+        return { date: day, label: weekDayShort[day.getDay()], km };
+    });
+    const maxKm = Math.max(...kmPerDay.map(d => d.km), 1);
 
     return (
         <div>
@@ -76,32 +97,41 @@ function Dashboard() {
                 {lastTrip && <StatCard title="Letzte Fahrt" value={`${lastTrip.distance} km`} />}
             </div>
 
-            <div className="dashboard-main-grid">
-                <div className="dashboard-card">
-                    <p className="dashboard-card-title">Woche (km)</p>
-                    <div className="dashboard-bar-chart">
-                        {weekDays.map((label, i) => {
-                            const km = kmPerDay[i] ?? 0;
-                            const height = Math.max(Math.round((km / maxKm) * 360), km > 0 ? 4 : 0);
-                            return (
-                                <div key={i} className="dashboard-bar-col">
-                                    <div className="dashboard-bar" style={{ height: `${height}px` }} />
-                                    <span className="dashboard-bar-label">{label}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
+            {tripAmount === 0 ? (
+                <div className="dashboard-empty">
+                    <span className="dashboard-empty-icon" aria-hidden="true">🚗</span>
+                    <p className="dashboard-empty-title">Noch keine Fahrten aufgezeichnet</p>
+                    <p className="dashboard-empty-subtitle">
+                        Lade dir unsere App herunter und starte deine erste Fahrt, um deine gefahrenen Kilometer hier im Überblick zu sehen.
+                    </p>
                 </div>
-
-                {lastTrip && (
+            ) : (
+                <div className="dashboard-main-grid">
                     <div className="dashboard-card">
-                        <p className="dashboard-card-title">Letzte Fahrt</p>
-                        <p className="dashboard-card-subtitle">{lastTrip.startPoint} → {lastTrip.endPoint}</p>
-                        <p className="dashboard-card-value">{lastTrip.distance} km</p>
-                        {route.length > 0 && <MapView route={route} />}
+                        <p className="dashboard-card-title">Letzte 7 Tage (km)</p>
+                        <div className="dashboard-bar-chart">
+                            {kmPerDay.map((day, i) => {
+                                const height = Math.max(Math.round((day.km / maxKm) * 360), day.km > 0 ? 4 : 0);
+                                return (
+                                    <div key={i} className="dashboard-bar-col">
+                                        <div className="dashboard-bar" style={{ height: `${height}px` }} />
+                                        <span className="dashboard-bar-label">{day.label}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                )}
-            </div>
+
+                    {lastTrip && (
+                        <div className="dashboard-card">
+                            <p className="dashboard-card-title">Letzte Fahrt</p>
+                            <p className="dashboard-card-subtitle">{lastTrip.startPoint} → {lastTrip.endPoint}</p>
+                            <p className="dashboard-card-value">{lastTrip.distance} km</p>
+                            {route.length > 0 && <MapView route={route} />}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {recentTrips.length > 0 && (
                 <div className="dashboard-trips-card">

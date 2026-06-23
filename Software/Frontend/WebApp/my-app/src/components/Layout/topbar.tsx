@@ -7,6 +7,7 @@ function Topbar() {
     const location = useLocation();
 
     const isActive = (path: string) => {
+        if (path === '/') return location.pathname === '/';
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
@@ -16,6 +17,7 @@ function Topbar() {
                 <img src={Logo} alt="Logo" className="logo" width={200}/>
             </Link>
 
+            <Link to="/" className={isActive('/') ? 'nav-link active' : 'nav-link'}>Dashboard</Link>
             <Link to="/trips" className={isActive('/trips') ? 'nav-link active' : 'nav-link'}>Fahrten</Link>
             <Link to="/vehicles" className={isActive('/vehicles') ? 'nav-link active' : 'nav-link'}>Fahrzeuge</Link>
             <Link to="/protocols" className={isActive('/protocols') ? 'nav-link active' : 'nav-link'}>Protokolle</Link>

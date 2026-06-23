@@ -90,7 +90,7 @@ function GroupTable({ newGroup }: Props) {
 
     return (
         <div>
-            {error && <p style={{ color: "#dc2626", marginBottom: "12px" }}>{error}</p>}
+            {error && <p className="error-text" style={{ marginBottom: "12px" }}>{error}</p>}
 
             <div className="page-toolbar">
                 <span className="page-toolbar-left" style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
@@ -98,7 +98,7 @@ function GroupTable({ newGroup }: Props) {
                 </span>
             </div>
 
-            <div className="page-table-wrapper">
+            <div>
                 <table>
                     <thead>
                         <tr>
