@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "mobileWarningDismissed";
-const BREAKPOINT = 860;
+const BREAKPOINT = 925;
 
 // Zeigt einen wegklickbaren Hinweis, dass die Web-App für größere Displays
 // gedacht ist und auf dem Smartphone die native App genutzt werden sollte.
