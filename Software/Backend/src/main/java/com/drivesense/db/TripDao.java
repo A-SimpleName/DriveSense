@@ -35,6 +35,7 @@ public class TripDao {
                 start_time,
                 end_time,
                 distance,
+                duration_seconds,
                 road_surface_conditions,
                 type,
                 start_point,
@@ -47,6 +48,7 @@ public class TripDao {
                 profile_name_snapshot
             )
             SELECT
+                ?,
                 ?,
                 ?,
                 ?,
@@ -79,15 +81,16 @@ public class TripDao {
             ps.setObject(4, tripSummary.getStartTime());
             ps.setObject(5, tripSummary.getEndTime());
             ps.setDouble(6, tripSummary.getDistance());
-            ps.setString(7, tripSummary.getRoadSurfaceConditions());
-            ps.setString(8, tripSummary.getType());
-            ps.setString(9, tripSummary.getStartPoint());
-            ps.setString(10, tripSummary.getEndPoint());
-            ps.setString(11, tripSummary.getFurthestPoint());
-            ps.setInt(12, tripSummary.getStartMileage());
-            ps.setInt(13, tripSummary.getEndMileage());
-            ps.setInt(14, tripSummary.getVehicleId());
-            ps.setInt(15, tripSummary.getProfileId());
+            ps.setLong(7, tripSummary.getDurationSeconds());
+            ps.setString(8, tripSummary.getRoadSurfaceConditions());
+            ps.setString(9, tripSummary.getType());
+            ps.setString(10, tripSummary.getStartPoint());
+            ps.setString(11, tripSummary.getEndPoint());
+            ps.setString(12, tripSummary.getFurthestPoint());
+            ps.setInt(13, tripSummary.getStartMileage());
+            ps.setInt(14, tripSummary.getEndMileage());
+            ps.setInt(15, tripSummary.getVehicleId());
+            ps.setInt(16, tripSummary.getProfileId());
 
             int insertedRows = ps.executeUpdate();
             if (insertedRows == 0) {
@@ -153,6 +156,7 @@ public class TripDao {
                 t.start_time,
                 t.end_time,
                 t.distance,
+                t.duration_seconds,
                 t.start_mileage,
                 t.end_mileage,
                 t.licenseplate_snapshot AS license_plate,
@@ -202,6 +206,7 @@ public class TripDao {
                 t.start_time,
                 t.end_time,
                 t.distance,
+                t.duration_seconds,
                 t.start_mileage,
                 t.end_mileage,
                 t.licenseplate_snapshot AS license_plate,
@@ -264,6 +269,7 @@ public class TripDao {
                 t.start_time,
                 t.end_time,
                 t.distance,
+                t.duration_seconds,
                 t.start_mileage,
                 t.end_mileage,
                 t.licenseplate_snapshot AS license_plate,
@@ -328,6 +334,7 @@ public class TripDao {
                 t.start_time,
                 t.end_time,
                 t.distance,
+                t.duration_seconds,
                 t.start_mileage,
                 t.end_mileage,
                 t.licenseplate_snapshot AS license_plate,
@@ -381,6 +388,7 @@ public class TripDao {
                 t.start_time,
                 t.end_time,
                 t.distance,
+                t.duration_seconds,
                 t.start_mileage,
                 t.end_mileage,
                 t.licenseplate_snapshot AS license_plate,
@@ -432,6 +440,7 @@ public class TripDao {
                 start_time = ?,
                 end_time = ?,
                 distance = ?,
+                duration_seconds = ?,
                 road_surface_conditions = ?,
                 type = ?,
                 start_point = ?,
@@ -450,16 +459,17 @@ public class TripDao {
             ps.setObject(1, tripSummary.getStartTime());
             ps.setObject(2, tripSummary.getEndTime());
             ps.setDouble(3, tripSummary.getDistance());
-            ps.setString(4, tripSummary.getRoadSurfaceConditions());
-            ps.setString(5, tripSummary.getType());
-            ps.setString(6, tripSummary.getStartPoint());
-            ps.setString(7, tripSummary.getEndPoint());
-            ps.setString(8, tripSummary.getFurthestPoint());
-            ps.setInt(9, tripSummary.getStartMileage());
-            ps.setInt(10, tripSummary.getEndMileage());
-            ps.setInt(11, tripSummary.getVehicleId());
-            ps.setInt(12, tripSummary.getProtocolId());
-            ps.setInt(13, tripSummary.getId());
+            ps.setLong(4, tripSummary.getDurationSeconds());
+            ps.setString(5, tripSummary.getRoadSurfaceConditions());
+            ps.setString(6, tripSummary.getType());
+            ps.setString(7, tripSummary.getStartPoint());
+            ps.setString(8, tripSummary.getEndPoint());
+            ps.setString(9, tripSummary.getFurthestPoint());
+            ps.setInt(10, tripSummary.getStartMileage());
+            ps.setInt(11, tripSummary.getEndMileage());
+            ps.setInt(12, tripSummary.getVehicleId());
+            ps.setInt(13, tripSummary.getProtocolId());
+            ps.setInt(14, tripSummary.getId());
 
             ps.executeUpdate();
 
@@ -494,6 +504,7 @@ public class TripDao {
         t.setStartTime(rs.getObject("start_time", LocalDateTime.class));
         t.setEndTime(rs.getObject("end_time", LocalDateTime.class));
         t.setDistance(rs.getDouble("distance"));
+        t.setDurationSeconds(rs.getLong("duration_seconds"));
         t.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
         t.setType(rs.getString("type"));
         t.setStartPoint(rs.getString("start_point"));
@@ -520,6 +531,7 @@ public class TripDao {
         if (end != null) dto.setEndTime(end.toLocalDateTime());
 
         dto.setDistance(rs.getDouble("distance"));
+        dto.setDurationSeconds(rs.getLong("duration_seconds"));
         dto.setStartMileage(rs.getInt("start_mileage"));
         dto.setEndMileage(rs.getInt("end_mileage"));
         dto.setType(rs.getString("type"));

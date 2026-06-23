@@ -18,6 +18,7 @@ class Trip {
   late DateTime startTime;
   DateTime? endTime;
   late double distanceKm;
+  int durationSeconds = 0;
   late String roadSurfaceConditions;
   String? type;
 

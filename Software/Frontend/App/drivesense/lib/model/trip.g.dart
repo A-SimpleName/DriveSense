@@ -101,6 +101,11 @@ const TripSchema = CollectionSchema(
       id: 16,
       name: r'vehicleId',
       type: IsarType.long,
+    ),
+    r'durationSeconds': PropertySchema(
+      id: 17,
+      name: r'durationSeconds',
+      type: IsarType.long,
     )
   },
   estimateSize: _tripEstimateSize,
@@ -178,6 +183,7 @@ void _tripSerialize(
   writer.writeString(offsets[14], object.trackingPointsJson);
   writer.writeString(offsets[15], object.type);
   writer.writeLong(offsets[16], object.vehicleId);
+  writer.writeLong(offsets[17], object.durationSeconds);
 }
 
 Trip _tripDeserialize(
@@ -205,6 +211,7 @@ Trip _tripDeserialize(
   object.trackingPointsJson = reader.readString(offsets[14]);
   object.type = reader.readStringOrNull(offsets[15]);
   object.vehicleId = reader.readLong(offsets[16]);
+  object.durationSeconds = reader.readLong(offsets[17]);
   return object;
 }
 
@@ -248,6 +255,8 @@ P _tripDeserializeProp<P>(
     case 15:
       return (reader.readStringOrNull(offset)) as P;
     case 16:
+      return (reader.readLong(offset)) as P;
+    case 17:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');

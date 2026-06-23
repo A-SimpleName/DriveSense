@@ -14,8 +14,16 @@ class LastTripCard extends StatefulWidget {
 }
 
 class _LastTripCardState extends State<LastTripCard> {
-  Duration? get lastTripDuration =>
-      widget.lastTrip?.endTime?.difference(widget.lastTrip!.startTime);
+  Duration? get lastTripDuration {
+    final TripSummary? trip = widget.lastTrip;
+    if (trip == null) {
+      return null;
+    }
+    if (trip.durationSeconds > 0) {
+      return Duration(seconds: trip.durationSeconds);
+    }
+    return trip.endTime?.difference(trip.startTime);
+  }
 
   @override
   Widget build(BuildContext context) {

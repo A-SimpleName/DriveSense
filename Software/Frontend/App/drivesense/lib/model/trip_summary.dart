@@ -12,6 +12,7 @@ class TripSummary {
   final DateTime startTime;
   final DateTime? endTime;
   final double distanceKm;
+  final int durationSeconds;
   final String roadSurfaceConditions;
   final String? startPoint;
   final String? furthestPoint;
@@ -33,6 +34,7 @@ class TripSummary {
     required this.startTime,
     this.endTime,
     required this.distanceKm,
+    required this.durationSeconds,
     required this.roadSurfaceConditions,
     this.startPoint,
     this.furthestPoint,
@@ -57,6 +59,7 @@ class TripSummary {
       "startTime": startTime.toIso8601String(),
       "endTime": endTime?.toIso8601String(),
       "distance": distanceKm,
+      "durationSeconds": durationSeconds,
       "roadSurfaceConditions": roadSurfaceConditions,
       "startPoint": startPoint,
       "furthestPoint": furthestPoint,
@@ -83,6 +86,24 @@ class TripSummary {
       return double.tryParse(value.toString()) ?? fallback;
     }
 
+    final DateTime parsedStartTime = DateTime.parse(
+      json["startTime"].toString(),
+    );
+    final DateTime? parsedEndTime = json["endTime"] != null
+        ? DateTime.parse(json["endTime"].toString())
+        : null;
+    int parsedDurationSeconds = asInt(
+      json["durationSeconds"] ?? json["duration_seconds"],
+    );
+    if (parsedDurationSeconds <= 0 && parsedEndTime != null) {
+      parsedDurationSeconds = parsedEndTime
+          .difference(parsedStartTime)
+          .inSeconds;
+      if (parsedDurationSeconds < 0) {
+        parsedDurationSeconds = 0;
+      }
+    }
+
     return TripSummary(
       id: asInt(json["id"]),
       profileId: asInt(json["profileId"] ?? json["profile_id"]),
@@ -93,11 +114,10 @@ class TripSummary {
       accountLastName: json["accountLastName"]?.toString(),
       vehicleModel: json["vehicleModel"]?.toString(),
       protocolId: asInt(json["protocolId"] ?? json["protocol_id"]),
-      startTime: DateTime.parse(json["startTime"].toString()),
-      endTime: json["endTime"] != null
-          ? DateTime.parse(json["endTime"].toString())
-          : null,
+      startTime: parsedStartTime,
+      endTime: parsedEndTime,
       distanceKm: asDouble(json["distance"] ?? json["distanceKm"]),
+      durationSeconds: parsedDurationSeconds,
       roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
       startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
       furthestPoint: (json["furthestPoint"] ?? json["furthest_point"])
@@ -123,6 +143,14 @@ class TripSummary {
       }
     }
 
+    int durationSeconds = trip.durationSeconds;
+    if (durationSeconds <= 0 && trip.endTime != null) {
+      durationSeconds = trip.endTime!.difference(trip.startTime).inSeconds;
+      if (durationSeconds < 0) {
+        durationSeconds = 0;
+      }
+    }
+
     return TripSummary(
       id: mappedId,
       profileId: trip.profileId,
@@ -135,6 +163,7 @@ class TripSummary {
       startTime: trip.startTime,
       endTime: trip.endTime,
       distanceKm: trip.distanceKm,
+      durationSeconds: durationSeconds,
       roadSurfaceConditions: trip.roadSurfaceConditions,
       startPoint: null,
       furthestPoint: null,
@@ -158,6 +187,7 @@ class TripSummary {
     DateTime? startTime,
     DateTime? endTime,
     double? distanceKm,
+    int? durationSeconds,
     String? roadSurfaceConditions,
     String? startPoint,
     String? furthestPoint,
@@ -179,6 +209,7 @@ class TripSummary {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       distanceKm: distanceKm ?? this.distanceKm,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
       roadSurfaceConditions:
           roadSurfaceConditions ?? this.roadSurfaceConditions,
       startPoint: startPoint ?? this.startPoint,

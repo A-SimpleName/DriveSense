@@ -48,6 +48,7 @@ public class TripService {
     }
 
     public TripSummary insertTripSummary(TripSummary tripSummary) {
+        normalizeDuration(tripSummary);
         validateTripSummary(tripSummary);
 
         if (!protocolDao.isAccessibleByProfile(tripSummary.getProtocolId(), tripSummary.getProfileId())) {
@@ -171,8 +172,15 @@ public class TripService {
             return 0;
         }
         return tripSummaries.stream()
-                .filter(trip -> trip.getEndTime() != null && trip.getStartTime() != null)
-                .mapToLong(trip -> Duration.between(trip.getStartTime(), trip.getEndTime()).toMinutes())
+                .mapToLong(trip -> {
+                    if (trip.getDurationSeconds() > 0) {
+                        return trip.getDurationSeconds() / 60;
+                    }
+                    if (trip.getEndTime() != null && trip.getStartTime() != null) {
+                        return Duration.between(trip.getStartTime(), trip.getEndTime()).toMinutes();
+                    }
+                    return 0;
+                })
                 .sum();
     }
 
@@ -218,7 +226,11 @@ public class TripService {
         if (tripSummary.getType() == null) {
             tripSummary.setType(existing.getType());
         }
+        if (tripSummary.getDurationSeconds() <= 0) {
+            tripSummary.setDurationSeconds(existing.getDurationSeconds());
+        }
 
+        normalizeDuration(tripSummary);
         validateTripSummary(tripSummary);
 
         tripDao.update(tripSummary);
@@ -286,6 +298,20 @@ public class TripService {
         }
     }
 
+    private void normalizeDuration(TripSummary tripSummary) {
+        if (tripSummary.getDurationSeconds() > 0) {
+            return;
+        }
+        if (tripSummary.getStartTime() == null || tripSummary.getEndTime() == null) {
+            return;
+        }
+
+        long seconds = Duration.between(tripSummary.getStartTime(), tripSummary.getEndTime()).getSeconds();
+        if (seconds > 0) {
+            tripSummary.setDurationSeconds(seconds);
+        }
+    }
+
     private TripSummaryDto mapToDto(TripSummary t) {
         TripSummaryDto dto = new TripSummaryDto();
         dto.setId(t.getId());
@@ -294,6 +320,7 @@ public class TripService {
         dto.setStartTime(t.getStartTime());
         dto.setEndTime(t.getEndTime());
         dto.setDistance(t.getDistance());
+        dto.setDurationSeconds(t.getDurationSeconds());
         dto.setRoadSurfaceConditions(t.getRoadSurfaceConditions());
         dto.setType(t.getType());
         return dto;

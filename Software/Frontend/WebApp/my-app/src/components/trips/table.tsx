@@ -166,6 +166,7 @@ function TripsTable() {
             startTime: editValues.startTime,
             endTime: editValues.endTime,
             distance: trip.distance,
+            durationSeconds: trip.durationSeconds,
             roadSurfaceConditions: editValues.roadSurfaceConditions,
             type: editValues.type,
             startPoint: trip.startPoint,

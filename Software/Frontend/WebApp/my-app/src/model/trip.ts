@@ -13,6 +13,7 @@ export interface TripSummaryDto {
     vehicleModel: string;
     licensePlate: string;
     distance: number;
+    durationSeconds: number;
     roadSurfaceConditions: string;
     type: string;
     startPoint: string;
@@ -30,6 +31,7 @@ export interface TripSummary {
     startTime: string;
     endTime: string;
     distance: number;
+    durationSeconds: number;
     roadSurfaceConditions: string;
     type: string;
     startPoint: string;

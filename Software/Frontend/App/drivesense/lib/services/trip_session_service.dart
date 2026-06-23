@@ -526,12 +526,18 @@ class TripSessionService extends ChangeNotifier {
 
     final DateTime end = DateTime.now();
     final double distanceKm = activeDraft.distanceMeters / 1000;
+    final int durationSeconds = _currentTripDuration(activeDraft).inSeconds;
     final int endMileage = activeDraft.startMileage + distanceKm.round();
     final List<Trackingpoint> finishedTrackingPositions =
         List<Trackingpoint>.from(_trackingPositions);
     final TripSummary finishedTrip = _summaryFromActiveTrip(
       activeDraft,
-    ).copyWith(endTime: end, distanceKm: distanceKm, endMileage: endMileage);
+    ).copyWith(
+      endTime: end,
+      distanceKm: distanceKm,
+      durationSeconds: durationSeconds,
+      endMileage: endMileage,
+    );
     final TripDetailed finishedTripDetail = TripDetailed(
       summary: finishedTrip,
       trackingpoints: finishedTrackingPositions,
@@ -788,6 +794,7 @@ class TripSessionService extends ChangeNotifier {
       startTime: activeTrip.startTime,
       endTime: null,
       distanceKm: distanceKm,
+      durationSeconds: _currentTripDuration(activeTrip).inSeconds,
       roadSurfaceConditions: '',
       type: activeTrip.type,
       startMileage: activeTrip.startMileage,
@@ -836,6 +843,9 @@ class TripSessionService extends ChangeNotifier {
       endPoint: syncedSummary.endPoint ?? fallback.endPoint,
       type: syncedSummary.type ?? fallback.type,
       endTime: syncedSummary.endTime ?? fallback.endTime,
+      durationSeconds: syncedSummary.durationSeconds > 0
+          ? syncedSummary.durationSeconds
+          : fallback.durationSeconds,
       distanceKm: syncedSummary.distanceKm > 0 || fallback.distanceKm <= 0
           ? syncedSummary.distanceKm
           : fallback.distanceKm,

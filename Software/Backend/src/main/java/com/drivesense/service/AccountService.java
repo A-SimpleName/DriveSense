@@ -31,7 +31,7 @@ public class AccountService {
 
     public AccountResponse signUp(SignUpRequest request) {
         // Inline-Feldfehler → erscheint direkt beim E-Mail-Feld im Frontend
-        if (accountDao.getByEmailIncludeDeleted(request.getEmail()) != null || accountDao.existsByPendingEmail(request.getEmail())) {
+        if (accountDao.getByEmail(request.getEmail()) != null || accountDao.existsByPendingEmail(request.getEmail())) {
             throw new FieldValidationException("email", "Email ist bereits vergeben");
         }
         String hashedPwd = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
@@ -157,7 +157,7 @@ public class AccountService {
         }
 
         // Prüfen ob bereits ein anderer Account diese E-Mail als primäre Adresse hat
-        if (accountDao.getByEmailIncludeDeleted(newEmail) != null) {
+        if (accountDao.getByEmail(newEmail) != null) {
             throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben");
         }
 

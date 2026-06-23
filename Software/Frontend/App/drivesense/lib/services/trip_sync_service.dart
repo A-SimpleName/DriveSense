@@ -90,6 +90,7 @@ class TripSyncService {
       ..protocolId = trip.protocolId
       ..startTime = trip.startTime
       ..endTime = trip.endTime
+      ..durationSeconds = trip.durationSeconds
       ..distanceKm = trip.distanceKm
       ..roadSurfaceConditions = trip.roadSurfaceConditions
       ..type = trip.type
@@ -129,6 +130,7 @@ class TripSyncService {
     int accountId,
   ) async {
     final double fallbackDistanceKm = localTrip.distanceKm;
+    final int fallbackDurationSeconds = localTrip.durationSeconds;
     final String fallbackRoadSurfaceConditions =
         localTrip.roadSurfaceConditions;
     final int fallbackStartMileage = localTrip.startMileage;
@@ -158,6 +160,9 @@ class TripSyncService {
         : localTrip.protocolId;
     localTrip.startTime = syncedSummary.startTime;
     localTrip.endTime = syncedSummary.endTime ?? localTrip.endTime;
+    localTrip.durationSeconds = syncedSummary.durationSeconds > 0
+        ? syncedSummary.durationSeconds
+        : fallbackDurationSeconds;
     localTrip.distanceKm =
         syncedSummary.distanceKm > 0 || fallbackDistanceKm <= 0
         ? syncedSummary.distanceKm

@@ -383,6 +383,9 @@ class TripService {
         endPoint: detail.summary.endPoint ?? fallbackSummary.endPoint,
         type: detail.summary.type ?? fallbackSummary.type,
         endTime: detail.summary.endTime ?? fallbackSummary.endTime,
+        durationSeconds: detail.summary.durationSeconds > 0
+            ? detail.summary.durationSeconds
+            : fallbackSummary.durationSeconds,
         distanceKm:
             detail.summary.distanceKm > 0 || fallbackSummary.distanceKm <= 0
             ? detail.summary.distanceKm
@@ -432,6 +435,7 @@ class TripService {
       'startTime': _toBackendLocalDateTime(tripSummary.startTime),
       'endTime': _toBackendLocalDateTime(tripSummary.endTime!),
       'distance': tripSummary.distanceKm,
+      'durationSeconds': _durationSecondsFor(tripSummary),
       'roadSurfaceConditions': tripSummary.roadSurfaceConditions,
       'startPoint': tripSummary.startPoint,
       'furthestPoint': tripSummary.furthestPoint,
@@ -456,6 +460,18 @@ class TripService {
     final String ss = local.second.toString().padLeft(2, '0');
     final String ms = local.millisecond.toString().padLeft(3, '0');
     return '$y-$m-${d}T$hh:$mm:$ss.$ms';
+  }
+
+  int _durationSecondsFor(TripSummary tripSummary) {
+    if (tripSummary.durationSeconds > 0) {
+      return tripSummary.durationSeconds;
+    }
+    final DateTime? endTime = tripSummary.endTime;
+    if (endTime == null) {
+      return 0;
+    }
+    final int seconds = endTime.difference(tripSummary.startTime).inSeconds;
+    return seconds > 0 ? seconds : 0;
   }
 
   Future<http.Response> _postTrackingpoints(
@@ -698,6 +714,7 @@ class TripService {
     trip.protocolId = protocolId;
     trip.startTime = summary.startTime;
     trip.endTime = summary.endTime;
+    trip.durationSeconds = summary.durationSeconds;
     trip.distanceKm = summary.distanceKm > 0 || existing == null
         ? summary.distanceKm
         : existing.distanceKm;
@@ -809,6 +826,9 @@ class TripService {
           ? serverSummary.protocolId
           : localTrip.protocolId,
       endTime: serverSummary.endTime ?? localTrip.endTime,
+      durationSeconds: serverSummary.durationSeconds > 0
+          ? serverSummary.durationSeconds
+          : localTrip.durationSeconds,
       distanceKm: serverSummary.distanceKm > 0 || localTrip.distanceKm <= 0
           ? serverSummary.distanceKm
           : localTrip.distanceKm,

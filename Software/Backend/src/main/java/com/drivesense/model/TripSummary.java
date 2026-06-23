@@ -21,6 +21,8 @@ public class TripSummary {
     private LocalDateTime endTime;
     @Min(value = 0, message = "Distanz darf nicht negativ sein")
     private double distance;
+    @Min(value = 0, message = "Dauer darf nicht negativ sein")
+    private long durationSeconds;
     private String roadSurfaceConditions;
     private String type;
 
@@ -109,6 +111,14 @@ public class TripSummary {
         this.distance = distance;
     }
 
+    public long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(long durationSeconds) {
+        this.durationSeconds = durationSeconds;
+    }
+
     public String getRoadSurfaceConditions() {
         return roadSurfaceConditions;
     }
@@ -175,6 +185,7 @@ public class TripSummary {
                 ", startTime: " + startTime +
                 ", endTime: " + endTime +
                 ", distance: " + distance +
+                ", durationSeconds: " + durationSeconds +
                 ", road_surface_conditions: '" + roadSurfaceConditions + '\'' +
                 ", type: '" + type + '\'' +
                 ", startPoint: " + startPoint +

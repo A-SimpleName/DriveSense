@@ -19,6 +19,7 @@ public class TripSummaryDto {
     private String furthestPoint;
     private String endPoint;
     private double distance;
+    private long durationSeconds;
     private String protocolName;
     private String roadSurfaceConditions;
     private String type;
@@ -179,5 +180,13 @@ public class TripSummaryDto {
 
     public void setDistance(double distance) {
         this.distance = distance;
+    }
+
+    public long getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(long durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 }

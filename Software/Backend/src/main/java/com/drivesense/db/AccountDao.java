@@ -37,6 +37,9 @@ public class AccountDao {
             if (rs.next()) acc.setId(rs.getInt(1));
             return acc;
         } catch (SQLException e) {
+            if ("23000".equals(e.getSQLState())) {
+                throw new BadRequestException("Diese E-Mail-Adresse ist bereits vergeben");
+            }
             throw new DatabaseException("Fehler beim Speichern des Accounts", e);
         }
     }
@@ -266,7 +269,14 @@ public class AccountDao {
      * (dank RESTRICT / SET NULL auf den Foreign Keys).
      */
     public void softDelete(int id) {
-        String sql = "UPDATE account SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL";
+        String sql = """
+            UPDATE account
+            SET email = NULL,
+                pending_email = NULL,
+                deleted_at = NOW()
+            WHERE id = ?
+              AND deleted_at IS NULL
+            """;
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
