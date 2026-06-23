@@ -8,6 +8,7 @@ import { ConfirmationDialog } from "../ConfirmationDialog";
 import { VehicleMembers } from "./VehicleMembers";
 import { InviteVehicleMemberForm } from "./InviteVehicleMemberForm";
 import { TableSkeleton } from "../loadingSkeleton";
+import { useDragScroll } from "../../hooks/useDragScroll";
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -26,6 +27,8 @@ function VehiclesTable() {
 
     const [membersVehicle, setMembersVehicle] = useState<Vehicle | null>(null);
     const [membersReloadKey, setMembersReloadKey] = useState(0);
+
+    const dragScroll = useDragScroll<HTMLDivElement>();
 
     useEffect(() => {
         setLoading(true);
@@ -99,7 +102,11 @@ function VehiclesTable() {
                 </span>
             </div>
 
-            <div>
+            <div
+                ref={dragScroll.ref}
+                className="page-table-wrapper--scrollable"
+                {...dragScroll.handlers}
+            >
                 <table>
                     <thead>
                         <tr>

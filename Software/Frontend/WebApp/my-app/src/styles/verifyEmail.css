@@ -183,6 +183,23 @@
   text-decoration: none;
 }
 
+.verify-email-back {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--verify-text-soft);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  margin-top: 6px;
+}
+
+.verify-email-back:hover {
+  text-decoration: underline;
+  color: #64748b;
+}
+
 .verify-email-success {
   margin: 0;
   padding: 12px 14px;

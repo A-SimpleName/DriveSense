@@ -4,9 +4,10 @@ import "../styles/verifyEmail.css";
 
 interface Props {
     onVerified: () => void;
+    onCancel?: () => void;
 }
 
-export default function VerifyEmailPage({ onVerified }: Props) {
+export default function VerifyEmailPage({ onVerified, onCancel }: Props) {
     const [code, setCode] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -104,6 +105,16 @@ export default function VerifyEmailPage({ onVerified }: Props) {
                         >
                             Code erneut senden
                         </button>
+
+                        {onCancel && (
+                            <button
+                                type="button"
+                                className="verify-email-back"
+                                onClick={onCancel}
+                            >
+                                Zurück
+                            </button>
+                        )}
                     </form>
                 </div>
             </div>

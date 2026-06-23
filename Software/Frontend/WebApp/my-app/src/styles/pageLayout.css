@@ -48,6 +48,20 @@
     overflow: hidden;
 }
 
+/* Opt-in für Tabellen mit vielen Spalten, die auf schmalen Bildschirmen
+   horizontal scrollbar sein sollen (Maus-Drag, Touch, Mausrad via
+   useDragScroll), statt Inhalte umzubrechen oder abzuschneiden. */
+.page-table-wrapper--scrollable {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
+.page-table-wrapper--scrollable th,
+.page-table-wrapper--scrollable td {
+    white-space: nowrap;
+}
+
 .page-table-wrapper table {
     width: 100%;
     border-collapse: collapse;
