@@ -1,22 +1,34 @@
 package com.drivesense.db;
 
-import com.drivesense.App;
+import com.drivesense.DbConnection;
+import com.drivesense.exceptions.*;
 import com.drivesense.model.Protocol;
+import com.drivesense.model.UserGroup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Repository
 public class ProtocolDao {
 
-    public static void insertProtocol(Protocol protocol) {
-        String sql = "INSERT INTO protocol (tracking_id, road_surface_conditions) VALUES (?,?)";
-        try (Connection conn = App.getConnection();
+    @Autowired
+    private DbConnection dbConnection;
+
+    public Protocol insert(Protocol protocol) {
+        String sql = "INSERT INTO protocol (created_by_profile_id, usergroup_id,name) VALUES (?,?,?)";
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt(1,protocol.getTracking_id());
-            ps.setString(2,protocol.getRoad_surface_conditions());
+            ps.setInt(1,protocol.getCreatedByProfileId());
+            if (protocol.getUsergroupId() != null) {
+                ps.setInt(2, protocol.getUsergroupId());
+            } else {
+                ps.setNull(2, Types.INTEGER);
+            }
+            ps.setString(3,protocol.getName());
 
 
             ps.executeUpdate();
@@ -24,16 +36,38 @@ public class ProtocolDao {
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 protocol.setId(rs.getInt(1));
+                return protocol;
             }
+            return null;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim speichern des Protokolls", e);
         }
     }
 
-    public static Protocol findById(int id) {
+    public List<Protocol> getByProfileId(int createdByProfileId) {
+        String sql = "SELECT * FROM protocol WHERE created_by_profile_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, createdByProfileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Protocol> protocols = new ArrayList<>();
+            while (rs.next()) {
+                protocols.add(map(rs));
+            }
+            return protocols;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
+        }
+    }
+
+    public Protocol getById(int id) {
         String sql = "SELECT * FROM protocol WHERE id = ?";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
@@ -42,19 +76,67 @@ public class ProtocolDao {
             if (rs.next()) {
                 return map(rs);
             }
-
             return null;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
         }
     }
 
-    public static List<Protocol> findAll () {
+    public List<Protocol> getByGroup(int usergroupId) {
+        String sql = "SELECT * FROM protocol WHERE usergroup_id = ?";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, usergroupId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Protocol> protocols = new ArrayList<>();
+            while (rs.next()) {
+                protocols.add(map(rs));
+            }
+            return protocols;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
+        }
+    }
+
+    public List<Protocol> getAllByProfileId(int profileId) {
+        String sql = """
+            SELECT p.*
+            FROM protocol p
+            WHERE p.created_by_profile_id = ?
+            OR EXISTS (
+                SELECT 1
+                FROM profile_usergroup pug
+                WHERE pug.usergroup_id = p.usergroup_id
+                AND pug.profile_id = ?
+            )
+            """;
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, profileId);
+            ps.setInt(2,profileId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Protocol> protocols = new ArrayList<>();
+            while (rs.next()) {
+                protocols.add(map(rs));
+            }
+            return protocols;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden des Protokolls", e);
+        }
+    }
+
+    public List<Protocol> getAll () {
         String sql = "SELECT * FROM protocol";
 
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
@@ -65,41 +147,72 @@ public class ProtocolDao {
             return protocols;
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return null;
+            throw new DatabaseException("Fehler beim laden der Protokolle", e);
         }
     }
 
-    public static void update(Protocol protocol) {
-        String sql = "UPDATE protocol SET road_surface_conditions = ? WHERE id = ?";
-        try (Connection conn = App.getConnection();
+    public void update(Protocol protocol) {
+        String sql = "UPDATE protocol SET name = ? WHERE id = ?";
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, protocol.getRoad_surface_conditions());
+            ps.setString(1, protocol.getName());
             ps.setInt(2,protocol.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim Aktualisieren des Protokolls", e);
         }
     }
 
-    public static void deleteById(int id) {
+    public void deleteById(int id) {
         String sql = "DELETE FROM protocol WHERE id = ?";
-        try (Connection conn = App.getConnection();
+        try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1,id);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new DatabaseException("Fehler beim löschen des Protokolls", e);
         }
     }
 
-    public static Protocol map(ResultSet rs) throws SQLException {
+    public boolean isAccessibleByProfile(int protocolId, int profileId) {
+        String sql = """
+            SELECT 1
+            FROM protocol p
+            WHERE p.id = ?
+              AND (
+                    p.created_by_profile_id = ?
+                    OR EXISTS (
+                        SELECT 1
+                        FROM profile_usergroup pug
+                        WHERE pug.usergroup_id = p.usergroup_id
+                          AND pug.profile_id = ?
+                    )
+                  )
+            """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, protocolId);
+            ps.setInt(2, profileId);
+            ps.setInt(3, profileId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Prüfen des Protokollzugriffs", e);
+        }
+    }
+
+    private Protocol map(ResultSet rs) throws SQLException {
         Protocol protocol = new Protocol();
         protocol.setId(rs.getInt("id"));
-        protocol.setTracking_id(rs.getInt("tracking_id"));
-        protocol.setRoad_surface_conditions(rs.getString("road_surface_conditions"));
+        protocol.setCreatedByProfileId(rs.getInt("created_by_profile_id"));
+        protocol.setCreated_at(rs.getTimestamp("created_at").toLocalDateTime());
+        protocol.setUsergroupId(rs.getObject("usergroup_id", Integer.class));
+        protocol.setName(rs.getString("name"));
         return protocol;
     }
 }

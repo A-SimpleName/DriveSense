@@ -1,21 +1,31 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.*;
+
 import java.time.LocalDateTime;
 
 public class Trackingpoint {
     private int id;
-    private int tracking_id;
+    @Min(value = 1, message = "Trip ID muss größer als 0 sein")
+    private int tripId;
+    @NotNull(message = "Latitude darf nicht null sein")
+    @DecimalMin(value = "-90.0", message = "Latitude muss zwischen -90 und 90 sein")
+    @DecimalMax(value = "90.0", message = "Latitude muss zwischen -90 und 90 sein")
     private double lat;
+    @NotNull(message = "Longitude darf nicht null sein")
+    @DecimalMin(value = "-180.0", message = "Longitude muss zwischen -180 und 180 sein")
+    @DecimalMax(value = "180.0", message = "Longitude muss zwischen -180 und 180 sein")
     private double lng;
     private double accuracy;
     private double speed;
     private double bearing;
+    @PastOrPresent(message = "Timestamp darf nicht in der Zukunft liegen")
     private LocalDateTime timestamp;
 
     public Trackingpoint(){}
 
-    public Trackingpoint(int tracking_id, double lat, double accuracy, double lng, double speed, double bearing, LocalDateTime timestamp) {
-        this.tracking_id = tracking_id;
+    public Trackingpoint(int tripId, double lat, double accuracy, double lng, double speed, double bearing, LocalDateTime timestamp) {
+        this.tripId = tripId;
         this.lat = lat;
         this.accuracy = accuracy;
         this.lng = lng;
@@ -32,12 +42,12 @@ public class Trackingpoint {
         this.id = id;
     }
 
-    public int getTracking_id() {
-        return tracking_id;
+    public int getTripId() {
+        return this.tripId;
     }
 
-    public void setTracking_id(int tracking_id) {
-        this.tracking_id = tracking_id;
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
     }
 
     public double getLat() {
@@ -92,7 +102,7 @@ public class Trackingpoint {
     public String toString() {
         return "Trackingpoint: " +
                 "id: " + id +
-                ", tracking_id: " + tracking_id +
+                ", trip_id: " + tripId +
                 ", lat: " + lat +
                 ", lng: " + lng +
                 ", accuracy: " + accuracy +

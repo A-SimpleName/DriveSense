@@ -1,26 +1,34 @@
+import 'package:drivesense/model/trip_summary.dart';
+import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/widgets/protocol_trip_fields.dart';
+import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/constants/app_colors.dart';
 
 class LastTripCard extends StatefulWidget {
-  const LastTripCard({super.key});
+  final TripSummary? lastTrip;
+
+  const LastTripCard({super.key, required this.lastTrip});
 
   @override
   State<LastTripCard> createState() => _LastTripCardState();
 }
 
 class _LastTripCardState extends State<LastTripCard> {
-  final int? lastTripId = 1;
-  final double lastTripDistance = 7812.0;
-  final Duration lastTripDuration = const Duration(
-    hours: 0,
-    minutes: 15,
-    seconds: 42,
-  );
+  Duration? get lastTripDuration {
+    final TripSummary? trip = widget.lastTrip;
+    if (trip == null) {
+      return null;
+    }
+    if (trip.durationSeconds > 0) {
+      return Duration(seconds: trip.durationSeconds);
+    }
+    return trip.endTime?.difference(trip.startTime);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.primaryPurple.withValues(alpha: 0.4),
+      color: AppColors.primaryBlue.withAlpha(77),
       elevation: 0,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: Colors.black),
@@ -43,28 +51,41 @@ class _LastTripCardState extends State<LastTripCard> {
                 Text(''),
                 Text('Distanz: '),
                 Text(
-                  lastTripId != null
-                      ? '${(lastTripDistance / 1000).toStringAsFixed(2)} km'
+                  widget.lastTrip != null
+                      ? '${widget.lastTrip!.distanceKm.toStringAsFixed(2)} km'
                       : '--',
                 ),
                 Text('Zeit: '),
                 Text(
-                  lastTripId != null
+                  widget.lastTrip?.endTime != null && lastTripDuration != null
                       ? lastTripDuration.toString().split('.').first
+                      : '--',
+                ),
+                Text('Start-km: '),
+                Text(
+                  widget.lastTrip != null
+                      ? formatProtocolMileage(widget.lastTrip!.startMileage)
+                      : '--',
+                ),
+                Text('End-km: '),
+                Text(
+                  widget.lastTrip != null
+                      ? formatProtocolMileage(widget.lastTrip!.endMileage)
                       : '--',
                 ),
               ],
             ),
             Align(
               alignment: Alignment.center,
-              child: ElevatedButton(
-                onPressed: () => {
-                  // Todo: navigate to trip details page for last Trip
-                },
+              child: ElevatedButton.icon(
+                onPressed: widget.lastTrip == null
+                    ? null
+                    : () => showTripDetailDialog(context, widget.lastTrip!),
+                icon: const Icon(Icons.info_outline),
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: Text('Details'),
+                label: const Text('Details'),
               ),
             ),
           ],

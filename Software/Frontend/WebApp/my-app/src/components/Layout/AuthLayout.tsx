@@ -1,23 +1,21 @@
+import { Outlet } from "react-router-dom";
 import Footer from "./footer";
 import Topbar from "./topbar";
+import MobileWarningBanner from "./MobileWarningBanner";
+import "../../styles/mobileWarningBanner.css";
 
-type AuthLayoutProps = {
-  children: React.ReactNode;
-  onLogout: () => void;
-};
 
-function AuthLayout({ children, onLogout }: AuthLayoutProps) {
-
-    return ( 
+export function AuthLayout() {
+    return (
         <div className="app-container">
-            <Topbar onLogout={onLogout} />
+            <MobileWarningBanner />
+            <Topbar />
             <main className="main-content">
-                {children}
+                <Outlet />
             </main>
             <Footer />
-        </div> 
+        </div>
     );
 }
 
 export default AuthLayout;
-

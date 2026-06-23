@@ -1,11 +1,21 @@
 import http from "../api/httpService";
-import type { Account } from "../model/account";
+import { toAppError } from "../errorHandling/errorHandling";
+import type { AccountResponse } from "../model/account";
 
-export const getAllAccounts = () => http.get<Account[]>("/accounts");
-export const getAccountById = (id: number) => http.get<Account>(`/accounts/${id}`);
-export const createAccount = (account: Omit<Account, "id">) => http.post("/accounts", account);
-export const updateAccount = (id: number, account: Omit<Account, "id">) => http.put(`/accounts/${id}`, account);
-export const deleteAccount = (id: number) => http.delete(`/accounts/${id}`);
+async function handleRequest<T>(request: Promise<T>): Promise<T> {
+    try {
+        return await request;
+    } catch (err: any) {
+        throw toAppError(err);
+    }
+}
+
+export const getCurrentAccount = () => handleRequest(http.get<AccountResponse>("/account/me"));
+export const updateAccount = (firstName: string, lastName: string) => handleRequest(http.put(`/account`, { firstName, lastName }));
+export const cancelEmailChange = () => handleRequest(http.delete("/account/change-email"));
+export const deleteAccount = () => handleRequest(http.delete(`/account`));
+export const requestEmailChange = (newEmail: string) => handleRequest(http.post(`/account/change-email`, { newEmail }));
+export const confirmEmailChange = (code: string) => handleRequest(http.post(`/account/confirm-email-change`, { code }));
 
 
 

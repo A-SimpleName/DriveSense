@@ -1,56 +1,132 @@
-import 'package:drivesense/pages/login_page.dart';
+import 'package:drivesense/pages/profile_select_page.dart';
+import 'package:drivesense/pages/imprint_page.dart';
+import 'package:drivesense/pages/privacy_policy_page.dart';
+import 'package:drivesense/pages/sign_in_page.dart';
+import 'package:drivesense/pages/forgot_password_page.dart';
 import 'package:drivesense/pages/sign_up_page.dart';
 import 'package:flutter/material.dart';
 import 'package:drivesense/pages/main_page.dart';
-import 'package:drivesense/services/login_and_register.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
+import 'package:drivesense/services/trip_tracking_service.dart';
+import 'package:drivesense/config/app_colors.dart';
 import 'package:flutter/services.dart';
+import 'package:drivesense/services/isar_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:drivesense/pages/account_page.dart';
+import 'package:drivesense/pages/change_password_page.dart';
+import 'package:drivesense/pages/reset_password_page.dart';
+import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/auth_http_client.dart';
+import 'package:drivesense/services/deep_link_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  String token = "abc"; // TODO: get token from secure storage
+  TripTrackingService.initializeForegroundTask();
+  await dotenv.load(fileName: '.env');
+  await IsarService.getInstance();
+  await AuthHttpClient.restoreSession();
+  final String token = RuntimeStore.getAuthToken() ?? '';
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(MyApp(token: token,));
+  runApp(MyApp(token: token));
 }
 
-class MyApp extends StatelessWidget {
+/// Root widget that wires restored session state into the initial route.
+class MyApp extends StatefulWidget {
+  /// Restored account token, if a previous session is available.
   final String? token;
 
   const MyApp({super.key, this.token});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.initialize();
+    });
+  }
+
+  @override
+  void dispose() {
+    DeepLinkService.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DriveSense',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryDarkBlue),
       ),
-      initialRoute: LoginAndRegister.redirectToHome(token: token),
+      initialRoute: SignInAndSignUp.redirectToProfileSelectPage(
+        token: widget.token,
+      ),
+      onGenerateRoute: _generateRoute,
       routes: {
         'MainPage': (context) => const MainPage(),
-        'LoginPage': (context) => const LoginPage(),
-        'RegisterPage': (context) => const SignUpPage(),
+        'SignInPage': (context) => const SignInPage(),
+        'SignUpPage': (context) => const SignUpPage(),
+        'ForgotPasswordPage': (context) => const ForgotPasswordPage(),
+        'ProfileSelectPage': (context) => const ProfileSelectPage(),
+        'AccountPage': (context) => const AccountPage(),
+        'ChangePasswordPage': (context) => const ChangePasswordPage(),
+        'ImprintPage': (context) => const ImprintPage(),
+        'PrivacyPolicyPage': (context) => const PrivacyPolicyPage(),
+        'ResetPasswordPage': (context) {
+          final Map<String, String> args =
+              ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+          return ResetPasswordPage(email: args['email']!, code: args['code']!);
+        },
       },
     );
+  }
+
+  Route<dynamic>? _generateRoute(RouteSettings settings) {
+    final String routeName = settings.name ?? '';
+    final Uri? uri = Uri.tryParse(routeName);
+
+    if (uri != null && _isInviteRoute(uri)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        DeepLinkService.handleUri(uri);
+      });
+
+      return MaterialPageRoute<void>(
+        settings: RouteSettings(
+          name: SignInAndSignUp.redirectToProfileSelectPage(
+            token: widget.token,
+          ),
+        ),
+        builder: (BuildContext context) {
+          if ((widget.token ?? '').isEmpty) {
+            return const SignInPage();
+          }
+          return const ProfileSelectPage();
+        },
+      );
+    }
+
+    return null;
+  }
+
+  bool _isInviteRoute(Uri uri) {
+    final bool isRelativeInvite = uri.path == '/invite';
+    final bool isWebInvite =
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host == 'drivesense.htl-perg.ac.at' &&
+        uri.path == '/invite';
+    final bool isCustomInvite =
+        uri.scheme == 'drivesense' && uri.host == 'invite';
+
+    return isRelativeInvite || isWebInvite || isCustomInvite;
   }
 }

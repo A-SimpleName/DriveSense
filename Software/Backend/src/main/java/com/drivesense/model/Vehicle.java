@@ -1,68 +1,53 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
+
 public class Vehicle {
     private int id;
-    private int userId;
+
+    @NotBlank(message = "Model darf nicht leer sein")
+    @Size(max = 150, message = "Model darf maximal 150 Zeichen haben")
     private String model;
-    private String licenseplate;
+
+    @NotBlank(message = "Kennzeichen darf nicht leer sein")
+    @Size(max = 20, message = "Kennzeichen darf maximal 20 Zeichen haben")
+    private String licensePlate;
+
+    @Min(value = 0, message = "Kilometerstand darf nicht negativ sein")
     private int mileage;
+
+    private LocalDateTime deletedAt;
 
     public Vehicle() {}
 
-    public Vehicle(int userId, String model, String licenseplate, int mileage) {
-        this.userId = userId;
-        this.model = model;
-        this.licenseplate = licenseplate;
-        this.mileage = mileage;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getId() {
-        return id;
-    }
+    public String getModel() { return model; }
+    public void setModel(String model) { this.model = model; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getLicensePlate() { return licensePlate; }
+    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 
-    public int getUserId() {
-        return userId;
-    }
+    public int getMileage() { return mileage; }
+    public void setMileage(int mileage) { this.mileage = mileage; }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
-    public String getModel() {
-        return model;
-    }
+    public boolean isDeleted() { return deletedAt != null; }
 
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public String getLicenseplate() {
-        return licenseplate;
-    }
-
-    public void setLicenseplate(String licenseplate) {
-        this.licenseplate = licenseplate;
-    }
-
-    public int getMileage() {
-        return mileage;
-    }
-
-    public void setMileage(int mileage) {
-        this.mileage = mileage;
-    }
 
     @Override
     public String toString() {
         return "Vehicle: " +
                 "id: " + id +
-                ", userId: " + userId +
                 ", model: '" + model + '\'' +
-                ", licenseplate: '" + licenseplate + '\'' +
+                ", licensePlate: '" + licensePlate + '\'' +
                 ", mileage: " + mileage;
     }
 }

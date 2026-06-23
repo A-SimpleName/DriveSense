@@ -1,21 +1,60 @@
+import type { ReactNode } from 'react';
 import '../styles/button.css';
 
 type ButtonProps = {
+  className?: string;
   label: string;
   type?: "button" | "submit" | "reset";
+  title?: string;
   onClick?: () => void;
   stopPropagation?: boolean;
+  loading?: boolean;
+  disabled?: boolean;
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
 };
 
-export function Button({ label, type, onClick, stopPropagation = false }: ButtonProps) {
+function ButtonSpinnerInline() {
   return (
-    <button type={type} onClick={(e) => {
-      if (stopPropagation) {
-        e.stopPropagation();
+    <span
+      style={{
+        display: "inline-block",
+        width: "12px",
+        height: "12px",
+        border: "2px solid rgba(255,255,255,0.35)",
+        borderTopColor: "currentColor",
+        borderRadius: "50%",
+        animation: "spin 0.6s linear infinite",
+        verticalAlign: "middle",
+        marginRight: "6px",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+export function Button({ className, label, type = "button", title, onClick, stopPropagation = false, loading = false, disabled, icon, iconPosition = "left" }: ButtonProps) {
+  return (
+    <button
+      className={className}
+      type={type}
+      title={title}
+      disabled={disabled ?? loading}
+      onClick={(e) => {
+        if (stopPropagation) {
+          e.stopPropagation();
+        }
         onClick?.();
-      }
-      }}>
+      }}
+    >
+      {loading && <ButtonSpinnerInline />}
+      {!loading && icon && iconPosition === "left" && (
+        <span className="button-icon button-icon-left">{icon}</span>
+      )}
       {label}
+      {!loading && icon && iconPosition === "right" && (
+        <span className="button-icon button-icon-right">{icon}</span>
+      )}
     </button>
   );
 }

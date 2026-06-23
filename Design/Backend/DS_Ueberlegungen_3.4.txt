@@ -1,0 +1,184 @@
+DriveSense – ER-Diagramm Beschreibung 3.1
+*******************************************************
+
+
+Systemübersicht
+===============================================
+Das System DriveSense verwaltet:
+
+
+Accounts
+Benutzerprofile (Profile)
+Fahrzeuge
+Fahrten (Trip)
+GPS-Trackingpunkte
+Protokolle
+Gruppen
+Gruppenmitgliedschaften
+Fahrzeugberechtigungen
+Ein Account kann mehrere Profile enthalten.
+Ein Profile kann mehreren Gruppen angehören und mehrere Fahrzeuge nutzen.
+Eine Fahrt gehört zu genau einem Profile und einem Fahrzeug.
+Ein Protokoll kann einer Fahrt zugeordnet sein und optional mit einer Gruppe geteilt werden.
+
+
+Entitäten und Attribute
+===============================================
+
+2.1 ACCOUNT
+-----------------------------------------------------------------
+Speichert die Hauptzugangsdaten.
+Attribute:
+ID (Primary Key)
+FNAME
+LNAME
+EMAIL
+PWD
+CREATED_AT
+BIRTHDATE
+Beziehung:
+ACCOUNT (1) —— (n) PROFILE
+Ein Account kann mehrere Profile besitzen.
+
+2.2 PROFILE
+-----------------------------------------------------------------
+Repräsentiert ein Benutzerprofil innerhalb eines Accounts.
+Attribute:
+ID (Primary Key)
+NAME
+ROLE
+ACCOUNT_ID (Foreign Key → ACCOUNT.ID)
+Beziehungen:
+PROFILE gehört zu genau einem ACCOUNT
+PROFILE kann mehrere TRIPS durchführen
+PROFILE kann mehreren GROUPS angehören (über PROFILE_USERGROUP)
+PROFILE kann mehrere VEHICLES nutzen (über PROFILE_VEHICLE)
+
+2.3 VEHICLE
+-----------------------------------------------------------------
+Speichert Fahrzeugdaten.
+Attribute:
+ID (Primary Key)
+MODEL
+LICENSEPLATE
+MILEAGE
+CREATED_AT
+Beziehungen:
+VEHICLE kann mehreren PROFILES zugeordnet sein (über PROFILE_VEHICLE)
+
+2.4 PROFILE_VEHICLE
+-----------------------------------------------------------------
+Verknüpfungstabelle zwischen PROFILE und VEHICLE.
+Attribute:
+PROFILE_ID (FK → PROFILE.ID)
+VEHICLE_ID (FK → VEHICLE.ID)
+ROLE (OWNER, CO_OWNER, DRIVER)
+CREATED_AT
+Beziehung:
+PROFILE (n) —— (m) VEHICLE
+Logische Bedeutung:
+ROLE definiert Berechtigungen innerhalb eines Fahrzeugs.
+OWNER ist die höchste Berechtigungsstufe.
+CO_OWNER hat eingeschränkte Verwaltungsrechte.
+DRIVER hat nur Nutzungsrechte.
+
+2.5 TRIP (ehemals TRACKING)
+-----------------------------------------------------------------
+Speichert eine einzelne Fahrt.
+Attribute:
+ID (Primary Key)
+PROFILE_ID (FK → PROFILE.ID)
+VEHICLE_ID (FK → VEHICLE.ID)
+STARTTIME
+ENDTIME
+DISTANCE
+ROAD_SURFACE_CONDITIONS
+TYPE
+PROTOCOL_ID (FK → PROTOCOL.ID, optional)
+START_POINT
+END_POINT
+FURTHEST_POINT
+START_MILEAGE
+END_MILEAGE
+Beziehungen:
+TRIP gehört genau einem PROFILE
+TRIP verwendet genau ein VEHICLE
+TRIP kann ein PROTOCOL haben
+TRIP besitzt mehrere TRACKINGPOINTS
+Logische Regel:
+Ein TRIP darf nur erstellt werden, wenn das VEHICLE dem PROFILE über PROFILE_VEHICLE zugeordnet ist.
+
+2.6 TRACKINGPOINT
+-----------------------------------------------------------------
+Speichert GPS-Datenpunkte einer Fahrt.
+Attribute:
+ID (Primary Key)
+TRIP_ID (FK → TRIP.ID)
+LAT
+LNG
+ACCURACY
+SPEED
+BEARING
+TIMESTAMP
+Beziehung:
+TRIP (1) —— (n) TRACKINGPOINT
+
+2.7 PROTOCOL
+-----------------------------------------------------------------
+Speichert zusätzliche Fahrinformationen.
+Attribute:
+ID (Primary Key)
+CREATED_BY_PROFILE_ID (FK → PROFILE.ID)
+USERGROUP_ID (FK → USERGROUP.ID, optional)
+CREATED_AT
+NAME
+Beziehungen:
+PROTOCOL wird von einem PROFILE erstellt
+PROTOCOL kann einer GROUP zugeordnet sein
+PROTOCOL kann mehreren TRIPS zugeordnet werden (indirekt über TRIP.PROTOCOL_ID)
+
+2.8 USERGROUP
+-----------------------------------------------------------------
+Repräsentiert eine Benutzergruppe.
+Attribute:
+ID (Primary Key)
+NAME
+OWNER_ID (FK → PROFILE.ID)
+Beziehungen:
+USERGROUP hat genau einen OWNER
+USERGROUP hat mehrere PROFILE (über PROFILE_USERGROUP)
+
+2.9 PROFILE_USERGROUP
+-----------------------------------------------------------------
+Verknüpfung zwischen PROFILE und USERGROUP.
+Attribute:
+PROFILE_ID (FK → PROFILE.ID)
+USERGROUP_ID (FK → USERGROUP.ID)
+GROUP_ROLE (OWNER, ADMIN, MEMBER)
+Beziehung:
+PROFILE (n) —— (m) USERGROUP
+
+
+Kardinalitäten (Zusammenfassung)
+=================================================
+
+
+ACCOUNT (1) —— (n) PROFILE
+PROFILE (n) —— (m) VEHICLE
+PROFILE (1) —— (n) TRIP
+VEHICLE (1) —— (n) TRIP
+TRIP (1) —— (n) TRACKINGPOINT
+TRIP (n) —— (1) PROTOCOL (optional)
+PROFILE (n) —— (m) USERGROUP
+
+
+Logische Integritätsregeln
+===========================================
+
+
+Ein TRIP darf nur ein VEHICLE verwenden, das dem PROFILE zugeordnet ist (über PROFILE_VEHICLE).
+Ein PROTOCOL darf nur existieren, wenn das erstellende PROFILE existiert.
+Wird ein TRIP gelöscht, sollten TRACKINGPOINTS gelöscht werden (Cascade sinnvoll).
+PROFILE_USERGROUP darf nur existieren, wenn PROFILE und USERGROUP existieren.
+PROFILE_VEHICLE darf nur existieren, wenn PROFILE und VEHICLE existieren.
+Ein USERGROUP-OWNER muss auch in PROFILE_USERGROUP als OWNER eingetragen sein (logische Regel).

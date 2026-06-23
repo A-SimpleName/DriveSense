@@ -1,50 +1,198 @@
-import { BrowserRouter, Routes, Route,Navigate } from "react-router-dom";
+import "./styles/app.css";
+import "./styles/utilities.css";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import { checkAuth } from "./services/auth";
+import { getCurrentProfile, getProfilesByAccount } from "./services/profileService";
+import { getCurrentAccount } from "./services/accountService";
+
+import { AuthProvider, useAuth } from "./context/authContext";
+import AuthLayout from "./components/Layout/AuthLayout";
+import LoginPage from "./pages/login";
+import SignUpPage from "./pages/signUp";
+import SelectProfilePage from "./pages/selectProfile";
 import DashboardPage from "./pages/dashboard";
 import TripsPage from "./pages/trips";
-import LoginPage from "./pages/login";
+import TripDetailPage from "./pages/tripDetailPage";
 import Vehicles from "./pages/vehicles";
 import Settings from "./pages/settings";
-import RideDetailPage from "./pages/rideDetailPage";
-import ImpressumPage from "./pages/impressum";
+import ProtocolPage from "./pages/protocol";
+import ProtocolDetail from "./pages/protocolDetail";
+import GroupPage from "./pages/group";
+import GroupDetailPage from "./pages/groupDetail";
+import ProfilePage from "./pages/profile";
+import InviteAcceptPage from "./pages/inviteAccept";
+import VerifyEmailPage from "./pages/verifyEmail";
+import ForgotPasswordPage from "./pages/forgotPassword";
+import ResetPasswordPage from "./pages/resetPassword";
+import AdminPage from "./pages/admin";
+import ConfirmEmailChangePage from "./pages/confirmEmailChangePage";
 import DatenschutzPage from "./pages/datenschutz";
-import "./styles/app.css";
-import AuthLayout from "./components/Layout/AuthLayout";
-import SignUpPage from "./pages/signUp";
-import { isAuthenticated as checkAuth } from "./services/auth";
-import { useEffect, useState } from "react";
-import { logout } from "./services/auth";
+import ImpressumPage from "./pages/impressum";
 
-
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setIsAuthenticated(checkAuth());
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    setIsAuthenticated(false);
-  }
-
-
+export default function App() {
   return (
-    <BrowserRouter>  
-          <Routes>
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage onLoginSuccess={() => setIsAuthenticated(true)} />} />
-            <Route path="/registrieren" element={isAuthenticated ? <Navigate to="/" /> : <SignUpPage />} />
-            <Route path="/" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DashboardPage /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/fahrten" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><TripsPage /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/fahrzeuge" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><Vehicles /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/einstellungen" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><Settings /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/fahrten/:id" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><RideDetailPage /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/impressum" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><ImpressumPage /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="/datenschutz" element={isAuthenticated ? <AuthLayout onLogout={handleLogout}><DatenschutzPage /></AuthLayout> : <Navigate to="/login" />} />
-            <Route path="*" element={<div>404 Not Found</div>} />
-          </Routes>
-        
-    </BrowserRouter>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
-export default App;
+function AppContent() {
+  const {
+    isAuth,
+    setIsAuth,
+    setAccount,
+    setProfile,
+    profileSelected,
+    setProfileSelected
+  } = useAuth();
+
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reloadAuth, setReloadAuth] = useState(0);
+  const [needsVerification, setNeedsVerification] = useState(false);
+
+  useEffect(() => {
+    async function initAuth() {
+      try {
+        const auth = await checkAuth();
+        setIsAuth(auth);
+
+        if (auth) {
+          const accountData = await getCurrentAccount();
+          setAccount(accountData);
+
+          const profilesData = await getProfilesByAccount();
+          setProfiles(profilesData);
+
+          try {
+            const profileData = await getCurrentProfile();
+            setProfile(profileData);
+            setProfileSelected(true);
+          } catch {
+            setProfile(null);
+            setProfileSelected(false);
+          }
+        } else {
+          setProfiles([]);
+          setProfile(null);
+          setProfileSelected(false);
+        }
+      } catch (err) {
+        console.error("initAuth ERROR:", err);
+        setIsAuth(false);
+        setProfile(null);
+        setProfileSelected(false);
+        setProfiles([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initAuth();
+  }, [reloadAuth]);
+
+  useEffect(() => {
+    if (!isAuth || profileSelected) {
+      return;
+    }
+
+    async function refreshProfiles() {
+      try {
+        const profilesData = await getProfilesByAccount();
+        setProfiles(profilesData);
+      } catch (err) {
+        console.error("refreshProfiles ERROR:", err);
+      }
+    }
+
+    refreshProfiles();
+  }, [isAuth, profileSelected]);
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <span className="spinner" />
+      </div>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/datenschutz" element={<DatenschutzPage />} />
+        <Route path="/impressum" element={<ImpressumPage />} />
+
+        {/* NICHT EINGELOGGT */}
+        {!isAuth && !needsVerification && (
+            <>
+                <Route path="/invite" element={<InviteAcceptPage />} />
+                <Route path="/login" element={
+                    <LoginPage
+                        onLoginSuccess={() => { setIsAuth(true); setReloadAuth(prev => prev + 1); }}
+                        onNeedsVerification={() => setNeedsVerification(true)}
+                    />
+                } />
+                <Route path="/signup" element={
+                    <SignUpPage onNeedsVerification={() => setNeedsVerification(true)} />
+                } />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="*" element={<Navigate to="/login" />} />
+            </>
+        )}
+
+        {/* EINGELOGGT, ABER KEIN PROFIL */}
+        {isAuth && !profileSelected && (
+          <>
+            <Route path="/invite" element={<InviteAcceptPage />} />
+            <Route
+              path="*"
+              element={
+                <SelectProfilePage
+                  profiles={profiles}
+                  setProfiles={setProfiles}
+                  onSelect={() => setProfileSelected(true)}
+                />
+              }
+            />
+          </>
+        )}
+
+        {!isAuth && needsVerification && (
+            <Route path="*" element={
+                <VerifyEmailPage 
+                    onVerified={() => {
+                        setNeedsVerification(false);
+                        setIsAuth(true);
+                        setReloadAuth(prev => prev + 1);
+                    }}
+                    onCancel={() => setNeedsVerification(false)}
+                />
+            } />
+        )}
+
+        {/* VOLLSTÄNDIG EINGELOGGT */}
+        {isAuth && profileSelected && (
+          <Route path="/" element={<AuthLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="trips" element={<TripsPage />} />
+            <Route path="trips/:id" element={<TripDetailPage />} />
+            <Route path="protocols/:id" element={<ProtocolDetail />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="protocols" element={<ProtocolPage />} />
+            <Route path="groups" element={<GroupPage />} />
+            <Route path="groups/:id" element={<GroupDetailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="invite" element={<InviteAcceptPage />} />
+            <Route path="admin" element={<AdminPage />} />
+            <Route path="confirm-email-change" element={<ConfirmEmailChangePage />} />
+          </Route>
+        )}
+      </Routes>
+    </BrowserRouter>
+  );
+}

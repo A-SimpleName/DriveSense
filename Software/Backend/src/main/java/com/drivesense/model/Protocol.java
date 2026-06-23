@@ -1,15 +1,36 @@
 package com.drivesense.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
+
 public class Protocol {
     private int id;
-    private int tracking_id;
-    private String road_surface_conditions;
+    @Min(value = 1, message = "Profile ID muss größer als 0 sein")
+    private int createdByProfileId;
+    private Integer usergroupId;
+    @NotBlank(message = "Name darf nicht leer sein")
+    @Size(max = 100, message = "Name darf maximal 100 Zeichen haben")
+    private String name;
+    private LocalDateTime created_at;
 
     public Protocol(){}
 
-    public Protocol(int tracking_id, String road_surface_conditions) {
-        this.tracking_id = tracking_id;
-        this.road_surface_conditions = road_surface_conditions;
+    public Protocol(int createdByProfileId, Integer usergroupId, String name, LocalDateTime created_at) {
+        this.createdByProfileId = createdByProfileId;
+        this.usergroupId = usergroupId;
+        this.name = name;
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
     }
 
     public int getId() {
@@ -20,27 +41,37 @@ public class Protocol {
         this.id = id;
     }
 
-    public int getTracking_id() {
-        return tracking_id;
+    public int getCreatedByProfileId() {
+        return createdByProfileId;
     }
 
-    public void setTracking_id(int tracking_id) {
-        this.tracking_id = tracking_id;
+    public void setCreatedByProfileId(int createdByProfileId) {
+        this.createdByProfileId = createdByProfileId;
     }
 
-    public String getRoad_surface_conditions() {
-        return road_surface_conditions;
+    public Integer getUsergroupId() {
+        return usergroupId;
     }
 
-    public void setRoad_surface_conditions(String road_surface_conditions) {
-        this.road_surface_conditions = road_surface_conditions;
+    public void setUsergroupId(Integer usergroupId) {
+        this.usergroupId = usergroupId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
-        return "Protocol: " +
-                "id: " + id +
-                ", tracking_id: " + tracking_id +
-                ", road_surface_conditions: '" + road_surface_conditions + '\'';
+        return "Protocol{" +
+                "id=" + id +
+                ", createdByProfileId=" + createdByProfileId +
+                ", usergroupId=" + usergroupId +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

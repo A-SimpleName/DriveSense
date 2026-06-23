@@ -1,6 +1,6 @@
 class Trackingpoint {
   final int id;
-  final int trackingId;
+  final int tripId;
   final double latitude;
   final double longitude;
   final double accuracy;
@@ -10,7 +10,7 @@ class Trackingpoint {
 
   Trackingpoint({
     required this.id,
-    required this.trackingId,
+    required this.tripId,
     required this.latitude,
     required this.longitude,
     required this.accuracy,
@@ -22,9 +22,9 @@ class Trackingpoint {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
-      "trackingId": trackingId,
-      "latitude": latitude,
-      "longitude": longitude,
+      "tripId": tripId,
+      "lat": latitude,
+      "lng": longitude,
       "accuracy": accuracy,
       "speed": speed,
       "bearing": bearing,
@@ -33,15 +33,29 @@ class Trackingpoint {
   }
 
   factory Trackingpoint.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value, {int fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString()) ?? fallback;
+    }
+
+    double asDouble(dynamic value, {double fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString()) ?? fallback;
+    }
+
     return Trackingpoint(
-      id: json["id"],
-      trackingId: json["trackingId"],
-      latitude: json["latitude"].toDouble(),
-      longitude: json["longitude"].toDouble(),
-      accuracy: json["accuracy"].toDouble(),
-      speed: json["speed"].toDouble(),
-      bearing: json["bearing"].toDouble(),
-      timestamp: DateTime.parse(json["timestamp"]),
+      id: asInt(json["id"]),
+      tripId: asInt(json["tripId"] ?? json["trip_id"]),
+      latitude: asDouble(json["lat"]),
+      longitude: asDouble(json["lng"]),
+      accuracy: asDouble(json["accuracy"]),
+      speed: asDouble(json["speed"]),
+      bearing: asDouble(json["bearing"]),
+      timestamp: DateTime.parse(json["timestamp"].toString()),
     );
   }
 }

@@ -1,5 +1,6 @@
-import 'package:drivesense/constants/app_assets.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_assets.dart';
+import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/services/sign_in_and_sign_up.dart';
 import 'package:flutter/material.dart';
 
 class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -13,9 +14,13 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 12.0),
+        child: 
+        Text(
+          title,
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
       ),
       leading: FractionallySizedBox(
         alignment: Alignment.centerLeft,
@@ -23,54 +28,67 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Image.asset(AppAssetPaths.logoPath),
       ),
       foregroundColor: Colors.white,
-      backgroundColor: AppColors.primaryPurple,
+      backgroundColor: AppColors.primaryDarkBlue,
       actions: [
         PopupMenuButton<String>(
           itemBuilder: (BuildContext context) {
-            return {'Einstellungen', 'Account', 'Abmelden'}.map((
-              String choice,
-            ) {
+            return <String>[
+              'Account',
+              'Impressum',
+              'Datenschutzerklärung',
+              'Abmelden',
+            ].map((String choice) {
               return PopupMenuItem<String>(value: choice, child: Text(choice));
             }).toList();
           },
-          onSelected: (String choice) => {
+          onSelected: (String choice) {
             switch (choice) {
-              'Einstellungen' => {Navigator.pushNamed(context, '/settings')},
-              'Account' => {Navigator.pushNamed(context, '/account')},
-              'Abmelden' => {
+              case 'Account':
+                Navigator.pushNamed(context, 'AccountPage');
+                break;
+
+              case 'Impressum':
+                Navigator.pushNamed(context, 'ImprintPage');
+                break;
+
+              case 'Datenschutzerklärung':
+                Navigator.pushNamed(context, 'PrivacyPolicyPage');
+                break;
+
+              case 'Abmelden':
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    actionsAlignment: MainAxisAlignment.center,
-                    actionsOverflowAlignment: OverflowBarAlignment.center,
-                    title: Text('Möchten Sie sich abmelden?'),
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Möchten Sie sich abmelden?'),
                     actions: [
                       TextButton(
-                        onPressed: () => {Navigator.pop(context)},
-                        child: Text('Abbrechen'),
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: const Text('Abbrechen'),
                       ),
                       TextButton(
-                        onPressed: () => {
+                        onPressed: () async {
+                          Navigator.pop(dialogContext);
+                          await SignInAndSignUp.signOut();
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.pushNamedAndRemoveUntil(
                             context,
-                            'LoginPage',
+                            'SignInPage',
                             (route) => false,
-                          ),
+                          );
                         },
-                        child: Text('Abmelden'),
+                        child: const Text('Abmelden'),
                       ),
                     ],
                   ),
-                ),
-              },
-              // TODO: Handle this case.
-              String() => throw UnimplementedError(),
-            },
+                );
+                break;
+            }
           },
-          icon: Icon(Icons.settings),
+          icon: const Icon(Icons.settings),
         ),
       ],
-      centerTitle: true,
     );
   }
 }

@@ -1,67 +1,32 @@
-import 'package:drivesense/model/trackingpoint.dart';
+import 'package:isar/isar.dart';
 
+part 'trip.g.dart';
+
+@collection
 class Trip {
-  final int id;
-  final int userId;
-  final int vehicleId;
-  final DateTime startTime;
-  final DateTime? endTime;
-  final double distanceKm;
-  final String weatherMain;
-  final String? type;
-  final List<Trackingpoint>? trackingPoints;
+  Id id = Isar.autoIncrement;
 
-  Trip({
-    required this.id,
-    required this.userId,
-    required this.vehicleId,
-    required this.startTime,
-    this.endTime,
-    required this.distanceKm,
-    required this.weatherMain,
-    required this.type,
-    this.trackingPoints,
-  });
+  @Index(unique: true)
+  late String localId;
 
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "userId": userId,
-      "vehicleId": vehicleId,
-      "startTime": startTime.toIso8601String(),
-      "endTime": endTime?.toIso8601String(),
-      "distanceKm": distanceKm,
-      "weatherMain": weatherMain,
-      "type": type,
-    };
-  }
+  int accountId = 0;
+  late String trackingPointsJson;
 
-  factory Trip.fromJson(Map<String, dynamic> json) {
-    return Trip(
-      id: json["id"],
-      userId: json["userId"],
-      vehicleId: json["vehicleId"],
-      startTime: DateTime.parse(json["startTime"]),
-      endTime: json["endTime"] != null
-          ? DateTime.parse(json["endTime"])
-          : null,
-      distanceKm: json["distanceKm"].toDouble(),
-      weatherMain: json["weatherMain"],
-      type: json["type"],
-    );
-  }
+  late int profileId;
+  late int vehicleId;
+  late int protocolId;
+  late DateTime startTime;
+  DateTime? endTime;
+  late double distanceKm;
+  int durationSeconds = 0;
+  late String roadSurfaceConditions;
+  String? type;
 
-  Trip copyWith({required DateTime endTime, required double distanceKm, required List<Trackingpoint> trackingPoints}) {
-    return Trip(
-      id: id,
-      userId: userId,
-      vehicleId: vehicleId,
-      startTime: startTime,
-      endTime: endTime,
-      distanceKm: distanceKm,
-      weatherMain: weatherMain,
-      type: type,
-      trackingPoints: trackingPoints,
-    );
-  }
+  late DateTime createdAt;
+  late int startMileage;
+  late int endMileage;
+
+  bool isSynced = false;
+  int retryCount = 0;
+  String? lastError;
 }

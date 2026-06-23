@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @page { size: A4 landscape; margin: 18mm 14mm 14mm 14mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 8pt; color: #1a1a2e; }
+
+  .meta-bar { background: #E8F0FB; border-bottom: 1px solid #B4C8E8; padding: 4px 10px; display: block; width: 100%; }
+  .meta-bar .left  { float: left; }
+  .meta-bar .right { float: right; }
+  .meta-label { color: #6878A0; font-size: 7pt; }
+  .meta-value { color: #1A3C6E; font-weight: bold; }
+
+  .meta-bar::after,
+  .header::after {
+      content: "";
+      display: block;
+      clear: both;
+  }
+
+  .header { background: #1A3C6E; padding: 7px 12px; display: block; width: 100%; }
+  .header .left  { float: left; }
+  .header .right { float: right; }
+  .brand       { color: white; font-size: 15pt; font-weight: bold; }
+  .proto-title { color: white; font-size: 11pt; font-weight: bold; }
+  .proto-sub   { color: #BBCDE8; font-size: 7pt; }
+  .accent      { height: 3px; background: #2E7DCC; margin-bottom: 6px; }
+
+  table { width: 100%;height: 80%; border-collapse: collapse; font-size: 7.5pt; }
+
+  thead tr.top th {
+    background: #1A3C6E; color: white; font-weight: bold;
+    padding: 5px 3px; text-align: center; border: 1px solid #2E7DCC;
+  }
+  thead tr.sub th {
+    background: #2E7DCC; color: white; font-size: 7pt;
+    padding: 2px 3px; text-align: center; border: 1px solid #1A3C6E; height: 13px;
+  }
+
+  tbody tr:nth-child(odd)  td { background: #ffffff; }
+  tbody tr:nth-child(even) td { background: #F0F5FF; }
+  tbody td { padding: 3px 4px; border: 1px solid #C0CFDF; text-align: center; height: 20px; }
+  tbody td.left { text-align: left; }
+  tbody tr.filler-row td { height: 20px; }
+
+  .footer { display: table; width: 100%; border-top: 1px solid #2E7DCC; padding-top: 4px; margin-top: 6px; font-size: 7pt; color: #9AAAC0; }
+  .footer .left   { display: table-cell; text-align: left; }
+  .footer .center { display: table-cell; text-align: center; }
+  .footer .right  { display: table-cell; text-align: right; }
+  .footer strong  { color: #1A3C6E; }
+</style>
+</head>
+<body>
+
+<!-- Einzelprotokoll: Name + Geburtsdatum -->
+<div class="meta-bar" th:if="${!isGroup}">
+  <div class="left">
+    <span class="meta-label">Name des Fahrschülers / der Fahrschülerin: </span>
+    <span class="meta-value" th:text="${account == null ? '' : pdf.name(account.firstName, account.lastName)}"></span>
+  </div>
+  <div class="right">
+    <span class="meta-label">Geburtsdatum: </span>
+    <span class="meta-value" th:text="${account == null ? '' : pdf.date(account.birthdate, 'dd.MM.yyyy')}"></span>
+  </div>
+</div>
+
+<!-- Gruppenprotokoll: Gruppenname -->
+<div class="meta-bar" th:if="${isGroup}">
+  <div class="left">
+    <span class="meta-label">Gruppe: </span>
+    <span class="meta-value" th:text="${pdf.text(groupName)}"></span>
+  </div>
+</div>
+
+<div class="header">
+  <div class="left">
+    <img src="logo.png" alt="Drivesense Logo" style="height: 24pt; vertical-align: middle;"/>
+
+  </div>
+  <div class="right">
+    <span class="proto-title" th:text="${isGroup ? 'GRUPPENPROTOKOLL' : 'FAHRTENPROTOKOLL'}"></span><br/>
+    <span class="proto-sub">[gemäß § 19 Abs. 8 FSG]</span>
+  </div>
+</div>
+<div class="accent"></div>
+
+<table>
+  <thead>
+  <!-- Einzelprotokoll: ohne Fahrer-Spalte -->
+  <tr class="top" th:if="${!isGroup}">
+    <th rowspan="2">DATUM</th>
+    <th rowspan="2">GEFAHRENE<br/>KILOMETER</th>
+    <th colspan="2">KILOMETER STAND</th>
+    <th rowspan="2">KFZ<br/>KENNZEICHEN</th>
+    <th rowspan="2">TAGES-<br/>ZEIT</th>
+    <th rowspan="2">FAHRSTRECKE / ZIEL</th>
+    <th rowspan="2">STRASSENZUSTAND /<br/>WITTERUNG</th>
+    <th colspan="2">UNTERSCHRIFT DES</th>
+  </tr>
+  <tr class="sub" th:if="${!isGroup}">
+    <th>VON</th><th>BIS</th>
+    <th>BEGLEITERS</th><th>BEWERBERS</th>
+  </tr>
+  <!-- Gruppenprotokoll: mit Fahrer-Spalte -->
+  <tr class="top" th:if="${isGroup}">
+    <th rowspan="2">FAHRER</th>
+    <th rowspan="2">DATUM</th>
+    <th rowspan="2">GEFAHRENE<br/>KILOMETER</th>
+    <th colspan="2">KILOMETER STAND</th>
+    <th rowspan="2">KFZ<br/>KENNZEICHEN</th>
+    <th rowspan="2">TAGES-<br/>ZEIT</th>
+    <th rowspan="2">FAHRSTRECKE / ZIEL</th>
+    <th rowspan="2">STRASSENZUSTAND /<br/>WITTERUNG</th>
+    <th colspan="2">UNTERSCHRIFT DES</th>
+  </tr>
+  <tr class="sub" th:if="${isGroup}">
+    <th>VON</th><th>BIS</th>
+    <th>BEGLEITERS</th><th>BEWERBERS</th>
+  </tr>
+  </thead>
+  <tbody>
+  <!-- Einzelprotokoll rows -->
+  <tr th:if="${!isGroup}" th:each="trip : ${trips}">
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${pdf.route(trip.startPoint, trip.furthestPoint, trip.endPoint)}"></td>
+    <td th:text="${pdf.text(trip.roadSurfaceConditions)}"></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr class="filler-row" th:if="${!isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+  <!-- Gruppenprotokoll rows: mit Fahrer -->
+  <tr th:if="${isGroup}" th:each="trip : ${trips}">
+    <td class="left" th:text="${pdf.name(trip.accountFirstName, trip.accountLastName)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'dd.MM.yyyy')}"></td>
+    <td th:text="${pdf.distance(trip.distance)}"></td>
+    <td th:text="${trip.startMileage}"></td>
+    <td th:text="${trip.endMileage}"></td>
+    <td th:text="${pdf.text(trip.licensePlate)}"></td>
+    <td th:text="${pdf.dateTime(trip.startTime, 'HH:mm')}"></td>
+    <td class="left" th:text="${pdf.route(trip.startPoint, trip.furthestPoint, trip.endPoint)}"></td>
+    <td th:text="${pdf.text(trip.roadSurfaceConditions)}"></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr class="filler-row" th:if="${isGroup}" th:each="i : ${fillerRows}">
+    <td>&#160;</td><td></td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <div class="left">drivesense.app</div>
+  <div class="center">Summe gefahrener Kilometer: <strong th:text="${totalKm + ' km'}"></strong></div>
+  <div class="right">Blatt Nr. <strong>1</strong></div>
+</div>
+
+</body>
+</html>

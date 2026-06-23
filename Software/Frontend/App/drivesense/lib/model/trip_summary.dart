@@ -1,0 +1,224 @@
+import 'package:drivesense/model/trip.dart';
+
+class TripSummary {
+  final int id;
+  final int profileId;
+  final int vehicleId;
+  final String? vehicleLicensePlate;
+  final String? accountFirstName;
+  final String? accountLastName;
+  final String? vehicleModel;
+  final int protocolId;
+  final DateTime startTime;
+  final DateTime? endTime;
+  final double distanceKm;
+  final int durationSeconds;
+  final String roadSurfaceConditions;
+  final String? startPoint;
+  final String? furthestPoint;
+  final String? endPoint;
+  final String? type;
+  final int startMileage;
+  final int endMileage;
+  bool isSynced;
+
+  TripSummary({
+    required this.id,
+    required this.profileId,
+    required this.vehicleId,
+    this.vehicleLicensePlate,
+    this.accountFirstName,
+    this.accountLastName,
+    this.vehicleModel,
+    required this.protocolId,
+    required this.startTime,
+    this.endTime,
+    required this.distanceKm,
+    required this.durationSeconds,
+    required this.roadSurfaceConditions,
+    this.startPoint,
+    this.furthestPoint,
+    this.endPoint,
+    required this.type,
+    required this.isSynced,
+    required this.startMileage,
+    required this.endMileage,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "profileId": profileId,
+      "vehicleId": vehicleId,
+      "vehicleLicensePlate": vehicleLicensePlate,
+      "licensePlate": vehicleLicensePlate,
+      "accountFirstName": accountFirstName,
+      "accountLastName": accountLastName,
+      "vehicleModel": vehicleModel,
+      "protocolId": protocolId,
+      "startTime": startTime.toIso8601String(),
+      "endTime": endTime?.toIso8601String(),
+      "distance": distanceKm,
+      "durationSeconds": durationSeconds,
+      "roadSurfaceConditions": roadSurfaceConditions,
+      "startPoint": startPoint,
+      "furthestPoint": furthestPoint,
+      "endPoint": endPoint,
+      "type": type,
+      "isSynced": isSynced,
+      "startMileage": startMileage,
+      "endMileage": endMileage,
+    };
+  }
+
+  factory TripSummary.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value, {int fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString()) ?? fallback;
+    }
+
+    double asDouble(dynamic value, {double fallback = 0}) {
+      if (value == null) return fallback;
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString()) ?? fallback;
+    }
+
+    final DateTime parsedStartTime = DateTime.parse(
+      json["startTime"].toString(),
+    );
+    final DateTime? parsedEndTime = json["endTime"] != null
+        ? DateTime.parse(json["endTime"].toString())
+        : null;
+    int parsedDurationSeconds = asInt(
+      json["durationSeconds"] ?? json["duration_seconds"],
+    );
+    if (parsedDurationSeconds <= 0 && parsedEndTime != null) {
+      parsedDurationSeconds = parsedEndTime
+          .difference(parsedStartTime)
+          .inSeconds;
+      if (parsedDurationSeconds < 0) {
+        parsedDurationSeconds = 0;
+      }
+    }
+
+    return TripSummary(
+      id: asInt(json["id"]),
+      profileId: asInt(json["profileId"] ?? json["profile_id"]),
+      vehicleId: asInt(json["vehicleId"] ?? json["vehicle_id"]),
+      vehicleLicensePlate: (json["licensePlate"] ?? json["vehicleLicensePlate"])
+          ?.toString(),
+      accountFirstName: json["accountFirstName"]?.toString(),
+      accountLastName: json["accountLastName"]?.toString(),
+      vehicleModel: json["vehicleModel"]?.toString(),
+      protocolId: asInt(json["protocolId"] ?? json["protocol_id"]),
+      startTime: parsedStartTime,
+      endTime: parsedEndTime,
+      distanceKm: asDouble(json["distance"] ?? json["distanceKm"]),
+      durationSeconds: parsedDurationSeconds,
+      roadSurfaceConditions: json["roadSurfaceConditions"]?.toString() ?? '',
+      startPoint: (json["startPoint"] ?? json["start_point"])?.toString(),
+      furthestPoint: (json["furthestPoint"] ?? json["furthest_point"])
+          ?.toString(),
+      endPoint: (json["endPoint"] ?? json["end_point"])?.toString(),
+      type: json["type"]?.toString(),
+      isSynced: json["isSynced"] != false,
+      startMileage: asInt(json["startMileage"] ?? json["start_mileage"]),
+      endMileage: asInt(json["endMileage"] ?? json["end_mileage"]),
+    );
+  }
+
+  factory TripSummary.fromTrip(Trip trip) {
+    int mappedId = trip.id;
+    if (trip.localId.startsWith('server:')) {
+      final List<String> localIdParts = trip.localId.split(':');
+      final String remoteIdValue = localIdParts.isNotEmpty
+          ? localIdParts.last
+          : '';
+      final int? remoteId = int.tryParse(remoteIdValue);
+      if (remoteId != null && remoteId > 0) {
+        mappedId = remoteId;
+      }
+    }
+
+    int durationSeconds = trip.durationSeconds;
+    if (durationSeconds <= 0 && trip.endTime != null) {
+      durationSeconds = trip.endTime!.difference(trip.startTime).inSeconds;
+      if (durationSeconds < 0) {
+        durationSeconds = 0;
+      }
+    }
+
+    return TripSummary(
+      id: mappedId,
+      profileId: trip.profileId,
+      vehicleId: trip.vehicleId,
+      vehicleLicensePlate: null,
+      accountFirstName: null,
+      accountLastName: null,
+      vehicleModel: null,
+      protocolId: trip.protocolId,
+      startTime: trip.startTime,
+      endTime: trip.endTime,
+      distanceKm: trip.distanceKm,
+      durationSeconds: durationSeconds,
+      roadSurfaceConditions: trip.roadSurfaceConditions,
+      startPoint: null,
+      furthestPoint: null,
+      endPoint: null,
+      type: trip.type,
+      isSynced: trip.isSynced,
+      startMileage: trip.startMileage,
+      endMileage: trip.endMileage,
+    );
+  }
+
+  TripSummary copyWith({
+    int? id,
+    int? profileId,
+    int? vehicleId,
+    String? vehicleLicensePlate,
+    String? accountFirstName,
+    String? accountLastName,
+    String? vehicleModel,
+    int? protocolId,
+    DateTime? startTime,
+    DateTime? endTime,
+    double? distanceKm,
+    int? durationSeconds,
+    String? roadSurfaceConditions,
+    String? startPoint,
+    String? furthestPoint,
+    String? endPoint,
+    String? type,
+    bool? isSynced,
+    int? startMileage,
+    int? endMileage,
+  }) {
+    return TripSummary(
+      id: id ?? this.id,
+      profileId: profileId ?? this.profileId,
+      vehicleId: vehicleId ?? this.vehicleId,
+      vehicleLicensePlate: vehicleLicensePlate ?? this.vehicleLicensePlate,
+      accountFirstName: accountFirstName ?? this.accountFirstName,
+      accountLastName: accountLastName ?? this.accountLastName,
+      vehicleModel: vehicleModel ?? this.vehicleModel,
+      protocolId: protocolId ?? this.protocolId,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      distanceKm: distanceKm ?? this.distanceKm,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      roadSurfaceConditions:
+          roadSurfaceConditions ?? this.roadSurfaceConditions,
+      startPoint: startPoint ?? this.startPoint,
+      furthestPoint: furthestPoint ?? this.furthestPoint,
+      endPoint: endPoint ?? this.endPoint,
+      type: type ?? this.type,
+      isSynced: isSynced ?? this.isSynced,
+      startMileage: startMileage ?? this.startMileage,
+      endMileage: endMileage ?? this.endMileage,
+    );
+  }
+}

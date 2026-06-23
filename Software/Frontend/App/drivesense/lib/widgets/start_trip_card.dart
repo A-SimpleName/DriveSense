@@ -1,10 +1,30 @@
+import 'package:drivesense/runtime_store.dart';
 import 'package:flutter/material.dart';
-import 'package:drivesense/constants/app_colors.dart';
+import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/model/vehicle.dart';
+import 'package:drivesense/model/protocol.dart';
 
 class StartTripCard extends StatefulWidget {
-  const StartTripCard({super.key, required this.onStart});
+  const StartTripCard({
+    super.key,
+    required this.onStart,
+    required this.protocols,
+    required this.selectedProtocolId,
+    required this.onProtocolChanged,
+    required this.vehicles,
+    required this.selectedVehicleId,
+    required this.onVehicleChanged,
+    required this.isStartingTrip,
+  });
 
   final VoidCallback onStart;
+  final List<Protocol> protocols;
+  final int selectedProtocolId;
+  final ValueChanged<int> onProtocolChanged;
+  final List<Vehicle> vehicles;
+  final int selectedVehicleId;
+  final ValueChanged<int> onVehicleChanged;
+  final bool isStartingTrip;
 
   @override
   State<StartTripCard> createState() => _StartTripCardState();
@@ -13,8 +33,27 @@ class StartTripCard extends StatefulWidget {
 class _StartTripCardState extends State<StartTripCard> {
   @override
   Widget build(BuildContext context) {
+    final int? selectedVehicleId =
+        widget.vehicles.any(
+          (Vehicle vehicle) => vehicle.id == widget.selectedVehicleId,
+        )
+        ? widget.selectedVehicleId
+        : null;
+    final int? selectedProtocolId =
+        widget.protocols.any(
+          (Protocol protocol) => protocol.id == widget.selectedProtocolId,
+        )
+        ? widget.selectedProtocolId
+        : null;
+    final bool canStartTrip =
+        widget.vehicles.isNotEmpty &&
+        widget.protocols.isNotEmpty &&
+        selectedVehicleId != null &&
+        selectedProtocolId != null &&
+        !widget.isStartingTrip;
+
     return Card(
-      color: AppColors.primaryPurple.withValues(alpha: 0.4),
+      color: AppColors.primaryBlue.withAlpha(77),
       elevation: 0,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: Colors.black),
@@ -29,7 +68,7 @@ class _StartTripCardState extends State<StartTripCard> {
               padding: const EdgeInsets.all(2.0),
               mainAxisSpacing: 8.0,
               crossAxisSpacing: 8.0,
-              childAspectRatio: 4.5,
+              childAspectRatio: 3.5,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: <Widget>[
@@ -39,30 +78,90 @@ class _StartTripCardState extends State<StartTripCard> {
                   alignment: Alignment.centerLeft,
                   child: Text('Fahrzeug: '),
                 ),
-                DropdownMenu<String>(
-                  dropdownMenuEntries: [
-                    DropdownMenuEntry(value: 'BMW i3', label: 'BMW i3'),
-                    DropdownMenuEntry(
-                      value: 'Skoda Octavia',
-                      label: 'Skoda Octavia',
-                    ),
-                  ],
-                  initialSelection: 'BMW i3',
+                DropdownButtonFormField<int>(
+                  key: ValueKey<String>('vehicle-$selectedVehicleId'),
+                  initialValue: selectedVehicleId,
+                  isExpanded: true,
+                  hint: const Text('Fahrzeug auswaehlen'),
+                  items: widget.vehicles
+                      .map(
+                        (Vehicle vehicle) => DropdownMenuItem<int>(
+                          value: vehicle.id,
+                          child: Text(
+                            '${vehicle.model} (${vehicle.licensePlate})',
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (int? vehicleId) {
+                    if (vehicleId != null) {
+                      widget.onVehicleChanged(vehicleId);
+                    }
+                  },
                 ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Protokoll: '),
+                ),
+                DropdownButtonFormField<int>(
+                  key: ValueKey<String>('protocol-$selectedProtocolId'),
+                  initialValue: selectedProtocolId,
+                  isExpanded: true,
+                  hint: Text(
+                    widget.protocols.isEmpty
+                        ? 'Keine Protokolle'
+                        : 'Protokoll auswaehlen',
+                  ),
+
+                  items: widget.protocols
+                      .map(
+                        (Protocol protocol) => DropdownMenuItem<int>(
+                          value: protocol.id,
+                          child: Text(protocol.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: widget.protocols.isEmpty
+                      ? null
+                      : (int? protocolId) {
+                          if (protocolId != null) {
+                            widget.onProtocolChanged(protocolId);
+                          }
+                        },
+                ),
+                if (RuntimeStore.getActiveProfileRole() == 'BERUFSFAHRER') ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Typ / Zweck: '),
+                  ),
+                  TextFormField(
+                    key: ValueKey<String>(
+                      'trip-purpose-${RuntimeStore.getCurrentProtocolId()}',
+                    ),
+                    initialValue: RuntimeStore.getCurrentTripPurpose(),
+                    decoration: const InputDecoration(hintText: 'Typ / Zweck'),
+                    onChanged: (String value) {
+                      RuntimeStore.setCurrentTripPurpose(value);
+                    },
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 24),
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: () => {
-                  // TODO: implement start trip functionality
-                  widget.onStart(),
-                },
+                onPressed: canStartTrip ? widget.onStart : null,
                 style: ButtonStyle(
                   fixedSize: WidgetStateProperty.all(Size.fromWidth(200)),
                 ),
-                child: Text('Fahrt Starten'),
+                child: widget.isStartingTrip
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Fahrt Starten'),
               ),
             ),
           ],

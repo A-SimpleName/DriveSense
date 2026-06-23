@@ -1,53 +1,64 @@
+.ridesTable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background: var(--surface);
+  scrollbar-width: thin;
+}
+
 table {
-    width: 100%;
-    margin-bottom: 5%;
-    border-collapse: collapse;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: none;
 }
 
 table thead {
-    color: white;
-    vertical-align: top;
-    background-color: rgb(126, 132, 218);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+table th,
+table td {
+  padding: 14px 16px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-light);
 }
 
 table th {
-    font-size: 1.5vh;
-    height: 2vh;
-    padding-top: 1%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
 }
 
 table tbody tr:nth-child(odd) {
-    background-color: rgb(231, 231, 231);
+  background: rgba(255,255,255,0.98);
 }
 
-table thead tr:nth-child(2) {
-    border-bottom: 2px solid black;
+table tbody tr:nth-child(even) {
+  background: #f9fafd;
 }
 
-/* .ridesTable thead tr:nth-child(2) :first-child {
-    border-right: 2px solid black;
-} */
-
-table tbody {
-    text-align: center;
+table tbody tr:hover {
+  background: rgba(37,99,235,0.06);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 table td {
-    height: 3vh;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
-/* table tbody tr td {
-    border-top: 2px solid rgb(82, 79, 79);
-    margin-left: 20px;
-} */
-
-/* .ridesTable tbody tr td:nth-child(4) {
-    border-right: 1px solid grey;
-} */
-
-.ridesTable tbody tr:hover {
-    color: white;
-    background-color: rgb(102, 141, 199);
-    cursor: pointer;
+table tbody tr:last-child td {
+  border-bottom: none;
 }
