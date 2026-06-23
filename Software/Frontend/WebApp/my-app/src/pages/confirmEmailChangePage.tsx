@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import { Mail, X } from "lucide-react";
 
 import { confirmEmailChange, requestEmailChange, cancelEmailChange } from "../services/accountService";
 
@@ -93,9 +94,9 @@ export default function ConfirmEmailChangePage() {
                 </button>
             </form>
 
-            <Button label="Code erneut senden" onClick={handleResend} />
+            <Button label="Code erneut senden" onClick={handleResend} icon={<Mail size={18} />} />
 
-            <Button label="Abbrechen" onClick={handleCancel} />
+            <Button label="Abbrechen" onClick={handleCancel} icon={<X size={18} />} />
         </div>
     );
 }

@@ -5,6 +5,7 @@ import { Button } from "../button"
 import { ActionMenu, type ActionMenuItem } from "../ActionMenu"
 import { ConfirmationDialog } from "../ConfirmationDialog"
 import { useAuth } from "../../context/authContext"
+import { X } from "lucide-react"
 import type { Vehicle, VehicleMember } from "../../model/vehicle"
 
 interface Props {
@@ -181,7 +182,7 @@ export function VehicleMembers({ vehicle, onClose, onLeft, reloadToken = 0 }: Pr
                 )}
 
                 <div style={{ marginTop: 16 }}>
-                    <Button label="Schließen" onClick={onClose} />
+                    <Button label="Schließen" onClick={onClose} icon={<X size={18} />} />
                 </div>
 
                 <ConfirmationDialog

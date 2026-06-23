@@ -1,8 +1,8 @@
 import { useRef } from "react";
-import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent, WheelEvent as ReactWheelEvent } from "react";
+import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from "react";
 
 /**
- * Macht ein horizontal scrollbares Element per Mausrad, Maus-Drag und
+ * Macht ein horizontal scrollbares Element per Maus-Drag und
  * Touch-Drag bedienbar (z.B. breite Tabellen wie in TripsTable).
  *
  * Verwendung:
@@ -11,16 +11,6 @@ import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent, Whee
  */
 export function useDragScroll<T extends HTMLElement = HTMLDivElement>() {
     const ref = useRef<T>(null);
-
-    const onWheel = (e: ReactWheelEvent<T>) => {
-        const el = e.currentTarget;
-        const delta = e.deltaY || e.deltaX;
-
-        if (delta !== 0) {
-            e.preventDefault();
-            el.scrollLeft += delta;
-        }
-    };
 
     const onMouseDown = (e: ReactMouseEvent<T>) => {
         const el = e.currentTarget;
@@ -62,6 +52,6 @@ export function useDragScroll<T extends HTMLElement = HTMLDivElement>() {
 
     return {
         ref,
-        handlers: { onWheel, onMouseDown, onTouchStart },
+        handlers: { onMouseDown, onTouchStart },
     };
 }

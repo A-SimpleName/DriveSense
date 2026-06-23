@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
 import { Button } from "../components/button";
+import { LogIn } from "lucide-react";
 import "../styles/login.css";
 
 interface Props {
@@ -92,7 +93,7 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
           {error && <p className="login-error">{error}</p>}
 
           <div className="login-actions">
-            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} />
+            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} icon={<LogIn size={18} />} />
           </div>
 
           <Link to="/forgot-password">Passwort vergessen?</Link>

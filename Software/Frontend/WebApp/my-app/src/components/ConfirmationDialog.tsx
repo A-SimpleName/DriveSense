@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { Button } from "./button";
+import { Check, X } from "lucide-react";
 
 type ConfirmationDialogProps = {
   open: boolean;
@@ -46,8 +47,8 @@ export function ConfirmationDialog({
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
-          <Button className="secondary small" label={cancelLabel} onClick={onCancel} disabled={confirmLoading} />
-          <Button label={confirmLoading ? `${confirmLabel}...` : confirmLabel} loading={confirmLoading} onClick={onConfirm} />
+          <Button className="secondary small" label={cancelLabel} onClick={onCancel} disabled={confirmLoading} icon={<X size={16} />} />
+          <Button label={confirmLoading ? `${confirmLabel}...` : confirmLabel} loading={confirmLoading} onClick={onConfirm} icon={<Check size={16} />} />
         </div>
       </div>
     </div>,

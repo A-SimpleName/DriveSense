@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 import { TableSkeleton } from "../loadingSkeleton";
+import { Check, X, Edit2, Trash2 } from "lucide-react";
 import "../../styles/pageLayout.css";
 
 interface Props {
@@ -139,13 +140,13 @@ function GroupTable({ newGroup }: Props) {
                                         <div style={{ display: "flex", gap: "8px" }}>
                                             {editingGroupId === group.id ? (
                                                 <>
-                                                    <Button label={saving ? "Speichern..." : "Speichern"} loading={saving} onClick={() => handleEditSave(group.id)} stopPropagation />
-                                                    <Button label="Abbrechen" onClick={handleEditCancel} stopPropagation />
+                                                    <Button label={saving ? "Speichern..." : "Speichern"} loading={saving} onClick={() => handleEditSave(group.id)} stopPropagation icon={<Check size={18} />} />
+                                                    <Button label="Abbrechen" onClick={handleEditCancel} stopPropagation icon={<X size={18} />} />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Button label="Umbenennen" onClick={() => handleEditStart(group)} stopPropagation />
-                                                    <Button label="Löschen" onClick={() => setConfirmDeleteGroupId(group.id)} stopPropagation />
+                                                    <Button label="Umbenennen" onClick={() => handleEditStart(group)} stopPropagation icon={<Edit2 size={18} />} />
+                                                    <Button label="Löschen" onClick={() => setConfirmDeleteGroupId(group.id)} stopPropagation icon={<Trash2 size={18} />} />
                                                 </>
                                             )}
                                         </div>

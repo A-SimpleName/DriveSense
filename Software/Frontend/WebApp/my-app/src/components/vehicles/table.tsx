@@ -8,6 +8,7 @@ import { ConfirmationDialog } from "../ConfirmationDialog";
 import { VehicleMembers } from "./VehicleMembers";
 import { InviteVehicleMemberForm } from "./InviteVehicleMemberForm";
 import { TableSkeleton } from "../loadingSkeleton";
+import { Check, X } from "lucide-react";
 import { useDragScroll } from "../../hooks/useDragScroll";
 
 function VehiclesTable() {
@@ -165,8 +166,8 @@ function VehiclesTable() {
                                         <td>
                                             {editingId === vehicle.id ? (
                                                 <div style={{ display: "flex", gap: "8px" }}>
-                                                    <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} />
-                                                    <Button label="Abbrechen" onClick={handleCancel} />
+                                                    <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} icon={<Check size={18} />} />
+                                                    <Button label="Abbrechen" onClick={handleCancel} icon={<X size={18} />} />
                                                 </div>
                                             ) : (() => {
                                                 const actions: ActionMenuItem[] = [

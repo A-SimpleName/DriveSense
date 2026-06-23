@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import type { Tripdetailed, TripSummaryDto } from "../model/trip";
 import { DashboardSkeleton } from "../components/loadingSkeleton";
 import { useAuth } from "../context/authContext";
+import { Navigation, Users, Car } from "lucide-react";
 import "../styles/dashboard.css";
 
 function Dashboard() {
@@ -149,13 +150,13 @@ function Dashboard() {
 
             <div className="dashboard-actions">
                 <Link to="/trips" style={{ flex: 1 }}>
-                    <Button label="Alle Fahrten" className="dashboard-action-btn" />
+                    <Button label="Alle Fahrten" className="dashboard-action-btn" icon={<Navigation size={18} />} />
                 </Link>
                 <Link to="/groups" style={{ flex: 1 }}>
-                    <Button label="Gruppen" className="dashboard-action-btn" />
+                    <Button label="Gruppen" className="dashboard-action-btn" icon={<Users size={18} />} />
                 </Link>
                 <Link to="/vehicles" style={{ flex: 1 }}>
-                    <Button label="Fahrzeuge" className="dashboard-action-btn" />
+                    <Button label="Fahrzeuge" className="dashboard-action-btn" icon={<Car size={18} />} />
                 </Link>
             </div>
         </div>

@@ -5,6 +5,7 @@ import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { useAuth } from "../context/authContext";
 import { updateProfile, deleteProfile } from "../services/profileService";
 import InfoRow from "../components/infoRow";
+import { Check, X, Edit2, Trash2, ArrowLeftRight } from "lucide-react";
 
 const ROLE_LABELS: Record<string, string> = {
     PRIVAT: "Privat",
@@ -110,8 +111,8 @@ export default function ProfilePage() {
                             )}
 
                             <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                                <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} type="button" onClick={handleSave} />
-                                <Button label="Abbrechen" className="secondary" type="button" onClick={() => { setIsEditing(false); setSaveError(null); }} />
+                                <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} type="button" onClick={handleSave} icon={<Check size={18} />} />
+                                <Button label="Abbrechen" className="secondary" type="button" onClick={() => { setIsEditing(false); setSaveError(null); }} icon={<X size={18} />} />
                             </div>
                         </>
                     ) : (
@@ -124,9 +125,9 @@ export default function ProfilePage() {
             </div>
 
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-                <Button label="Benutzer wechseln" type="button" onClick={handleSwitch} />
-                <Button label={isEditing ? "Bearbeitung abbrechen" : "Profil bearbeiten"} type="button" onClick={() => { setIsEditing(prev => !prev); setSaveError(null); }} />
-                <Button label="Profil löschen" type="button" onClick={() => setConfirmDelete(true)} />
+                <Button label="Benutzer wechseln" type="button" onClick={handleSwitch} icon={<ArrowLeftRight size={18} />} />
+                <Button label={isEditing ? "Bearbeitung abbrechen" : "Profil bearbeiten"} type="button" onClick={() => { setIsEditing(prev => !prev); setSaveError(null); }} icon={<Edit2 size={18} />} />
+                <Button label="Profil löschen" type="button" onClick={() => setConfirmDelete(true)} icon={<Trash2 size={18} />} />
             </div>
 
             <ConfirmationDialog

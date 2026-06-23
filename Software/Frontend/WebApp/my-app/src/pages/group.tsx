@@ -4,6 +4,7 @@ import { GroupAddForm } from "../components/group/groupAddForm";
 import type { UserGroup } from "../model/usergroup";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
+import { Mail, Plus } from "lucide-react";
 import "../styles/pageLayout.css";
 
 function GroupPage() {
@@ -16,8 +17,8 @@ function GroupPage() {
             <div className="page-header">
                 <h1>Gruppen</h1>
                 <div className="page-header-actions">
-                    <Button label="Einladung annehmen" onClick={() => navigate("/invite")} />
-                    <Button label="Gruppe erstellen" title="Gruppe erstellen" onClick={() => setShowModal(true)} />
+                    <Button label="Einladung annehmen" onClick={() => navigate("/invite")} icon={<Mail size={18} />} />
+                    <Button label="Gruppe erstellen" title="Gruppe erstellen" onClick={() => setShowModal(true)} icon={<Plus size={18} />} />
                 </div>
             </div>
 
