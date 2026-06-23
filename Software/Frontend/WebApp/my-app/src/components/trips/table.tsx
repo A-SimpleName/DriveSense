@@ -236,11 +236,6 @@ function TripsTable() {
         return `${trip.startPoint} - ${trip.endPoint}`;
     };
 
-    const sortLabel = (field: SortField, label: string) => {
-        if (sortField !== field) return label;
-        return `${label} ${sortDir === "asc" ? "↑" : "↓"}`;
-    };
-
     if (loading) return <TableSkeleton rows={5} cols={9} />;
     if (loadError) return <p className="error-text">Fehler: {loadError}</p>;
 
