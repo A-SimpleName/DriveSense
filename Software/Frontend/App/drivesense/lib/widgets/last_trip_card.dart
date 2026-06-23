@@ -20,7 +20,7 @@ class _LastTripCardState extends State<LastTripCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: AppColors.primaryPurple.withValues(alpha: 0.4),
+      color: AppColors.primaryBlue.withAlpha(77),
       elevation: 0,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: Colors.black),

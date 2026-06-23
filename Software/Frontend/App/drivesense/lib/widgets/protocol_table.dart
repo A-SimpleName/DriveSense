@@ -1,3 +1,4 @@
+import 'package:drivesense/config/app_colors.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/trip_service.dart';
@@ -94,7 +95,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
                               TableRow(
                                 key: const ValueKey('headerRow'),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade200,
+                                  color: AppColors.primaryBlue,
                                 ),
                                 children: <Widget>[
                                   ...columns.map(

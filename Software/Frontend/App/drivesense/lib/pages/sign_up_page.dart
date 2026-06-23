@@ -203,7 +203,7 @@ class _SignUpPageState extends State<SignUpPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitSignUp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primaryDarkBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

@@ -14,7 +14,7 @@ class DsAuthScaffold extends StatelessWidget {
       appBar: DsAppBar(title: title),
       body: SafeArea(
         child: ColoredBox(
-          color: AppColors.primaryBlue,
+          color: AppColors.primaryDarkBlue,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final bool wide = constraints.maxWidth > 600;

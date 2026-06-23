@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:drivesense/widgets/ds_app_bar.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
   const PrivacyPolicyPage({super.key});
@@ -25,7 +26,7 @@ class PrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Datenschutzerklärung')),
+      appBar: DsAppBar(title: 'Datenschutzerklärung'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

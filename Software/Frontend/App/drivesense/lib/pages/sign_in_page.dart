@@ -97,7 +97,7 @@ class _SignInPageState extends State<SignInPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitSignIn,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primaryDarkBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

@@ -31,7 +31,7 @@ class CurrentTripCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: AppColors.primaryPurple.withValues(alpha: 0.4),
+      color: AppColors.primaryBlue.withAlpha(77),
       shape: RoundedRectangleBorder(
         side: BorderSide(color: Colors.black),
         borderRadius: BorderRadius.circular(4.0),

@@ -28,7 +28,7 @@ class _DsBottomNavigationState extends State<DsBottomNavigation> {
       currentIndex: widget.currentIndex,
       onTap: widget.onTap,
       unselectedItemColor: Colors.grey,
-      selectedItemColor: AppColors.primaryBlue,
+      selectedItemColor: AppColors.primaryDarkBlue,
       backgroundColor: Colors.white,
     );
   }

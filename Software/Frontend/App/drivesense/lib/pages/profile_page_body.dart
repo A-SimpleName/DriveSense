@@ -397,8 +397,8 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
               children: <Widget>[
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: AppColors.primaryPurple.withAlpha(31),
-                  foregroundColor: AppColors.primaryPurple,
+                  backgroundColor: AppColors.primaryBlue.withAlpha(31),
+                  foregroundColor: AppColors.primaryDarkBlue,
                   child: Text(
                     profile.name.isNotEmpty
                         ? profile.name[0].toUpperCase()

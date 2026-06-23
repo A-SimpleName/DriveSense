@@ -66,7 +66,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'DriveSense',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryDarkBlue),
       ),
       initialRoute: SignInAndSignUp.redirectToProfileSelectPage(
         token: widget.token,

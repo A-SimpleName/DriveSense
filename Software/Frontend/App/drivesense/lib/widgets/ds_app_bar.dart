@@ -14,9 +14,13 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 12.0),
+        child: 
+        Text(
+          title,
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
       ),
       leading: FractionallySizedBox(
         alignment: Alignment.centerLeft,
@@ -24,7 +28,7 @@ class DsAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Image.asset(AppAssetPaths.logoPath),
       ),
       foregroundColor: Colors.white,
-      backgroundColor: AppColors.primaryPurple,
+      backgroundColor: AppColors.primaryDarkBlue,
       actions: [
         PopupMenuButton<String>(
           itemBuilder: (BuildContext context) {

@@ -175,7 +175,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: AppColors.primaryDarkBlue,
                   foregroundColor: Colors.white,
                 ),
                 onPressed: _isLoading ? null : _submit,

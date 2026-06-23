@@ -27,7 +27,7 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
       appBar: const DsAppBar(title: 'Profil auswählen'),
       body: SafeArea(
         child: ColoredBox(
-          color: AppColors.primaryBlue,
+          color: AppColors.primaryDarkBlue,
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -340,7 +340,7 @@ class _AddProfileButton extends StatelessWidget {
             : const Icon(Icons.add),
         label: const Text('Profil'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: AppColors.primaryDarkBlue,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
@@ -373,8 +373,8 @@ class _ProfileList extends StatelessWidget {
               vertical: 4,
             ),
             leading: CircleAvatar(
-              backgroundColor: AppColors.primaryPurple.withAlpha(31),
-              foregroundColor: AppColors.primaryPurple,
+              backgroundColor: AppColors.primaryBlue.withAlpha(31),
+              foregroundColor: AppColors.primaryDarkBlue,
               child: const Icon(Icons.person),
             ),
             title: Text(
@@ -408,7 +408,7 @@ class _ProfileMessage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 40, color: AppColors.primaryBlue),
+            Icon(icon, size: 40, color: AppColors.primaryDarkBlue),
             const SizedBox(height: 12),
             Text(
               text,

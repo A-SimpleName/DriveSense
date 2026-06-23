@@ -4,5 +4,6 @@ class AppColors {
   const AppColors._();
 
   static const primaryPurple = Colors.purple;
-  static const primaryBlue = Color(0xFF152E4F);
+  static const primaryDarkBlue = Color(0xFF152E4F);
+  static const primaryBlue = Color(0xFF3a8ff1);
 }
