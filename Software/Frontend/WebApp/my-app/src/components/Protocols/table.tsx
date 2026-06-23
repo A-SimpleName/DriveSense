@@ -4,6 +4,7 @@ import { Button } from "../button";
 import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
 import { ConfirmationDialog } from "../ConfirmationDialog";
+import { Plus, Download, Trash2 } from "lucide-react";
 import "../../styles/pageLayout.css";
 
 export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm, onDeleted }: {
@@ -64,7 +65,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                         {protocols.length} {protocols.length === 1 ? "Protokoll" : "Protokolle"}
                     </span>
                     {showAdd && (
-                        <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
+                        <Button label="" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} icon={<Plus size={18} />} />
                     )}
                 </div>
             </div>
@@ -80,8 +81,8 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                         <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
                             <td>{protocol.name}</td>
                             <td style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} />
-                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} />
+                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} icon={<Download size={18} />} />
+                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} icon={<Trash2 size={18} />} />
                             </td>
                         </tr>
                     ))}

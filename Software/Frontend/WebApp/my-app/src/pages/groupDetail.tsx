@@ -8,6 +8,7 @@ import { InviteMemberForm } from "../components/group/InviteMemberForm";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
 import { TableSkeleton } from "../components/loadingSkeleton";
+import { RotateCcw, UserPlus, Plus } from "lucide-react";
 import "../styles/pageLayout.css";
 
 const canRemove = (myRole: string, targetRole: string): boolean => {
@@ -96,7 +97,7 @@ function GroupDetailPage() {
                 <h1>Gruppe</h1>
             </div>
             <p className="error-text">Fehler: {loadError}</p>
-            <Button label="Erneut versuchen" onClick={() => window.location.reload()} />
+            <Button label="Erneut versuchen" onClick={() => window.location.reload()} icon={<RotateCcw size={18} />} />
         </div>
     );
 
@@ -109,9 +110,9 @@ function GroupDetailPage() {
                 </div>
                 <div className="page-header-actions">
                     {(myRole === "OWNER" || myRole === "ADMIN") && (
-                        <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} />
+                        <Button label="Mitglied einladen" onClick={() => setShowInviteForm(true)} icon={<UserPlus size={18} />} />
                     )}
-                    <Button label="+ Gruppenprotokoll" onClick={() => setShowProtocolForm(true)} />
+                    <Button label="Gruppenprotokoll" onClick={() => setShowProtocolForm(true)} icon={<Plus size={18} />} />
                 </div>
             </div>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../services/auth";
 import { Button } from "../components/button";
+import { LogIn } from "lucide-react";
 import "../styles/login.css";
 
 interface Props {
@@ -24,14 +25,8 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
     try {
       await login(email, password);
       sessionStorage.removeItem("profileSelected");
-      const pendingInviteUrl = sessionStorage.getItem("pendingInviteUrl");
       onLoginSuccess();
-      if (pendingInviteUrl) {
-        sessionStorage.removeItem("pendingInviteUrl");
-        navigate(pendingInviteUrl);
-      } else {
-        navigate("/select-profile");
-      }
+      navigate("/select-profile");
     } catch (err: any) {
       if (err?.status === 406) {
         sessionStorage.setItem("pendingVerificationEmail", email);
@@ -98,16 +93,14 @@ export default function LoginPage({ onLoginSuccess, onNeedsVerification }: Props
           {error && <p className="login-error">{error}</p>}
 
           <div className="login-actions">
-            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} />
+            <Button className="login-submit" label={loading ? "Einloggen..." : "Login"} loading={loading} type="button" onClick={handleLogin} icon={<LogIn size={18} />} />
           </div>
 
           <Link to="/forgot-password">Passwort vergessen?</Link>
         </div>
 
         <div className="login-footer">
-          Noch keinen Account? <Link to="/signup">Registrieren</Link>
-          <br />
-          <Link to="/datenschutz">Datenschutzerklärung</Link>
+          Noch keinen Account? <Link to="/signUp">Registrieren</Link>
         </div>
       </div>
     </div>

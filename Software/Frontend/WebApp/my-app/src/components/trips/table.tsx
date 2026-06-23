@@ -13,6 +13,7 @@ import { Button } from "../button";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 import { TableSkeleton } from "../loadingSkeleton";
 import { useDragScroll } from "../../hooks/useDragScroll";
+import { Check, X, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface EditValues {
     startTime: string;
@@ -236,13 +237,6 @@ function TripsTable() {
         }
         return `${trip.startPoint} - ${trip.endPoint}`;
     };
-
-    const sortLabel = (field: SortField, label: string) => {
-        if (sortField !== field) return label;
-        return `${label} ${sortDir === "asc" ? "↑" : "↓"}`;
-    };
-
-    void sortLabel;
 
     if (loading) return <TableSkeleton rows={5} cols={9} />;
     if (loadError) return <p className="error-text">Fehler: {loadError}</p>;
@@ -483,13 +477,13 @@ function TripsTable() {
                                 <td onClick={e => e.stopPropagation()} style={{ display: "flex", gap: "8px" }}>
                                     {isEditing(trip.id) ? (
                                         <>
-                                            <Button label={saving ? "Speichern..." : "Speichern"} loading={saving} onClick={() => handleEditSave(trip)} stopPropagation />
-                                            <Button label="Abbrechen" onClick={handleEditCancel} stopPropagation />
+                                            <Button label={saving ? "Speichern..." : "Speichern"} loading={saving} onClick={() => handleEditSave(trip)} stopPropagation icon={<Check size={18} />} />
+                                            <Button label="Abbrechen" onClick={handleEditCancel} stopPropagation icon={<X size={18} />} />
                                         </>
                                     ) : (
                                         <>
-                                            <Button label="Bearbeiten" onClick={() => handleEditStart(trip)} stopPropagation />
-                                            <Button label="Löschen" onClick={() => setConfirmDeleteId(trip.id)} stopPropagation />
+                                            <Button label="Bearbeiten" onClick={() => handleEditStart(trip)} stopPropagation icon={<Edit2 size={18} />} />
+                                            <Button label="Löschen" onClick={() => setConfirmDeleteId(trip.id)} stopPropagation icon={<Trash2 size={18} />} />
                                         </>
                                     )}
                                 </td>
@@ -510,9 +504,9 @@ function TripsTable() {
 
             {totalPages > 1 && (
                 <div className="pagination">
-                    <Button label="← Zurück" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+                    <Button label="Zurück" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} icon={<ChevronLeft size={18} />} />
                     <span className="pagination-info">{currentPage} / {totalPages}</span>
-                    <Button label="Weiter →" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+                    <Button label="Weiter" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} icon={<ChevronRight size={18} />} iconPosition="right" />
                 </div>
             )}
 

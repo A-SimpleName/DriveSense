@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import '../styles/button.css';
 
 type ButtonProps = {
@@ -9,6 +10,8 @@ type ButtonProps = {
   stopPropagation?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
 };
 
 function ButtonSpinnerInline() {
@@ -30,7 +33,7 @@ function ButtonSpinnerInline() {
   );
 }
 
-export function Button({ className, label, type = "button", title, onClick, stopPropagation = false, loading = false, disabled }: ButtonProps) {
+export function Button({ className, label, type = "button", title, onClick, stopPropagation = false, loading = false, disabled, icon, iconPosition = "left" }: ButtonProps) {
   return (
     <button
       className={className}
@@ -45,7 +48,13 @@ export function Button({ className, label, type = "button", title, onClick, stop
       }}
     >
       {loading && <ButtonSpinnerInline />}
+      {!loading && icon && iconPosition === "left" && (
+        <span className="button-icon button-icon-left">{icon}</span>
+      )}
       {label}
+      {!loading && icon && iconPosition === "right" && (
+        <span className="button-icon button-icon-right">{icon}</span>
+      )}
     </button>
   );
 }

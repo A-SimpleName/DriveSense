@@ -7,6 +7,7 @@ import { useAuth } from "../context/authContext";
 import { Button } from "../components/button";
 import { AddForm } from "../components/addForm";
 import { ConfirmationDialog } from "../components/ConfirmationDialog";
+import { User, Mail, Lock, Trash2 } from "lucide-react";
 
 import { deleteAccount, updateAccount, requestEmailChange } from "../services/accountService";
 import { changePassword } from "../services/auth";
@@ -80,24 +81,28 @@ export default function Settings() {
                     label="Name bearbeiten"
                     type="button"
                     onClick={() => setEditOpen(true)}
+                    icon={<User size={18} />}
                 />
 
                 <Button
                     label="E-Mail ändern"
                     type="button"
                     onClick={() => setEditEmailOpen(true)}
+                    icon={<Mail size={18} />}
                 />
 
                 <Button
                     label="Passwort ändern"
                     type="button"
                     onClick={() => setShowPasswordForm(true)}
+                    icon={<Lock size={18} />}
                 />
 
                 <Button
                     label="Account löschen"
                     type="button"
                     onClick={() => setConfirmDelete(true)}
+                    icon={<Trash2 size={18} />}
                 />
             </div>
 

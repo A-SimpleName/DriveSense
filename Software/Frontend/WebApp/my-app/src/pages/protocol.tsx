@@ -4,7 +4,6 @@ import type { Protocol } from "../model/protocol";
 import ProtocolTable from "../components/Protocols/table";
 import { ProtocolAddForm } from "../components/Protocols/protocolAddForm";
 import { TableSkeleton } from "../components/loadingSkeleton";
-import { Button } from "../components/button";
 import "../styles/pageLayout.css";
 
 export default function ProtocolPage() {
@@ -49,9 +48,6 @@ export default function ProtocolPage() {
         <div>
             <div className="page-header">
                 <h1>Protokolle</h1>
-                <div className="page-header-actions">
-                    <Button label="+" className="small icon" title="Protokoll hinzufügen" onClick={() => setShowForm(true)} />
-                </div>
             </div>
 
             {showForm && (

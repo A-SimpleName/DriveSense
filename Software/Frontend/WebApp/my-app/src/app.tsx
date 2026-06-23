@@ -163,11 +163,14 @@ function AppContent() {
 
         {!isAuth && needsVerification && (
             <Route path="*" element={
-                <VerifyEmailPage onVerified={() => {
-                    setNeedsVerification(false);
-                    setIsAuth(true);
-                    setReloadAuth(prev => prev + 1);
-                }} />
+                <VerifyEmailPage 
+                    onVerified={() => {
+                        setNeedsVerification(false);
+                        setIsAuth(true);
+                        setReloadAuth(prev => prev + 1);
+                    }}
+                    onCancel={() => setNeedsVerification(false)}
+                />
             } />
         )}
 

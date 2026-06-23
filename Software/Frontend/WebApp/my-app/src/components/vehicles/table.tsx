@@ -8,6 +8,8 @@ import { ConfirmationDialog } from "../ConfirmationDialog";
 import { VehicleMembers } from "./VehicleMembers";
 import { InviteVehicleMemberForm } from "./InviteVehicleMemberForm";
 import { TableSkeleton } from "../loadingSkeleton";
+import { Check, X } from "lucide-react";
+import { useDragScroll } from "../../hooks/useDragScroll";
 
 function VehiclesTable() {
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -26,6 +28,8 @@ function VehiclesTable() {
 
     const [membersVehicle, setMembersVehicle] = useState<Vehicle | null>(null);
     const [membersReloadKey, setMembersReloadKey] = useState(0);
+
+    const dragScroll = useDragScroll<HTMLDivElement>();
 
     useEffect(() => {
         setLoading(true);
@@ -99,7 +103,11 @@ function VehiclesTable() {
                 </span>
             </div>
 
-            <div>
+            <div
+                ref={dragScroll.ref}
+                className="page-table-wrapper--scrollable"
+                {...dragScroll.handlers}
+            >
                 <table>
                     <thead>
                         <tr>
@@ -158,8 +166,8 @@ function VehiclesTable() {
                                         <td>
                                             {editingId === vehicle.id ? (
                                                 <div style={{ display: "flex", gap: "8px" }}>
-                                                    <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} />
-                                                    <Button label="Abbrechen" onClick={handleCancel} />
+                                                    <Button label={saving ? "Speichert..." : "Speichern"} loading={saving} onClick={() => handleSave(vehicle.id)} icon={<Check size={18} />} />
+                                                    <Button label="Abbrechen" onClick={handleCancel} icon={<X size={18} />} />
                                                 </div>
                                             ) : (() => {
                                                 const actions: ActionMenuItem[] = [

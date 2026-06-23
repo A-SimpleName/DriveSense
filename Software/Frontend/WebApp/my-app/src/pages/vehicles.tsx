@@ -4,6 +4,7 @@ import VehiclesTable from "../components/vehicles/table";
 import { VehicleAddForm } from "../components/vehicles/vehicleAddForm";
 import { acceptVehicleInvite } from "../services/vehicleService";
 import { InviteCodeForm } from "../components/inviteCodeForm";
+import { Mail, Plus } from "lucide-react";
 import "../styles/pageLayout.css";
 
 function Vehicles() {
@@ -16,8 +17,8 @@ function Vehicles() {
             <div className="page-header">
                 <h1>Fahrzeuge</h1>
                 <div className="page-header-actions">
-                    <Button label="Einladung annehmen" onClick={() => setAcceptOpen(true)} />
-                    <Button label="+" className="small icon" title="Fahrzeug hinzufügen" onClick={() => setShowForm(true)} />
+                    <Button label="Einladung annehmen" onClick={() => setAcceptOpen(true)} icon={<Mail size={18} />} />
+                    <Button label="" className="small icon" title="Fahrzeug hinzufügen" onClick={() => setShowForm(true)} icon={<Plus size={18} />} />
                 </div>
             </div>
 

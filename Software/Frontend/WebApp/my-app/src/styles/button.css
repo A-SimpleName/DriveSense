@@ -82,3 +82,27 @@ button.icon {
   font-weight: 600;
   gap: 0;
 }
+
+/* Icon Styling */
+.button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.button-icon svg {
+  width: 1.2em;
+  height: 1.2em;
+  stroke-width: 2;
+}
+
+.button-icon-left {
+  margin-right: -4px;
+  margin-left: -4px;
+}
+
+.button-icon-right {
+  margin-left: -4px;
+  margin-right: -4px;
+}
