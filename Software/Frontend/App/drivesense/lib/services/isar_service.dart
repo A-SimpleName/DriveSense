@@ -4,6 +4,8 @@ import 'package:drivesense/model/active_trip.dart';
 import 'package:drivesense/model/trip.dart';
 
 class IsarService {
+  // Keep the changed Trip schema away from older local Isar files.
+  static const String _databaseName = 'drivesense_db_v2';
   static Isar? _isar;
 
   static Future<Isar> getInstance() async {
@@ -14,7 +16,7 @@ class IsarService {
     _isar = await Isar.open(
       [TripSchema, ActiveTripSchema],
       directory: directory.path,
-      name: 'drivesense_db',
+      name: _databaseName,
     );
 
     return _isar!;

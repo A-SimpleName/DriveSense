@@ -32,79 +32,79 @@ const TripSchema = CollectionSchema(
       name: r'distanceKm',
       type: IsarType.double,
     ),
-    r'endMileage': PropertySchema(
+    r'durationSeconds': PropertySchema(
       id: 3,
+      name: r'durationSeconds',
+      type: IsarType.long,
+    ),
+    r'endMileage': PropertySchema(
+      id: 4,
       name: r'endMileage',
       type: IsarType.long,
     ),
     r'endTime': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'endTime',
       type: IsarType.dateTime,
     ),
     r'isSynced': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'isSynced',
       type: IsarType.bool,
     ),
     r'lastError': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lastError',
       type: IsarType.string,
     ),
     r'localId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'localId',
       type: IsarType.string,
     ),
     r'profileId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'profileId',
       type: IsarType.long,
     ),
     r'protocolId': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'protocolId',
       type: IsarType.long,
     ),
     r'retryCount': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'retryCount',
       type: IsarType.long,
     ),
     r'roadSurfaceConditions': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'roadSurfaceConditions',
       type: IsarType.string,
     ),
     r'startMileage': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'startMileage',
       type: IsarType.long,
     ),
     r'startTime': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'startTime',
       type: IsarType.dateTime,
     ),
     r'trackingPointsJson': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'trackingPointsJson',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'type',
       type: IsarType.string,
     ),
     r'vehicleId': PropertySchema(
-      id: 16,
-      name: r'vehicleId',
-      type: IsarType.long,
-    ),
-    r'durationSeconds': PropertySchema(
       id: 17,
-      name: r'durationSeconds',
+      name: r'vehicleId',
       type: IsarType.long,
     )
   },
@@ -169,21 +169,21 @@ void _tripSerialize(
   writer.writeLong(offsets[0], object.accountId);
   writer.writeDateTime(offsets[1], object.createdAt);
   writer.writeDouble(offsets[2], object.distanceKm);
-  writer.writeLong(offsets[3], object.endMileage);
-  writer.writeDateTime(offsets[4], object.endTime);
-  writer.writeBool(offsets[5], object.isSynced);
-  writer.writeString(offsets[6], object.lastError);
-  writer.writeString(offsets[7], object.localId);
-  writer.writeLong(offsets[8], object.profileId);
-  writer.writeLong(offsets[9], object.protocolId);
-  writer.writeLong(offsets[10], object.retryCount);
-  writer.writeString(offsets[11], object.roadSurfaceConditions);
-  writer.writeLong(offsets[12], object.startMileage);
-  writer.writeDateTime(offsets[13], object.startTime);
-  writer.writeString(offsets[14], object.trackingPointsJson);
-  writer.writeString(offsets[15], object.type);
-  writer.writeLong(offsets[16], object.vehicleId);
-  writer.writeLong(offsets[17], object.durationSeconds);
+  writer.writeLong(offsets[3], object.durationSeconds);
+  writer.writeLong(offsets[4], object.endMileage);
+  writer.writeDateTime(offsets[5], object.endTime);
+  writer.writeBool(offsets[6], object.isSynced);
+  writer.writeString(offsets[7], object.lastError);
+  writer.writeString(offsets[8], object.localId);
+  writer.writeLong(offsets[9], object.profileId);
+  writer.writeLong(offsets[10], object.protocolId);
+  writer.writeLong(offsets[11], object.retryCount);
+  writer.writeString(offsets[12], object.roadSurfaceConditions);
+  writer.writeLong(offsets[13], object.startMileage);
+  writer.writeDateTime(offsets[14], object.startTime);
+  writer.writeString(offsets[15], object.trackingPointsJson);
+  writer.writeString(offsets[16], object.type);
+  writer.writeLong(offsets[17], object.vehicleId);
 }
 
 Trip _tripDeserialize(
@@ -196,22 +196,22 @@ Trip _tripDeserialize(
   object.accountId = reader.readLong(offsets[0]);
   object.createdAt = reader.readDateTime(offsets[1]);
   object.distanceKm = reader.readDouble(offsets[2]);
-  object.endMileage = reader.readLong(offsets[3]);
-  object.endTime = reader.readDateTimeOrNull(offsets[4]);
+  object.durationSeconds = reader.readLong(offsets[3]);
+  object.endMileage = reader.readLong(offsets[4]);
+  object.endTime = reader.readDateTimeOrNull(offsets[5]);
   object.id = id;
-  object.isSynced = reader.readBool(offsets[5]);
-  object.lastError = reader.readStringOrNull(offsets[6]);
-  object.localId = reader.readString(offsets[7]);
-  object.profileId = reader.readLong(offsets[8]);
-  object.protocolId = reader.readLong(offsets[9]);
-  object.retryCount = reader.readLong(offsets[10]);
-  object.roadSurfaceConditions = reader.readString(offsets[11]);
-  object.startMileage = reader.readLong(offsets[12]);
-  object.startTime = reader.readDateTime(offsets[13]);
-  object.trackingPointsJson = reader.readString(offsets[14]);
-  object.type = reader.readStringOrNull(offsets[15]);
-  object.vehicleId = reader.readLong(offsets[16]);
-  object.durationSeconds = reader.readLong(offsets[17]);
+  object.isSynced = reader.readBool(offsets[6]);
+  object.lastError = reader.readStringOrNull(offsets[7]);
+  object.localId = reader.readString(offsets[8]);
+  object.profileId = reader.readLong(offsets[9]);
+  object.protocolId = reader.readLong(offsets[10]);
+  object.retryCount = reader.readLong(offsets[11]);
+  object.roadSurfaceConditions = reader.readString(offsets[12]);
+  object.startMileage = reader.readLong(offsets[13]);
+  object.startTime = reader.readDateTime(offsets[14]);
+  object.trackingPointsJson = reader.readString(offsets[15]);
+  object.type = reader.readStringOrNull(offsets[16]);
+  object.vehicleId = reader.readLong(offsets[17]);
   return object;
 }
 
@@ -231,31 +231,31 @@ P _tripDeserializeProp<P>(
     case 3:
       return (reader.readLong(offset)) as P;
     case 4:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 5:
-      return (reader.readBool(offset)) as P;
-    case 6:
-      return (reader.readStringOrNull(offset)) as P;
-    case 7:
-      return (reader.readString(offset)) as P;
-    case 8:
       return (reader.readLong(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 6:
+      return (reader.readBool(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
     case 9:
       return (reader.readLong(offset)) as P;
     case 10:
       return (reader.readLong(offset)) as P;
     case 11:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 12:
-      return (reader.readLong(offset)) as P;
-    case 13:
-      return (reader.readDateTime(offset)) as P;
-    case 14:
       return (reader.readString(offset)) as P;
-    case 15:
-      return (reader.readStringOrNull(offset)) as P;
-    case 16:
+    case 13:
       return (reader.readLong(offset)) as P;
+    case 14:
+      return (reader.readDateTime(offset)) as P;
+    case 15:
+      return (reader.readString(offset)) as P;
+    case 16:
+      return (reader.readStringOrNull(offset)) as P;
     case 17:
       return (reader.readLong(offset)) as P;
     default:
@@ -612,6 +612,59 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
         upper: upper,
         includeUpper: includeUpper,
         epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> durationSecondsEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'durationSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> durationSecondsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'durationSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> durationSecondsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'durationSeconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> durationSecondsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'durationSeconds',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -1837,6 +1890,18 @@ extension TripQuerySortBy on QueryBuilder<Trip, Trip, QSortBy> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> sortByDurationSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationSeconds', Sort.desc);
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterSortBy> sortByEndMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endMileage', Sort.asc);
@@ -2043,6 +2108,18 @@ extension TripQuerySortThenBy on QueryBuilder<Trip, Trip, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationSeconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterSortBy> thenByDurationSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'durationSeconds', Sort.desc);
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterSortBy> thenByEndMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endMileage', Sort.asc);
@@ -2243,6 +2320,12 @@ extension TripQueryWhereDistinct on QueryBuilder<Trip, Trip, QDistinct> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QDistinct> distinctByDurationSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'durationSeconds');
+    });
+  }
+
   QueryBuilder<Trip, Trip, QDistinct> distinctByEndMileage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'endMileage');
@@ -2357,6 +2440,12 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
   QueryBuilder<Trip, double, QQueryOperations> distanceKmProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'distanceKm');
+    });
+  }
+
+  QueryBuilder<Trip, int, QQueryOperations> durationSecondsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'durationSeconds');
     });
   }
 

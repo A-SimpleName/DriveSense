@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drivesense/exceptions/trip_http_exception.dart';
+import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/repository/active_trip_repository.dart';
@@ -40,7 +41,10 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _initialize() async {
-    await Future.wait(<Future<void>>[_loadVehicles(), _loadProtocols()]);
+    await Future.wait(<Future<void>>[
+      _loadVehicles(),
+      _loadProtocolsForHome(),
+    ]);
     await _tripSessionService.initialize();
   }
 
@@ -110,9 +114,31 @@ class _HomePageBodyState extends State<HomePageBody> {
     });
   }
 
-  Future<void> _loadProtocols() async {
-    await ProtocolService.fetchProtocols();
-    if (!mounted) return;
+  Future<void> _loadProtocolsForHome() async {
+    final List<Protocol> protocols = await ProtocolService.fetchProtocols();
+    if (!mounted) {
+      return;
+    }
+
+    if (protocols.isEmpty) {
+      RuntimeStore.setCurrentProtocolId(0);
+      RuntimeStore.setTrips(<TripSummary>[]);
+      setState(() {});
+      return;
+    }
+
+    final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
+    final bool selectedProtocolExists = protocols.any(
+      (Protocol protocol) => protocol.id == selectedProtocolId,
+    );
+    if (!selectedProtocolExists) {
+      RuntimeStore.setCurrentProtocolId(protocols.first.id);
+    }
+
+    await RuntimeStore.refreshTrips();
+    if (!mounted) {
+      return;
+    }
 
     setState(() {});
   }
