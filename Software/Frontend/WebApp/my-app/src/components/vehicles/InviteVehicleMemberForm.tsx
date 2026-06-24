@@ -80,6 +80,9 @@ export function InviteVehicleMemberForm({ vehicleId, vehicleLabel, canInviteCoOw
                                     placeholder="beispiel@email.com"
                                     autoFocus
                                 />
+                                <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                                    Du kannst auch deine eigene E-Mail einladen.
+                                </span>
                             </div>
 
                             {canInviteCoOwner && (

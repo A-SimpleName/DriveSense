@@ -25,8 +25,7 @@ function Vehicles() {
             {acceptOpen && (
                 <InviteCodeForm
                     title="Fahrzeug-Einladung annehmen"
-                    placeholder="6-stelliger Code"
-                    maxLength={6}
+                    placeholder="Link oder Code"
                     onVerify={async code => { await acceptVehicleInvite(code); }}
                     onSuccess={() => {
                         setAcceptOpen(false);

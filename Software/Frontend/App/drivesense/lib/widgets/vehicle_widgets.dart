@@ -889,6 +889,7 @@ class _VehicleInviteDialogState extends State<_VehicleInviteDialog> {
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'E-Mail',
+                helperText: 'Du kannst auch deine eigene E-Mail einladen.',
                 border: OutlineInputBorder(),
               ),
               validator: (String? value) {

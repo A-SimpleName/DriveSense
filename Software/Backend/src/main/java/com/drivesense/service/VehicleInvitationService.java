@@ -59,12 +59,8 @@ public class VehicleInvitationService {
         Account invitedAccount = accountDao.getByEmail(email);
         if (invitedAccount == null) throw new NotFoundException("Kein Account mit dieser E-Mail gefunden");
 
-        // Sich selbst einladen verbieten
         Profile inviterProfile = profileDao.getById(inviterProfileId);
         if (inviterProfile == null) throw new NotFoundException("Einladendes Profil nicht gefunden");
-        if (inviterProfile.getAccount_id() == invitedAccount.getId()) {
-            throw new BadRequestException("Du kannst dich nicht selbst einladen");
-        }
 
         // Prüfen ob der Account noch ein freies Profil hat (ohne Zugriff auf das Fahrzeug)
         List<Profile> invitedProfiles = profileDao.getAllProfilesByAccountId(invitedAccount.getId());
