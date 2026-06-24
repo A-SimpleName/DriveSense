@@ -1,6 +1,7 @@
 import type { ProtocolDetail } from "../../model/protocol";
 import type { TripSummaryDto } from "../../model/trip";
 import styles from "../../styles/protocol.module.css";
+import { formatKm } from "../../utils/formatKm";
 
 type ProtocolType = "FAHRSCHUELER" | "PRIVAT" | "BERUFSFAHRER";
 
@@ -75,7 +76,7 @@ export default function ProtocolView({
                                 "de-AT"
                             )}
                         </td>
-                        <td>{trip.distance}</td>
+                        <td>{formatKm(trip.distance)}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
                         <td>{trip.licensePlate}</td>
@@ -106,7 +107,7 @@ export default function ProtocolView({
                         <td>{trip.endPoint}</td>
                         <td>{trip.startMileage}</td>
                         <td>{trip.endMileage}</td>
-                        <td>{trip.distance} km</td>
+                        <td>{formatKm(trip.distance)} km</td>
                         <td>{trip.licensePlate}</td>
                     </>
                 )}
@@ -120,7 +121,7 @@ export default function ProtocolView({
                         </td>
                         <td>{trip.startPoint}</td>
                         <td>{trip.endPoint}</td>
-                        <td>{trip.distance} km</td>
+                        <td>{formatKm(trip.distance)} km</td>
                         <td>{trip.type}</td>
                         <td>{trip.licensePlate}</td>
                     </>
@@ -174,7 +175,7 @@ export default function ProtocolView({
             <div className={styles.summary}>
                 <div className={styles.sumCell}>
                     <div className={styles.sumVal}>
-                        {totalKm} km
+                        {formatKm(totalKm)} km
                     </div>
 
                     <div className={styles.sumLbl}>

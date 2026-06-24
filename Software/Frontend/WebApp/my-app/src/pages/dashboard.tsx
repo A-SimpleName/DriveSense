@@ -9,6 +9,7 @@ import { DashboardSkeleton } from "../components/loadingSkeleton";
 import { useAuth } from "../context/authContext";
 import { Navigation, Users, Car } from "lucide-react";
 import "../styles/dashboard.css";
+import { formatKm } from "../utils/formatKm";
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ function Dashboard() {
             getTotalDuration(),
         ])
             .then(([latest, km, all, duration]) => {
-                setTotalKm(`${km} km`);
+                setTotalKm(`${formatKm(km)} km`);
                 setTotalDuration(duration);
                 setTripAmount(all.length);
                 setRecentTrips(all.slice(0, 5));
@@ -95,7 +96,7 @@ function Dashboard() {
                 <StatCard title="Gesamtstrecke" value={totalKm} />
                 <StatCard title="Fahrten" value={`${tripAmount}`} />
                 <StatCard title="Fahrzeit gesamt" value={`${Math.floor(totalDuration / 60)}h ${totalDuration % 60}min`} />
-                {lastTrip && <StatCard title="Letzte Fahrt" value={`${lastTrip.distance} km`} />}
+                {lastTrip && <StatCard title="Letzte Fahrt" value={`${formatKm(lastTrip.distance)} km`} />}
             </div>
 
             {tripAmount === 0 ? (
@@ -127,7 +128,7 @@ function Dashboard() {
                         <div className="dashboard-card">
                             <p className="dashboard-card-title">Letzte Fahrt</p>
                             <p className="dashboard-card-subtitle">{lastTrip.startPoint} → {lastTrip.endPoint}</p>
-                            <p className="dashboard-card-value">{lastTrip.distance} km</p>
+                            <p className="dashboard-card-value">{formatKm(lastTrip.distance)} km</p>
                             {route.length > 0 && <MapView route={route} />}
                         </div>
                     )}
@@ -140,7 +141,7 @@ function Dashboard() {
                     {recentTrips.map(t => (
                         <div key={t.id} className="dashboard-trip-row" onClick={() => navigate(`/trips/${t.id}`)}>
                             <span className="dashboard-trip-route">{t.startPoint} → {t.endPoint}</span>
-                            <span className="dashboard-trip-distance">{t.distance} km</span>
+                            <span className="dashboard-trip-distance">{formatKm(t.distance)} km</span>
                             <span className="dashboard-trip-condition">{t.roadSurfaceConditions}</span>
                             <span className="dashboard-trip-date">{new Date(t.startTime).toLocaleDateString()}</span>
                         </div>
