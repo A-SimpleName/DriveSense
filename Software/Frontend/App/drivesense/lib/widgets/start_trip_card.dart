@@ -15,6 +15,8 @@ class StartTripCard extends StatefulWidget {
     required this.selectedVehicleId,
     required this.onVehicleChanged,
     required this.isStartingTrip,
+    required this.isLoadingProtocols,
+    required this.protocolLoadError,
   });
 
   final VoidCallback onStart;
@@ -25,6 +27,8 @@ class StartTripCard extends StatefulWidget {
   final int selectedVehicleId;
   final ValueChanged<int> onVehicleChanged;
   final bool isStartingTrip;
+  final bool isLoadingProtocols;
+  final String? protocolLoadError;
 
   @override
   State<StartTripCard> createState() => _StartTripCardState();
@@ -50,7 +54,10 @@ class _StartTripCardState extends State<StartTripCard> {
         widget.protocols.isNotEmpty &&
         selectedVehicleId != null &&
         selectedProtocolId != null &&
+        !widget.isLoadingProtocols &&
+        widget.protocolLoadError == null &&
         !widget.isStartingTrip;
+    final bool hasProtocolLoadError = widget.protocolLoadError != null;
 
     return Card(
       color: AppColors.primaryBlue.withAlpha(77),
@@ -82,7 +89,7 @@ class _StartTripCardState extends State<StartTripCard> {
                   key: ValueKey<String>('vehicle-$selectedVehicleId'),
                   initialValue: selectedVehicleId,
                   isExpanded: true,
-                  hint: const Text('Fahrzeug auswaehlen'),
+                  hint: const Text('Fahrzeug auswählen'),
                   items: widget.vehicles
                       .map(
                         (Vehicle vehicle) => DropdownMenuItem<int>(
@@ -108,9 +115,13 @@ class _StartTripCardState extends State<StartTripCard> {
                   initialValue: selectedProtocolId,
                   isExpanded: true,
                   hint: Text(
-                    widget.protocols.isEmpty
-                        ? 'Keine Protokolle'
-                        : 'Protokoll auswaehlen',
+                    widget.isLoadingProtocols
+                        ? 'Protokolle werden geladen...'
+                        : hasProtocolLoadError
+                        ? 'Protokolle nicht geladen'
+                        : widget.protocols.isEmpty
+                        ? 'Keine Protokolle vorhanden'
+                        : 'Protokoll auswählen',
                   ),
 
                   items: widget.protocols
@@ -121,7 +132,10 @@ class _StartTripCardState extends State<StartTripCard> {
                         ),
                       )
                       .toList(),
-                  onChanged: widget.protocols.isEmpty
+                  onChanged:
+                      widget.isLoadingProtocols ||
+                          hasProtocolLoadError ||
+                          widget.protocols.isEmpty
                       ? null
                       : (int? protocolId) {
                           if (protocolId != null) {
@@ -147,6 +161,18 @@ class _StartTripCardState extends State<StartTripCard> {
                 ],
               ],
             ),
+            if (widget.isLoadingProtocols) ...[
+              const SizedBox(height: 12),
+              const LinearProgressIndicator(minHeight: 2),
+            ],
+            if (hasProtocolLoadError) ...[
+              const SizedBox(height: 12),
+              Text(
+                '${widget.protocolLoadError} Automatischer neuer Versuch laeuft.',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                textAlign: TextAlign.center,
+              ),
+            ],
             const SizedBox(height: 24),
             Align(
               alignment: Alignment.center,

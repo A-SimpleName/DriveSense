@@ -127,12 +127,12 @@ class _ProfilePageBodyState extends State<ProfilePageBody> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Profil loeschen',
+        title: 'Profil löschen',
         content:
-            'Profil "${profile.name}" wirklich loeschen? '
+            'Profil "${profile.name}" wirklich löschen? '
             'Fahrzeuge und Gruppen werden getrennt. '
             'Fahrten und Protokolle bleiben erhalten.',
-        confirmText: 'Endgueltig loeschen',
+        confirmText: 'Endgültig löschen',
         delaySeconds: 5,
         confirmButtonColor: Colors.red,
       ),
@@ -736,7 +736,7 @@ class _GroupInviteProfileDialogState extends State<_GroupInviteProfileDialog> {
     );
 
     return AlertDialog(
-      title: const Text('Profil auswaehlen'),
+      title: const Text('Profil auswählen'),
       content: SizedBox(
         width: double.maxFinite,
         child: hasProfiles

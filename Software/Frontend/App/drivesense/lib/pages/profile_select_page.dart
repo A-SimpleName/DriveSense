@@ -12,13 +12,13 @@ class ProfileSelectPage extends StatefulWidget {
 }
 
 class _ProfileSelectPageState extends State<ProfileSelectPage> {
-  late Future<List<Profile>> _profilesFuture;
+  late Future<ProfileFetchResult> _profilesFuture;
   bool _isCreatingProfile = false;
 
   @override
   void initState() {
     super.initState();
-    _profilesFuture = ProfileService.fetchProfiles();
+    _profilesFuture = _fetchProfilesForSelection();
   }
 
   @override
@@ -47,13 +47,14 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(20),
-                    child: FutureBuilder<List<Profile>>(
+                    child: FutureBuilder<ProfileFetchResult>(
                       future: _profilesFuture,
                       builder: (context, snapshot) {
                         final bool isLoading =
                             snapshot.connectionState == ConnectionState.waiting;
+                        final ProfileFetchResult? result = snapshot.data;
                         final List<Profile> profiles =
-                            snapshot.data ?? <Profile>[];
+                            result?.profiles ?? <Profile>[];
 
                         return Column(
                           mainAxisSize: MainAxisSize.min,
@@ -92,6 +93,16 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
                                 text: 'Profile konnten nicht geladen werden.',
                                 detail: '${snapshot.error}',
                               )
+                            else if (result != null && !result.isSuccess)
+                              _ProfileMessage(
+                                icon: Icons.wifi_off,
+                                text: 'Profile konnten nicht geladen werden.',
+                                detail:
+                                    result.message ??
+                                    'Bitte Internetverbindung prüfen.',
+                                actionLabel: 'Erneut versuchen',
+                                onAction: _retryFetchProfiles,
+                              )
                             else if (profiles.isEmpty)
                               const _ProfileMessage(
                                 icon: Icons.person_add_alt_1,
@@ -116,6 +127,16 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
         ),
       ),
     );
+  }
+
+  Future<ProfileFetchResult> _fetchProfilesForSelection() async {
+    return ProfileService.fetchProfilesWithResult();
+  }
+
+  void _retryFetchProfiles() {
+    setState(() {
+      _profilesFuture = _fetchProfilesForSelection();
+    });
   }
 
   Future<void> _createProfile() async {
@@ -155,7 +176,7 @@ class _ProfileSelectPageState extends State<ProfileSelectPage> {
       }
 
       setState(() {
-        _profilesFuture = ProfileService.fetchProfiles();
+        _profilesFuture = _fetchProfilesForSelection();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -397,13 +418,21 @@ class _ProfileMessage extends StatelessWidget {
   final IconData icon;
   final String text;
   final String? detail;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
-  const _ProfileMessage({required this.icon, required this.text, this.detail});
+  const _ProfileMessage({
+    required this.icon,
+    required this.text,
+    this.detail,
+    this.actionLabel,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 180,
+      height: actionLabel != null ? 220 : 180,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -421,6 +450,13 @@ class _ProfileMessage extends StatelessWidget {
                 detail!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.black54),
+              ),
+            ],
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: onAction,
+                child: Text(actionLabel!),
               ),
             ],
           ],

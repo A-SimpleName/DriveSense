@@ -7,6 +7,7 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:drivesense/services/token_storage.dart';
 
 class SignUpResult {
@@ -47,29 +48,7 @@ class SignInAndSignUp {
   SignInAndSignUp._();
 
   static String? _extractServerMessage(String rawBody) {
-    final Map<String, dynamic>? body = _parseJsonObject(rawBody);
-    if (body == null) {
-      return rawBody.trim().isEmpty ? null : rawBody.trim();
-    }
-
-    final dynamic errors = body['errors'];
-    if (errors is Map<String, dynamic> && errors.isNotEmpty) {
-      final String combined = errors.entries
-          .map(
-            (MapEntry<String, dynamic> entry) => '${entry.key}: ${entry.value}',
-          )
-          .join(', ');
-      if (combined.trim().isNotEmpty) {
-        return combined;
-      }
-    }
-
-    final dynamic message = body['message'] ?? body['error'];
-    if (message is String && message.trim().isNotEmpty) {
-      return message.trim();
-    }
-
-    return null;
+    return ServiceErrorMessages.extractServerMessage(rawBody);
   }
 
   /// Registers a new account and normalizes common backend/network failures
@@ -97,7 +76,7 @@ class SignInAndSignUp {
         return SignUpResult(
           isSuccess: false,
           message:
-              '401 Unauthorized: SignUp-Endpoint ist durch Security geschützt oder URL/Method passt nicht.',
+              'Registrierung konnte nicht gestartet werden. Bitte erneut einloggen und nochmals versuchen.',
           statusCode: statusCode,
         );
       }
@@ -106,7 +85,7 @@ class SignInAndSignUp {
         return SignUpResult(
           isSuccess: false,
           message:
-              '403 Forbidden: Backend blockiert den Aufruf (oft CSRF/CORS/Security-Rule).',
+              'Registrierung ist momentan nicht erlaubt. Bitte später erneut versuchen.',
           statusCode: statusCode,
         );
       }
@@ -122,24 +101,31 @@ class SignInAndSignUp {
 
       return SignUpResult(
         isSuccess: false,
-        message: 'Registrierung fehlgeschlagen (HTTP $statusCode).',
+        message: ServiceErrorMessages.forHttpStatus(
+          statusCode: statusCode,
+          action: 'Registrierung fehlgeschlagen',
+          responseBody: response.body,
+        ),
         statusCode: statusCode,
       );
     } on TimeoutException {
       return const SignUpResult(
         isSuccess: false,
         message:
-            'Zeitueberschreitung bei der Registrierung. Bitte erneut versuchen.',
+            'Zeitüberschreitung bei der Registrierung. Bitte erneut versuchen.',
       );
     } on SocketException {
       return const SignUpResult(
         isSuccess: false,
-        message: 'Keine Netzwerkverbindung. Bitte Internetverbindung pruefen.',
+        message: 'Keine Netzwerkverbindung. Bitte Internetverbindung prüfen.',
       );
-    } on http.ClientException {
-      return const SignUpResult(
+    } on http.ClientException catch (e) {
+      return SignUpResult(
         isSuccess: false,
-        message: 'Verbindungsfehler beim Senden der Registrierung.',
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Registrierung fehlgeschlagen',
+        ),
       );
     } catch (_) {
       return const SignUpResult(
@@ -225,24 +211,31 @@ class SignInAndSignUp {
           isSuccess: false,
           message:
               backendMessage ??
-              'Login fehlgeschlagen (HTTP ${response.statusCode}).',
+              ServiceErrorMessages.forHttpStatus(
+                statusCode: response.statusCode,
+                action: 'Login fehlgeschlagen',
+                responseBody: response.body,
+              ),
           statusCode: response.statusCode,
         );
       }
     } on TimeoutException {
       return const SignInResult(
         isSuccess: false,
-        message: 'Zeitueberschreitung beim Login. Bitte erneut versuchen.',
+        message: 'Zeitüberschreitung beim Login. Bitte erneut versuchen.',
       );
     } on SocketException {
       return const SignInResult(
         isSuccess: false,
-        message: 'Keine Netzwerkverbindung. Bitte Internetverbindung pruefen.',
+        message: 'Keine Netzwerkverbindung. Bitte Internetverbindung prüfen.',
       );
-    } on http.ClientException {
-      return const SignInResult(
+    } on http.ClientException catch (e) {
+      return SignInResult(
         isSuccess: false,
-        message: 'Verbindungsfehler beim Login.',
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Login fehlgeschlagen',
+        ),
       );
     } catch (_) {
       return const SignInResult(

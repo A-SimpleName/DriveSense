@@ -14,7 +14,7 @@ class DelayedConfirmDialog extends StatefulWidget {
     super.key,
     required this.title,
     required this.content,
-    this.confirmText = 'Bestaetigen',
+    this.confirmText = 'Bestätigen',
     this.cancelText = 'Abbrechen',
     this.delaySeconds = 5,
     this.confirmButtonColor,

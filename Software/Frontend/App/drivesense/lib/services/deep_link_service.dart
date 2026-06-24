@@ -156,7 +156,7 @@ class DeepLinkService {
     }
 
     _showSnackBar(
-      'Mehrere Profile koennen beitreten. Waehle zuerst ein Profil aus und oeffne die Einladung erneut.',
+      'Mehrere Profile können beitreten. Wähle zuerst ein Profil aus und öffne die Einladung erneut.',
     );
     return null;
   }

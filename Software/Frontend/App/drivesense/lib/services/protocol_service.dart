@@ -6,12 +6,48 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
+
+class ProtocolFetchResult {
+  /// True when the server request completed and a protocol list was parsed.
+  final bool isSuccess;
+
+  /// Protocols returned by the backend or an empty list on failure.
+  final List<Protocol> protocols;
+
+  /// Optional message for the UI when the fetch did not succeed.
+  final String? message;
+
+  const ProtocolFetchResult({
+    required this.isSuccess,
+    required this.protocols,
+    this.message,
+  });
+}
+
+class ProtocolActionResult {
+  /// True when the action completed successfully.
+  final bool isSuccess;
+
+  /// Message intended for a snackbar or inline status label.
+  final String message;
+
+  const ProtocolActionResult({
+    required this.isSuccess,
+    required this.message,
+  });
+}
 
 class ProtocolService {
   ProtocolService._();
 
   static Future<List<Protocol>> fetchProtocols() async {
+    final ProtocolFetchResult result = await fetchProtocolsWithResult();
+    return result.isSuccess ? result.protocols : <Protocol>[];
+  }
+
+  static Future<ProtocolFetchResult> fetchProtocolsWithResult() async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols');
 
     try {
@@ -20,16 +56,39 @@ class ProtocolService {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        return <Protocol>[];
+        return ProtocolFetchResult(
+          isSuccess: false,
+          protocols: const <Protocol>[],
+          message: ServiceErrorMessages.forHttpStatus(
+            statusCode: response.statusCode,
+            action: 'Protokolle konnten nicht geladen werden',
+            responseBody: response.body,
+          ),
+        );
       }
 
       final dynamic decoded = _decodeJson(response.body);
       final List<Protocol> protocols = _extractProtocols(decoded);
       RuntimeStore.setProtocols(protocols);
-      return protocols;
+      return ProtocolFetchResult(isSuccess: true, protocols: protocols);
+    } on TimeoutException catch (e) {
+      debugPrint('FetchProtocols timed out at $uri: $e');
+      return const ProtocolFetchResult(
+        isSuccess: false,
+        protocols: <Protocol>[],
+        message:
+            'Protokolle konnten nicht geladen werden. Bitte Internetverbindung prüfen.',
+      );
     } catch (e) {
       debugPrint('FetchProtocols failed at $uri: $e');
-      return <Protocol>[];
+      return ProtocolFetchResult(
+        isSuccess: false,
+        protocols: <Protocol>[],
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Protokolle konnten nicht geladen werden',
+        ),
+      );
     }
   }
 
@@ -167,6 +226,19 @@ class ProtocolService {
   }
 
   static Future<bool> deleteProtocol(int protocolId) async {
+    final ProtocolActionResult result = await deleteProtocolWithResult(
+      protocolId,
+    );
+    return result.isSuccess;
+  }
+
+  /// Deletes a protocol on the backend and removes its cached local copy.
+  ///
+  /// This returns a structured result so the UI can explain why deletion
+  /// failed instead of falling back to a generic "failed" snackbar.
+  static Future<ProtocolActionResult> deleteProtocolWithResult(
+    int protocolId,
+  ) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols/$protocolId');
 
     try {
@@ -180,11 +252,29 @@ class ProtocolService {
           response.statusCode >= 200 && response.statusCode < 300;
       if (success) {
         RuntimeStore.removeProtocol(protocolId);
+        return const ProtocolActionResult(
+          isSuccess: true,
+          message: 'Protokoll wurde gelöscht.',
+        );
       }
-      return success;
+
+      return ProtocolActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forHttpStatus(
+          statusCode: response.statusCode,
+          action: 'Protokoll konnte nicht gelöscht werden',
+          responseBody: response.body,
+        ),
+      );
     } catch (e) {
       debugPrint('DeleteProtocol failed at $uri: $e');
-      return false;
+      return ProtocolActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Protokoll konnte nicht gelöscht werden',
+        ),
+      );
     }
   }
 }

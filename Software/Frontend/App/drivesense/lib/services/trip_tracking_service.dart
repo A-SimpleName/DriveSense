@@ -171,8 +171,8 @@ class TripTrackingService {
     if (result is ServiceRequestFailure) {
       _foregroundTrackingRequested = false;
       final String message =
-          'Tracking-Dienst konnte nicht gestartet werden: ${result.error}';
-      debugPrint(message);
+          'Tracking-Dienst konnte nicht gestartet werden. Bitte Berechtigungen prüfen und erneut versuchen.';
+      debugPrint('Tracking service start failed: ${result.error}');
       onError?.call(message);
       throw TripTrackingException(message);
     }

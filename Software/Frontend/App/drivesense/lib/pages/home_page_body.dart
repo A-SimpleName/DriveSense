@@ -16,6 +16,8 @@ import 'package:drivesense/widgets/start_trip_card.dart';
 import 'package:drivesense/widgets/trip_detail_dialog.dart';
 import 'package:flutter/material.dart';
 
+const Duration _protocolRetryDelay = Duration(seconds: 30);
+
 class HomePageBody extends StatefulWidget {
   final TripSyncService tripSyncService;
   const HomePageBody({super.key, required this.tripSyncService});
@@ -29,6 +31,9 @@ class _HomePageBodyState extends State<HomePageBody> {
   bool _isStartingTrip = false;
   bool _isStoppingTrip = false;
   bool _isChangingPauseState = false;
+  bool _isLoadingProtocols = false;
+  String? _protocolLoadError;
+  Timer? _protocolRetryTimer;
 
   @override
   void initState() {
@@ -93,6 +98,8 @@ class _HomePageBodyState extends State<HomePageBody> {
                     onProtocolChanged: _onProtocolChanged,
                     onVehicleChanged: _onVehicleChanged,
                     isStartingTrip: _isStartingTrip,
+                    isLoadingProtocols: _isLoadingProtocols,
+                    protocolLoadError: _protocolLoadError,
                   ),
                   const SizedBox(height: 24),
                   LastTripCard(lastTrip: _resolveLastTrip(state.lastTrip)),
@@ -115,15 +122,49 @@ class _HomePageBodyState extends State<HomePageBody> {
   }
 
   Future<void> _loadProtocolsForHome() async {
-    final List<Protocol> protocols = await ProtocolService.fetchProtocols();
+    if (_isLoadingProtocols) {
+      return;
+    }
+
+    _protocolRetryTimer?.cancel();
+    _protocolRetryTimer = null;
+
+    if (mounted) {
+      setState(() {
+        _isLoadingProtocols = true;
+        _protocolLoadError = null;
+      });
+    }
+
+    final ProtocolFetchResult result =
+        await ProtocolService.fetchProtocolsWithResult();
     if (!mounted) {
       return;
     }
 
+    if (!result.isSuccess) {
+      if (RuntimeStore.protocols.isEmpty) {
+        RuntimeStore.setCurrentProtocolId(0);
+        RuntimeStore.setTrips(<TripSummary>[]);
+      }
+
+      setState(() {
+        _isLoadingProtocols = false;
+        _protocolLoadError =
+            result.message ?? 'Protokolle konnten nicht geladen werden.';
+      });
+      _scheduleProtocolRetry();
+      return;
+    }
+
+    final List<Protocol> protocols = result.protocols;
     if (protocols.isEmpty) {
       RuntimeStore.setCurrentProtocolId(0);
       RuntimeStore.setTrips(<TripSummary>[]);
-      setState(() {});
+      setState(() {
+        _isLoadingProtocols = false;
+        _protocolLoadError = null;
+      });
       return;
     }
 
@@ -140,7 +181,24 @@ class _HomePageBodyState extends State<HomePageBody> {
       return;
     }
 
-    setState(() {});
+    setState(() {
+      _isLoadingProtocols = false;
+      _protocolLoadError = null;
+    });
+  }
+
+  void _scheduleProtocolRetry() {
+    if (_protocolRetryTimer?.isActive == true) {
+      return;
+    }
+
+    _protocolRetryTimer = Timer(_protocolRetryDelay, () {
+      if (!mounted) {
+        return;
+      }
+
+      unawaited(_loadProtocolsForHome());
+    });
   }
 
   void _onVehicleChanged(int vehicleId) {
@@ -230,7 +288,7 @@ class _HomePageBodyState extends State<HomePageBody> {
         return AlertDialog(
           title: const Text('Fahrt abbrechen?'),
           content: const Text(
-            'Moechtest du die aktuelle Fahrt wirklich abbrechen? Alle gesammelten Daten gehen verloren.',
+            'Möchtest du die aktuelle Fahrt wirklich abbrechen? Alle gesammelten Daten gehen verloren.',
           ),
           actions: [
             TextButton(
@@ -334,7 +392,7 @@ class _HomePageBodyState extends State<HomePageBody> {
     if (message.isEmpty ||
         message == 'undefined' ||
         rawMessage == 'Exception: undefined') {
-      return 'Fahrt lokal gespeichert. Serverdaten werden spaeter synchronisiert.';
+      return 'Fahrt lokal gespeichert. Serverdaten werden später synchronisiert.';
     }
     return message;
   }
@@ -351,6 +409,7 @@ class _HomePageBodyState extends State<HomePageBody> {
 
   @override
   void dispose() {
+    _protocolRetryTimer?.cancel();
     _tripSessionService.dispose();
     super.dispose();
   }

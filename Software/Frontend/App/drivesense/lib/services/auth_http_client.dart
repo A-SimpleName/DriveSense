@@ -190,7 +190,7 @@ class _AuthHttpClient {
       );
     } on DioException catch (e) {
       throw package_http.ClientException(
-        e.message ?? 'HTTP request failed',
+        _dioExceptionMessage(e),
         url,
       );
     }
@@ -430,4 +430,14 @@ List<int> _asBytes(dynamic data) {
     return utf8.encode(data);
   }
   return utf8.encode(data.toString());
+}
+
+String _dioExceptionMessage(DioException error) {
+  final List<String> parts = <String>[
+    error.type.name,
+    if ((error.message ?? '').trim().isNotEmpty) error.message!.trim(),
+    if (error.error != null) error.error.toString(),
+  ];
+
+  return parts.isEmpty ? 'HTTP request failed' : parts.join(': ');
 }

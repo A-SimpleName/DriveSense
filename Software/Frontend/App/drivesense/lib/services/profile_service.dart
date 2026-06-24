@@ -7,6 +7,7 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:drivesense/services/token_storage.dart';
 import 'package:flutter/foundation.dart';
 
@@ -36,16 +37,37 @@ class ProfileMutationResponse {
   });
 }
 
+class ProfileFetchResult {
+  final bool isSuccess;
+  final List<Profile> profiles;
+  final String? message;
+
+  const ProfileFetchResult({
+    required this.isSuccess,
+    required this.profiles,
+    this.message,
+  });
+}
+
 class ProfileService {
   ProfileService._();
 
   static Future<List<Profile>> fetchProfiles() async {
+    final ProfileFetchResult result = await fetchProfilesWithResult();
+    return result.isSuccess ? result.profiles : <Profile>[];
+  }
+
+  static Future<ProfileFetchResult> fetchProfilesWithResult() async {
     final Map<String, String> headers = RequestHeaders.authenticated(
       clientType: 'mobile',
       includeProfileToken: false,
     );
     if (!headers.containsKey('Cookie')) {
-      return <Profile>[];
+      return const ProfileFetchResult(
+        isSuccess: false,
+        profiles: <Profile>[],
+        message: 'Kein Account-Token vorhanden. Bitte erneut einloggen.',
+      );
     }
 
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/profiles/byAccount');
@@ -58,14 +80,48 @@ class ProfileService {
       debugPrint('FetchProfiles <- ${response.statusCode} $uri');
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        return <Profile>[];
+        return ProfileFetchResult(
+          isSuccess: false,
+          profiles: const <Profile>[],
+          message: ServiceErrorMessages.forHttpStatus(
+            statusCode: response.statusCode,
+            action: 'Profile konnten nicht geladen werden',
+            responseBody: response.body,
+          ),
+        );
       }
 
       final dynamic decoded = _decodeJson(response.body);
-      return _extractProfiles(decoded);
+      return ProfileFetchResult(
+        isSuccess: true,
+        profiles: _extractProfiles(decoded),
+      );
+    } on TimeoutException catch (e) {
+      debugPrint('FetchProfiles timed out at $uri: $e');
+      return const ProfileFetchResult(
+        isSuccess: false,
+        profiles: <Profile>[],
+        message:
+            'Profile konnten nicht geladen werden. Bitte Internetverbindung prüfen.',
+      );
+    } on SocketException catch (e) {
+      debugPrint('FetchProfiles network failed at $uri: $e');
+      return const ProfileFetchResult(
+        isSuccess: false,
+        profiles: <Profile>[],
+        message:
+            'Profile konnten nicht geladen werden. Bitte Internetverbindung prüfen.',
+      );
     } catch (e) {
       debugPrint('FetchProfiles failed at $uri: $e');
-      return <Profile>[];
+      return ProfileFetchResult(
+        isSuccess: false,
+        profiles: <Profile>[],
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Profile konnten nicht geladen werden',
+        ),
+      );
     }
   }
 
@@ -125,7 +181,7 @@ class ProfileService {
     if (!headers.containsKey('Cookie')) {
       return const ProfileMutationResponse(
         isSuccess: false,
-        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswaehlen.',
+        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswählen.',
       );
     }
 
@@ -159,9 +215,11 @@ class ProfileService {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return ProfileMutationResponse(
           isSuccess: false,
-          message:
-              _extractServerMessage(response.body) ??
-              'Profilname konnte nicht gespeichert werden.',
+          message: ServiceErrorMessages.forHttpStatus(
+            statusCode: response.statusCode,
+            action: 'Profilname konnte nicht gespeichert werden',
+            responseBody: response.body,
+          ),
         );
       }
 
@@ -181,9 +239,12 @@ class ProfileService {
       );
     } catch (e) {
       debugPrint('UpdateProfileName failed at $uri: $e');
-      return const ProfileMutationResponse(
+      return ProfileMutationResponse(
         isSuccess: false,
-        message: 'Profilname konnte nicht gespeichert werden.',
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Profilname konnte nicht gespeichert werden',
+        ),
       );
     }
   }
@@ -195,7 +256,7 @@ class ProfileService {
     if (!headers.containsKey('Cookie')) {
       return const ProfileMutationResponse(
         isSuccess: false,
-        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswaehlen.',
+        message: 'Kein Profil-Token vorhanden. Bitte Profil erneut auswählen.',
       );
     }
 
@@ -213,9 +274,11 @@ class ProfileService {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return ProfileMutationResponse(
           isSuccess: false,
-          message:
-              _extractServerMessage(response.body) ??
-              'Profil konnte nicht geloescht werden.',
+          message: ServiceErrorMessages.forHttpStatus(
+            statusCode: response.statusCode,
+            action: 'Profil konnte nicht gelöscht werden',
+            responseBody: response.body,
+          ),
         );
       }
 
@@ -225,9 +288,12 @@ class ProfileService {
       );
     } catch (e) {
       debugPrint('DeleteProfile failed at $uri: $e');
-      return const ProfileMutationResponse(
+      return ProfileMutationResponse(
         isSuccess: false,
-        message: 'Profil konnte nicht geloescht werden.',
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Profil konnte nicht gelöscht werden',
+        ),
       );
     }
   }
@@ -259,19 +325,13 @@ class ProfileService {
         'SelectProfile response <- status=${response.statusCode}, body=${response.body}',
       );
 
-      if (response.statusCode == 401 || response.statusCode == 403) {
-        return SelectProfileResponse(
-          isSuccess: false,
-          message:
-              'Keine Berechtigung fuer Profilauswahl (HTTP ${response.statusCode}).',
-        );
-      }
-
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return SelectProfileResponse(
           isSuccess: false,
-          message:
-              'HTTP ${response.statusCode}: ${_extractServerMessage(response.body) ?? response.body}',
+          message: _selectProfileFailureMessage(
+            statusCode: response.statusCode,
+            responseBody: response.body,
+          ),
         );
       }
 
@@ -284,42 +344,57 @@ class ProfileService {
       if (profileToken == null || profileToken.isEmpty) {
         return const SelectProfileResponse(
           isSuccess: false,
-          message: 'Profil-Token fehlt in der Serverantwort.',
+          message:
+              'Die Serverantwort war unvollständig. Bitte erneut versuchen.',
         );
       }
 
-      await TokenStorage.instance.saveSelectedProfile(
-        profileId: profile?.id ?? profileId,
-        profileToken: profileToken,
-        profileRole: profile?.role,
-      );
-      await RuntimeStore.refreshTrips();
+      try {
+        await TokenStorage.instance.saveSelectedProfile(
+          profileId: profile?.id ?? profileId,
+          profileToken: profileToken,
+          profileRole: profile?.role,
+        );
+        await RuntimeStore.refreshTrips();
+      } catch (e) {
+        debugPrint('SelectProfile post-processing failed at $uri: $e');
+        return const SelectProfileResponse(
+          isSuccess: false,
+          message:
+              'Das Profil wurde ausgewählt, aber die App konnte nicht aktualisiert werden. Bitte erneut versuchen.',
+        );
+      }
 
       return SelectProfileResponse(
         isSuccess: true,
-        message: 'Profil erfolgreich ausgewaehlt.',
+        message: 'Profil erfolgreich ausgewählt.',
         profile: profile,
         profileToken: profileToken,
       );
     } on TimeoutException {
       return const SelectProfileResponse(
         isSuccess: false,
-        message: 'Timeout beim Profilwechsel.',
+        message:
+            'Der Profilwechsel dauert zu lange. Bitte Internetverbindung prüfen und erneut versuchen.',
       );
     } on SocketException {
       return const SelectProfileResponse(
         isSuccess: false,
-        message: 'Keine Netzwerkverbindung beim Profilwechsel.',
+        message:
+            'Keine Verbindung zum Server. Bitte Internetverbindung prüfen und erneut versuchen.',
       );
     } on http.ClientException catch (e) {
+      debugPrint('SelectProfile HTTP client failure at $uri: $e');
       return SelectProfileResponse(
         isSuccess: false,
-        message: 'HTTP-Clientfehler beim Profilwechsel: $e',
+        message: _selectProfileClientFailureMessage(e),
       );
     } catch (e) {
+      debugPrint('SelectProfile failed at $uri: $e');
       return SelectProfileResponse(
         isSuccess: false,
-        message: 'Unerwarteter Fehler beim Profilwechsel: $e',
+        message:
+            'Das Profil konnte nicht ausgewählt werden. Bitte später erneut versuchen.',
       );
     }
   }
@@ -371,14 +446,80 @@ class ProfileService {
   }
 
   static String? _extractServerMessage(String rawBody) {
-    final dynamic decoded = _decodeJson(rawBody);
-    if (decoded is Map<String, dynamic>) {
-      final dynamic message = decoded['message'] ?? decoded['error'];
-      if (message is String && message.trim().isNotEmpty) {
-        return message.trim();
-      }
+    return ServiceErrorMessages.extractServerMessage(rawBody);
+  }
+
+  static String _selectProfileFailureMessage({
+    required int statusCode,
+    required String responseBody,
+  }) {
+    final String? serverMessage = _extractServerMessage(responseBody);
+    if (serverMessage != null) {
+      return serverMessage;
     }
-    return null;
+
+    if (statusCode == 401 || statusCode == 403) {
+      return 'Die Anmeldung ist abgelaufen oder die Auswahl ist nicht erlaubt. Bitte erneut einloggen.';
+    }
+
+    if (statusCode == 404) {
+      return 'Das ausgewählte Profil wurde nicht gefunden.';
+    }
+
+    if (statusCode == 400 || statusCode == 409) {
+      return 'Das Profil konnte gerade nicht gewechselt werden. Bitte erneut versuchen.';
+    }
+
+    if (statusCode >= 500) {
+      return 'Der Server ist momentan nicht erreichbar. Bitte später erneut versuchen.';
+    }
+
+    return 'Das Profil konnte nicht ausgewahlt werden. Bitte erneut versuchen.';
+  }
+
+  static String _selectProfileClientFailureMessage(http.ClientException error) {
+    final String message = error.message.toLowerCase();
+
+    if (_looksLikeOfflineError(message)) {
+      return 'Keine Verbindung zum Server. Bitte Internetverbindung prüfen und erneut versuchen.';
+    }
+
+    if (_looksLikeTimeoutError(message)) {
+      return 'Der Profilwechsel dauert zu lange. Bitte Verbindung prüfen und erneut versuchen.';
+    }
+
+    if (_looksLikeTlsError(message)) {
+      return 'Die sichere Verbindung zum Server ist fehlgeschlagen. Bitte später erneut versuchen.';
+    }
+
+    return 'Der Profilwechsel konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
+  }
+
+  static bool _looksLikeOfflineError(String message) {
+    return message.contains('socketexception') ||
+        message.contains('failed host lookup') ||
+        message.contains('connectionerror') ||
+        message.contains('network is unreachable') ||
+        message.contains('connection errored') ||
+        message.contains('connection refused') ||
+        message.contains('no address associated with hostname') ||
+        message.contains('software caused connection abort');
+  }
+
+  static bool _looksLikeTimeoutError(String message) {
+    return message.contains('timeout') ||
+        message.contains('connection timed out') ||
+        message.contains('receivetimeout') ||
+        message.contains('sendtimeout') ||
+        message.contains('connectiontimeout');
+  }
+
+  static bool _looksLikeTlsError(String message) {
+    return message.contains('certificate') ||
+        message.contains('badcertificate') ||
+        message.contains('handshake') ||
+        message.contains('tls') ||
+        message.contains('ssl');
   }
 
   static String? _extractProfileToken(Map<String, dynamic>? decodedBody) {

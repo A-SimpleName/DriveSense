@@ -6,6 +6,7 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/vehicle.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
 
 class VehicleActionResult {
@@ -198,15 +199,19 @@ class VehicleService {
 
       return VehicleActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Fahrzeug konnte nicht geloescht werden.',
+        message: _httpFailure(
+          response,
+          'Fahrzeug konnte nicht gelöscht werden',
+        ),
       );
     } catch (e) {
       debugPrint('DeleteVehicle failed at $uri: $e');
-      return const VehicleActionResult(
+      return VehicleActionResult(
         isSuccess: false,
-        message: 'Fahrzeug konnte nicht geloescht werden.',
+        message: _exceptionFailure(
+          e,
+          'Fahrzeug konnte nicht gelöscht werden',
+        ),
       );
     }
   }
@@ -240,15 +245,19 @@ class VehicleService {
 
       return VehicleActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Fahrzeugeinladung konnte nicht gesendet werden.',
+        message: _httpFailure(
+          response,
+          'Fahrzeugeinladung konnte nicht gesendet werden',
+        ),
       );
     } catch (e) {
       debugPrint('InviteVehicle failed at $uri: $e');
-      return const VehicleActionResult(
+      return VehicleActionResult(
         isSuccess: false,
-        message: 'Fahrzeugeinladung konnte nicht gesendet werden.',
+        message: _exceptionFailure(
+          e,
+          'Fahrzeugeinladung konnte nicht gesendet werden',
+        ),
       );
     }
   }
@@ -282,15 +291,19 @@ class VehicleService {
 
       return VehicleActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Fahrzeugeinladung konnte nicht angenommen werden.',
+        message: _httpFailure(
+          response,
+          'Fahrzeugeinladung konnte nicht angenommen werden',
+        ),
       );
     } catch (e) {
       debugPrint('AcceptVehicleInvite failed at $uri: $e');
-      return const VehicleActionResult(
+      return VehicleActionResult(
         isSuccess: false,
-        message: 'Fahrzeugeinladung konnte nicht angenommen werden.',
+        message: _exceptionFailure(
+          e,
+          'Fahrzeugeinladung konnte nicht angenommen werden',
+        ),
       );
     }
   }
@@ -323,15 +336,19 @@ class VehicleService {
 
       return VehicleActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Fahrzeugeinladung konnte nicht angenommen werden.',
+        message: _httpFailure(
+          response,
+          'Fahrzeugeinladung konnte nicht angenommen werden',
+        ),
       );
     } catch (e) {
       debugPrint('AcceptVehicleInviteAuto failed at $uri: $e');
-      return const VehicleActionResult(
+      return VehicleActionResult(
         isSuccess: false,
-        message: 'Fahrzeugeinladung konnte nicht angenommen werden.',
+        message: _exceptionFailure(
+          e,
+          'Fahrzeugeinladung konnte nicht angenommen werden',
+        ),
       );
     }
   }
@@ -386,14 +403,15 @@ class VehicleService {
     }
   }
 
-  static String? _extractServerMessage(String rawBody) {
-    final dynamic decoded = _decodeJson(rawBody);
-    if (decoded is Map<String, dynamic>) {
-      final dynamic message = decoded['message'] ?? decoded['error'];
-      if (message is String && message.trim().isNotEmpty) {
-        return message.trim();
-      }
-    }
-    return null;
+  static String _httpFailure(http.Response response, String action) {
+    return ServiceErrorMessages.forHttpStatus(
+      statusCode: response.statusCode,
+      action: action,
+      responseBody: response.body,
+    );
+  }
+
+  static String _exceptionFailure(Object error, String action) {
+    return ServiceErrorMessages.forException(error, action: action);
   }
 }

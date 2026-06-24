@@ -142,7 +142,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   ? const Center(child: CircularProgressIndicator())
                   : _protocols.isEmpty
                   ? const Center(
-                      child: Text('Keine Protokolle fuer das aktuelle Profil.'),
+                      child: Text('Keine Protokolle für das aktuelle Profil.'),
                     )
                   : ProtocolTable(onChanged: _refreshVisibleTrips),
             ),
@@ -194,17 +194,16 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       _isLoading = true;
     });
 
-    final bool success = await ProtocolService.deleteProtocol(
-      selectedProtocolId,
-    );
+    final ProtocolActionResult result =
+        await ProtocolService.deleteProtocolWithResult(selectedProtocolId);
 
     if (!mounted) return;
 
-    if (success) {
+    if (result.isSuccess) {
       await _loadProtocolsAndTrips();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Protokoll wurde gelöscht.')),
+          SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red),
         );
       }
     } else {
@@ -213,7 +212,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       });
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Löschen fehlgeschlagen.')));
+      ).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red  ));
     }
   }
 
@@ -236,7 +235,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(result.message)));
+    ).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red));
   }
 
   Future<void> _refreshVisibleTrips() async {
@@ -279,11 +278,26 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
     });
 
     try {
-      final List<Protocol> protocols = await ProtocolService.fetchProtocols();
+      final ProtocolFetchResult result =
+          await ProtocolService.fetchProtocolsWithResult();
       if (!mounted) {
         return;
       }
 
+      if (!result.isSuccess) {
+        if (RuntimeStore.protocols.isEmpty) {
+          RuntimeStore.setCurrentProtocolId(0);
+          RuntimeStore.setTrips(<TripSummary>[]);
+        }
+        setState(() {
+          _isLoading = false;
+          _loadError =
+              result.message ?? 'Protokolle konnten nicht geladen werden.';
+        });
+        return;
+      }
+
+      final List<Protocol> protocols = result.protocols;
       if (protocols.isEmpty) {
         RuntimeStore.setProtocols(<Protocol>[]);
         RuntimeStore.setCurrentProtocolId(0);
@@ -398,7 +412,9 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kein aktives Profil verfügbar.')),
+        const SnackBar(content: Text('Kein aktives Profil verfügbar.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -421,6 +437,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Protokoll konnte nicht erstellt werden.'),
+            backgroundColor: Colors.red,
           ),
         );
         return;

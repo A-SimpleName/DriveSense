@@ -227,7 +227,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
             child: Center(child: Text('Seite ${_pageIndex + 1} / $pageCount')),
           ),
           IconButton(
-            tooltip: 'Naechste Seite',
+            tooltip: 'Nächste Seite',
             onPressed: isLastPage
                 ? null
                 : () => _goToPage(_pageIndex + 1, pageCount),
@@ -298,7 +298,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
             ),
             IconButton(
               icon: const Icon(Icons.delete, size: 18),
-              tooltip: 'Loeschen',
+              tooltip: 'Löschen',
               color: Colors.red,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 36, height: 36),
@@ -359,9 +359,9 @@ class _ProtocolTableState extends State<ProtocolTable> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        title: const Text('Fahrt loeschen'),
+        title: const Text('Fahrt löschen'),
         content: Text(
-          'Moechtest du die Fahrt vom ${formatProtocolTripDate(trip.startTime)} wirklich loeschen?',
+          'Möchtest du die Fahrt vom ${formatProtocolTripDate(trip.startTime)} wirklich löschen?',
         ),
         actions: <Widget>[
           TextButton(
@@ -371,7 +371,7 @@ class _ProtocolTableState extends State<ProtocolTable> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Loeschen'),
+            child: const Text('Löschen'),
           ),
         ],
       ),
@@ -381,7 +381,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
       return;
     }
 
-    final bool success = await TripService().deleteTripSummary(trip);
+    final TripActionResult result = await TripService()
+        .deleteTripSummaryWithResult(trip);
     await widget.onChanged?.call();
 
     if (!context.mounted) {
@@ -390,10 +391,8 @@ class _ProtocolTableState extends State<ProtocolTable> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          success ? 'Fahrt geloescht.' : 'Loeschen fehlgeschlagen.',
-        ),
-        backgroundColor: success ? Colors.green : Colors.red,
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
       ),
     );
   }
@@ -472,7 +471,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
 
     if (distanceKm < 0 || startMileage < 0 || endMileage < startMileage) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kilometerwerte sind ungueltig.')),
+        const SnackBar(content: Text('Kilometerwerte sind ungültig.')),
       );
       return;
     }
@@ -543,7 +542,7 @@ class _TripEditDialogState extends State<_TripEditDialog> {
             TextField(
               controller: _roadSurfaceCtrl,
               decoration: const InputDecoration(
-                labelText: 'Strassenzustand / Witterung',
+                labelText: 'Straßenzustand / Witterung',
               ),
             ),
             const SizedBox(height: 8),

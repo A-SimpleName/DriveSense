@@ -242,7 +242,7 @@ class _TripMapPreviewState extends State<_TripMapPreview> {
         .toList();
     if (validPoints.isEmpty) {
       return const _MapMessage(
-        message: 'Keine Positionsdaten fuer diese Fahrt vorhanden.',
+        message: 'Keine Positionsdaten für diese Fahrt vorhanden.',
       );
     }
     if (!_supportsEmbeddedGoogleMap) {

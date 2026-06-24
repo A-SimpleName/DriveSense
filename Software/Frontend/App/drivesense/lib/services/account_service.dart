@@ -3,6 +3,7 @@ import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/account.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
 
 class AccountService {
@@ -108,11 +109,17 @@ class AccountService {
         return null;
       }
 
-      return _extractErrorMessage(response.body) ??
-          'Passwort konnte nicht geaendert werden';
+      return ServiceErrorMessages.forHttpStatus(
+        statusCode: response.statusCode,
+        action: 'Passwort konnte nicht geändert werden',
+        responseBody: response.body,
+      );
     } catch (e) {
       debugPrint('Account password update failed: $e');
-      return 'Passwort konnte nicht geaendert werden';
+      return ServiceErrorMessages.forException(
+        e,
+        action: 'Passwort konnte nicht geändert werden',
+      );
     }
   }
 
@@ -135,11 +142,17 @@ class AccountService {
         return null;
       }
 
-      return _extractErrorMessage(response.body) ??
-          'Account konnte nicht geloescht werden';
+      return ServiceErrorMessages.forHttpStatus(
+        statusCode: response.statusCode,
+        action: 'Account konnte nicht gelöscht werden',
+        responseBody: response.body,
+      );
     } catch (e) {
       debugPrint('Account delete failed: $e');
-      return 'Account konnte nicht geloescht werden';
+      return ServiceErrorMessages.forException(
+        e,
+        action: 'Account konnte nicht gelöscht werden',
+      );
     }
   }
 
@@ -161,11 +174,17 @@ class AccountService {
         return null;
       }
 
-      return _extractErrorMessage(response.body) ??
-          'Code konnte nicht gesendet werden';
+      return ServiceErrorMessages.forHttpStatus(
+        statusCode: response.statusCode,
+        action: 'Code konnte nicht gesendet werden',
+        responseBody: response.body,
+      );
     } catch (e) {
       debugPrint('Account forgot-password failed: $e');
-      return 'Code konnte nicht gesendet werden';
+      return ServiceErrorMessages.forException(
+        e,
+        action: 'Code konnte nicht gesendet werden',
+      );
     }
   }
 
@@ -195,31 +214,18 @@ class AccountService {
         return null;
       }
 
-      return _extractErrorMessage(response.body) ??
-          'Passwort konnte nicht zurückgesetzt werden';
+      return ServiceErrorMessages.forHttpStatus(
+        statusCode: response.statusCode,
+        action: 'Passwort konnte nicht zurückgesetzt werden',
+        responseBody: response.body,
+      );
     } catch (e) {
       debugPrint('Account reset-password failed: $e');
-      return 'Passwort konnte nicht zurückgesetzt werden';
+      return ServiceErrorMessages.forException(
+        e,
+        action: 'Passwort konnte nicht zurückgesetzt werden',
+      );
     }
   }
 
-  static String? _extractErrorMessage(String body) {
-    if (body.trim().isEmpty) {
-      return null;
-    }
-
-    try {
-      final dynamic decoded = jsonDecode(body);
-      if (decoded is Map<String, dynamic>) {
-        final dynamic message = decoded['message'] ?? decoded['error'];
-        if (message is String && message.trim().isNotEmpty) {
-          return message.trim();
-        }
-      }
-    } catch (_) {
-      // Fall back to raw body below.
-    }
-
-    return body.trim();
-  }
 }

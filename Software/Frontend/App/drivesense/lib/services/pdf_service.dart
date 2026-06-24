@@ -3,6 +3,7 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
 import 'package:drivesense/services/pdf_file_saver.dart';
 import 'package:drivesense/services/pdf_file_sharer.dart';
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
 import 'package:drivesense/config/api_config.dart';
 
@@ -11,7 +12,7 @@ class PdfService {
     final int selectedProtocolId =
         protocolId ?? RuntimeStore.getCurrentProtocolId();
     if (selectedProtocolId <= 0) {
-      return const PdfExportResult.failure('Kein Protokoll ausgewaehlt.');
+      return const PdfExportResult.failure('Kein Protokoll ausgewählt.');
     }
 
     final Uri uri = Uri.parse(
@@ -49,21 +50,26 @@ class PdfService {
       );
       final String visiblePath = userVisiblePdfPath(path);
       final String message = shareOpened
-          ? 'PDF exportiert. Teilen/Speichern geoeffnet.'
+          ? 'PDF exportiert. Teilen/Speichern geöffnet.'
           : 'PDF exportiert: $visiblePath';
       return PdfExportResult.success(message, path);
     } catch (e) {
       debugPrint('GeneratePdf failed at $uri: $e');
-      return PdfExportResult.failure('PDF Export fehlgeschlagen: $e');
+      return PdfExportResult.failure(
+        ServiceErrorMessages.forException(
+          e,
+          action: 'PDF-Export fehlgeschlagen',
+        ),
+      );
     }
   }
 
   static String _failureMessage(http.Response response) {
-    final String body = response.body.trim();
-    if (body.isNotEmpty) {
-      return 'PDF Export fehlgeschlagen (${response.statusCode}): $body';
-    }
-    return 'PDF Export fehlgeschlagen (${response.statusCode}).';
+    return ServiceErrorMessages.forHttpStatus(
+      statusCode: response.statusCode,
+      action: 'PDF-Export fehlgeschlagen',
+      responseBody: response.body,
+    );
   }
 
   static String? _filenameFromHeaders(Map<String, String> headers) {
@@ -84,18 +90,18 @@ class PdfService {
 
 class PdfExportResult {
   const PdfExportResult._({
-    required this.success,
+    required this.isSuccess,
     required this.message,
     this.path,
   });
 
   const PdfExportResult.success(String message, String path)
-    : this._(success: true, message: message, path: path);
+    : this._(isSuccess: true, message: message, path: path);
 
   const PdfExportResult.failure(String message)
-    : this._(success: false, message: message);
+    : this._(isSuccess: false, message: message);
 
-  final bool success;
+  final bool isSuccess;
   final String message;
   final String? path;
 }

@@ -5,6 +5,5 @@ class TripHttpException implements Exception {
   TripHttpException(this.message, {this.statusCode});
 
   @override
-  String toString() => 'TripHttpException: $message';
-  
+  String toString() => message;
 }
