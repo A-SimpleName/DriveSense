@@ -132,7 +132,8 @@ export default function ProtocolView({
     const columns = getColumns();
 
     return (
-        <div className={styles.pdfContainer}>
+        <div className={styles.pdfScrollWrapper}>
+            <div className={styles.pdfContainer}>
             {/* HEADER */}
             <div className={styles.header}>
                 <div className={styles.left}>
@@ -231,6 +232,7 @@ export default function ProtocolView({
                 <div className={styles.right}>
                     Seite 1
                 </div>
+            </div>
             </div>
         </div>
     );
