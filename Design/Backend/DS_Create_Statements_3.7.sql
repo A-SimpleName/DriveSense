@@ -81,7 +81,7 @@ CREATE TABLE `vehicle` (
 
   `model` VARCHAR(150) NOT NULL,
 
-  `license_plate` VARCHAR(20) NOT NULL,
+  `license_plate` VARCHAR(20) DEFAULT NULL,
 
   `mileage` INT DEFAULT 0,
 

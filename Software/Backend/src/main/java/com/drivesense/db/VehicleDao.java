@@ -267,7 +267,8 @@ public class VehicleDao {
             UPDATE vehicle v
             JOIN profile_vehicle pv ON pv.vehicle_id = v.id AND pv.role = 'OWNER'
             JOIN profile p ON p.id = pv.profile_id AND p.account_id = ? AND p.deleted_at IS NULL
-            SET v.deleted_at = NOW()
+            SET v.license_plate = NULL,
+                v.deleted_at = NOW()
             WHERE v.id = ? AND v.deleted_at IS NULL
         """;
 
