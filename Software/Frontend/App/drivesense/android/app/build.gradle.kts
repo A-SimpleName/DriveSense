@@ -26,7 +26,7 @@ fun googleMapsApiKey(): String {
 
 android {
     namespace = "com.example.drivesense"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
