@@ -6,7 +6,7 @@ class LocalAccountScope {
   static int requireAccountId() {
     final int? currentAccountId = accountId;
     if (currentAccountId == null || currentAccountId <= 0) {
-      throw StateError('Kein Account-Kontext fuer lokale Fahrtdaten.');
+      throw StateError('Kein Account-Kontext für lokale Fahrtdaten.');
     }
     return currentAccountId;
   }

@@ -90,9 +90,11 @@
 }
 
 .dashboard-trip-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 100px 140px 100px;
     align-items: center;
+    column-gap: 1rem;
+
     padding: 8px 0;
     border-bottom: 0.5px solid var(--color-border-tertiary);
     cursor: pointer;
@@ -104,22 +106,35 @@
 }
 
 .dashboard-trip-route {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
     color: var(--color-text-primary);
 }
 
 .dashboard-trip-distance {
+    text-align: right;
+    white-space: nowrap;
     color: var(--color-text-secondary);
 }
 
 .dashboard-trip-condition {
+    justify-self: center;
+
     font-size: 11px;
     background: var(--color-background-success);
     color: var(--color-text-success);
     padding: 2px 8px;
     border-radius: var(--border-radius-md);
+    white-space: nowrap;
 }
 
 .dashboard-trip-date {
+    text-align: right;
+    white-space: nowrap;
+
     font-size: 12px;
     color: var(--color-text-tertiary);
 }
@@ -138,6 +153,12 @@
     padding: 0.75rem;
     font-size: 15px;
     text-align: center;
+}
+
+@media (max-width: 800px) {
+    .dashboard-actions {
+        flex-direction: column;
+    }
 }
 
 .dashboard-empty {

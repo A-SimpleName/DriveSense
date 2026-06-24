@@ -1,23 +1,30 @@
 import type { Protocol } from "../../model/protocol";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { Button } from "../button";
 import { exportProtocol, deleteProtocol } from "../../services/protocolService";
 import { useState } from "react";
 import { ConfirmationDialog } from "../ConfirmationDialog";
-import { Plus, Download, Trash2 } from "lucide-react";
+import { Plus, Download, Pencil, Trash2 } from "lucide-react";
+import { ProtocolRenameForm } from "./protocolRenameForm";
 import "../../styles/pageLayout.css";
 
-export default function ProtocolTable({ ownProtocols, groupProtocols, setShowForm, onDeleted }: {
+export default function ProtocolTable({
+    ownProtocols,
+    groupProtocols,
+    setShowForm,
+    onChanged,
+}: {
     ownProtocols: Protocol[];
     groupProtocols: Protocol[];
     setShowForm: (open: boolean) => void;
-    onDeleted: () => void;
+    onChanged: () => void;
 }) {
     const navigate = useNavigate();
     const [error, setError] = useState<string | null>(null);
     const [exportError, setExportError] = useState<string | null>(null);
     const [exportingId, setExportingId] = useState<number | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+    const [renameProtocol, setRenameProtocol] = useState<Protocol | null>(null);
 
     const handleExport = async (id: number) => {
         setExportError(null);
@@ -46,7 +53,7 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
     const handleDelete = (id: number) => {
         setError(null);
         deleteProtocol(id)
-            .then(() => onDeleted())
+            .then(() => onChanged())
             .catch(err => setError(err?.message || "Löschen fehlgeschlagen"));
     };
 
@@ -56,7 +63,12 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
         setConfirmDeleteId(null);
     };
 
-    const renderTable = (protocols: Protocol[], title: string, showAdd: boolean = true) => (
+    const renderTable = (
+        protocols: Protocol[],
+        title: string,
+        showAdd: boolean = true,
+        allowRename: boolean = false,
+    ) => (
         <div style={{ marginBottom: "2rem" }}>
             <div className="page-toolbar">
                 <span className="page-toolbar-left" style={{ fontSize: "14px", fontWeight: 500 }}>{title}</span>
@@ -81,8 +93,27 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                         <tr key={protocol.id} onClick={() => navigate(`/protocols/${protocol.id}`)} style={{ cursor: "pointer" }}>
                             <td>{protocol.name}</td>
                             <td style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                                <Button label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"} loading={exportingId === protocol.id} stopPropagation onClick={() => handleExport(protocol.id)} icon={<Download size={18} />} />
-                                <Button label="Löschen" stopPropagation onClick={() => setConfirmDeleteId(protocol.id)} icon={<Trash2 size={18} />} />
+                                <Button
+                                    label={exportingId === protocol.id ? "Exportiert..." : "Exportieren"}
+                                    loading={exportingId === protocol.id}
+                                    stopPropagation
+                                    onClick={() => handleExport(protocol.id)}
+                                    icon={<Download size={18} />}
+                                />
+                                {allowRename && (
+                                    <Button
+                                        label="Umbenennen"
+                                        stopPropagation
+                                        onClick={() => setRenameProtocol(protocol)}
+                                        icon={<Pencil size={18} />}
+                                    />
+                                )}
+                                <Button
+                                    label="Löschen"
+                                    stopPropagation
+                                    onClick={() => setConfirmDeleteId(protocol.id)}
+                                    icon={<Trash2 size={18} />}
+                                />
                             </td>
                         </tr>
                     ))}
@@ -93,12 +124,11 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
 
     return (
         <div>
-            {/* Getrennte Fehlermeldungen für Export und Löschen */}
             {exportError && <p className="error-text" style={{ marginBottom: "8px" }}>{exportError}</p>}
             {error && <p className="error-text" style={{ marginBottom: "8px" }}>{error}</p>}
 
-            {renderTable(ownProtocols, "Eigene Protokolle",true)}
-            {renderTable(groupProtocols, "Gruppenprotokolle",false)}
+            {renderTable(ownProtocols, "Eigene Protokolle", true, true)}
+            {renderTable(groupProtocols, "Gruppenprotokolle", false)}
 
             <ConfirmationDialog
                 open={confirmDeleteId !== null}
@@ -109,6 +139,17 @@ export default function ProtocolTable({ ownProtocols, groupProtocols, setShowFor
                 onConfirm={confirmDelete}
                 onCancel={() => setConfirmDeleteId(null)}
             />
+
+            {renameProtocol && (
+                <ProtocolRenameForm
+                    protocol={renameProtocol}
+                    onClose={() => setRenameProtocol(null)}
+                    onSuccess={() => {
+                        setRenameProtocol(null);
+                        onChanged();
+                    }}
+                />
+            )}
         </div>
     );
 }

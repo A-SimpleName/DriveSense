@@ -12,7 +12,7 @@ async function handleRequest<T>(request: Promise<T>): Promise<T> {
 }
 
 export const getAllVehicles = () =>
-    handleRequest<Vehicle[]>(http.get<Vehicle[]>("/vehicles/account"));
+    handleRequest<Vehicle[]>(http.get<Vehicle[]>("/vehicles"));
 
 export const getVehicleById = (id: number) =>
     handleRequest<Vehicle>(http.get<Vehicle>(`/vehicles/${id}`));

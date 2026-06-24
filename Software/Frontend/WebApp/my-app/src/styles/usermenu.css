@@ -21,6 +21,7 @@
     right: 0;
 
     width: 220px;
+    max-width: calc(100vw - 24px);
     background: white;
 
     border: 1px solid #ccc;

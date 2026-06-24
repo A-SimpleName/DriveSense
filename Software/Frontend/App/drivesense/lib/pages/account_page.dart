@@ -15,6 +15,7 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   Account? _account;
+  String? _loadMessage;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -32,12 +33,14 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   Future<void> _load() async {
-    final Account? acc = await AccountService.fetchAccount();
+    final AccountLoadResult result = await AccountService.fetchAccount();
+    final Account? acc = result.account;
 
     if (!mounted) return;
 
     setState(() {
       _account = acc;
+      _loadMessage = result.message;
       _loading = false;
     });
 
@@ -294,7 +297,13 @@ class _AccountPageState extends State<AccountPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: acc == null
-              ? const Center(child: Text('Kein Account geladen'))
+              ? Center(
+                  child: Text(
+                    _loadMessage ??
+                        'Account konnte nicht geladen werden. Bitte Internetverbindung pruefen und erneut versuchen.',
+                    textAlign: TextAlign.center,
+                  ),
+                )
               : SingleChildScrollView(
                   child: Column(
                     children: <Widget>[

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:drivesense/model/trackingpoint.dart';
 import 'package:drivesense/model/trip.dart';
 import 'package:drivesense/model/trip_detailed.dart';
@@ -7,8 +10,8 @@ import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/local_account_scope.dart';
 import 'package:drivesense/services/protocol_service.dart';
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:drivesense/services/vehicle_service.dart';
-import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:flutter/foundation.dart';
@@ -16,11 +19,28 @@ import 'package:drivesense/services/auth_http_client.dart' as http;
 
 final String _baseUrl = ApiConfig.baseUrl;
 
+class TripActionResult {
+  /// Indicates whether the requested trip action finished successfully.
+  final bool isSuccess;
+
+  /// Short message intended for snackbars or dialogs.
+  final String message;
+
+  const TripActionResult({
+    required this.isSuccess,
+    required this.message,
+  });
+}
+
 class TripService {
   final TripRepository _tripRepository = TripRepository();
 
   /// Uploads a completed trip by creating its summary first and then attaching
   /// all recorded tracking points to the server-created trip id.
+  ///
+  /// This method is the online path used after stop-trip. It validates the
+  /// active profile, protocol, and vehicle first so the backend never receives
+  /// an obviously inconsistent payload.
   Future<TripDetailed> saveTripToDb(
     TripSummary trip,
     List<Trackingpoint> trackingPoints,
@@ -33,13 +53,13 @@ class TripService {
     // checks, an offline trip could be uploaded into the wrong active context.
     if (profileId <= 0) {
       throw TripHttpException(
-        'Trip kann nicht synchronisiert werden: profileId fehlt oder ist ungueltig.',
+        'Fahrt kann nicht synchronisiert werden. Das aktive Profil fehlt.',
       );
     }
 
     if (RuntimeStore.currentProfileId != profileId) {
       throw TripHttpException(
-        'Trip kann nicht synchronisiert werden: aktives Profil passt nicht zum Trip.',
+        'Fahrt kann nicht synchronisiert werden. Bitte das passende Profil erneut auswählen.',
       );
     }
 
@@ -48,7 +68,7 @@ class TripService {
     );
     if (protocolId == null || protocolId <= 0) {
       throw TripHttpException(
-        'Trip kann nicht synchronisiert werden: protocolId fehlt oder ist ungueltig.',
+        'Fahrt kann nicht synchronisiert werden. Bitte ein gültiges Protokoll auswählen.',
       );
     }
 
@@ -57,7 +77,7 @@ class TripService {
     );
     if (vehicleId == null || vehicleId <= 0) {
       throw TripHttpException(
-        'Trip kann nicht synchronisiert werden: vehicleId fehlt oder ist ungueltig.',
+        'Fahrt kann nicht synchronisiert werden. Bitte ein gültiges Fahrzeug auswählen.',
       );
     }
 
@@ -68,7 +88,7 @@ class TripService {
     // TripSessionService until the user stops the trip.
     if (trip.endTime == null) {
       throw TripHttpException(
-        'Trip kann nicht synchronisiert werden: endTime fehlt.',
+        'Fahrt kann nicht synchronisiert werden. Die Fahrt wurde noch nicht vollständig beendet.',
       );
     }
 
@@ -83,12 +103,16 @@ class TripService {
       // points to the backend endpoint instead of a generic sync failure.
       if (summaryRes.statusCode == 405) {
         throw TripHttpException(
-          'Backend unter $_baseUrl unterstuetzt POST /api/trips/summary nicht (HTTP 405). Bitte Backend neu deployen/neustarten oder die richtige Instanz verwenden.',
+          'Fahrt konnte nicht hochgeladen werden. Die Serverversion passt nicht zur App. Bitte später erneut versuchen.',
           statusCode: summaryRes.statusCode,
         );
       }
       throw TripHttpException(
-        'Failed to create trip summary: ${summaryRes.statusCode} - ${summaryRes.body}',
+        ServiceErrorMessages.forHttpStatus(
+          statusCode: summaryRes.statusCode,
+          action: 'Fahrt konnte nicht hochgeladen werden',
+          responseBody: summaryRes.body,
+        ),
         statusCode: summaryRes.statusCode,
       );
     }
@@ -121,7 +145,11 @@ class TripService {
     if (trackingpointsRes.statusCode < 200 ||
         trackingpointsRes.statusCode >= 300) {
       throw TripHttpException(
-        'Failed to save trackingpoints: ${trackingpointsRes.statusCode} - ${trackingpointsRes.body}',
+        ServiceErrorMessages.forHttpStatus(
+          statusCode: trackingpointsRes.statusCode,
+          action: 'Positionsdaten konnten nicht hochgeladen werden',
+          responseBody: trackingpointsRes.body,
+        ),
         statusCode: trackingpointsRes.statusCode,
       );
     }
@@ -154,10 +182,13 @@ class TripService {
   }
 
   /// Sends edited table fields for a completed trip back to the backend.
+  ///
+  /// The dialog edits only a subset of fields, but the backend still needs the
+  /// full summary payload so the record stays coherent after save.
   Future<void> updateTripSummary(TripSummary tripSummary) async {
     if (tripSummary.endTime == null) {
       throw TripHttpException(
-        'Trip kann nicht aktualisiert werden: endTime fehlt.',
+        'Fahrt kann nicht aktualisiert werden. Die Fahrt ist noch nicht vollständig beendet.',
       );
     }
 
@@ -173,7 +204,7 @@ class TripService {
 
     if (profileId <= 0 || protocolId <= 0 || vehicleId <= 0) {
       throw TripHttpException(
-        'Trip kann nicht aktualisiert werden: Profil, Protokoll oder Fahrzeug fehlt.',
+        'Fahrt kann nicht aktualisiert werden. Profil, Protokoll oder Fahrzeug fehlt.',
       );
     }
 
@@ -192,40 +223,84 @@ class TripService {
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw TripHttpException(
-        'Failed to update trip summary: ${response.statusCode} - ${response.body}',
+        ServiceErrorMessages.forHttpStatus(
+          statusCode: response.statusCode,
+          action: 'Fahrt konnte nicht aktualisiert werden',
+          responseBody: response.body,
+        ),
         statusCode: response.statusCode,
       );
     }
   }
 
   Future<bool> deleteTripSummary(TripSummary tripSummary) async {
+    final TripActionResult result = await deleteTripSummaryWithResult(
+      tripSummary,
+    );
+    return result.isSuccess;
+  }
+
+  Future<TripActionResult> deleteTripSummaryWithResult(
+    TripSummary tripSummary,
+  ) async {
     final int tripId = tripSummary.id;
     if (tripId <= 0) {
-      return false;
+      return const TripActionResult(
+        isSuccess: false,
+        message: 'Fahrt konnte nicht gelöscht werden. Die Fahrt-ID fehlt.',
+      );
     }
 
     if (!tripSummary.isSynced) {
-      return _deleteLocalTripSummary(tripId);
+      final bool deleted = await _deleteLocalTripSummary(tripId);
+      return TripActionResult(
+        isSuccess: deleted,
+        message: deleted
+            ? 'Fahrt wurde gelöscht.'
+            : 'Fahrt konnte lokal nicht gelöscht werden. Bitte neu laden und erneut versuchen.',
+      );
     }
 
     try {
-      final http.Response response = await http.delete(
-        Uri.parse('$_baseUrl/api/trips/$tripId'),
-        headers: RequestHeaders.authenticated(),
-      );
+      final http.Response response = await http
+          .delete(
+            Uri.parse('$_baseUrl/api/trips/$tripId'),
+            headers: RequestHeaders.authenticated(),
+          )
+          .timeout(const Duration(seconds: 10));
 
       final bool success =
           response.statusCode >= 200 && response.statusCode < 300;
       if (success) {
         await _deleteCachedServerTrip(tripId);
+        return const TripActionResult(
+          isSuccess: true,
+          message: 'Fahrt wurde gelöscht.',
+        );
       }
-      return success;
-    } catch (_) {
-      return false;
+
+      return TripActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forHttpStatus(
+          statusCode: response.statusCode,
+          action: 'Fahrt konnte nicht gelöscht werden',
+          responseBody: response.body,
+        ),
+      );
+    } catch (e) {
+      debugPrint('DeleteTripSummary failed for tripId=$tripId: $e');
+      return TripActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Fahrt konnte nicht gelöscht werden',
+        ),
+      );
     }
   }
 
   Future<bool> _deleteLocalTripSummary(int tripId) async {
+    // Deletes an unsynced local draft without touching the backend.
     final Trip? localTrip = await _tripRepository.getById(tripId);
     if (localTrip == null || localTrip.isSynced) {
       return false;
@@ -236,6 +311,7 @@ class TripService {
   }
 
   Future<void> _deleteCachedServerTrip(int tripId) async {
+    // Removes the cached server copy that mirrors the deleted backend row.
     final int accountId = LocalAccountScope.requireAccountId();
     final Trip? cachedTrip = await _tripRepository.getByLocalId(
       'server:$accountId:$tripId',

@@ -6,6 +6,7 @@ import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/model/profile.dart';
 import 'package:drivesense/model/user_group.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
 
 class GroupActionResult {
@@ -123,9 +124,7 @@ class GroupService {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return GroupMutationResult(
           isSuccess: false,
-          message:
-              _extractServerMessage(response.body) ??
-              'Gruppe konnte nicht erstellt werden.',
+          message: _httpFailure(response, 'Gruppe konnte nicht erstellt werden'),
         );
       }
 
@@ -141,9 +140,9 @@ class GroupService {
       );
     } catch (e) {
       debugPrint('CreateGroup failed at $uri: $e');
-      return const GroupMutationResult(
+      return GroupMutationResult(
         isSuccess: false,
-        message: 'Gruppe konnte nicht erstellt werden.',
+        message: _exceptionFailure(e, 'Gruppe konnte nicht erstellt werden'),
       );
     }
   }
@@ -180,15 +179,13 @@ class GroupService {
 
       return GroupActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Gruppe konnte nicht umbenannt werden.',
+        message: _httpFailure(response, 'Gruppe konnte nicht umbenannt werden'),
       );
     } catch (e) {
       debugPrint('UpdateGroup failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Gruppe konnte nicht umbenannt werden.',
+        message: _exceptionFailure(e, 'Gruppe konnte nicht umbenannt werden'),
       );
     }
   }
@@ -204,21 +201,19 @@ class GroupService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return const GroupActionResult(
           isSuccess: true,
-          message: 'Gruppe wurde geloescht.',
+          message: 'Gruppe wurde gelöscht.',
         );
       }
 
       return GroupActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Gruppe konnte nicht geloescht werden.',
+        message: _httpFailure(response, 'Gruppe konnte nicht gelöscht werden'),
       );
     } catch (e) {
       debugPrint('DeleteGroup failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Gruppe konnte nicht geloescht werden.',
+        message: _exceptionFailure(e, 'Gruppe konnte nicht gelöscht werden'),
       );
     }
   }
@@ -258,14 +253,19 @@ class GroupService {
       return GroupActionResult(
         isSuccess: false,
         message:
-            _extractServerMessage(response.body) ??
-            'Gruppeneinladung konnte nicht gesendet werden.',
+            _httpFailure(
+              response,
+              'Gruppeneinladung konnte nicht gesendet werden',
+            ),
       );
     } catch (e) {
       debugPrint('InviteGroupMember failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Gruppeneinladung konnte nicht gesendet werden.',
+        message: _exceptionFailure(
+          e,
+          'Gruppeneinladung konnte nicht gesendet werden',
+        ),
       );
     }
   }
@@ -292,15 +292,13 @@ class GroupService {
 
       return GroupActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Mitglied konnte nicht entfernt werden.',
+        message: _httpFailure(response, 'Mitglied konnte nicht entfernt werden'),
       );
     } catch (e) {
       debugPrint('DeleteGroupMember failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Mitglied konnte nicht entfernt werden.',
+        message: _exceptionFailure(e, 'Mitglied konnte nicht entfernt werden'),
       );
     }
   }
@@ -332,15 +330,19 @@ class GroupService {
 
       return GroupActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Rolle konnte nicht aktualisiert werden.',
+        message: _httpFailure(
+          response,
+          'Rolle konnte nicht aktualisiert werden',
+        ),
       );
     } catch (e) {
       debugPrint('UpdateGroupMemberRole failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Rolle konnte nicht aktualisiert werden.',
+        message: _exceptionFailure(
+          e,
+          'Rolle konnte nicht aktualisiert werden',
+        ),
       );
     }
   }
@@ -368,9 +370,10 @@ class GroupService {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return GroupInviteVerificationResult(
           isSuccess: false,
-          message:
-              _extractServerMessage(response.body) ??
-              'Einladungscode konnte nicht geprueft werden.',
+          message: _httpFailure(
+            response,
+            'Einladungscode konnte nicht geprüft werden',
+          ),
         );
       }
 
@@ -385,14 +388,17 @@ class GroupService {
 
       return GroupInviteVerificationResult(
         isSuccess: true,
-        message: 'Einladungscode wurde geprueft.',
+        message: 'Einladungscode wurde geprüft.',
         profiles: profiles,
       );
     } catch (e) {
       debugPrint('VerifyGroupInvite failed at $uri: $e');
-      return const GroupInviteVerificationResult(
+      return GroupInviteVerificationResult(
         isSuccess: false,
-        message: 'Einladungscode konnte nicht geprueft werden.',
+        message: _exceptionFailure(
+          e,
+          'Einladungscode konnte nicht geprüft werden',
+        ),
       );
     }
   }
@@ -424,15 +430,19 @@ class GroupService {
 
       return GroupActionResult(
         isSuccess: false,
-        message:
-            _extractServerMessage(response.body) ??
-            'Gruppeneinladung konnte nicht angenommen werden.',
+        message: _httpFailure(
+          response,
+          'Gruppeneinladung konnte nicht angenommen werden',
+        ),
       );
     } catch (e) {
       debugPrint('AcceptGroupInvite failed at $uri: $e');
-      return const GroupActionResult(
+      return GroupActionResult(
         isSuccess: false,
-        message: 'Gruppeneinladung konnte nicht angenommen werden.',
+        message: _exceptionFailure(
+          e,
+          'Gruppeneinladung konnte nicht angenommen werden',
+        ),
       );
     }
   }
@@ -449,15 +459,15 @@ class GroupService {
     }
   }
 
-  static String? _extractServerMessage(String rawBody) {
-    final String trimmedBody = rawBody.trim();
-    final dynamic decoded = _decodeJson(trimmedBody);
-    if (decoded is Map<String, dynamic>) {
-      final dynamic message = decoded['message'] ?? decoded['error'];
-      if (message is String && message.trim().isNotEmpty) {
-        return message.trim();
-      }
-    }
-    return trimmedBody.isEmpty ? null : trimmedBody;
+  static String _httpFailure(http.Response response, String action) {
+    return ServiceErrorMessages.forHttpStatus(
+      statusCode: response.statusCode,
+      action: action,
+      responseBody: response.body,
+    );
+  }
+
+  static String _exceptionFailure(Object error, String action) {
+    return ServiceErrorMessages.forException(error, action: action);
   }
 }

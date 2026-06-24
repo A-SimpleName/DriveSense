@@ -17,6 +17,7 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
   Map<int, List<VehicleMember>> _membersByVehicle =
       <int, List<VehicleMember>>{};
   bool _isLoading = true;
+  final Set<String> _busyMemberActions = <String>{};
 
   @override
   void initState() {
@@ -284,7 +285,11 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              _VehicleMemberTile(member: member, isSelf: isSelf),
+              _VehicleMemberTile(
+                member: member,
+                isSelf: isSelf,
+                trailing: _buildMemberActions(vehicle, member, isSelf),
+              ),
               if (member != members.last)
                 Divider(height: 1, color: Colors.grey.shade300),
             ],
@@ -341,6 +346,226 @@ class _VehicleTableWidgetState extends State<VehicleTableWidget> {
   bool _canViewMembers(Vehicle vehicle) {
     return _canInvite(vehicle);
   }
+
+  Widget? _buildMemberActions(
+    Vehicle vehicle,
+    VehicleMember member,
+    bool isSelf,
+  ) {
+    final String myRole = _normalizeVehicleRole(vehicle.myRole);
+    final String targetRole = _normalizeVehicleRole(member.vehicleRole);
+    final bool canLeave = isSelf && myRole != 'OWNER';
+    final bool canRemove = !isSelf && _canRemoveMember(myRole, targetRole);
+    final bool canChangeRole = !isSelf && _canChangeRole(myRole, targetRole);
+
+    if (!canLeave && !canRemove && !canChangeRole) {
+      return null;
+    }
+
+    final bool removeBusy = _busyMemberActions.contains(
+      _memberActionKey(vehicle.id, member.profileId, 'remove'),
+    );
+    final bool roleBusy = _busyMemberActions.contains(
+      _memberActionKey(vehicle.id, member.profileId, 'role'),
+    );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        if (canChangeRole)
+          IconButton(
+            tooltip: targetRole == 'CO_OWNER' ? 'Zu Fahrer' : 'Zu Co-Owner',
+            onPressed: roleBusy
+                ? null
+                : () => _toggleVehicleMemberRole(vehicle, member),
+            icon: roleBusy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    targetRole == 'CO_OWNER'
+                        ? Icons.person_outline
+                        : Icons.admin_panel_settings_outlined,
+                  ),
+          ),
+        if (canLeave || canRemove)
+          IconButton(
+            tooltip: canLeave ? 'Fahrzeug verlassen' : 'Entfernen',
+            onPressed: removeBusy
+                ? null
+                : () => _removeVehicleMember(vehicle, member, isSelf),
+            color: Colors.red,
+            icon: removeBusy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    canLeave ? Icons.logout : Icons.person_remove_outlined,
+                  ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _toggleVehicleMemberRole(
+    Vehicle vehicle,
+    VehicleMember member,
+  ) async {
+    final String myRole = _normalizeVehicleRole(vehicle.myRole);
+    final String currentRole = _normalizeVehicleRole(member.vehicleRole);
+    if (!_canChangeRole(myRole, currentRole)) {
+      _showResult(false, 'Nur Owner duerfen Rollen aendern.');
+      return;
+    }
+
+    final String nextRole = currentRole == 'CO_OWNER' ? 'DRIVER' : 'CO_OWNER';
+    final String actionKey = _memberActionKey(vehicle.id, member.profileId, 'role');
+    setState(() => _busyMemberActions.add(actionKey));
+
+    final VehicleActionResult result = await VehicleService.updateVehicleMemberRole(
+      vehicleId: vehicle.id,
+      profileId: member.profileId,
+      role: nextRole,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _busyMemberActions.remove(actionKey);
+      if (result.isSuccess) {
+        final List<VehicleMember> current =
+            _membersByVehicle[vehicle.id] ?? <VehicleMember>[];
+        _membersByVehicle = Map<int, List<VehicleMember>>.from(_membersByVehicle)
+          ..[vehicle.id] = current
+              .map(
+                (VehicleMember existing) => existing.profileId == member.profileId
+                    ? VehicleMember(
+                        profileId: existing.profileId,
+                        profileName: existing.profileName,
+                        profileRole: existing.profileRole,
+                        accountName: existing.accountName,
+                        accountEmail: existing.accountEmail,
+                        vehicleRole: nextRole,
+                      )
+                    : existing,
+              )
+              .toList();
+      }
+    });
+
+    _showResult(result.isSuccess, result.message);
+  }
+
+  Future<void> _removeVehicleMember(
+    Vehicle vehicle,
+    VehicleMember member,
+    bool isSelf,
+  ) async {
+    final String myRole = _normalizeVehicleRole(vehicle.myRole);
+    final String targetRole = _normalizeVehicleRole(member.vehicleRole);
+    final bool allowed = isSelf
+        ? myRole != 'OWNER'
+        : _canRemoveMember(myRole, targetRole);
+
+    if (!allowed) {
+      _showResult(false, 'Keine Berechtigung fuer diese Aktion.');
+      return;
+    }
+
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => DelayedConfirmDialog(
+        title: isSelf ? 'Fahrzeug verlassen' : 'Mitglied entfernen',
+        content: isSelf
+            ? 'Fahrzeug "${vehicle.model} (${vehicle.licensePlate})" wirklich verlassen?'
+            : 'Mitglied "${member.profileName}" wirklich entfernen?',
+        confirmText: isSelf ? 'Verlassen' : 'Entfernen',
+        delaySeconds: 0,
+        confirmButtonColor: Colors.red,
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    final String actionKey = _memberActionKey(
+      vehicle.id,
+      member.profileId,
+      'remove',
+    );
+    setState(() => _busyMemberActions.add(actionKey));
+
+    final VehicleActionResult result = isSelf
+        ? await VehicleService.deleteVehicleWithResult(vehicle.id)
+        : await VehicleService.removeVehicleMember(
+            vehicleId: vehicle.id,
+            profileId: member.profileId,
+          );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _busyMemberActions.remove(actionKey);
+      if (result.isSuccess && !isSelf) {
+        final List<VehicleMember> current =
+            _membersByVehicle[vehicle.id] ?? <VehicleMember>[];
+        _membersByVehicle = Map<int, List<VehicleMember>>.from(_membersByVehicle)
+          ..[vehicle.id] = current
+              .where(
+                (VehicleMember existing) => existing.profileId != member.profileId,
+              )
+              .toList();
+      }
+    });
+
+    _showResult(
+      result.isSuccess,
+      isSelf && result.isSuccess ? 'Fahrzeug wurde verlassen.' : result.message,
+    );
+
+    if (result.isSuccess && isSelf) {
+      await _loadVehicles();
+    }
+  }
+
+  bool _canRemoveMember(String myRole, String targetRole) {
+    if (targetRole == 'OWNER') {
+      return false;
+    }
+
+    return myRole == 'OWNER' || (myRole == 'CO_OWNER' && targetRole == 'DRIVER');
+  }
+
+  bool _canChangeRole(String myRole, String targetRole) {
+    if (targetRole == 'OWNER') {
+      return false;
+    }
+
+    return myRole == 'OWNER';
+  }
+
+  String _memberActionKey(int vehicleId, int profileId, String action) {
+    return '$vehicleId:$profileId:$action';
+  }
+
+  void _showResult(bool isSuccess, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isSuccess ? Colors.green : Colors.red,
+      ),
+    );
+  }
 }
 
 class _InfoPill extends StatelessWidget {
@@ -392,8 +617,13 @@ class _AccessNotice extends StatelessWidget {
 class _VehicleMemberTile extends StatelessWidget {
   final VehicleMember member;
   final bool isSelf;
+  final Widget? trailing;
 
-  const _VehicleMemberTile({required this.member, required this.isSelf});
+  const _VehicleMemberTile({
+    required this.member,
+    required this.isSelf,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -411,7 +641,14 @@ class _VehicleMemberTile extends StatelessWidget {
       subtitle: accountLine.isEmpty
           ? null
           : Text(accountLine, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: _RoleBadge(label: _vehicleRoleLabel(member.vehicleRole)),
+      trailing: Wrap(
+        spacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: <Widget>[
+          _RoleBadge(label: _vehicleRoleLabel(member.vehicleRole)),
+          if (trailing != null) trailing!,
+        ],
+      ),
     );
   }
 }
@@ -489,15 +726,16 @@ class _VehicleDialogState extends State<_VehicleDialog> {
 
     setState(() => _isSaving = true);
 
-    bool success;
+    late final VehicleActionResult result;
 
     if (widget.vehicle == null) {
-      final Vehicle? created = await VehicleService.createVehicle(
+      final VehicleActionResultWithVehicle createResult =
+          await VehicleService.createVehicleWithResult(
         model: model,
         licensePlate: plate,
         mileage: mileage,
       );
-      success = created != null;
+      result = createResult;
     } else {
       final Vehicle updated = Vehicle(
         id: widget.vehicle!.id,
@@ -509,7 +747,7 @@ class _VehicleDialogState extends State<_VehicleDialog> {
         ownerAccountName: widget.vehicle!.ownerAccountName,
         ownerProfileName: widget.vehicle!.ownerProfileName,
       );
-      success = await VehicleService.updateVehicle(updated);
+      result = await VehicleService.updateVehicleWithResult(updated);
     }
 
     if (!mounted) {
@@ -518,12 +756,12 @@ class _VehicleDialogState extends State<_VehicleDialog> {
 
     setState(() => _isSaving = false);
 
-    if (success) {
+    if (result.isSuccess) {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Speichern fehlgeschlagen.'),
+        SnackBar(
+          content: Text(result.message),
           backgroundColor: Colors.red,
         ),
       );
@@ -651,6 +889,7 @@ class _VehicleInviteDialogState extends State<_VehicleInviteDialog> {
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'E-Mail',
+                helperText: 'Du kannst auch deine eigene E-Mail einladen.',
                 border: OutlineInputBorder(),
               ),
               validator: (String? value) {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drivesense/config/api_config.dart';
 import 'package:drivesense/config/request_headers.dart';
 import 'package:drivesense/services/auth_http_client.dart' as http;
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:flutter/foundation.dart';
 
 class EmailVerificationService {
@@ -68,31 +69,18 @@ class EmailVerificationService {
         return null;
       }
 
-      return _extractErrorMessage(response.body) ??
-          'Die Bestätigung konnte nicht verarbeitet werden.';
+      return ServiceErrorMessages.forHttpStatus(
+        statusCode: response.statusCode,
+        action: 'Die Bestätigung konnte nicht verarbeitet werden',
+        responseBody: response.body,
+      );
     } catch (e) {
       debugPrint('Email verification request failed: $e');
-      return 'Die Bestätigung konnte nicht verarbeitet werden.';
+      return ServiceErrorMessages.forException(
+        e,
+        action: 'Die Bestätigung konnte nicht verarbeitet werden',
+      );
     }
   }
 
-  static String? _extractErrorMessage(String body) {
-    if (body.trim().isEmpty) {
-      return null;
-    }
-
-    try {
-      final dynamic decoded = jsonDecode(body);
-      if (decoded is Map<String, dynamic>) {
-        final dynamic message = decoded['message'] ?? decoded['error'];
-        if (message is String && message.trim().isNotEmpty) {
-          return message.trim();
-        }
-      }
-    } catch (_) {
-      // Fall back to the raw body below.
-    }
-
-    return body.trim();
-  }
 }

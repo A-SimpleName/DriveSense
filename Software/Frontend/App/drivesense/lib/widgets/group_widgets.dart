@@ -285,7 +285,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
         : _canRemove(myRole, member.groupRole);
 
     if (!allowed) {
-      _showResult(false, 'Keine Berechtigung fuer diese Aktion.');
+      _showResult(false, 'Keine Berechtigung für diese Aktion.');
       return;
     }
 
@@ -484,7 +484,7 @@ class _GroupTableWidgetState extends State<GroupTableWidget> {
                   onPressed: isBusy ? null : () => _deleteGroup(group),
                   style: TextButton.styleFrom(foregroundColor: Colors.red),
                   icon: const Icon(Icons.delete_outline, size: 18),
-                  label: const Text('Gruppe loeschen'),
+                  label: const Text('Gruppe löschen'),
                 ),
             ],
           ),

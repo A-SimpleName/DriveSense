@@ -55,7 +55,7 @@ List<ProtocolTripField> protocolTripFieldsForRole(String role) {
           value: formatProtocolRoute,
         ),
         ProtocolTripField(
-          header: 'Strassenzustand /\nWitterung',
+          header: 'Straßenzustand /\nWitterung',
           width: 165,
           value: (TripSummary trip) =>
               formatProtocolText(trip.roadSurfaceConditions),

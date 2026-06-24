@@ -8,6 +8,7 @@ import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:drivesense/repository/trip_repository.dart';
 import 'package:drivesense/runtime_store.dart';
 import 'package:drivesense/services/local_account_scope.dart';
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/services/vehicle_service.dart';
 import 'package:flutter/foundation.dart';
@@ -66,7 +67,7 @@ class TripSyncService {
   ) async {
     if (trackingPoints.isEmpty) {
       throw TripHttpException(
-        'Trip verworfen: Es wurden keine Trackingpunkte aufgezeichnet.',
+        'Fahrt wurde verworfen, weil keine GPS-Punkte aufgezeichnet wurden.',
       );
     }
 
@@ -116,9 +117,9 @@ class TripSyncService {
       return syncedDetail;
     } catch (e) {
       localTrip.retryCount += 1;
-      localTrip.lastError = e.toString();
+      localTrip.lastError = _syncFailureMessage(e);
       await isarTripRepository.update(localTrip);
-      throw Exception('Trip lokal gespeichert, wird spaeter synchronisiert.');
+      throw Exception('Fahrt lokal gespeichert, wird später synchronisiert.');
     }
   }
 
@@ -230,7 +231,7 @@ class TripSyncService {
         successful += 1;
       } catch (e, st) {
         pendingTrip.retryCount += 1;
-        pendingTrip.lastError = e.toString();
+        pendingTrip.lastError = _syncFailureMessage(e);
         await isarTripRepository.update(pendingTrip);
         failed += 1;
 
@@ -309,5 +310,20 @@ class TripSyncService {
     pendingTrip.startMileage = startMileage;
     pendingTrip.endMileage = endMileage;
     await isarTripRepository.update(pendingTrip);
+  }
+
+  /// Converts sync failures into the message stored on the local trip row.
+  ///
+  /// The UI later reuses this text for retry and status displays, so it should
+  /// stay short and readable rather than exposing raw exception details.
+  String _syncFailureMessage(Object error) {
+    if (error is TripHttpException) {
+      return error.message;
+    }
+
+    return ServiceErrorMessages.forException(
+      error,
+      action: 'Fahrt konnte nicht synchronisiert werden',
+    );
   }
 }

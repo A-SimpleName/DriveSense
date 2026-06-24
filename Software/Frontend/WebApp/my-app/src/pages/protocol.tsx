@@ -62,7 +62,7 @@ export default function ProtocolPage() {
                 ownProtocols={ownProtocols}
                 groupProtocols={groupProtocols}
                 setShowForm={setShowForm}
-                onDeleted={() => setReloadKey(prev => prev + 1)}
+                onChanged={() => setReloadKey(prev => prev + 1)}
             />
         </div>
     );

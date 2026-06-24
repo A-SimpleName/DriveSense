@@ -1,9 +1,19 @@
+.pdfScrollWrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+}
+
 .pdfContainer {
     font-family: Arial, sans-serif;
     font-size: 8pt;
     color: #1a1a2e;
     padding: 16px;
     background: white;
+    width: 720px;
+    min-width: 720px;
+    margin: 0 auto;
 }
 
 /* HEADER */

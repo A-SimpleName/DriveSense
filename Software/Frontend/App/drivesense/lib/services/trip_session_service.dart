@@ -299,7 +299,7 @@ class TripSessionService extends ChangeNotifier {
         await ProtocolService.resolveCurrentOrFirstAvailableProtocolId();
     if (resolvedProtocolId == null) {
       throw const TripSessionException(
-        'Fahrt kann nicht gestartet werden. Kein gueltiges Protokoll verfuegbar.',
+        'Fahrt kann nicht gestartet werden. Kein gültiges Protokoll verfügbar.',
       );
     }
 
@@ -319,7 +319,7 @@ class TripSessionService extends ChangeNotifier {
 
     if (vehicleId <= 0) {
       throw const TripSessionException(
-        'Fahrt kann nicht gestartet werden. Kein gueltiges Fahrzeug verfuegbar.',
+        'Fahrt kann nicht gestartet werden. Kein gültiges Fahrzeug verfügbar.',
       );
     }
 
@@ -520,7 +520,7 @@ class TripSessionService extends ChangeNotifier {
       await activeTripRepository.clear();
       _clearActiveState(lastTrip: _state.lastTrip);
       throw TripHttpException(
-        'Trip verworfen: Es wurden keine Trackingpunkte aufgezeichnet.',
+        'Fahrt wurde verworfen, weil keine GPS-Punkte aufgezeichnet wurden.',
       );
     }
 
