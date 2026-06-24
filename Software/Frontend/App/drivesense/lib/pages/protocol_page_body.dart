@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:drivesense/model/protocol.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/pdf_service.dart';
 import 'package:drivesense/services/protocol_service.dart';
 import 'package:drivesense/services/trip_sync_service.dart';
-import 'package:drivesense/widgets/snyc_trips_button.dart';
-import 'package:drivesense/widgets/protocol_table.dart';
-import 'package:flutter/material.dart';
-import 'package:drivesense/services/pdf_service.dart';
 import 'package:drivesense/widgets/delayed_confirm_dialog.dart';
+import 'package:drivesense/widgets/protocol_table.dart';
+import 'package:drivesense/widgets/snyc_trips_button.dart';
+import 'package:flutter/material.dart';
 
 class ProtocolPageBody extends StatefulWidget {
   final TripSyncService tripSyncService;
@@ -24,6 +24,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
   bool _isLoading = true;
   bool _isCreating = false;
   bool _isExportingPdf = false;
+  bool _isRenaming = false;
   String? _loadError;
   int? _lastProfileId;
 
@@ -53,13 +54,13 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   initialValue: _resolveDropdownValue(selectedProtocolId),
                   isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Ausgewähltes Protokoll',
+                    labelText: 'Ausgewaehltes Protokoll',
                     border: OutlineInputBorder(),
                   ),
                   hint: Text(
                     _isLoading
                         ? 'Protokolle werden geladen...'
-                        : 'Protokoll auswählen',
+                        : 'Protokoll auswaehlen',
                   ),
                   items: _protocols
                       .map(
@@ -74,18 +75,43 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                       : _handleProtocolChanged,
                 ),
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading || _protocols.isEmpty
-                        ? null
-                        : _handleDeleteProtocolPressed,
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Protokoll löschen'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _canRenameSelectedProtocol && !_isRenaming
+                            ? _handleRenameProtocolPressed
+                            : null,
+                        icon: _isRenaming
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.edit_outlined),
+                        label: Text(
+                          _isRenaming
+                              ? 'Speichere...'
+                              : 'Protokoll umbenennen',
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isLoading || _protocols.isEmpty
+                            ? null
+                            : _handleDeleteProtocolPressed,
+                        icon: const Icon(Icons.delete_outline),
+                        label: const Text('Protokoll loeschen'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -142,7 +168,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   ? const Center(child: CircularProgressIndicator())
                   : _protocols.isEmpty
                   ? const Center(
-                      child: Text('Keine Protokolle für das aktuelle Profil.'),
+                      child: Text('Keine Protokolle fuer das aktuelle Profil.'),
                     )
                   : ProtocolTable(onChanged: _refreshVisibleTrips),
             ),
@@ -156,12 +182,32 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
     );
   }
 
+  bool get _canRenameSelectedProtocol {
+    if (_isLoading || _protocols.isEmpty) {
+      return false;
+    }
+
+    final int currentProfileId = RuntimeStore.currentProfileId ?? 0;
+    if (currentProfileId <= 0) {
+      return false;
+    }
+
+    final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
+    for (final Protocol protocol in _protocols) {
+      if (protocol.id == selectedProtocolId) {
+        return protocol.createdByProfileId == currentProfileId;
+      }
+    }
+
+    return false;
+  }
+
   Future<void> _handleDeleteProtocolPressed() async {
     final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
     if (selectedProtocolId <= 0) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kein Protokoll ausgewählt.')),
+        const SnackBar(content: Text('Kein Protokoll ausgewaehlt.')),
       );
       return;
     }
@@ -178,11 +224,11 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Protokoll löschen',
+        title: 'Protokoll loeschen',
         content:
-            'Protokoll "$protocolName" wirklich löschen?\n\n'
-            'Diese Aktion kann nicht rückgängig gemacht werden.',
-        confirmText: 'Endgültig löschen',
+            'Protokoll "$protocolName" wirklich loeschen?\n\n'
+            'Diese Aktion kann nicht rueckgaengig gemacht werden.',
+        confirmText: 'Endgueltig loeschen',
         delaySeconds: 0,
         confirmButtonColor: Colors.red,
       ),
@@ -203,17 +249,109 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       await _loadProtocolsAndTrips();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red),
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+          ),
         );
       }
     } else {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red  ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+        ),
+      );
     }
+  }
+
+  Future<void> _handleRenameProtocolPressed() async {
+    final int selectedProtocolId = RuntimeStore.getCurrentProtocolId();
+    final Protocol? selectedProtocol = _protocols.cast<Protocol?>().firstWhere(
+      (Protocol? protocol) => protocol?.id == selectedProtocolId,
+      orElse: () => null,
+    );
+
+    if (selectedProtocol == null) {
+      return;
+    }
+
+    String protocolDraftName = selectedProtocol.name;
+
+    final String? protocolName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Protokoll umbenennen'),
+          content: TextFormField(
+            initialValue: protocolDraftName,
+            autofocus: true,
+            onChanged: (String value) {
+              protocolDraftName = value;
+            },
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Abbrechen'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(protocolDraftName.trim()),
+              child: const Text('Speichern'),
+            ),
+          ],
+        );
+      },
+    );
+
+    final String trimmedName = protocolName?.trim() ?? '';
+    if (trimmedName.isEmpty || trimmedName == selectedProtocol.name.trim()) {
+      return;
+    }
+
+    setState(() {
+      _isRenaming = true;
+      _loadError = null;
+    });
+
+    final ProtocolActionResult result = await ProtocolService.updateProtocol(
+      protocol: Protocol(
+        id: selectedProtocol.id,
+        createdByProfileId: selectedProtocol.createdByProfileId,
+        usergroupId: selectedProtocol.usergroupId,
+        name: trimmedName,
+      ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isRenaming = false;
+    });
+
+    if (result.isSuccess) {
+      await _loadProtocolsAndTrips();
+      if (!mounted) {
+        return;
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   Future<void> _handlePdfExportPressed() async {
@@ -233,9 +371,12 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       _isExportingPdf = false;
     });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(result.message), backgroundColor: result.isSuccess ? Colors.green : Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.isSuccess ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   Future<void> _refreshVisibleTrips() async {
@@ -412,7 +553,8 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kein aktives Profil verfügbar.'),
+        const SnackBar(
+          content: Text('Kein aktives Profil verfuegbar.'),
           backgroundColor: Colors.red,
         ),
       );

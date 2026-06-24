@@ -16,5 +16,5 @@ export const exportProtocol = (id: number) =>
 export const getProtocolById = (id: number) => handleRequest<Protocol>(http.get<Protocol>(`/protocols/${id}`));
 export const getProtocolByIdWithTrips = (id: number) => handleRequest<ProtocolDetail>(http.get<ProtocolDetail>(`/protocols/${id}/with-trips`));
 export const createProtocol = (protocol: ProtocolCreateRequest) => handleRequest<Protocol>(http.post("/protocols", protocol));
-export const updateProtocol = (id: number, protocol: Omit<Protocol, "id">) => handleRequest<Protocol>(http.put(`/protocols/${id}`, protocol));
+export const updateProtocol = (id: number, protocol: Omit<Protocol, "id">) => handleRequest<void>(http.put(`/protocols/${id}`, protocol));
 export const deleteProtocol = (id: number) => handleRequest<void>(http.delete(`/protocols/${id}`));

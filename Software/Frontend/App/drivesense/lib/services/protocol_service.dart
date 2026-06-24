@@ -185,6 +185,68 @@ class ProtocolService {
     }
   }
 
+  static Future<ProtocolActionResult> updateProtocol({
+    required Protocol protocol,
+  }) async {
+    final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/protocols/${protocol.id}');
+    final String trimmedName = protocol.name.trim();
+    if (protocol.id <= 0) {
+      return const ProtocolActionResult(
+        isSuccess: false,
+        message: 'Protokoll konnte nicht umbenannt werden.',
+      );
+    }
+    if (trimmedName.isEmpty) {
+      return const ProtocolActionResult(
+        isSuccess: false,
+        message: 'Protokollname darf nicht leer sein.',
+      );
+    }
+
+    try {
+      final http.Response response = await http
+          .put(
+            uri,
+            headers: RequestHeaders.authenticatedJson(),
+            body: jsonEncode(protocol.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        RuntimeStore.upsertProtocol(
+          Protocol(
+            id: protocol.id,
+            createdByProfileId: protocol.createdByProfileId,
+            usergroupId: protocol.usergroupId,
+            name: trimmedName,
+          ),
+        );
+        return const ProtocolActionResult(
+          isSuccess: true,
+          message: 'Protokoll wurde umbenannt.',
+        );
+      }
+
+      return ProtocolActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forHttpStatus(
+          statusCode: response.statusCode,
+          action: 'Protokoll konnte nicht umbenannt werden',
+          responseBody: response.body,
+        ),
+      );
+    } catch (e) {
+      debugPrint('UpdateProtocol failed at $uri: $e');
+      return ProtocolActionResult(
+        isSuccess: false,
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Protokoll konnte nicht umbenannt werden',
+        ),
+      );
+    }
+  }
+
   static dynamic _decodeJson(String rawBody) {
     if (rawBody.trim().isEmpty) {
       return null;
