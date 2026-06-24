@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/button";
-
+import "../styles/confirmEmailChangePage.css";
 import { confirmEmailChange, requestEmailChange, cancelEmailChange } from "../services/accountService";
 
 export default function ConfirmEmailChangePage() {
@@ -61,41 +61,47 @@ export default function ConfirmEmailChangePage() {
     }
 
     return (
-        <div>
-            <h1>Email Änderung bestätigen</h1>
+        <div className="confirm-email-page">
+            <div className="confirm-email-card">
+                <div className="confirm-email-header">
+                    <span className="confirm-email-kicker">Verifizierung</span>
+                    <h1 className="confirm-email-heading">Änderung bestätigen</h1>
+                    <p className="confirm-email-copy">
+                        Wir haben einen Bestätigungscode an <strong>{pendingEmail}</strong> gesendet. Bitte gib ihn ein.
+                    </p>
+                </div>
 
-            <p>Wir haben einen Code an {pendingEmail} gesendet.</p>
+                <form className="confirm-email-form" onSubmit={handleSubmit}>
+                    <div className="confirm-email-field">
+                        <label className="confirm-email-label">Verifizierungscode</label>
+                        <input
+                            className="confirm-email-input"
+                            type="text"
+                            placeholder="000000"
+                            value={code}
+                            onChange={e => setCode(e.target.value)}
+                            maxLength={6}
+                            autoFocus
+                        />
+                    </div>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="6-stelliger Code"
-                    value={code}
-                    onChange={e => setCode(e.target.value)}
-                    maxLength={6}
-                    autoFocus
-                />
+                    {error && <p className="confirm-email-error">{error}</p>}
+                    {resendSuccess && <p className="confirm-email-success">Code wurde erneut gesendet!</p>}
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                    <button type="submit" className="confirm-email-submit" disabled={loading}>
+                        {loading ? "Wird überprüft..." : "Bestätigen"}
+                    </button>
+                </form>
 
-                {resendSuccess && <p style={{ color: "green" }}>Code wurde erneut gesendet!</p>}
-
-                <button type="submit" disabled={loading}>
-                    {loading && (
-                        <span style={{
-                            display: "inline-block", width: "12px", height: "12px",
-                            border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
-                            borderRadius: "50%", animation: "spin 0.6s linear infinite",
-                            verticalAlign: "middle", marginRight: "6px",
-                        }} />
-                    )}
-                    {loading ? "Wird überprüft..." : "Bestätigen"}
-                </button>
-            </form>
-
-            <Button label="Code erneut senden" onClick={handleResend} />
-
-            <Button label="Abbrechen" onClick={handleCancel} />
+                <div className="confirm-email-actions">
+                    <button type="button" className="confirm-email-resend" onClick={handleResend}>
+                        Code erneut senden
+                    </button>
+                    <button type="button" className="confirm-email-cancel" onClick={handleCancel}>
+                        Abbrechen
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

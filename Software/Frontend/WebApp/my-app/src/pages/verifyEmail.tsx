@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { verifyEmail, resendVerification } from "../services/auth";
+import "../styles/verifyEmail.css";
 
 interface Props {
     onVerified: () => void;
@@ -40,38 +41,44 @@ export default function VerifyEmailPage({ onVerified }: Props) {
     };
 
     return (
-        <div>
-            <h1>Email bestätigen</h1>
-            <p>Wir haben einen Code an deine Email gesendet. Bitte gib ihn hier ein.</p>
+        <div className="verify-email-page">
+            <div className="verify-email-card">
+                <div className="verify-email-header">
+                    <span className="verify-email-kicker">Verifizierung</span>
+                    <h1 className="verify-email-heading">Email bestätigen</h1>
+                    <p className="verify-email-copy">
+                        Wir haben einen Bestätigungscode an <strong>{email}</strong> gesendet. Bitte gib ihn hier ein.
+                    </p>
+                </div>
 
-            <form onSubmit={handleVerify}>
-                <input
-                    type="text"
-                    placeholder="6-stelliger Code"
-                    value={code}
-                    onChange={e => setCode(e.target.value)}
-                    maxLength={6}
-                    autoFocus
-                />
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                {resendSuccess && <p style={{ color: "green" }}>Code wurde erneut gesendet!</p>}
+                <form className="verify-email-form" onSubmit={handleVerify}>
+                    <div className="verify-email-field">
+                        <label className="verify-email-label">Verifizierungscode</label>
+                        <input
+                            className="verify-email-input"
+                            type="text"
+                            placeholder="000000"
+                            value={code}
+                            onChange={e => setCode(e.target.value)}
+                            maxLength={6}
+                            autoFocus
+                        />
+                    </div>
 
-                <button type="submit" disabled={loading}>
-                    {loading && (
-                        <span style={{
-                            display: "inline-block", width: "12px", height: "12px",
-                            border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "currentColor",
-                            borderRadius: "50%", animation: "spin 0.6s linear infinite",
-                            verticalAlign: "middle", marginRight: "6px",
-                        }} />
-                    )}
-                    {loading ? "Wird überprüft..." : "Bestätigen"}
-                </button>
-            </form>
+                    {error && <p className="verify-email-error">{error}</p>}
+                    {resendSuccess && <p className="verify-email-success">Code wurde erneut gesendet!</p>}
 
-            <button type="button" onClick={handleResend}>
-                Code erneut senden
-            </button>
+                    <button type="submit" className="verify-email-submit" disabled={loading}>
+                        {loading ? "Wird überprüft..." : "Bestätigen"}
+                    </button>
+                </form>
+
+                <div className="verify-email-footer">
+                    <button type="button" className="verify-email-resend" onClick={handleResend}>
+                        Code erneut senden
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
