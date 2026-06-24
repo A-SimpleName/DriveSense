@@ -153,7 +153,97 @@ class VehicleService {
     }
   }
 
+  static Future<VehicleActionResult> removeVehicleMember({
+    required int vehicleId,
+    required int profileId,
+  }) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/$vehicleId/members/$profileId',
+    );
+
+    try {
+      final http.Response response = await http
+          .delete(uri, headers: RequestHeaders.authenticated())
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Mitglied wurde entfernt.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _httpFailure(
+          response,
+          'Mitglied konnte nicht entfernt werden',
+        ),
+      );
+    } catch (e) {
+      debugPrint('RemoveVehicleMember failed at $uri: $e');
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _exceptionFailure(
+          e,
+          'Mitglied konnte nicht entfernt werden',
+        ),
+      );
+    }
+  }
+
+  static Future<VehicleActionResult> updateVehicleMemberRole({
+    required int vehicleId,
+    required int profileId,
+    required String role,
+  }) async {
+    final Uri uri = Uri.parse(
+      '${ApiConfig.baseUrl}/api/vehicles/$vehicleId/members/$profileId/role',
+    );
+
+    try {
+      final http.Response response = await http
+          .put(
+            uri,
+            headers: RequestHeaders.authenticatedJson(),
+            body: jsonEncode(<String, dynamic>{'role': role.trim()}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Rolle wurde aktualisiert.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _httpFailure(
+          response,
+          'Rolle konnte nicht aktualisiert werden',
+        ),
+      );
+    } catch (e) {
+      debugPrint('UpdateVehicleMemberRole failed at $uri: $e');
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _exceptionFailure(
+          e,
+          'Rolle konnte nicht aktualisiert werden',
+        ),
+      );
+    }
+  }
+
   static Future<bool> updateVehicle(Vehicle vehicle) async {
+    final VehicleActionResult result = await updateVehicleWithResult(vehicle);
+    return result.isSuccess;
+  }
+
+  static Future<VehicleActionResult> updateVehicleWithResult(
+    Vehicle vehicle,
+  ) async {
     final Uri uri = Uri.parse(
       '${ApiConfig.baseUrl}/api/vehicles/${vehicle.id}',
     );
@@ -167,10 +257,29 @@ class VehicleService {
           )
           .timeout(const Duration(seconds: 10));
 
-      return response.statusCode >= 200 && response.statusCode < 300;
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return const VehicleActionResult(
+          isSuccess: true,
+          message: 'Fahrzeug wurde gespeichert.',
+        );
+      }
+
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _httpFailure(
+          response,
+          'Fahrzeug konnte nicht gespeichert werden',
+        ),
+      );
     } catch (e) {
       debugPrint('UpdateVehicle failed at $uri: $e');
-      return false;
+      return VehicleActionResult(
+        isSuccess: false,
+        message: _exceptionFailure(
+          e,
+          'Fahrzeug konnte nicht gespeichert werden',
+        ),
+      );
     }
   }
 
@@ -358,6 +467,19 @@ class VehicleService {
     required String licensePlate,
     required int mileage,
   }) async {
+    final VehicleActionResultWithVehicle result = await createVehicleWithResult(
+      model: model,
+      licensePlate: licensePlate,
+      mileage: mileage,
+    );
+    return result.vehicle;
+  }
+
+  static Future<VehicleActionResultWithVehicle> createVehicleWithResult({
+    required String model,
+    required String licensePlate,
+    required int mileage,
+  }) async {
     final Uri uri = Uri.parse('${ApiConfig.baseUrl}/api/vehicles');
 
     try {
@@ -379,15 +501,37 @@ class VehicleService {
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
         debugPrint('CreateVehicle failed: HTTP ${response.statusCode}');
-        return null;
+        return VehicleActionResultWithVehicle(
+          isSuccess: false,
+          message: _httpFailure(
+            response,
+            'Fahrzeug konnte nicht erstellt werden',
+          ),
+        );
       }
 
       final dynamic decoded = _decodeJson(response.body);
-      if (decoded is! Map<String, dynamic>) return null;
-      return Vehicle.fromJson(decoded);
+      if (decoded is! Map<String, dynamic>) {
+        return const VehicleActionResultWithVehicle(
+          isSuccess: false,
+          message:
+              'Fahrzeug konnte nicht erstellt werden. Bitte spaeter erneut versuchen.',
+        );
+      }
+      return VehicleActionResultWithVehicle(
+        isSuccess: true,
+        message: 'Fahrzeug wurde erstellt.',
+        vehicle: Vehicle.fromJson(decoded),
+      );
     } catch (e) {
       debugPrint('CreateVehicle failed at $uri: $e');
-      return null;
+      return VehicleActionResultWithVehicle(
+        isSuccess: false,
+        message: _exceptionFailure(
+          e,
+          'Fahrzeug konnte nicht erstellt werden',
+        ),
+      );
     }
   }
 
@@ -414,4 +558,14 @@ class VehicleService {
   static String _exceptionFailure(Object error, String action) {
     return ServiceErrorMessages.forException(error, action: action);
   }
+}
+
+class VehicleActionResultWithVehicle extends VehicleActionResult {
+  final Vehicle? vehicle;
+
+  const VehicleActionResultWithVehicle({
+    required super.isSuccess,
+    required super.message,
+    this.vehicle,
+  });
 }

@@ -9,13 +9,17 @@ import 'package:flutter/foundation.dart';
 class AccountService {
   AccountService._();
 
-  static Future<Account?> fetchAccount() async {
+  static Future<AccountLoadResult> fetchAccount() async {
     final headers = RequestHeaders.authenticated(
       clientType: 'mobile',
       includeProfileToken: false,
     );
 
-    if (!headers.containsKey('Cookie')) return null;
+    if (!headers.containsKey('Cookie')) {
+      return const AccountLoadResult(
+        message: 'Keine aktive Sitzung gefunden.',
+      );
+    }
 
     final uri = Uri.parse('${ApiConfig.baseUrl}/api/account/me');
 
@@ -25,15 +29,26 @@ class AccountService {
       debugPrint('Account <- ${response.statusCode}');
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        return null;
+        return AccountLoadResult(
+          message: ServiceErrorMessages.forHttpStatus(
+            statusCode: response.statusCode,
+            action: 'Account konnte nicht geladen werden',
+            responseBody: response.body,
+          ),
+        );
       }
 
       final data = jsonDecode(response.body);
 
-      return Account.fromJson(data);
+      return AccountLoadResult(account: Account.fromJson(data));
     } catch (e) {
       debugPrint('Account fetch failed: $e');
-      return null;
+      return AccountLoadResult(
+        message: ServiceErrorMessages.forException(
+          e,
+          action: 'Account konnte nicht geladen werden',
+        ),
+      );
     }
   }
 
@@ -228,4 +243,11 @@ class AccountService {
     }
   }
 
+}
+
+class AccountLoadResult {
+  final Account? account;
+  final String? message;
+
+  const AccountLoadResult({this.account, this.message});
 }

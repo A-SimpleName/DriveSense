@@ -1,6 +1,8 @@
 import 'package:drivesense/config/app_colors.dart';
+import 'package:drivesense/exceptions/trip_http_exception.dart';
 import 'package:drivesense/model/trip_summary.dart';
 import 'package:drivesense/runtime_store.dart';
+import 'package:drivesense/services/service_error_messages.dart';
 import 'package:drivesense/services/trip_service.dart';
 import 'package:drivesense/widgets/protocol_trip_fields.dart';
 import 'package:drivesense/widgets/trip_detail_dialog.dart';
@@ -342,6 +344,14 @@ class _ProtocolTableState extends State<ProtocolTable> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Fahrt aktualisiert.')));
+    } on TripHttpException catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!context.mounted) {
         return;
@@ -349,7 +359,16 @@ class _ProtocolTableState extends State<ProtocolTable> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Speichern fehlgeschlagen: $e')));
+      ).showSnackBar(
+        SnackBar(
+          content: Text(
+            ServiceErrorMessages.forException(
+              e,
+              action: 'Fahrt konnte nicht gespeichert werden',
+            ),
+          ),
+        ),
+      );
     }
   }
 
