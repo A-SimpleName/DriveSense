@@ -456,6 +456,11 @@ class _TripEditDialogState extends State<_TripEditDialog> {
   /// Validates editable protocol-table fields and returns a copied TripSummary
   /// to the caller instead of mutating the original row directly.
   void _save() {
+    final String role = normalizeProtocolRole(
+      RuntimeStore.getActiveProfileRole(),
+    );
+    final bool showRoadSurface = role == 'FAHRSCHUELER';
+    final bool showType = role == 'BERUFSFAHRER';
     final double? distanceKm = double.tryParse(
       _distanceCtrl.text.trim().replaceAll(',', '.'),
     );
@@ -484,14 +489,22 @@ class _TripEditDialogState extends State<_TripEditDialog> {
         startPoint: _startPointCtrl.text.trim(),
         furthestPoint: _furthestPointCtrl.text.trim(),
         endPoint: _endPointCtrl.text.trim(),
-        roadSurfaceConditions: _roadSurfaceCtrl.text.trim(),
-        type: _typeCtrl.text.trim(),
+        roadSurfaceConditions: showRoadSurface
+            ? _roadSurfaceCtrl.text.trim()
+            : widget.trip.roadSurfaceConditions,
+        type: showType ? _typeCtrl.text.trim() : widget.trip.type,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final String role = normalizeProtocolRole(
+      RuntimeStore.getActiveProfileRole(),
+    );
+    final bool showRoadSurface = role == 'FAHRSCHUELER';
+    final bool showType = role == 'BERUFSFAHRER';
+
     return AlertDialog(
       title: const Text('Fahrt bearbeiten'),
       content: SingleChildScrollView(
@@ -538,18 +551,22 @@ class _TripEditDialogState extends State<_TripEditDialog> {
               controller: _endPointCtrl,
               decoration: const InputDecoration(labelText: 'Ziel'),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _roadSurfaceCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Straßenzustand / Witterung',
+            if (showRoadSurface) ...<Widget>[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _roadSurfaceCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Straßenzustand / Witterung',
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _typeCtrl,
-              decoration: const InputDecoration(labelText: 'Typ'),
-            ),
+            ],
+            if (showType) ...<Widget>[
+              const SizedBox(height: 8),
+              TextField(
+                controller: _typeCtrl,
+                decoration: const InputDecoration(labelText: 'Typ / Zweck'),
+              ),
+            ],
           ],
         ),
       ),
