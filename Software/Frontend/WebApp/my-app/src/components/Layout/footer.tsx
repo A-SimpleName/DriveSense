@@ -13,7 +13,7 @@ function Footer() {
 
                 <div>
                     <h3>Kontakt:</h3>
-                    <p>Telefon: +43 123 456 789</p>
+                    <p>Telefon: <a href="tel:+43726252391">+43 7262 52391</a></p>
                     <p>
                         E-Mail: <a href="mailto:at.drivesense@gmail.com">
                             at.drivesense@gmail.com
