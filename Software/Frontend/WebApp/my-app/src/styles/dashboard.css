@@ -140,6 +140,12 @@
     text-align: center;
 }
 
+@media (max-width: 800px) {
+    .dashboard-actions {
+        flex-direction: column;
+    }
+}
+
 .dashboard-empty {
     display: flex;
     flex-direction: column;

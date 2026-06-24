@@ -47,9 +47,19 @@ export function ActionMenu({ items }: Props) {
         e.stopPropagation();
         if (!open && triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
-            // Rechtsbündig unter dem Trigger ausrichten, Breite des
-            // Dropdowns (180px, siehe CSS) wird dafür abgezogen
-            setPosition({ top: rect.bottom + 4, left: rect.right - 180 });
+            const dropdownWidth = 180;
+            const margin = 8;
+
+            // Rechtsbündig unter dem Trigger ausrichten, aber innerhalb des
+            // Viewports halten – auf schmalen Bildschirmen (z.B. bei
+            // horizontal scrollenden Tabellen) kann der Trigger sehr nah am
+            // linken Rand liegen, wo rect.right - 180 sonst negativ würde.
+            const left = Math.min(
+                Math.max(rect.right - dropdownWidth, margin),
+                window.innerWidth - dropdownWidth - margin
+            );
+
+            setPosition({ top: rect.bottom + 4, left });
         }
         setOpen(prev => !prev);
     };
