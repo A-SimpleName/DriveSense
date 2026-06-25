@@ -54,13 +54,13 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   initialValue: _resolveDropdownValue(selectedProtocolId),
                   isExpanded: true,
                   decoration: const InputDecoration(
-                    labelText: 'Ausgewaehltes Protokoll',
+                    labelText: 'Ausgewähltes Protokoll',
                     border: OutlineInputBorder(),
                   ),
                   hint: Text(
                     _isLoading
                         ? 'Protokolle werden geladen...'
-                        : 'Protokoll auswaehlen',
+                        : 'Protokoll auswählen',
                   ),
                   items: _protocols
                       .map(
@@ -105,7 +105,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                             ? null
                             : _handleDeleteProtocolPressed,
                         icon: const Icon(Icons.delete_outline),
-                        label: const Text('Protokoll loeschen'),
+                        label: const Text('Protokoll löschen'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Theme.of(context).colorScheme.error,
                         ),
@@ -168,7 +168,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
                   ? const Center(child: CircularProgressIndicator())
                   : _protocols.isEmpty
                   ? const Center(
-                      child: Text('Keine Protokolle fuer das aktuelle Profil.'),
+                      child: Text('Keine Protokolle für das aktuelle Profil.'),
                     )
                   : ProtocolTable(onChanged: _refreshVisibleTrips),
             ),
@@ -207,7 +207,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
     if (selectedProtocolId <= 0) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kein Protokoll ausgewaehlt.')),
+        const SnackBar(content: Text('Kein Protokoll ausgewählt.')),
       );
       return;
     }
@@ -224,11 +224,11 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => DelayedConfirmDialog(
-        title: 'Protokoll loeschen',
+        title: 'Protokoll löschen',
         content:
-            'Protokoll "$protocolName" wirklich loeschen?\n\n'
-            'Diese Aktion kann nicht rueckgaengig gemacht werden.',
-        confirmText: 'Endgueltig loeschen',
+            'Protokoll "$protocolName" wirklich löschen?\n\n'
+            'Diese Aktion kann nicht rückgängig gemacht werden.',
+        confirmText: 'Endgültig löschen',
         delaySeconds: 0,
         confirmButtonColor: Colors.red,
       ),
@@ -554,7 +554,7 @@ class _ProtocolPageBodyState extends State<ProtocolPageBody> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Kein aktives Profil verfuegbar.'),
+          content: Text('Kein aktives Profil verfügbar.'),
           backgroundColor: Colors.red,
         ),
       );

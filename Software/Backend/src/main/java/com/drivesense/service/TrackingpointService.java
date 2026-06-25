@@ -26,6 +26,10 @@ public class TrackingpointService {
         return trackingpointDao.getByTripId(tripId);
     }
 
+    public List<Trackingpoint> getRawByTripId(int tripId) {
+        return trackingpointDao.getByTripIdAndSource(tripId, "RAW");
+    }
+
     public List<Trackingpoint> getAll () {
         return trackingpointDao.getAll();
     }
@@ -39,5 +43,9 @@ public class TrackingpointService {
     }
     public void deleteByTripId (int tripId) {
         trackingpointDao.deleteByTripId(tripId);
+    }
+
+    public void deleteSnappedByTripId(int tripId) {
+        trackingpointDao.deleteByTripIdAndSource(tripId, "SNAPPED");
     }
 }

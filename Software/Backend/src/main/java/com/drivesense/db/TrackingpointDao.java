@@ -22,7 +22,7 @@ public class TrackingpointDao {
     }
 
     public Trackingpoint insert(Trackingpoint trackingpoint) {
-        String sql = "INSERT INTO trackingpoint (trip_id, lat, lng, accuracy, speed, bearing, timestamp) VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO trackingpoint (trip_id, lat, lng, accuracy, speed, bearing, timestamp, point_source) VALUES (?,?,?,?,?,?,?,?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -33,6 +33,7 @@ public class TrackingpointDao {
             ps.setDouble(5,trackingpoint.getSpeed());
             ps.setDouble(6,trackingpoint.getBearing());
             ps.setObject(7,trackingpoint.getTimestamp());
+            ps.setString(8, normalizePointSource(trackingpoint.getPointSource()));
 
             ps.executeUpdate();
 
@@ -67,12 +68,49 @@ public class TrackingpointDao {
     }
 
     public List<Trackingpoint> getByTripId(int tripId) {
-        String sql = "SELECT * FROM trackingpoint WHERE trip_id = ? ORDER BY timestamp ASC, id ASC";
+        String sql = """
+            SELECT *
+            FROM trackingpoint
+            WHERE trip_id = ?
+              AND point_source = CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM trackingpoint snapped
+                        WHERE snapped.trip_id = ?
+                          AND snapped.point_source = 'SNAPPED'
+                    )
+                    THEN 'SNAPPED'
+                    ELSE 'RAW'
+                  END
+            ORDER BY timestamp ASC, id ASC
+        """;
 
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, tripId);
+            ps.setInt(2, tripId);
+            ResultSet rs = ps.executeQuery();
+
+            List<Trackingpoint> trackingpoints = new ArrayList<>();
+            while (rs.next()) {
+                trackingpoints.add(map(rs));
+            }
+            return trackingpoints;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim laden der Trackingpoints", e);
+        }
+    }
+
+    public List<Trackingpoint> getByTripIdAndSource(int tripId, String pointSource) {
+        String sql = "SELECT * FROM trackingpoint WHERE trip_id = ? AND point_source = ? ORDER BY timestamp ASC, id ASC";
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, tripId);
+            ps.setString(2, normalizePointSource(pointSource));
             ResultSet rs = ps.executeQuery();
 
             List<Trackingpoint> trackingpoints = new ArrayList<>();
@@ -105,7 +143,7 @@ public class TrackingpointDao {
     }
 
     public void update(Trackingpoint trackingpoint) {
-        String sql = "UPDATE trackingpoint SET lat = ?, lng = ?, accuracy = ?, speed = ?, bearing = ?, timestamp = ? WHERE id = ?";
+        String sql = "UPDATE trackingpoint SET lat = ?, lng = ?, accuracy = ?, speed = ?, bearing = ?, timestamp = ?, point_source = ? WHERE id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -115,7 +153,8 @@ public class TrackingpointDao {
             ps.setDouble(4,trackingpoint.getSpeed());
             ps.setDouble(5,trackingpoint.getBearing());
             ps.setObject(6,trackingpoint.getTimestamp());
-            ps.setInt(7,trackingpoint.getId());
+            ps.setString(7, normalizePointSource(trackingpoint.getPointSource()));
+            ps.setInt(8,trackingpoint.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -145,6 +184,18 @@ public class TrackingpointDao {
         }
     }
 
+    public void deleteByTripIdAndSource(int tripId, String pointSource) {
+        String sql = "DELETE FROM trackingpoint WHERE trip_id = ? AND point_source = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1,tripId);
+            ps.setString(2, normalizePointSource(pointSource));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim loeschen der Trackingpoints", e);
+        }
+    }
+
     private Trackingpoint map(ResultSet rs) throws SQLException {
         Trackingpoint trackingpoint = new Trackingpoint();
         trackingpoint.setId(rs.getInt("id"));
@@ -155,6 +206,11 @@ public class TrackingpointDao {
         trackingpoint.setSpeed(rs.getDouble("speed"));
         trackingpoint.setBearing(rs.getDouble("bearing"));
         trackingpoint.setTimestamp((LocalDateTime) rs.getObject("timestamp"));
+        trackingpoint.setPointSource(rs.getString("point_source"));
         return trackingpoint;
+    }
+
+    private String normalizePointSource(String pointSource) {
+        return "SNAPPED".equals(pointSource) ? "SNAPPED" : "RAW";
     }
 }

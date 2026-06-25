@@ -21,6 +21,7 @@ public class Trackingpoint {
     private double bearing;
     @PastOrPresent(message = "Timestamp darf nicht in der Zukunft liegen")
     private LocalDateTime timestamp;
+    private String pointSource = "RAW";
 
     public Trackingpoint(){}
 
@@ -98,6 +99,14 @@ public class Trackingpoint {
         this.timestamp = timestamp;
     }
 
+    public String getPointSource() {
+        return pointSource;
+    }
+
+    public void setPointSource(String pointSource) {
+        this.pointSource = pointSource;
+    }
+
     @Override
     public String toString() {
         return "Trackingpoint: " +
@@ -108,6 +117,7 @@ public class Trackingpoint {
                 ", accuracy: " + accuracy +
                 ", speed: " + speed +
                 ", bearing: " + bearing +
-                ", timestamp: " + timestamp;
+                ", timestamp: " + timestamp +
+                ", pointSource: " + pointSource;
     }
 }

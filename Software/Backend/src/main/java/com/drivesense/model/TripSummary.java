@@ -29,6 +29,11 @@ public class TripSummary {
     private String startPoint;
     private String endPoint;
     private String furthestPoint;
+    private String roadSnapStatus = "PENDING";
+    private int roadSnapAttempts;
+    private String roadSnapLastError;
+    private LocalDateTime roadSnapNextRetryAt;
+    private LocalDateTime roadSnapUpdatedAt;
 
     @Min(value = 0, message = "Start-Kilometerstand darf nicht negativ sein")
     private int startMileage;
@@ -175,6 +180,46 @@ public class TripSummary {
         this.endMileage = endMileage;
     }
 
+    public String getRoadSnapStatus() {
+        return roadSnapStatus;
+    }
+
+    public void setRoadSnapStatus(String roadSnapStatus) {
+        this.roadSnapStatus = roadSnapStatus;
+    }
+
+    public int getRoadSnapAttempts() {
+        return roadSnapAttempts;
+    }
+
+    public void setRoadSnapAttempts(int roadSnapAttempts) {
+        this.roadSnapAttempts = roadSnapAttempts;
+    }
+
+    public String getRoadSnapLastError() {
+        return roadSnapLastError;
+    }
+
+    public void setRoadSnapLastError(String roadSnapLastError) {
+        this.roadSnapLastError = roadSnapLastError;
+    }
+
+    public LocalDateTime getRoadSnapNextRetryAt() {
+        return roadSnapNextRetryAt;
+    }
+
+    public void setRoadSnapNextRetryAt(LocalDateTime roadSnapNextRetryAt) {
+        this.roadSnapNextRetryAt = roadSnapNextRetryAt;
+    }
+
+    public LocalDateTime getRoadSnapUpdatedAt() {
+        return roadSnapUpdatedAt;
+    }
+
+    public void setRoadSnapUpdatedAt(LocalDateTime roadSnapUpdatedAt) {
+        this.roadSnapUpdatedAt = roadSnapUpdatedAt;
+    }
+
     @Override
     public String toString() {
         return "Trip: " +
@@ -192,6 +237,7 @@ public class TripSummary {
                 ", furthestPoint: " + furthestPoint +
                 ", endPoint: " + endPoint +
                 ", startMileage: " + startMileage +
-                ", endMileage: " + endMileage;
+                ", endMileage: " + endMileage +
+                ", roadSnapStatus: " + roadSnapStatus;
     }
 }

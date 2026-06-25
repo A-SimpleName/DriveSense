@@ -20,6 +20,7 @@ class TripSummary {
   final String? type;
   final int startMileage;
   final int endMileage;
+  final String? roadSnapStatus;
   bool isSynced;
 
   TripSummary({
@@ -43,6 +44,7 @@ class TripSummary {
     required this.isSynced,
     required this.startMileage,
     required this.endMileage,
+    this.roadSnapStatus,
   });
 
   Map<String, dynamic> toJson() {
@@ -68,6 +70,7 @@ class TripSummary {
       "isSynced": isSynced,
       "startMileage": startMileage,
       "endMileage": endMileage,
+      "roadSnapStatus": roadSnapStatus,
     };
   }
 
@@ -127,6 +130,8 @@ class TripSummary {
       isSynced: json["isSynced"] != false,
       startMileage: asInt(json["startMileage"] ?? json["start_mileage"]),
       endMileage: asInt(json["endMileage"] ?? json["end_mileage"]),
+      roadSnapStatus: (json["roadSnapStatus"] ?? json["road_snap_status"])
+          ?.toString(),
     );
   }
 
@@ -172,6 +177,7 @@ class TripSummary {
       isSynced: trip.isSynced,
       startMileage: trip.startMileage,
       endMileage: trip.endMileage,
+      roadSnapStatus: null,
     );
   }
 
@@ -196,6 +202,7 @@ class TripSummary {
     bool? isSynced,
     int? startMileage,
     int? endMileage,
+    String? roadSnapStatus,
   }) {
     return TripSummary(
       id: id ?? this.id,
@@ -219,6 +226,7 @@ class TripSummary {
       isSynced: isSynced ?? this.isSynced,
       startMileage: startMileage ?? this.startMileage,
       endMileage: endMileage ?? this.endMileage,
+      roadSnapStatus: roadSnapStatus ?? this.roadSnapStatus,
     );
   }
 }

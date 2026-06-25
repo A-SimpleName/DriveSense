@@ -21,6 +21,7 @@ export interface TripSummaryDto {
     furthestPoint: string;
     startMileage: number;
     endMileage: number;
+    roadSnapStatus?: string;
 }
 
 export interface TripSummary {
@@ -39,6 +40,7 @@ export interface TripSummary {
     furthestPoint: string;
     startMileage: number;
     endMileage: number;
+    roadSnapStatus?: string;
 }
 
 export interface Tripdetailed {

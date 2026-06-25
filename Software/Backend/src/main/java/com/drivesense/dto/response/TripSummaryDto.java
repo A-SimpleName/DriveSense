@@ -23,6 +23,7 @@ public class TripSummaryDto {
     private String protocolName;
     private String roadSurfaceConditions;
     private String type;
+    private String roadSnapStatus;
 
     public TripSummaryDto () {
 
@@ -188,5 +189,13 @@ public class TripSummaryDto {
 
     public void setDurationSeconds(long durationSeconds) {
         this.durationSeconds = durationSeconds;
+    }
+
+    public String getRoadSnapStatus() {
+        return roadSnapStatus;
+    }
+
+    public void setRoadSnapStatus(String roadSnapStatus) {
+        this.roadSnapStatus = roadSnapStatus;
     }
 }

@@ -19,6 +19,8 @@ import java.util.List;
 
 @Service
 public class TripService {
+    private static final int MAX_ROAD_SNAP_ATTEMPTS = 5;
+
     private final TripDao tripDao;
     private final ProtocolDao protocolDao;
     private final TrackingpointService trackingpointService;
@@ -26,11 +28,13 @@ public class TripService {
     private final WeatherService weatherService;
     private final ProfileService profileService;
     private final ProtocolService protocolService;
+    private final RoadSnapService roadSnapService;
 
     @Autowired
     public TripService(TripDao tripDao, ProtocolDao protocolDao, TrackingpointService trackingpointService,
                        GeocodingService geocodingService, WeatherService weatherService,
-                       ProtocolService protocolService, ProfileService profileService) {
+                       ProtocolService protocolService, ProfileService profileService,
+                       RoadSnapService roadSnapService) {
         this.tripDao = tripDao;
         this.protocolDao = protocolDao;
         this.trackingpointService = trackingpointService;
@@ -38,6 +42,7 @@ public class TripService {
         this.weatherService = weatherService;
         this.profileService = profileService;
         this.protocolService = protocolService;
+        this.roadSnapService = roadSnapService;
     }
 
     public TripDetailedDto insertTrip(TripSummary tripSummary, List<Trackingpoint> trackingpoints) {
@@ -121,8 +126,11 @@ public class TripService {
         List<Trackingpoint> createdTrackingpoints = new ArrayList<>();
         for (Trackingpoint trackingpoint : trackingpoints) {
             trackingpoint.setTripId(tripSummary.getId());
+            trackingpoint.setPointSource("RAW");
             createdTrackingpoints.add(trackingpointService.insert(trackingpoint, tripSummary));
         }
+
+        tryRoadSnap(tripSummary);
 
         enrichWithTrackingPoints(tripSummary);
 
@@ -133,7 +141,18 @@ public class TripService {
         if (createdTripDto == null) {
             throw new NotFoundException("Fahrt nicht gefunden oder kein Zugriff");
         }
-        return new TripDetailedDto(createdTripDto, createdTrackingpoints);
+        return new TripDetailedDto(createdTripDto, trackingpointService.getByTripId(tripSummary.getId()));
+    }
+
+    public void retryPendingRoadSnapTrips() {
+        List<TripSummary> pendingTrips = tripDao.getPendingRoadSnapTrips(20);
+        for (TripSummary pendingTrip : pendingTrips) {
+            tryRoadSnap(pendingTrip);
+            if ("SNAPPED".equals(pendingTrip.getRoadSnapStatus())) {
+                enrichWithTrackingPoints(pendingTrip);
+                tripDao.update(pendingTrip);
+            }
+        }
     }
 
 
@@ -310,6 +329,44 @@ public class TripService {
         if (seconds > 0) {
             tripSummary.setDurationSeconds(seconds);
         }
+    }
+
+    private void tryRoadSnap(TripSummary tripSummary) {
+        try {
+            List<Trackingpoint> rawPoints = trackingpointService.getRawByTripId(tripSummary.getId());
+            List<Trackingpoint> snappedPoints = roadSnapService.snap(tripSummary, rawPoints);
+
+            trackingpointService.deleteSnappedByTripId(tripSummary.getId());
+            for (Trackingpoint snappedPoint : snappedPoints) {
+                trackingpointService.insert(snappedPoint, tripSummary);
+            }
+
+            tripDao.markRoadSnapSnapped(tripSummary.getId());
+            tripSummary.setRoadSnapStatus("SNAPPED");
+            tripSummary.setRoadSnapLastError(null);
+            tripSummary.setRoadSnapNextRetryAt(null);
+        } catch (ExternalApiException e) {
+            int nextAttempt = tripSummary.getRoadSnapAttempts() + 1;
+            if (nextAttempt >= MAX_ROAD_SNAP_ATTEMPTS) {
+                tripDao.markRoadSnapFailed(tripSummary.getId(), e.getMessage());
+                tripSummary.setRoadSnapStatus("FAILED");
+                return;
+            }
+
+            tripDao.markRoadSnapPending(tripSummary.getId(), e.getMessage(), nextRoadSnapRetryAt(nextAttempt));
+            tripSummary.setRoadSnapStatus("PENDING");
+            tripSummary.setRoadSnapAttempts(nextAttempt);
+        }
+    }
+
+    private java.time.LocalDateTime nextRoadSnapRetryAt(int attempt) {
+        int minutes = switch (attempt) {
+            case 1 -> 5;
+            case 2 -> 15;
+            case 3 -> 60;
+            default -> 360;
+        };
+        return java.time.LocalDateTime.now().plusMinutes(minutes);
     }
 
     private TripSummaryDto mapToDto(TripSummary t) {

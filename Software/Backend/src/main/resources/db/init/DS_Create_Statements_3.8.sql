@@ -192,6 +192,16 @@ CREATE TABLE `trip` (
 
   `profile_name_snapshot` VARCHAR(100) NOT NULL,
 
+  `road_snap_status` VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+
+  `road_snap_attempts` INT NOT NULL DEFAULT 0,
+
+  `road_snap_last_error` VARCHAR(500) DEFAULT NULL,
+
+  `road_snap_next_retry_at` DATETIME DEFAULT NULL,
+
+  `road_snap_updated_at` DATETIME DEFAULT NULL,
+
   `deleted_at` DATETIME DEFAULT NULL,
 
   PRIMARY KEY (`id`),
@@ -231,6 +241,8 @@ CREATE TABLE `trackingpoint` (
   `bearing` DECIMAL(6,2),
 
   `timestamp` DATETIME NOT NULL,
+
+  `point_source` VARCHAR(20) NOT NULL DEFAULT 'RAW',
 
   PRIMARY KEY (`id`),
 

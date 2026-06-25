@@ -7,4 +7,5 @@ export interface Trackingpoint {
     speed: number;
     bearing: number;
     timestamp: Date;
+    pointSource?: string;
 }

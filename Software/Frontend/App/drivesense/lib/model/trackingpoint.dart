@@ -7,6 +7,7 @@ class Trackingpoint {
   final double speed;
   final double bearing;
   final DateTime timestamp;
+  final String? pointSource;
 
   Trackingpoint({
     required this.id,
@@ -17,6 +18,7 @@ class Trackingpoint {
     required this.speed,
     required this.bearing,
     required this.timestamp,
+    this.pointSource,
   });
 
   Map<String, dynamic> toJson() {
@@ -29,6 +31,7 @@ class Trackingpoint {
       "speed": speed,
       "bearing": bearing,
       "timestamp": timestamp.toIso8601String(),
+      "pointSource": pointSource,
     };
   }
 
@@ -56,6 +59,7 @@ class Trackingpoint {
       speed: asDouble(json["speed"]),
       bearing: asDouble(json["bearing"]),
       timestamp: DateTime.parse(json["timestamp"].toString()),
+      pointSource: (json["pointSource"] ?? json["point_source"])?.toString(),
     );
   }
 }

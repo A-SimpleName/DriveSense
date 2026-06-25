@@ -166,6 +166,7 @@ public class TripDao {
                 t.end_point,
                 t.road_surface_conditions,
                 t.type,
+                t.road_snap_status,
                 a.first_name,
                 a.last_name
             FROM trip t
@@ -216,6 +217,7 @@ public class TripDao {
                 t.end_point,
                 t.road_surface_conditions,
                 t.type,
+                t.road_snap_status,
                 a.first_name,
                 a.last_name
             FROM trip t
@@ -279,6 +281,7 @@ public class TripDao {
                 t.end_point,
                 t.road_surface_conditions,
                 t.type,
+                t.road_snap_status,
                 a.first_name,
                 a.last_name
             FROM trip t
@@ -344,6 +347,7 @@ public class TripDao {
                 t.end_point,
                 t.road_surface_conditions,
                 t.type,
+                t.road_snap_status,
                 a.first_name,
                 a.last_name
             FROM trip t
@@ -398,6 +402,7 @@ public class TripDao {
                 t.end_point,
                 t.road_surface_conditions,
                 t.type,
+                t.road_snap_status,
                 a.first_name,
                 a.last_name
             FROM trip t
@@ -478,6 +483,108 @@ public class TripDao {
         }
     }
 
+    public List<TripSummary> getPendingRoadSnapTrips(int limit) {
+        String sql = """
+            SELECT *
+            FROM trip
+            WHERE road_snap_status = 'PENDING'
+              AND (
+                    road_snap_next_retry_at IS NULL
+                 OR road_snap_next_retry_at <= CURRENT_TIMESTAMP
+              )
+              AND EXISTS (
+                    SELECT 1
+                    FROM trackingpoint tp
+                    WHERE tp.trip_id = trip.id
+                      AND tp.point_source = 'RAW'
+              )
+            ORDER BY COALESCE(road_snap_next_retry_at, start_time), id
+            LIMIT ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+
+            List<TripSummary> list = new ArrayList<>();
+            while (rs.next()) list.add(map(rs));
+            return list;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Laden ausstehender Road-Snap-Fahrten", e);
+        }
+    }
+
+    public void markRoadSnapSnapped(int tripId) {
+        String sql = """
+            UPDATE trip SET
+                road_snap_status = 'SNAPPED',
+                road_snap_last_error = NULL,
+                road_snap_next_retry_at = NULL,
+                road_snap_updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, tripId);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Aktualisieren des Road-Snap-Status", e);
+        }
+    }
+
+    public void markRoadSnapPending(int tripId, String error, LocalDateTime nextRetryAt) {
+        String sql = """
+            UPDATE trip SET
+                road_snap_status = 'PENDING',
+                road_snap_attempts = road_snap_attempts + 1,
+                road_snap_last_error = ?,
+                road_snap_next_retry_at = ?,
+                road_snap_updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, trimError(error));
+            ps.setObject(2, nextRetryAt);
+            ps.setInt(3, tripId);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Aktualisieren des Road-Snap-Status", e);
+        }
+    }
+
+    public void markRoadSnapFailed(int tripId, String error) {
+        String sql = """
+            UPDATE trip SET
+                road_snap_status = 'FAILED',
+                road_snap_attempts = road_snap_attempts + 1,
+                road_snap_last_error = ?,
+                road_snap_next_retry_at = NULL,
+                road_snap_updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """;
+
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, trimError(error));
+            ps.setInt(2, tripId);
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fehler beim Aktualisieren des Road-Snap-Status", e);
+        }
+    }
+
     public void deleteById(int id) {
         String sql = "DELETE FROM trip WHERE id = ?";
 
@@ -512,6 +619,11 @@ public class TripDao {
         t.setFurthestPoint(rs.getString("furthest_point"));
         t.setStartMileage(rs.getInt("start_mileage"));
         t.setEndMileage(rs.getInt("end_mileage"));
+        t.setRoadSnapStatus(rs.getString("road_snap_status"));
+        t.setRoadSnapAttempts(rs.getInt("road_snap_attempts"));
+        t.setRoadSnapLastError(rs.getString("road_snap_last_error"));
+        t.setRoadSnapNextRetryAt(rs.getObject("road_snap_next_retry_at", LocalDateTime.class));
+        t.setRoadSnapUpdatedAt(rs.getObject("road_snap_updated_at", LocalDateTime.class));
         return t;
     }
 
@@ -543,7 +655,15 @@ public class TripDao {
         dto.setAccountFirstName(rs.getString("first_name"));
         dto.setAccountLastName(rs.getString("last_name"));
         dto.setRoadSurfaceConditions(rs.getString("road_surface_conditions"));
+        dto.setRoadSnapStatus(rs.getString("road_snap_status"));
 
         return dto;
+    }
+
+    private String trimError(String error) {
+        if (error == null) {
+            return null;
+        }
+        return error.length() > 500 ? error.substring(0, 500) : error;
     }
 }
