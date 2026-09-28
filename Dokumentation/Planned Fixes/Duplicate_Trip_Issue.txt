@@ -1,0 +1,65 @@
+*/------------------------------------------------
+Issue at hand: very long trips seem to trigger
+    the manually set timeout due to just taking
+	too long to transfer the large amount of
+	tracking points. This led to the discovery of
+	some issues with manual syncing, seemingly
+	causing trips to be saved multiple times.
+--------------------------------------------------*/
+
+
+
+
+I investigated the trip save/sync path. No code changes made.
+
+  The likely root cause is an ambiguous timeout after the trip summary is already created on the backend.
+
+  Current flow:
+
+  1. App saves the completed trip locally first.
+  2. App calls POST /api/trips/summary.
+  3. Backend creates the trip row immediately.
+  4. App calls POST /api/trips/{id}/trackingpoints with all points.
+  5. If that second request takes longer than the app timeout, the frontend treats the trip as unsynced and keeps retrying.
+  6. A retry creates a new backend trip summary because the app has no persisted backend trip id and the backend has no idempotency
+     key.
+
+  Relevant code:
+
+  - Frontend two-step upload: Software/Frontend/App/drivesense/lib/services/trip_service.dart:95, Software/Frontend/App/drivesense/
+    lib/services/trip_service.dart:141
+
+  - Global Dio timeouts: Software/Frontend/App/drivesense/lib/services/auth_http_client.dart:80
+  - Local fallback on any sync error: Software/Frontend/App/drivesense/lib/services/trip_sync_service.dart:108
+  - Manual sync has an extra 10s UI timeout: Software/Frontend/App/drivesense/lib/widgets/snyc_trips_button.dart:39
+  - Backend summary creation has no idempotency: Software/Backend/src/main/java/com/drivesense/controller/TripController.java:44
+  - Backend trackingpoint upload does slow work before responding: Software/Backend/src/main/java/com/drivesense/service/
+    TripService.java:127, Software/Backend/src/main/java/com/drivesense/service/TripService.java:133
+
+  Most important fixes, in order:
+
+  1. Add a stable client trip id / idempotency key.
+     Generate it when the trip starts, persist it in the active trip and completed trip row, send it with summary creation, and add a
+     unique backend constraint like (profile_id, client_trip_id). If the same trip is retried, the backend returns the existing trip
+     instead of inserting another one. This is the real duplicate fix.
+
+  2. Persist the backend trip id as soon as summary creation succeeds.
+     If trackingpoints upload fails after summary creation, the local row should remember serverTripId and retry POST /api/trips/
+     {serverTripId}/trackingpoints instead of creating a new summary.
+
+  3. Make trackingpoint upload idempotent.
+     The backend should either replace RAW points for a trip before inserting, or enforce a uniqueness rule such as (trip_id,
+     timestamp, lat, lng, point_source). Otherwise retrying the same trackingpoint upload can duplicate points.
+
+  4. Remove the 10s manual sync timeout or make it non-cancel-like from the UI perspective.
+     Future.timeout lets the UI recover, but the sync work may still be running. A second tap can start another sync while the first
+     is still in progress.
+
+  5. Add a sync mutex / per-trip in-progress state.
+     syncPendingTrips() does not mark each pending row as in-progress before uploading. Also, the existing 5 minute in-progress guard
+     is based on createdAt, not last sync attempt time, so old pending trips can be retried concurrently.
+
+  6. Move backend enrichment off the request path.
+     For long trips, addTrackingpointsToTrip() inserts all points, then calls Road Snap, weather, and geocoding before responding.
+     Road Snap chunks every 100 points and each Google Roads request can take up to 10 seconds. The endpoint should store raw points
+     and return quickly; road snap/geocoding should run async using the existing pending-road-snap concept.
